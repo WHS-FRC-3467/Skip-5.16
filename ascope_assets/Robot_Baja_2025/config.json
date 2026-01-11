@@ -1,0 +1,125 @@
+{
+  "name": "Alpha",
+  "sourceUrl": "https://cad.onshape.com/documents/9e44d50c5c8bff033b0ce0d1/w/af344c71a29ba8dfa8032272/e/0bcc622c0d518e1f737f949d",
+  "disableSimplification": false,
+  "rotations": [
+    {
+      "axis": "x",
+      "degrees": 90
+    },
+    {
+      "axis": "z",
+      "degrees": -270
+    }
+  ],
+  "position": [
+    0,
+    0,
+    0.069215
+  ],
+  "cameras": [
+    {
+      "name": "front_left",
+      "fov": 55,
+      "resolution": [
+        1600,
+        1304
+      ],
+      "position": [
+        0.27864816,
+        0.23491698,
+        0.20108418
+      ],
+      "rotations": [
+        {
+          "axis": "y",
+          "degrees": -15
+        },
+        {
+          "axis": "z",
+          "degrees": 30
+        }
+      ]
+    },
+    {
+      "name": "front_right",
+      "fov": 55,
+      "resolution": [
+        1600,
+        1304
+      ],
+      "position": [
+        0.27864816,
+        0.23491698,
+        0.20108418
+      ],
+      "rotations": [
+        {
+          "axis": "y",
+          "degrees": -15
+        },
+        {
+          "axis": "z",
+          "degrees": 30
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 90
+        },
+        {
+          "axis": "z",
+          "degrees": -270
+        }
+      ],
+      "zeroedPosition": [
+        0,
+        0,
+        0.043815
+      ]
+    },
+    {
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 90
+        },
+        {
+          "axis": "z",
+          "degrees": -270
+        }
+      ],
+      "zeroedPosition": [
+        0,
+        0,
+        0.043815
+      ]
+    },
+    {
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 90
+        },
+        {
+          "axis": "z",
+          "degrees": -270
+        },
+        {
+          "axis": "y",
+          "degrees": 60
+        }
+      ],
+      "zeroedPosition": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}
