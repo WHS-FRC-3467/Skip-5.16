@@ -16,6 +16,7 @@
 package frc.lib.io.distancesensor;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.hardware.CANrange;
@@ -49,7 +50,7 @@ public class DistanceSensorIOCANRange implements DistanceSensorIO {
     {
         this.name = name;
 
-        CANRange = new CANrange(id.id(), id.canBus());
+        CANRange = new CANrange(id.id(), new CANBus(id.bus()));
 
         updateThread.CTRECheckErrorAndRetry(() -> CANRange.getConfigurator().apply(config));
 

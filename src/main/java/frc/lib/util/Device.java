@@ -15,17 +15,8 @@
 
 package frc.lib.util;
 
-import java.util.HashMap;
-
-import com.ctre.phoenix6.CANBus;
-
 public sealed interface Device {
-    static final HashMap<String, CANBus> canBusMap = new HashMap<>();
-
-    record CAN(int id, String bus, CANBus canBus) implements Device {
-        public CAN(int id, String bus) {
-            this(id, bus, canBusMap.computeIfAbsent(bus, CANBus::new));
-        }
+    record CAN(int id, String bus) implements Device {
     }
 
     public record DIO(int id) implements Device {
