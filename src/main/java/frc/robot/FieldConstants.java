@@ -8,6 +8,7 @@ import java.util.List;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
 
@@ -48,6 +49,36 @@ public class FieldConstants {
     public static final Translation2d HUB_CENTER = new Translation2d(
             Inches.of(158.6),
             FIELD_WIDTH.div(2));
+
+    //MJW - PR 30: Shooter Lookup Table
+    public static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
+    static {
+        hoodAngleMap.put(1.01, 43.00); //Lowest
+        hoodAngleMap.put(2.15, 27.00);
+        hoodAngleMap.put(2.56, 23.00);
+        hoodAngleMap.put(3.0, 21.00);
+        hoodAngleMap.put(3.5, 17.00);
+        hoodAngleMap.put(4.02, 15.00);
+        hoodAngleMap.put(4.6, 11.50);
+        hoodAngleMap.put(4.95, 10.00);
+        hoodAngleMap.put(5.5,9.00);
+        hoodAngleMap.put(6.08,8.00); //Highest
+    }
+
+    public static final InterpolatingDoubleTreeMap flyWheelMap = new InterpolatingDoubleTreeMap();
+    static {
+        flyWheelMap.put(1.01, 43.00); //Lowest
+        flyWheelMap.put(2.15, 27.00);
+        flyWheelMap.put(2.56, 23.00);
+        flyWheelMap.put(3.0, 21.00);
+        flyWheelMap.put(3.5, 17.00);
+        flyWheelMap.put(4.02, 15.00);
+        flyWheelMap.put(4.6, 11.50);
+        flyWheelMap.put(4.95, 10.00);
+        flyWheelMap.put(5.5,9.00);
+        flyWheelMap.put(6.08,8.00); //Highest
+    }
+    //MJW - PR 30: Shooter Lookup Table
 
     public static final Distance FUEL_DIAMETER = Inches.of(5.91);
     public static final Mass FUEL_WEIGHT = Pounds.of(0.474);

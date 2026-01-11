@@ -16,6 +16,7 @@
 package frc.robot.subsystems.turret;
 
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.function.DoubleSupplier;
@@ -24,6 +25,7 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -40,25 +42,12 @@ import frc.lib.util.RisingEdge;
 import frc.robot.RobotState;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.FieldConstants;
+import frc.robot.RobotContainer;
 
 public class TurretSuperstructure extends SubsystemBase implements AutoCloseable {
 
     private static final Pose2d SHOOT_GOAL = Pose2d.kZero;
-
-    private static final InterpolatingDoubleTreeMap magnitudeMap =
-        new InterpolatingDoubleTreeMap();
-    static {
-        // Pre-defined lookup table values
-        magnitudeMap.put(1.0, 325.0); // Use rad/s for continuity with MotorIO logging
-        magnitudeMap.put(1.5, 325.0);
-        magnitudeMap.put(2.0, 325.0);
-        magnitudeMap.put(2.5, 325.0);
-        magnitudeMap.put(3.0, 325.0);
-        magnitudeMap.put(3.5, 400.0);
-        magnitudeMap.put(4.0, 400.0);
-        magnitudeMap.put(4.5, 400.0);
-        magnitudeMap.put(5.0, 400.0);
-    }
 
     private LoggedTunableNumber timeToBeReady = new LoggedTunableNumber("TimeToBeReady", 0.5);
 
@@ -66,15 +55,17 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
 
     private final BeamBreak indexerBeamBreak;
 
-    private final RotaryMechanism rotaryIO;
+    private final RotaryMechanism turretIO;
+    private final RotaryMechanism hoodIO;
     private final RotaryMechanism indexerIO;
     private final FlywheelMechanism flywheelIO;
 
-    public TurretSuperstructure(RotaryMechanism rotaryIO, RotaryMechanism indexerIO,
+    public TurretSuperstructure(RotaryMechanism turretIO, RotaryMechanism hoodIO, RotaryMechanism indexerIO,
         FlywheelMechanism flywheelIO,
         BeamBreak indexerBeamBreak)
     {
-        this.rotaryIO = rotaryIO;
+        this.turretIO = turretIO;
+        this.hoodIO = hoodIO;
         this.indexerIO = indexerIO;
         this.flywheelIO = flywheelIO;
         this.indexerBeamBreak = indexerBeamBreak;
@@ -104,14 +95,16 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
             .until(FallingEdge.of(indexerBeamBreak::isBroken));
     }
 
+    // Turret
+
     private void setTurretPosition(Angle angle)
     {
-        rotaryIO.runPosition(angle, PIDSlot.SLOT_0);
+        turretIO.runPosition(angle, PIDSlot.SLOT_0);
     }
 
     private boolean turretIsAt(Angle angle)
     {
-        return rotaryIO.nearGoal(angle, TurretConstants.TOLERANCE);
+        return turretIO.nearGoal(angle, TurretConstants.TOLERANCE);
     }
 
     private boolean turretIsAt(Rotation2d angle)
@@ -140,8 +133,8 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
 
     private Command moveTurretFieldRelative(
         Drive drive,
-        DoubleSupplier xSupplier,
-        DoubleSupplier ySupplier,
+        Double xSupplier,
+        Double ySupplier,
         Supplier<Rotation2d> fieldRelativeHeadingSupplier)
     {
         return Commands.parallel(
@@ -152,57 +145,81 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
                     .plus(robotState.getRotation().unaryMinus())));
     }
 
+    // Hood
+
+    private void setHoodPosition(Angle angle)
+    {
+        hoodIO.runPosition(angle, PIDSlot.SLOT_0);
+    }
+
+    private boolean hoodIsAt(Angle angle)
+    {
+        return hoodIO.nearGoal(angle, HoodConstants.TOLERANCE);
+    }
+
     public Command shoot(
         Drive drive,
-        DoubleSupplier joystickXSupplier,
-        DoubleSupplier joystickYSupplier)
+        Double xPosition,
+        Double yPosition)
     {
         Supplier<Pose2d> futurePoseSupplier = () -> robotState.getEstimatedPose()
             .exp(robotState.getFieldRelativeVelocity().toTwist2d(timeToBeReady.get()));
         Supplier<AngularVelocity> flywheelVelocitySupplier = () -> RadiansPerSecond.of(
-            magnitudeMap
+            FieldConstants.flyWheelMap
                 .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
+        Supplier<Angle> hoodSupplier = () -> Degrees.of(FieldConstants.hoodAngleMap
+            .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
 
         return Commands.sequence(
             Commands.parallel(
                 moveTurretFieldRelative(
                     drive,
-                    joystickXSupplier,
-                    joystickYSupplier,
+                    robotState.getEstimatedPose().getX(),
+                    robotState.getEstimatedPose().getY(),
                     () -> SHOOT_GOAL.minus(futurePoseSupplier.get()).getRotation()),
                 Commands.run(() -> spinFlywheel(flywheelVelocitySupplier.get())),
+                Commands.run(() -> setHoodPosition(hoodSupplier.get())),
                 // Wait until at goal positions and make sequences depend on this
                 Commands.idle(this))
                 .until(() -> flywheelIsAt(flywheelVelocitySupplier.get())
                     && turretIsAt(
                         SHOOT_GOAL.minus(futurePoseSupplier.get()).getRotation()
-                            .plus(robotState.getRotation().unaryMinus()))),
+                            .plus(robotState.getRotation().unaryMinus()))
+                    && hoodIsAt(hoodSupplier.get())),
             // Shoot
             indexerShoot(),
             // Spin down flywheel
-            Commands.runOnce(() -> spinFlywheel(RotationsPerSecond.zero())));
+            Commands.sequence(
+                Commands.parallel(
+                    Commands.run(() -> spinFlywheel(RotationsPerSecond.zero())),
+                    Commands.run(() -> setHoodPosition(Degrees.zero()))
+                )));
+                //() -> 
+            //spinFlywheel(RotationsPerSecond.zero())));
     }
 
     @Override
     public void periodic()
     {
-        rotaryIO.periodic();
+        turretIO.periodic();
         flywheelIO.periodic();
         indexerIO.periodic();
+        hoodIO.periodic();
         indexerBeamBreak.periodic();
 
         var currentRobotHeading = robotState.getEstimatedPose().getRotation();
 
         // Robot relative
-        var currentTurretHeading = Rotation2d.fromRadians(rotaryIO.getPosition().in(Radians));
+        var currentTurretHeading = Rotation2d.fromRadians(turretIO.getPosition().in(Radians));
         Logger.recordOutput("Turret/Orientation", currentTurretHeading.plus(currentRobotHeading));
     }
 
     @Override
     public void close()
     {
-        rotaryIO.close();
+        turretIO.close();
         flywheelIO.close();
         indexerIO.close();
+        hoodIO.close();
     }
 }
