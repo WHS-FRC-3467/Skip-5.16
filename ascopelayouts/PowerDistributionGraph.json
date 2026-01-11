@@ -1,0 +1,270 @@
+{
+  "hubs": [
+    {
+      "x": 217,
+      "y": 154,
+      "width": 1105,
+      "height": 654,
+      "state": {
+        "sidebar": {
+          "width": 367,
+          "expanded": [
+            "/AdvantageKit",
+            "/AdvantageKit/RealOutputs/Odometry/Robot",
+            "/TunableNumbers/IntakeLaserCAN",
+            "/AdvantageKit/NetworkInputs/SmartDashboard",
+            "/AdvantageKit/RealOutputs/Vision",
+            "/TunableNumbers/Arm/Gains",
+            "/TunableNumbers/ClawRoller/Gains",
+            "/Phoenix6",
+            "/Phoenix6/TalonFX-14",
+            "/RealOutputs",
+            "/ReplayOutputs",
+            "/ReplayOutputs/SimMechPoses",
+            "/ReplayOutputs/SimMechPoses/Stage1",
+            "/ReplayOutputs/SimMechPoses/Stage2",
+            "/ReplayOutputs/Elevator/SimMechPoses",
+            "/ReplayOutputs/Elevator/SimMechPoses/Stage1",
+            "/ReplayOutputs/Elevator/SimMechPoses/Stage2",
+            "/RealOutputs/Odometry/Robot",
+            "/ReplayOutputs/Odometry",
+            "/NetworkInputs/SmartDashboard",
+            "/NetworkInputs/TunableNumbers",
+            "/NetworkInputs/TunableNumbers/Elevator",
+            "/RealOutputs/Odometry/Robot/rotation",
+            "/AdvantageKit/RealOutputs",
+            "/AdvantageKit/RealOutputs/Vision/Summary",
+            "/AdvantageKit/RealOutputs/Vision/Summary/RobotPosesAccepted",
+            "/AdvantageKit/RealOutputs/SimMechPoses/Arm",
+            "/AdvantageKit/RealOutputs/SimMechPoses/Stage1",
+            "/AdvantageKit/RealOutputs/SimMechPoses/Stage2",
+            "/AdvantageKit/RealOutputs/SimMechPoses/Stage1/Pose3d",
+            "/ReplayOutputs/Elevator/SimMechPoses/Stage2/Pose3d",
+            "/AdvantageKit/NetworkInputs/TunableNumbers",
+            "/AdvantageKit/RealOutputs/AlignDebug",
+            "/AdvantageKit/RealOutputs/AlignDebug/approachTarget",
+            "/AdvantageKit/RealOutputs/BargeAlignDebug",
+            "/SmartDashboard/Alerts",
+            "/SmartDashboard/Alerts/warnings",
+            "/AdvantageKit/ClawRoller/TorqueCurrentAmps",
+            "/ReplayOutputs/SimMechPoses/Stage1/Pose3d",
+            "/ReplayOutputs/Elevator",
+            "/AdvantageKit/RealOutputs/Tounge",
+            "/TunableNumbers/Tounge",
+            "/TunableNumbers/LED",
+            "/AdvantageKit/NetworkInputs",
+            "/AdvantageKit/NetworkInputs/TunableNumbers/LED",
+            "/TunableNumbers",
+            "/AdvantageKit/LED",
+            "/AdvantageKit/RealOutputs/Odometry",
+            "/AdvantageKit/RealOutputs/Arm",
+            "/AdvantageKit/RealOutputs/Elevator",
+            "/RealOutputs/Odometry",
+            "/DriverStation",
+            "/DriverStation/Joystick0",
+            "/PowerDistribution",
+            "/RealOutputs/Arm",
+            "/AdvantageKit/PowerDistribution"
+          ]
+        },
+        "tabs": {
+          "selected": 3,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "bhs1ajjkdwjsoemuogfjdvqco148iuqj",
+              "renderer": "#/",
+              "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot/translation/x",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot/translation/y",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "qkdptnrknah26uhb9nwn34t4c0obwoci",
+              "renderer": null,
+              "controlsHeight": 205
+            },
+            {
+              "type": 2,
+              "title": "Odometry",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robot",
+                    "logKey": "/RealOutputs/Odometry/Robot",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {}
+                  }
+                ],
+                "game": "2025 Field (Welded)",
+                "bumpers": "red",
+                "origin": "red",
+                "orientation": 0,
+                "size": 30
+              },
+              "controllerUUID": "1wy1d3aoypjb5qhcl5ai57k5guzu56cc",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/PowerDistribution/Voltage",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/PowerDistribution/TotalCurrent",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/PowerDistribution/Temperature",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "fx67xa6of6bdthfjuayai65nsep20cut",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 8,
+              "title": "Joysticks",
+              "controller": [
+                "Xbox Controller (White)",
+                "None",
+                "None",
+                "None",
+                "None",
+                "None"
+              ],
+              "controllerUUID": "hdz3ta4ha3m3ruovssmp37cbdj8nx18h",
+              "renderer": null,
+              "controlsHeight": 85
+            },
+            {
+              "type": 3,
+              "title": "3D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/Robot",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "2025 KitBot"
+                    }
+                  }
+                ],
+                "game": "2025 Field (AndyMark)",
+                "origin": "blue"
+              },
+              "controllerUUID": "lhr8qzg04pe5q6uu8kn3d6m1dozv4495",
+              "renderer": {
+                "cameraIndex": -1,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  14.366638571123245,
+                  13.10853589112136,
+                  -7.290794282367795
+                ],
+                "cameraTarget": [
+                  0,
+                  0.5,
+                  0
+                ]
+              },
+              "controlsHeight": 192
+            },
+            {
+              "type": 10,
+              "title": "Mechanism",
+              "controller": [],
+              "controllerUUID": "oiwhmwh70aftpa5i5x9pkqr8qgc46yc6",
+              "renderer": null,
+              "controlsHeight": 200
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "4.1.2"
+}
