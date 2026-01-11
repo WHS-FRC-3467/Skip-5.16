@@ -176,7 +176,7 @@ public class RobotContainer {
 
         inAllianceRegionTrigger = new Trigger(() -> PointInPolygon.pointInPolygon(
             robotState.getEstimatedPose().getTranslation(),
-            FieldConstants.ALLIANCE_STATION_POLYGON));
+            FieldConstants.ALLIANCE_ZONE));
 
         // Configure the button bindings
         configureButtonBindings();

@@ -31,10 +31,10 @@ public class BallSimulator {
     private static final double AIR_DENSITY = 1.225;
     private static final double DRAG_COEFFICIENT = 0.45;
     private static final double CROSSECTION_AREA =
-        Math.PI * Math.pow(FieldConstants.ALGAE_DIAMETER.in(Meters) / 2, 2);
+        Math.PI * Math.pow(FieldConstants.FUEL_DIAMETER.in(Meters) / 2, 2);
     private static final double MASS = 0.68;
 
-    private static Distance ballDiameter = FieldConstants.ALGAE_DIAMETER;
+    private static Distance ballDiameter = FieldConstants.FUEL_DIAMETER;
 
     private static Transform3d shooterOffset =
         new Transform3d(
