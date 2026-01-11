@@ -23,6 +23,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
@@ -108,7 +109,7 @@ public class MotorIOTalonFX implements MotorIO {
 
             TalonFX follower = followers[i];
             updateThread.CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config));
-            follower.setControl(new Follower(main.id(), followerData[i].opposesMain()));
+            follower.setControl(new Follower(main.id(), followerData[i].opposesMain() ? MotorAlignmentValue.Opposed : MotorAlignmentValue.Aligned));
         }
 
         position = motor.getPosition();
