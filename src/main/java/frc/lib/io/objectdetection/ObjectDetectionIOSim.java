@@ -9,18 +9,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.Units;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 
 /** An object detection sim class that utilizes the PhotonVision implementation for tests. */
 public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     private final VisionSystemSim visionSim;
-    private final PhotonCamera cam;
     private final PhotonCameraSim camSim;
     private final Supplier<Pose2d> robotPoseSupplier;
     private final Supplier<VisionTargetSim[]> visionTargetSupplier;
@@ -35,8 +34,7 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     {
         super(cameraProperties.name());
         this.target_name = target_name;
-        // Initialize simulated object detection camera
-        cam = new PhotonCamera(cameraProperties.name());
+
         var simCameraProperties = new SimCameraProperties();
         simCameraProperties.setCalibration(
             cameraProperties.resolutionWidth(),
@@ -44,7 +42,11 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
             cameraProperties.cameraMatrix(),
             cameraProperties.distCoeffs());
         simCameraProperties.setFPS(cameraProperties.fps());
-        camSim = new PhotonCameraSim(cam, simCameraProperties);
+        simCameraProperties.setAvgLatencyMs(cameraProperties.latency().in(Units.Milliseconds));  
+        simCameraProperties.setLatencyStdDevMs(cameraProperties.latencyStdDev().in(Units.Milliseconds));
+
+        camSim = new PhotonCameraSim(super.camera, simCameraProperties);
+
         // Wireframe visualizer for objects
         camSim.enableDrawWireframe(true);
         // Create a vision system sim and add the sim camera to it

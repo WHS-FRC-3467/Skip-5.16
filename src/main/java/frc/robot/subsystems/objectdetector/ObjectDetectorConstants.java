@@ -4,15 +4,25 @@
 
 package frc.robot.subsystems.objectdetector;
 
+import static edu.wpi.first.units.Units.Milliseconds;
 import java.io.IOException;
 import java.util.function.Supplier;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionTargetSim;
+
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Timer;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
@@ -46,10 +56,39 @@ public class ObjectDetectorConstants {
     public static final int CAMERA0_RESOLUTION_WIDTH = 1600;
     public static final int CAMERA0_RESOLUTION_HEIGHT = 1304;
 
+    public static final double CAMERA0_FOV = 55; // degrees, from Thrifty docs
+
+    // ThriftyCam Calibrations - // TODO: replace with actual camera calibration values
+    public static final Matrix<N3, N3> CAMERA0_MATRIX =
+        MatBuilder.fill(Nat.N3(), Nat.N3(),
+            2002.948392331919,
+            0.0,
+            783.9099067246102,
+            0.0,
+            1999.0390684862123,
+            662.7694019679813,
+            0.0,
+            0.0,
+            1.0);
+
+    public static final Vector<N8> CAMERA0_DIST_COEFFS = VecBuilder.fill(
+        0.09905119793103302,
+        -0.06388083628565337,
+        3.87402720846368E-5,
+        1.4421218015997156E-4,
+        -0.16329892957216433,
+        -0.004599206903333014,
+        0.0029050841273878885,
+        0.0067195798658376375);
+
+    // Performance
+    public static final double CAMERA0_FPS = 22;
+
     public static final double CAMERA0_STDDEV_FACTOR = 1.0;
 
-    public static final double CAMERA0_FOV = 55; // degrees, from Thrifty docs
-    public static final double CAMERA0_FPS = 22;
+    // Exposure 5 ms, USB 5 ms, detection 15 ms, scheduling 5 ms  
+    public static final Time CAMERA0_LATENCY = Milliseconds.of(30); 
+    public static final Time CAMERA0_LATENCY_STDDEV = Milliseconds.of(5);  
 
     public static final SimCameraProperties CAMERA0_CONFIG = getCameraProperties(
         "vision_configs/ttb_cam_0/ttb_cam_0", // TODO: Replace with object detection camera config path once there is one
@@ -63,7 +102,9 @@ public class ObjectDetectorConstants {
         } catch (IOException e) {
             // Invalid path? Use default Sim Camera Properties.
             e.printStackTrace();
-            return new SimCameraProperties();
+            SimCameraProperties config = new SimCameraProperties();
+            config.setCalibration(width, height, CAMERA0_MATRIX, CAMERA0_DIST_COEFFS);
+            return config;
         }
     }
 
@@ -77,7 +118,9 @@ public class ObjectDetectorConstants {
             CAMERA0_CONFIG.getResHeight(),
             CAMERA0_STDDEV_FACTOR,
             CAMERA0_FOV,
-            CAMERA0_FPS);
+            CAMERA0_FPS,
+            CAMERA0_LATENCY,
+            CAMERA0_LATENCY_STDDEV);
 
     // Object detection camera # 1
     // ...

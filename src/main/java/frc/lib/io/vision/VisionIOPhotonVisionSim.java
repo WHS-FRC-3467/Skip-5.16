@@ -17,6 +17,7 @@ package frc.lib.io.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.Units;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import java.util.function.Supplier;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -55,6 +56,8 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
             cameraProperties.cameraMatrix(),
             cameraProperties.distCoeffs());
         simCameraProperties.setFPS(cameraProperties.fps());
+        simCameraProperties.setAvgLatencyMs(cameraProperties.latency().in(Units.Milliseconds));  
+        simCameraProperties.setLatencyStdDevMs(cameraProperties.latencyStdDev().in(Units.Milliseconds));
 
         cameraSim = new PhotonCameraSim(super.photonCamera, simCameraProperties, fieldLayout);
         this.system.addCamera(cameraSim, cameraProperties.robotToCamera());

@@ -25,6 +25,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.io.vision.VisionIO;
@@ -41,8 +42,8 @@ import lombok.Getter;
 public class AprilTagCamera {
 
     /**
-     * Immutable set of properties describing the camera.
-     *
+     * Intrinsic & observed properties describing the camera.
+     * 
      * @param name Unique name for the camera
      * @param robotToCamera Transform from the robot frame to the camera frame
      * @param cameraMatrix Intrinsic camera matrix
@@ -50,6 +51,8 @@ public class AprilTagCamera {
      * @param resolutionWidth Camera resolution width in pixels
      * @param resolutionHeight Camera resolution height in pixels
      * @param stdDevFactor Standard deviation factor used in vision pose estimation
+     * @param latency Average latency of the camera (exposure -> network tables) in ms
+     * @param latencyStdDev Standard deviation of the camera latency in ms
      */
     public record CameraProperties(
         String name,
@@ -60,9 +63,10 @@ public class AprilTagCamera {
         int resolutionHeight,
         double stdDevFactor,
         double fovDegrees,
-        double fps) {
-    }
-
+        double fps,  
+        Time latency,  
+        Time latencyStdDev) {  
+    }  
     private final VisionIO io;
     private final VisionIOInputs inputs;
 
@@ -114,7 +118,9 @@ public class AprilTagCamera {
                 properties.resolutionHeight,
                 properties.stdDevFactor,
                 properties.fovDegrees,
-                properties.fps);
+                properties.fps,
+                properties.latency,
+                properties.latencyStdDev);
     }
 
     /**
