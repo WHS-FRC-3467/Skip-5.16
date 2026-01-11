@@ -58,7 +58,9 @@ public class AprilTagCamera {
         Matrix<N8, N1> distCoeffs,
         int resolutionWidth,
         int resolutionHeight,
-        double stdDevFactor) {
+        double stdDevFactor,
+        double fovDegrees,
+        double fps) {
     }
 
     private final VisionIO io;
@@ -110,7 +112,9 @@ public class AprilTagCamera {
                 distCoeffs,
                 properties.resolutionWidth,
                 properties.resolutionHeight,
-                properties.stdDevFactor);
+                properties.stdDevFactor,
+                properties.fovDegrees,
+                properties.fps);
     }
 
     /**

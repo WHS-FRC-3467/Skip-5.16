@@ -54,6 +54,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
             cameraProperties.resolutionHeight(),
             cameraProperties.cameraMatrix(),
             cameraProperties.distCoeffs());
+        simCameraProperties.setFPS(cameraProperties.fps());
 
         cameraSim = new PhotonCameraSim(super.photonCamera, simCameraProperties, fieldLayout);
         this.system.addCamera(cameraSim, cameraProperties.robotToCamera());

@@ -15,7 +15,9 @@
 
 package frc.robot.subsystems.vision;
 
+import java.io.IOException;
 import java.util.Optional;
+import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
@@ -105,25 +107,55 @@ public class VisionConstants {
     public static final double FRONT_LEFT_STDDEV_FACTOR = 1.0;
     public static final double FRONT_RIGHT_STDDEV_FACTOR = 1.0;
 
+    public static final double FRONT_LEFT_FOV = 55; // degrees, from Thrifty docs
+    public static final double FRONT_RIGHT_FOV = 55;
+
+    public static final double FRONT_LEFT_FPS = 22;
+    public static final double FRONT_RIGHT_FPS = 22;
+
+    public static final SimCameraProperties FRONT_LEFT_CONFIG = getCameraProperties(
+        "vision_configs/ttb_cam_0/ttb_cam_0",
+        FRONT_LEFT_RESOLUTION_WIDTH,
+        FRONT_LEFT_RESOLUTION_HEIGHT);
+
+    public static final SimCameraProperties FRONT_RIGHT_CONFIG = getCameraProperties(
+        "vision_configs/ttb_cam_1/ttb_cam_1",
+        FRONT_RIGHT_RESOLUTION_WIDTH,
+        FRONT_RIGHT_RESOLUTION_HEIGHT);
+
+    private static SimCameraProperties getCameraProperties(String path, int width, int height) {
+        try {
+            return new SimCameraProperties(path, width, height);
+        } catch (IOException e) {
+            // Invalid path? Use default Sim Camera Properties.
+            e.printStackTrace();
+            return new SimCameraProperties();
+        }
+    }
+
     public static final CameraProperties FRONT_LEFT =
         new CameraProperties(
             FRONT_LEFT_NAME,
             FRONT_LEFT_TRANSFORM,
-            FRONT_LEFT_MATRIX,
-            FRONT_LEFT_DIST_COEFFS,
-            FRONT_LEFT_RESOLUTION_WIDTH,
-            FRONT_LEFT_RESOLUTION_HEIGHT,
-            FRONT_LEFT_STDDEV_FACTOR);
+            FRONT_LEFT_CONFIG.getIntrinsics(),
+            FRONT_LEFT_CONFIG.getDistCoeffs(),
+            FRONT_LEFT_CONFIG.getResWidth(),
+            FRONT_LEFT_CONFIG.getResHeight(),
+            FRONT_LEFT_STDDEV_FACTOR,
+            FRONT_LEFT_FOV,
+            FRONT_LEFT_FPS);
 
     public static final CameraProperties FRONT_RIGHT =
         new CameraProperties(
             FRONT_RIGHT_NAME,
             FRONT_RIGHT_TRANSFORM,
-            FRONT_RIGHT_MATRIX,
-            FRONT_RIGHT_DIST_COEFFS,
-            FRONT_RIGHT_RESOLUTION_WIDTH,
-            FRONT_RIGHT_RESOLUTION_HEIGHT,
-            FRONT_RIGHT_STDDEV_FACTOR);
+            FRONT_RIGHT_CONFIG.getIntrinsics(),
+            FRONT_RIGHT_CONFIG.getDistCoeffs(),
+            FRONT_RIGHT_CONFIG.getResWidth(),
+            FRONT_RIGHT_CONFIG.getResHeight(),
+            FRONT_RIGHT_STDDEV_FACTOR,
+            FRONT_RIGHT_FOV,
+            FRONT_RIGHT_FPS);
 
     private static Optional<VisionSystemSim> visionSim = Optional.empty();
 

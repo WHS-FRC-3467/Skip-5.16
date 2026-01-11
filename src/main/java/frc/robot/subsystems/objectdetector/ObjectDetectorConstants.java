@@ -4,8 +4,10 @@
 
 package frc.robot.subsystems.objectdetector;
 
+import java.io.IOException;
 import java.util.function.Supplier;
 import org.photonvision.estimation.TargetModel;
+import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionTargetSim;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -13,6 +15,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Timer;
+import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.lib.io.objectdetection.*;
 import frc.robot.Constants;
 import frc.robot.RobotState;
@@ -39,6 +42,43 @@ public class ObjectDetectorConstants {
     public static Transform3d CAMERA0_TRANSFORM =
         new Transform3d(CAMERA0_X, CAMERA0_Y, CAMERA0_Z,
             new Rotation3d(CAMERA0_ROLL, CAMERA0_PITCH, CAMERA0_YAW));
+
+    public static final int CAMERA0_RESOLUTION_WIDTH = 1600;
+    public static final int CAMERA0_RESOLUTION_HEIGHT = 1304;
+
+    public static final double CAMERA0_STDDEV_FACTOR = 1.0;
+
+    public static final double CAMERA0_FOV = 55; // degrees, from Thrifty docs
+    public static final double CAMERA0_FPS = 22;
+
+    public static final SimCameraProperties CAMERA0_CONFIG = getCameraProperties(
+        "vision_configs/ttb_cam_0/ttb_cam_0", // TODO: Replace with object detection camera config path once there is one
+        CAMERA0_RESOLUTION_WIDTH,
+        CAMERA0_RESOLUTION_HEIGHT);
+
+
+    private static SimCameraProperties getCameraProperties(String path, int width, int height) {
+        try {
+            return new SimCameraProperties(path, width, height);
+        } catch (IOException e) {
+            // Invalid path? Use default Sim Camera Properties.
+            e.printStackTrace();
+            return new SimCameraProperties();
+        }
+    }
+
+    public static final CameraProperties CAMERA0 =
+        new CameraProperties(
+            CAMERA0_NAME,
+            CAMERA0_TRANSFORM,
+            CAMERA0_CONFIG.getIntrinsics(),
+            CAMERA0_CONFIG.getDistCoeffs(),
+            CAMERA0_CONFIG.getResWidth(),
+            CAMERA0_CONFIG.getResHeight(),
+            CAMERA0_STDDEV_FACTOR,
+            CAMERA0_FOV,
+            CAMERA0_FPS);
+
     // Object detection camera # 1
     // ...
 
@@ -83,7 +123,7 @@ public class ObjectDetectorConstants {
                 return new ObjectDetector(new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
             case SIM:
                 // Sim IO, inputs = sim implementation of ObjectionDetectionIO
-                return new ObjectDetector(new ObjectDetectionIOSim(CAMERA0_NAME, CAMERA0_TRANSFORM,
+                return new ObjectDetector(new ObjectDetectionIOSim(CAMERA0,
                     () -> robotState.getEstimatedPose(), SIM_NAME, visionTargetSimSupplier));
             case REPLAY:
                 // Replayed robot, use logged data for IO

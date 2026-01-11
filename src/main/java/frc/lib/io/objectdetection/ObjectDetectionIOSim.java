@@ -15,7 +15,7 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform3d;
+import frc.lib.devices.AprilTagCamera.CameraProperties;
 
 /** An object detection sim class that utilizes the PhotonVision implementation for tests. */
 public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
@@ -29,20 +29,27 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     private List<VisionTargetSim> targetList;
     private final String target_name;
 
-    public ObjectDetectionIOSim(String cameraName, Transform3d cameraTransform,
+    public ObjectDetectionIOSim(CameraProperties cameraProperties,
         Supplier<Pose2d> robotPoseSupplier,
         String target_name, Supplier<VisionTargetSim[]> visionTargetSupplier)
     {
-        super(cameraName);
+        super(cameraProperties.name());
         this.target_name = target_name;
         // Initialize simulated object detection camera
-        cam = new PhotonCamera(cameraName);
-        camSim = new PhotonCameraSim(cam, new SimCameraProperties());
+        cam = new PhotonCamera(cameraProperties.name());
+        var simCameraProperties = new SimCameraProperties();
+        simCameraProperties.setCalibration(
+            cameraProperties.resolutionWidth(),
+            cameraProperties.resolutionHeight(),
+            cameraProperties.cameraMatrix(),
+            cameraProperties.distCoeffs());
+        simCameraProperties.setFPS(cameraProperties.fps());
+        camSim = new PhotonCameraSim(cam, simCameraProperties);
         // Wireframe visualizer for objects
         camSim.enableDrawWireframe(true);
         // Create a vision system sim and add the sim camera to it
         visionSim = new VisionSystemSim("objectDetection");
-        visionSim.addCamera(camSim, cameraTransform);
+        visionSim.addCamera(camSim, cameraProperties.robotToCamera());
         // Suppliers for dynamic sim object position updates
         this.robotPoseSupplier = robotPoseSupplier;
         this.visionTargetSupplier = visionTargetSupplier;
