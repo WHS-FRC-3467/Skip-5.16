@@ -45,7 +45,7 @@ public class LightsIOCandle implements LightsIO {
     {
         this.name = name;
 
-        candle = new CANdle(id.id(), id.bus());
+        candle = new CANdle(id.id(), id.canBus());
 
         updateThread.CTRECheckErrorAndRetry(() -> candle.getConfigurator().apply(config));
     }

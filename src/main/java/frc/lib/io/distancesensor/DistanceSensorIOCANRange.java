@@ -49,7 +49,7 @@ public class DistanceSensorIOCANRange implements DistanceSensorIO {
     {
         this.name = name;
 
-        CANRange = new CANrange(id.id(), id.bus());
+        CANRange = new CANrange(id.id(), id.canBus());
 
         updateThread.CTRECheckErrorAndRetry(() -> CANRange.getConfigurator().apply(config));
 

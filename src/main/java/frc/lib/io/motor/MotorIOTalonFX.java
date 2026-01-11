@@ -88,7 +88,7 @@ public class MotorIOTalonFX implements MotorIO {
         TalonFXFollower... followerData)
     {
 
-        motor = new TalonFX(main.id(), main.bus());
+        motor = new TalonFX(main.id(), main.canBus());
         updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config));
 
         // Initialize lists
@@ -105,7 +105,7 @@ public class MotorIOTalonFX implements MotorIO {
                 followerOnWrongBusAlert[i].set(true);
             }
 
-            followers[i] = new TalonFX(id.id(), id.bus());
+            followers[i] = new TalonFX(id.id(), id.canBus());
 
             TalonFX follower = followers[i];
             updateThread.CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config));

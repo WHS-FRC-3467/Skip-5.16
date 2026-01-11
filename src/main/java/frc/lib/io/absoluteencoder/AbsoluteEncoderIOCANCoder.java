@@ -39,7 +39,7 @@ public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
         CANcoderConfiguration configuration)
     {
         this.name = name;
-        CANCoder = new CANcoder(id.id(), id.bus());
+        CANCoder = new CANcoder(id.id(), id.canBus());
 
         updateThread.CTRECheckErrorAndRetry(() -> CANCoder.getConfigurator().apply(configuration));
 
