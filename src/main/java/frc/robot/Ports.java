@@ -27,7 +27,6 @@ public class Ports {
      * LIST OF CHANNEL AND CAN IDS
      */
 
-    public static final CANBus RIO_CAN_BUS = CANBus.roboRIO();
     public static final CANBus CANIVORE_CAN_BUS = new CANBus("canivore", "./logs/example.hoot");
 
     public static final Device.CAN laserCAN1 = new CAN(0, "rio");
