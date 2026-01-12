@@ -92,6 +92,7 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
             PIDSlot.SLOT_0);
     }
 
+    @SuppressWarnings("unused")
     private Command indexerIntake()
     {
         return Commands.startEnd(this::runIndexer, this::stopIndexer)

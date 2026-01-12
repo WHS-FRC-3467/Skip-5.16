@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
@@ -88,7 +89,7 @@ public class MotorIOTalonFX implements MotorIO {
         TalonFXFollower... followerData)
     {
 
-        motor = new TalonFX(main.id(), main.bus());
+        motor = new TalonFX(main.id(), new CANBus(main.bus()));
         updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config));
 
         // Initialize lists
@@ -105,7 +106,7 @@ public class MotorIOTalonFX implements MotorIO {
                 followerOnWrongBusAlert[i].set(true);
             }
 
-            followers[i] = new TalonFX(id.id(), id.bus());
+            followers[i] = new TalonFX(id.id(), new CANBus(id.bus()));
 
             TalonFX follower = followers[i];
             updateThread.CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config));
