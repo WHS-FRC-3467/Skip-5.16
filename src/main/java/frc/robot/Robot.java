@@ -51,6 +51,8 @@ public class Robot extends LoggedRobot {
     private Command autonomousCommand;
     private RobotContainer robotContainer;
 
+    SimFuel simFuel;
+
     public Robot() {
         CanBridge.runTCP(); // Used for configuring LaserCANs via Grapplehook
 
@@ -231,11 +233,12 @@ public class Robot extends LoggedRobot {
     /** This function is called once when the robot is first started up. */
     @Override
     public void simulationInit() {
-        SimFuel simFuel = new SimFuel();
+        simFuel = new SimFuel();
     }
 
     /** This function is called periodically whilst in simulation. */
     @Override
     public void simulationPeriodic() {
+        simFuel.checkCollisions(() -> RobotState.getInstance().getEstimatedPose());
     }
 }

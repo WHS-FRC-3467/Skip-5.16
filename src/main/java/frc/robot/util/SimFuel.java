@@ -5,12 +5,13 @@
 package frc.robot.util;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import frc.lib.util.LoggedTunableNumber;
 import frc.robot.FieldConstants;
 
 import static edu.wpi.first.units.Units.Meters;
@@ -19,7 +20,9 @@ import java.util.ArrayList;
 
 public class SimFuel {
 
-    public LoggedTunableNumber fuelStored = new LoggedTunableNumber("Sim/Fuel Stored", 8);
+    private Pose2d robotPose;
+
+    public int fuelStored = 8;
 
     public List<Pose3d> depotFuel = new ArrayList<>();
 
@@ -31,6 +34,22 @@ public class SimFuel {
                 depotFuel.add(new Pose3d(x, y, FieldConstants.FUEL_DIAMETER.in(Meters)/2, new Rotation3d()));
             }
         }
+        Logger.recordOutput("Sim/Stored Fuel",  fuelStored);
+        Logger.recordOutput("Sim/Depot Fuel", depotFuel.toArray(new Pose3d[0]));
+    }
+
+    public void checkCollisions(Supplier<Pose2d> robotPose) {
+        this.robotPose = robotPose.get();
+        List<Pose3d> toRemove = new ArrayList<>();
+        for (Pose3d fuelPose : depotFuel) {
+            double distance = this.robotPose.getTranslation().getDistance(fuelPose.toPose2d().getTranslation());
+            if (distance < FieldConstants.FUEL_DIAMETER.in(Meters)) {
+                toRemove.add(fuelPose);
+                fuelStored++;
+            }
+        }
+        depotFuel.removeAll(toRemove);
+        Logger.recordOutput("Sim/Stored Fuel",  fuelStored);
         Logger.recordOutput("Sim/Depot Fuel", depotFuel.toArray(new Pose3d[0]));
     }
 }
