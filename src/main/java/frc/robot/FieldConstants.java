@@ -52,4 +52,10 @@ public class FieldConstants {
     public static final Distance FUEL_DIAMETER = Inches.of(5.91);
     public static final Mass FUEL_WEIGHT = Pounds.of(0.474);
 
+    public static final Pose3d DEPOT_FIRST_BALL = new Pose3d(
+        FUEL_DIAMETER.div(2),
+        FIELD_WIDTH.div(2).plus(Inches.of(75.93)).minus(FUEL_DIAMETER.times(2.5)),
+        FUEL_DIAMETER.div(2),
+        new Rotation3d());
+
 }
