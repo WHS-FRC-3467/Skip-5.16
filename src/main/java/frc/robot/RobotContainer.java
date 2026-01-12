@@ -73,6 +73,8 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
@@ -126,6 +128,7 @@ public class RobotContainer {
     private final ObjectDetector objectDetector;
     private final Superstructure superstructure;
     private final TurretSuperstructure turret;
+    private final Intake intake;
 
     // Controller
     private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
@@ -150,6 +153,7 @@ public class RobotContainer {
         servo1 = Servo1Constants.get();
         objectDetector = ObjectDetectorConstants.get();
         turret = TurretSuperstructureConstants.get();
+        intake = IntakeConstants.get();
         VisionConstants.create();
 
         conditionalChooser = new LoggedDashboardChooser<>("Conditional Choice");
@@ -232,6 +236,11 @@ public class RobotContainer {
                 new Pose2d(1, 4, Rotation2d.kZero),
                 PathConstants.ON_THE_FLY_PATH_CONSTRAINTS, MetersPerSecond.of(0.0),
                 PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
+
+        // Left Bumper: Intake while held
+        controller.leftBumper().onTrue(intake.intake()).onFalse(intake.stop());
+        // Back Button: Eject while held
+        controller.back().onTrue(intake.eject()).onFalse(intake.stop());
 
         // On-the-fly path with waypoints while the Right Bumper is held
         controller.rightBumper().whileTrue(
