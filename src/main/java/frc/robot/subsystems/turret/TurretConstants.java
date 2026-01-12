@@ -54,8 +54,8 @@ public class TurretConstants {
     private static final double ROTOR_TO_SENSOR = (50.0 / 1.0);
     private static final double SENSOR_TO_MECHANISM = 1.0;
 
-    public static final Angle MIN_ANGLE = Degrees.of(-90.0);
-    public static final Angle MAX_ANGLE = Degrees.of(90.0);
+    public static final Angle MIN_ANGLE = Degrees.of(0.0);
+    public static final Angle MAX_ANGLE = Degrees.of(180.0);
     public static final Angle STARTING_ANGLE = Radians.zero();
     public static final Distance ARM_LENGTH = Foot.one();
 

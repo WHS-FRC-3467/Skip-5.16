@@ -131,19 +131,21 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
             .run(() -> setTurretPosition(Radians.of(robotRelativeHeading.get().getRadians())));
     }
 
-    private Command moveTurretFieldRelative(
-        Drive drive,
-        Double xSupplier,
-        Double ySupplier,
-        Supplier<Rotation2d> fieldRelativeHeadingSupplier)
-    {
-        return Commands.parallel(
-            DriveCommands.joystickDriveAtAngle(drive, xSupplier, ySupplier,
-                fieldRelativeHeadingSupplier),
-            moveTurretRobotRelative(
-                () -> fieldRelativeHeadingSupplier.get()
-                    .plus(robotState.getRotation().unaryMinus())));
-    }
+    // MJW: When handling the drivebase we should refrain from modifying the command outside of robot container.
+    // we should repurpose this in Robot container
+    // private Command moveTurretFieldRelative(
+    //     Drive drive,
+    //     Double xSupplier,
+    //     Double ySupplier,
+    //     Supplier<Rotation2d> fieldRelativeHeadingSupplier)
+    // {
+    //     return Commands.parallel(
+    //         DriveCommands.joystickDriveAtAngle(drive, xSupplier, ySupplier,
+    //             fieldRelativeHeadingSupplier),
+    //         moveTurretRobotRelative(
+    //             () -> fieldRelativeHeadingSupplier.get()
+    //                 .plus(robotState.getRotation().unaryMinus())));
+    // }
 
     // Hood
 
@@ -157,10 +159,7 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
         return hoodIO.nearGoal(angle, HoodConstants.TOLERANCE);
     }
 
-    public Command shoot(
-        Drive drive,
-        Double xPosition,
-        Double yPosition)
+    public Command shoot()
     {
         Supplier<Pose2d> futurePoseSupplier = () -> robotState.getEstimatedPose()
             .exp(robotState.getFieldRelativeVelocity().toTwist2d(timeToBeReady.get()));
@@ -172,10 +171,7 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
 
         return Commands.sequence(
             Commands.parallel(
-                moveTurretFieldRelative(
-                    drive,
-                    robotState.getEstimatedPose().getX(),
-                    robotState.getEstimatedPose().getY(),
+                moveTurretRobotRelative(
                     () -> SHOOT_GOAL.minus(futurePoseSupplier.get()).getRotation()),
                 Commands.run(() -> spinFlywheel(flywheelVelocitySupplier.get())),
                 Commands.run(() -> setHoodPosition(hoodSupplier.get())),
@@ -196,6 +192,20 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
                 )));
                 //() -> 
             //spinFlywheel(RotationsPerSecond.zero())));
+    }
+
+    // Create commands for simple shooter tasks.
+    // Set Hood Position
+    public Command setHoodAngle(Angle angle){
+        return Commands.runOnce(() -> setHoodPosition(angle));
+    }
+    // Set Shooter Speed
+    public Command setFlyWheelSpeed(AngularVelocity velocity) {
+        return Commands.runOnce(() -> spinFlywheel(velocity));
+    }
+    // Set Turret Angle
+    public Command setTurretAngle(Angle angle){
+        return Commands.runOnce(() -> setTurretPosition(angle));
     }
 
     @Override

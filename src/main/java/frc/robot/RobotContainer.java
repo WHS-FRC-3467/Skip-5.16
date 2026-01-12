@@ -282,7 +282,7 @@ public class RobotContainer {
 
         // Right bumper: Shoot on the Move
         controller.rightBumper().whileTrue(
-            turret.shoot(drive, () -> -controller.getLeftX(), () -> -controller.getLeftY()));
+            turret.shoot());
 
         inAllianceRegionTrigger.onTrue(
             Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", true))
