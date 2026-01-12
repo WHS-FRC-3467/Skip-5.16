@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -30,8 +30,8 @@ import java.util.Queue;
 /** IO implementation for Pigeon 2. */
 public class GyroIOPigeon2 implements GyroIO {
     private final Pigeon2 pigeon = new Pigeon2(
-            DriveConstants.drivetrainConstants.Pigeon2Id,
-            DriveConstants.kCANBus);
+        DriveConstants.drivetrainConstants.Pigeon2Id,
+        DriveConstants.kCANBus);
     private final StatusSignal<Angle> yaw = pigeon.getYaw();
     private final Queue<Double> yawPositionQueue;
     private final Queue<Double> yawTimestampQueue;
@@ -39,7 +39,8 @@ public class GyroIOPigeon2 implements GyroIO {
     private final StatusSignal<LinearAcceleration> accelerationX = pigeon.getAccelerationX();
     private final StatusSignal<LinearAcceleration> accelerationY = pigeon.getAccelerationY();
 
-    public GyroIOPigeon2() {
+    public GyroIOPigeon2()
+    {
         pigeon.getConfigurator().apply(new Pigeon2Configuration());
         pigeon.getConfigurator().setYaw(0.0);
         yaw.setUpdateFrequency(Drive.ODOMETRY_FREQUENCY);
@@ -52,27 +53,32 @@ public class GyroIOPigeon2 implements GyroIO {
     }
 
     @Override
-    public void updateInputs(GyroIOInputs inputs) {
-        inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity, accelerationX, accelerationY)
+    public void updateInputs(GyroIOInputs inputs)
+    {
+        inputs.connected =
+            BaseStatusSignal.refreshAll(yaw, yawVelocity, accelerationX, accelerationY)
                 .equals(StatusCode.OK);
         inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
         inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
 
-        inputs.odometryYawTimestamps = yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+        inputs.odometryYawTimestamps =
+            yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
         inputs.odometryYawPositions = yawPositionQueue.stream()
-                .map((Double value) -> Rotation2d.fromDegrees(value))
-                .toArray(Rotation2d[]::new);
+            .map((Double value) -> Rotation2d.fromDegrees(value))
+            .toArray(Rotation2d[]::new);
         yawTimestampQueue.clear();
         yawPositionQueue.clear();
     }
 
     @Override
-    public double getAccelerationX() {
+    public double getAccelerationX()
+    {
         return pigeon.getAccelerationX().getValueAsDouble();
     }
 
     @Override
-    public double getAccelerationY() {
+    public double getAccelerationY()
+    {
         return pigeon.getAccelerationY().getValueAsDouble();
     }
 }
