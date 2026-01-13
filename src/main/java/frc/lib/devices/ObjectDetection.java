@@ -1,6 +1,17 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/*
+ * Copyright (C) 2025 Windham Windup
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
+ */
 
 package frc.lib.devices;
 
@@ -17,21 +28,22 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 /**
- * Device level implementation of an object detection camera. While the IO layer is responsible for
+ * Device level implementation of an Object Detection camera. While the IO layer is responsible for
  * defining the variables of interest coming from our camera, the device layer is responsible for
  * periodically polling that IO and performing relevant calculations on the return results to
- * generate data for the robot to make decisions.
+ * generate data for the robot to make decisions. Note that this device shares its real IO layer 
+ * with ColorDetection. 
  */
 public class ObjectDetection {
-    // Placeholder for concrete implementation of ObjectDetectionIO.
+    // IO implementation of ObjectDetectionIO
     private final ObjectDetectionIO io;
-    // DetectionMLIOInputs (e.g. skew, yaw, objID, etc.) from the AutoLog file.
     private final ObjectDetectionIOInputs inputs =
         new ObjectDetectionIOInputs();
 
     /*
      * Interface as a data type allows ObjectDetection to accept various implementations of
      * ObjectDetectionIO (e.g. ObjectDetectionIOPhotonVision or ObjectDetectionIOLimelight).
+     * Currently factored for PhotonVision only.
      */
     public ObjectDetection(ObjectDetectionIO io)
     {

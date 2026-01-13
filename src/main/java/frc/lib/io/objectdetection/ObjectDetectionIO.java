@@ -21,7 +21,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * Standardized interface for ObjectDetection-IO used in FRC. This interface is often implemented
- * through an ML pipeline.
+ * through an ML pipeline. Currently factored for PhotonVision only.
  */
 public interface ObjectDetectionIO {
 
