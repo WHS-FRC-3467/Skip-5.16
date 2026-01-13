@@ -29,11 +29,9 @@ import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.visionprocessors.LowestAmbiguity;
 import frc.lib.posestimator.visionprocessors.MultiTagOnCoproc;
-import frc.lib.posestimator.visionprocessors.TrigSolve;
 import frc.lib.posestimator.visionprocessors.VisionProcessor.VisionPoseRecord;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
-import frc.robot.RobotState.TrigPoseRecord;
 
 /**
  * The {@code VisionSubsystem} manages all vision-related processing for the robot.
@@ -167,21 +165,6 @@ public class VisionSubsystem extends SubsystemBase {
                     rejectedResults.add(result);
                     continue;
                 }
-
-                result.targets.forEach(target -> {
-                    Pose2d pose = TrigSolve.solveTrigPosition(FieldConstants.APRILTAG_LAYOUT,
-                        camera.getProperties(), target, heading).orElse(null);
-                    if (pose == null || !postFilter(new Pose3d(pose))) {
-                        return;
-                    }
-
-                    robotState.addTrigPose(
-                        target.getFiducialId(),
-                        new TrigPoseRecord(
-                            pose,
-                            target.getBestCameraToTarget().getTranslation().getNorm(),
-                            result.getTimestampSeconds()));
-                });
 
                 VisionPoseRecord poseRecord = visionProcessor.processVisionObservation(
                     result,
