@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -24,50 +24,50 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class LoggedTriggerTest {
-    
+
     private boolean conditionValue = false;
-    
+
     @BeforeEach
     void setup()
     {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
     }
-    
+
     @AfterEach
     void shutdown()
     {
         // Cleanup if needed
     }
-    
+
     @Test
     void testTriggerBehavior()
     {
         // Create a LoggedTrigger with a simple condition
         LoggedTrigger trigger = new LoggedTrigger("Test/Trigger", () -> conditionValue);
-        
+
         // Initially the condition is false
         assertFalse(trigger.getAsBoolean());
-        
+
         // Change the condition to true
         conditionValue = true;
         assertTrue(trigger.getAsBoolean());
-        
+
         // Change back to false
         conditionValue = false;
         assertFalse(trigger.getAsBoolean());
     }
-    
+
     @Test
     void testMultiplePolls()
     {
         // Create a LoggedTrigger
         LoggedTrigger trigger = new LoggedTrigger("Test/MultiPoll", () -> conditionValue);
-        
+
         // Poll multiple times with same value - should work correctly
         assertFalse(trigger.getAsBoolean());
         assertFalse(trigger.getAsBoolean());
         assertFalse(trigger.getAsBoolean());
-        
+
         // Change state
         conditionValue = true;
         assertTrue(trigger.getAsBoolean());
