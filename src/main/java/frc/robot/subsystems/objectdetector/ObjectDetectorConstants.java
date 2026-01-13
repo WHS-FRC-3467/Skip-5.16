@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.objectdetector;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
 import java.io.IOException;
 import java.util.function.Supplier;
@@ -38,10 +39,10 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectDetectorConstants {
-    // Camera constants
+    // Object detection camera #0
+    // Extrinsics
     // Transform sign convention: +X -> towards other alliance's station, +Y -> towards center of
     // field from starting starboard edge, +theta -> right-hand rule. units: meters & degrees.
-    // Object detection camera # 0
     public static final String CAMERA0_NAME = "Detection Camera #0";
     public static final Angle CAMERA0_ROLL = Units.Degrees.of(0.0);
     public static final Angle CAMERA0_PITCH = Units.Degrees.of(25.0);
@@ -49,16 +50,17 @@ public class ObjectDetectorConstants {
     public static final double CAMERA0_X = 0.30;
     public static final double CAMERA0_Y = -0.30;
     public static final double CAMERA0_Z = 1.0;
-    public static Transform3d CAMERA0_TRANSFORM =
+    public static final Transform3d CAMERA0_TRANSFORM =
         new Transform3d(CAMERA0_X, CAMERA0_Y, CAMERA0_Z,
             new Rotation3d(CAMERA0_ROLL, CAMERA0_PITCH, CAMERA0_YAW));
 
+    // Intrinsics
     public static final int CAMERA0_RESOLUTION_WIDTH = 1600;
     public static final int CAMERA0_RESOLUTION_HEIGHT = 1304;
 
-    public static final double CAMERA0_FOV = 55; // degrees, from Thrifty docs
+    public static final Angle CAMERA0_FOV = Degrees.of(55); // from Thrifty docs
 
-    // ThriftyCam Calibrations - // TODO: replace with actual camera calibration values
+    // ThriftyCam Default Calibrations // TODO: Replace with actual ML camera calibration values
     public static final Matrix<N3, N3> CAMERA0_MATRIX =
         MatBuilder.fill(Nat.N3(), Nat.N3(),
             2002.948392331919,
@@ -88,24 +90,26 @@ public class ObjectDetectorConstants {
 
     // Exposure 5 ms, USB 5 ms, detection 15 ms, scheduling 5 ms  
     public static final Time CAMERA0_LATENCY = Milliseconds.of(30); 
+    
     public static final Time CAMERA0_LATENCY_STDDEV = Milliseconds.of(5);  
 
     public static final SimCameraProperties CAMERA0_CONFIG = getCameraProperties(
-        "vision_configs/ttb_cam_0/ttb_cam_0", // TODO: Replace with object detection camera config path once there is one
+        "vision_configs/ttb_cam_0/ttb_cam_0", // TODO: Replace with ML camera config path 
         CAMERA0_RESOLUTION_WIDTH,
         CAMERA0_RESOLUTION_HEIGHT);
 
-
+    // Private helper method returning camera intrinsics from JSON calibration path
     private static SimCameraProperties getCameraProperties(String path, int width, int height) {
+        SimCameraProperties config;
         try {
-            return new SimCameraProperties(path, width, height);
+            config = new SimCameraProperties(path, width, height);
         } catch (IOException e) {
-            // Invalid path? Use default Sim Camera Properties.
+            // Invalid path? Default to reasonable values. Currently factored for only one ML camera.
             e.printStackTrace();
-            SimCameraProperties config = new SimCameraProperties();
+            config = new SimCameraProperties();
             config.setCalibration(width, height, CAMERA0_MATRIX, CAMERA0_DIST_COEFFS);
-            return config;
         }
+        return config;
     }
 
     public static final CameraProperties CAMERA0 =
@@ -122,10 +126,7 @@ public class ObjectDetectorConstants {
             CAMERA0_LATENCY,
             CAMERA0_LATENCY_STDDEV);
 
-    // Object detection camera # 1
-    // ...
-
-    // Sim constants
+    // Target constants // TODO: Refactor these names when 2026 targets are included
     // 2025 Simulated Algae Targets
     public final static String SIM_NAME = "Algae";
     public final static double algaeHeightMeters = 0.41;
