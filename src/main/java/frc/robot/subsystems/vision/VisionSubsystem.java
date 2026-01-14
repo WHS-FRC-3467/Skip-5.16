@@ -178,11 +178,14 @@ public class VisionSubsystem extends SubsystemBase {
 
                 if (result.multitagResult.isPresent()) {
                     estPose = poseEstimators[c].estimateCoprocMultiTagPose(result);
+                    Logger.recordOutput(cameraLogPrefix + "/StrategyUsed", "CoprocMultiTagPose"); //TODO: remove after testing
                     if (estPose.isEmpty()) {
                         estPose = poseEstimators[c].estimateLowestAmbiguityPose(result);
+                        Logger.recordOutput(cameraLogPrefix + "/StrategyUsed", "LowestAmbiguity"); //TODO: remove after testing
                     }
                 } else {
                     estPose = poseEstimators[c].estimateLowestAmbiguityPose(result);
+                    Logger.recordOutput(cameraLogPrefix + "/StrategyUsed", "LowestAmbiguity"); //TODO: remove after testing
                 }
 
                 if (estPose.isEmpty()) {
@@ -255,6 +258,8 @@ public class VisionSubsystem extends SubsystemBase {
                     cameraLogPrefix + "/Results/Rejected/" + i,
                     rejectedPoses.get(i));
             }
+
+            
         }
     }
 
