@@ -166,14 +166,6 @@ public class VisionSubsystem extends SubsystemBase {
                     continue;
                 }
 
-                Rotation2d heading = robotState.getPoseAtTime(result.getTimestampSeconds())
-                    .map(Pose2d::getRotation).orElse(null);
-                if (heading == null) {
-                    rejectedResults.add(result);
-                    continue;
-                }
-
-                VisionPoseRecord poseRecord = null;
                 Optional<EstimatedRobotPose> estPose = null;
 
                 if (result.multitagResult.isPresent()) {
@@ -193,8 +185,8 @@ public class VisionSubsystem extends SubsystemBase {
                     continue;
                 }
 
-                poseRecord = new VisionPoseRecord(
-                    estPose.get().estimatedPose, 
+                VisionPoseRecord poseRecord = new VisionPoseRecord(
+                    estPose.get().estimatedPose,
                     getTagsUsed(estPose.get().targetsUsed), 
                     getAvgDistanceMeters(estPose.get().targetsUsed));
 
