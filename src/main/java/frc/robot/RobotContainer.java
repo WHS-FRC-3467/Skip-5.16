@@ -284,6 +284,9 @@ public class RobotContainer {
         controller.rightBumper().whileTrue(
             turret.shoot());
 
+        SmartDashboard.putData("Wilks Dumb Command", Commands
+            .runOnce(() -> turret.shoot()));
+
         inAllianceRegionTrigger.onTrue(
             Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", true))
                 .ignoringDisable(true));
