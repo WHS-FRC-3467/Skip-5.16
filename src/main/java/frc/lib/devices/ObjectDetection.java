@@ -317,6 +317,8 @@ public class ObjectDetection {
         }
     }
 
+    public void assistedIntake() {}
+
     /*
      * Return whether the camera is connected.
      */
