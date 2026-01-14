@@ -247,7 +247,7 @@ public class VisionSubsystem extends SubsystemBase {
                 rejectedPoses.size());
             for (int i = 0; i < rejectedPoses.size(); i++) {
                 Logger.recordOutput(
-                    cameraLogPrefix + "/Results/Rejected/" + i,
+                    cameraLogPrefix + "/Poses/Rejected/" + i,
                     rejectedPoses.get(i));
             }
 
