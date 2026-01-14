@@ -27,6 +27,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
@@ -38,6 +39,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.lib.commands.AlignToPoseBase;
 import frc.lib.commands.DriveToPoseBase;
 import frc.lib.commands.SteppableCommandGroup;
 import frc.lib.commands.AlignToPoseBase.AlignMode;
@@ -217,6 +219,8 @@ public class RobotContainer {
         // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Reset gyro to 0° when B button is pressed
+
+
         controller
             .b()
             .onTrue(
@@ -225,6 +229,21 @@ public class RobotContainer {
                         new Pose2d(robotState.getEstimatedPose().getTranslation(),
                             new Rotation2d())))
                     .ignoringDisable(true));
+        controller
+            .x()
+            .whileTrue(
+
+                new AlignToPose(drive,
+                    () -> new Pose2d(
+                    0.0
+                    ,
+                        ((robotState.getEstimatedPose().getY() > 4.0) ? 7.4 : 0.6)
+    
+                    , (Math.abs(robotState.getEstimatedPose().getRotation().getDegrees())
+                        - 90.0 < 0) ? Rotation2d.kZero : Rotation2d.k180deg),
+                    AlignToPoseBase.AlignMode.APPROACH,
+                    () -> -controller.getLeftY()));
+
 
         // Pathfind to Pose when the Y button is pressed
         controller.y().onTrue(
