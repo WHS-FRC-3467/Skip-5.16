@@ -229,17 +229,18 @@ public class RobotContainer {
                         new Pose2d(robotState.getEstimatedPose().getTranslation(),
                             new Rotation2d())))
                     .ignoringDisable(true));
+
+        // X button: Align squarely to trench center while held
         controller
             .x()
             .whileTrue(
-
                 new AlignToPose(drive,
                     () -> new Pose2d(
-                    0.0
-                    ,
-                        ((robotState.getEstimatedPose().getY() > 4.0) ? 7.4 : 0.6)
-    
-                    , (Math.abs(robotState.getEstimatedPose().getRotation().getDegrees())
+                        0.0, // no need for x-coordinate, driver will be controlling approach across the trench
+                        ((robotState.getEstimatedPose().getY() > FieldConstants.FIELD_WIDTH.div(2).in(Meters)) 
+                        ? FieldConstants.TRENCH_CENTER_Y_COORDINATES.get(0).in(Meters) 
+                        : FieldConstants.TRENCH_CENTER_Y_COORDINATES.get(1).in(Meters)),
+                    (Math.abs(robotState.getEstimatedPose().getRotation().getDegrees())
                         - 90.0 < 0) ? Rotation2d.kZero : Rotation2d.k180deg),
                     AlignToPoseBase.AlignMode.APPROACH,
                     () -> -controller.getLeftY()));

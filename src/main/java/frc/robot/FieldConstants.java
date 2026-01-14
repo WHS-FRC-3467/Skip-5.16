@@ -33,6 +33,12 @@ public class FieldConstants {
 
     public static final Distance ALGAE_DIAMETER = Meters.of(.41);
 
+    public static final List<Distance> TRENCH_CENTER_Y_COORDINATES = 
+        List.of(
+            FIELD_WIDTH.div(2).plus(Meters.of(3.4)),
+            FIELD_WIDTH.div(2).minus(Meters.of(3.4))
+    );
+
     public static final List<Translation2d> ALLIANCE_STATION_POLYGON =
         List.of(
             new Translation2d(0, 0),
