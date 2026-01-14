@@ -25,6 +25,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.io.vision.VisionIO;
@@ -41,8 +43,8 @@ import lombok.Getter;
 public class AprilTagCamera {
 
     /**
-     * Immutable set of properties describing the camera.
-     *
+     * Intrinsic & observed properties describing the camera.
+     * 
      * @param name Unique name for the camera
      * @param robotToCamera Transform from the robot frame to the camera frame
      * @param cameraMatrix Intrinsic camera matrix
@@ -50,6 +52,10 @@ public class AprilTagCamera {
      * @param resolutionWidth Camera resolution width in pixels
      * @param resolutionHeight Camera resolution height in pixels
      * @param stdDevFactor Standard deviation factor used in vision pose estimation
+     * @param fov Estimated FOV of camera
+     * @param fps Estimate FPS of camera
+     * @param latency Average latency of the camera (exposure -> network tables) 
+     * @param latencyStdDev Standard deviation of the camera latency 
      */
     public record CameraProperties(
         String name,
@@ -58,9 +64,12 @@ public class AprilTagCamera {
         Matrix<N8, N1> distCoeffs,
         int resolutionWidth,
         int resolutionHeight,
-        double stdDevFactor) {
-    }
-
+        double stdDevFactor,
+        Angle fov,
+        double fps,  
+        Time latency,  
+        Time latencyStdDev) {  
+    }  
     private final VisionIO io;
     private final VisionIOInputs inputs;
 
@@ -92,25 +101,29 @@ public class AprilTagCamera {
         inputs = new VisionIOInputs(properties.cameraMatrix(), properties.distCoeffs());
 
         // Get camera intrinsics from inputs to potentially pull from log if replaying
-        Logger.processInputs(properties.name, inputs);
+        Logger.processInputs(properties.name(), inputs);
 
         Matrix<N3, N3> cameraMatrix = MatBuilder.fill(Nat.N3(), Nat.N3(), inputs.cameraMatrix);
         Matrix<N8, N1> distCoeffs = MatBuilder.fill(Nat.N8(), Nat.N1(), inputs.distCoeffs);
 
-        if (!cameraMatrix.equals(properties.cameraMatrix)
-            || !distCoeffs.equals(properties.distCoeffs)) {
+        if (!cameraMatrix.equals(properties.cameraMatrix())
+            || !distCoeffs.equals(properties.distCoeffs())) {
             mismatchedIntrinsicsAlert.set(true);
         }
 
         this.properties =
             new CameraProperties(
-                properties.name,
-                properties.robotToCamera,
+                properties.name(),
+                properties.robotToCamera(),
                 cameraMatrix,
                 distCoeffs,
-                properties.resolutionWidth,
-                properties.resolutionHeight,
-                properties.stdDevFactor);
+                properties.resolutionWidth(),
+                properties.resolutionHeight(),
+                properties.stdDevFactor(),
+                properties.fov(),
+                properties.fps(),
+                properties.latency(),
+                properties.latencyStdDev());
     }
 
     /**
