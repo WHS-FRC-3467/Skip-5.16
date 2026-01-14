@@ -17,8 +17,11 @@ package frc.robot.subsystems.vision;
 
 import static edu.wpi.first.units.Units.Meters;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,9 +30,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
-import frc.lib.posestimator.visionprocessors.LowestAmbiguity;
-import frc.lib.posestimator.visionprocessors.MultiTagOnCoproc;
-import frc.lib.posestimator.visionprocessors.VisionProcessor.VisionPoseRecord;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 
@@ -70,6 +70,12 @@ public class VisionSubsystem extends SubsystemBase {
 
     /** Length of the field in meters. */
     public static final double FIELD_LENGTH = FieldConstants.FIELD_LENGTH.in(Meters);
+
+    public static final record VisionPoseRecord(
+        Pose3d pose,
+        List<Integer> tagsUsed,
+        double averageDistanceMeters) {
+    }
 
     /**
      * Quickly checks whether a {@link PhotonPipelineResult} is likely to be useful before full
@@ -120,12 +126,7 @@ public class VisionSubsystem extends SubsystemBase {
 
     private final RobotState robotState = RobotState.getInstance();
     private final AprilTagCamera[] cameras;
-    private final LowestAmbiguity fallbackVisionProcessor =
-        new LowestAmbiguity(FieldConstants.APRILTAG_LAYOUT);
-    private final MultiTagOnCoproc visionProcessor =
-        new MultiTagOnCoproc(
-            Optional.of(fallbackVisionProcessor),
-            FieldConstants.APRILTAG_LAYOUT);
+    private final PhotonPoseEstimator[] poseEstimators;
 
     /**
      * Constructs a new {@code VisionSubsystem} with the specified cameras.
@@ -135,15 +136,21 @@ public class VisionSubsystem extends SubsystemBase {
     public VisionSubsystem(AprilTagCamera... cameras)
     {
         this.cameras = cameras;
+        this.poseEstimators = new PhotonPoseEstimator[cameras.length];
+        for (int i = 0; i < cameras.length; i++) {
+            this.poseEstimators[i] = new PhotonPoseEstimator(
+                FieldConstants.APRILTAG_LAYOUT,
+                cameras[i].getProperties().robotToCamera());
+        }
     }
 
     @Override
     public void periodic()
     {
-        for (var camera : cameras) {
-            String cameraLogPrefix = LOG_PREFIX + camera.getProperties().name() + "/";
+        for (int c = 0; c < cameras.length; c++) {
+            String cameraLogPrefix = LOG_PREFIX + cameras[c].getProperties().name() + "/";
 
-            PhotonPipelineResult[] results = camera.getUnreadResults().orElse(null);
+            PhotonPipelineResult[] results = cameras[c].getUnreadResults().orElse(null);
             if (results == null) {
                 continue;
             }
@@ -166,16 +173,27 @@ public class VisionSubsystem extends SubsystemBase {
                     continue;
                 }
 
-                VisionPoseRecord poseRecord = visionProcessor.processVisionObservation(
-                    result,
-                    camera.getProperties(),
-                    heading)
-                    .orElse(null);
+                VisionPoseRecord poseRecord = null;
+                Optional<EstimatedRobotPose> estPose = null;
 
-                if (poseRecord == null) {
+                if (result.multitagResult.isPresent()) {
+                    estPose = poseEstimators[c].estimateCoprocMultiTagPose(result);
+                    if (estPose.isEmpty()) {
+                        estPose = poseEstimators[c].estimateLowestAmbiguityPose(result);
+                    }
+                } else {
+                    estPose = poseEstimators[c].estimateLowestAmbiguityPose(result);
+                }
+
+                if (estPose.isEmpty()) {
                     rejectedResults.add(result);
                     continue;
                 }
+
+                poseRecord = new VisionPoseRecord(
+                    estPose.get().estimatedPose, 
+                    getTagsUsed(estPose.get().targetsUsed), 
+                    getAvgDistanceMeters(estPose.get().targetsUsed));
 
                 if (!postFilter(poseRecord.pose())) {
                     rejectedResults.add(result);
@@ -186,7 +204,7 @@ public class VisionSubsystem extends SubsystemBase {
 
                 double stdDevFactor =
                     (Math.pow(poseRecord.averageDistanceMeters(), 2.0) / result.getTargets().size())
-                        * camera.getProperties().stdDevFactor();
+                        * cameras[c].getProperties().stdDevFactor();
                 double linearStdDev = LINEAR_STDDEV_BASELINE * stdDevFactor;
                 double angularStdDev = ANGULAR_STDDEV_BASELINE * stdDevFactor;
 
@@ -238,5 +256,21 @@ public class VisionSubsystem extends SubsystemBase {
                     rejectedPoses.get(i));
             }
         }
+    }
+
+    private double getAvgDistanceMeters(List<PhotonTrackedTarget> targets)
+    {
+        return targets.stream()
+            .mapToDouble(target -> target.getBestCameraToTarget().getTranslation().getNorm())
+            .average().orElse(0.0);
+    }
+
+    private List<Integer> getTagsUsed(List<PhotonTrackedTarget> targets)
+    {
+        List<Integer> tagsUsed = new ArrayList<>(targets.size());
+        for (var target : targets) {
+            tagsUsed.add(target.getFiducialId());
+        }
+        return tagsUsed;
     }
 }
