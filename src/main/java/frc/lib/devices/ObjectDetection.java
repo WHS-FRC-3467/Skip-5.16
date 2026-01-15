@@ -16,11 +16,14 @@
 package frc.lib.devices;
 
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.lib.io.objectdetection.ObjectDetectionIO.ObjectDetectionIOInputs;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -28,11 +31,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 /**
- * Device level implementation of an Object Detection camera. While the IO layer is responsible for
- * defining the variables of interest coming from our camera, the device layer is responsible for
- * periodically polling that IO and performing relevant calculations on the return results to
- * generate data for the robot to make decisions. Note that this device shares its real IO layer 
- * with ColorDetection. 
+ * Represents a single Object Detection camera on the robot.
+ * 
+ * <p>
+ * Handles interfacing with the {@link ObjectDetectionIO} hardware layer. While the IO (hardware) 
+ * layer is responsible for defining the variables of interest coming from our camera, this device 
+ * layer is responsible for periodically polling that IO and performing relevant calculations 
+ * on the return results to generate data for the robot to make decisions. Contains methods 
+ * useful for both ML object detection as well as HSV Color detection.
  */
 public class ObjectDetection {
     // IO implementation of ObjectDetectionIO
@@ -317,7 +323,49 @@ public class ObjectDetection {
         }
     }
 
-    public void assistedIntake() {}
+    // Selects & returns blob (contour) by specifiying LARGEST (largest area) or LOWEST (smallest pitch).
+    public Optional<PhotonTrackedTarget> selectContour (PhotonTrackedTarget[] targets, ContourSelectionMode selection) {
+        if (targets == null || targets.length == 0) {
+            return Optional.empty();
+        }
+        switch (selection) {
+            case LARGEST: 
+                return Optional.ofNullable(getLargestContour(targets));
+            case LOWEST:
+                return Optional.ofNullable(getLowestContour(targets));
+            default:
+                throw new IllegalArgumentException("Unknown selection mode: " + selection);
+        }
+    }
+
+    // Singleton selector for blob detection
+    public enum ContourSelectionMode { LARGEST, LOWEST }    
+
+    // Private helper for selectContour(). Finds blob with largest area. 
+    private PhotonTrackedTarget getLargestContour(PhotonTrackedTarget[] result) {
+        PhotonTrackedTarget largestTarget = null;
+        double maxArea = 0.0;
+        for (PhotonTrackedTarget target : result) {
+            if (target.getArea() > maxArea) {
+                maxArea = target.getArea();
+                largestTarget = target;
+            }
+        }
+        return largestTarget;
+    }
+
+    // Private helper for selectContour(). Finds blob with smallest pitch.
+    private PhotonTrackedTarget getLowestContour(PhotonTrackedTarget[] result) {
+        PhotonTrackedTarget lowestTarget = null;
+        double smallestPitch = 90.0;
+        for (PhotonTrackedTarget target : result) {
+            if (target.getPitch() < smallestPitch) {
+                smallestPitch = target.getPitch();
+                lowestTarget = target;
+            }
+        }
+        return lowestTarget;
+    }
 
     /*
      * Return whether the camera is connected.

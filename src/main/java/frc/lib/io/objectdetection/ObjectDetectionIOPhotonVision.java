@@ -67,9 +67,9 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
         if (result.isEmpty()) {
             return;
         }
-        // Most recent set of targets.
+        // Update latestTargets field of ObjectDetectionIOInputs class with most recent set of targets.
         inputs.latestTargets =
-            // Check if target is from object detection
+            // Array of PhotonTrackedTargets from latest pipeline result.
             result.get(0).getTargets().toArray(PhotonTrackedTarget[]::new);
     }
 
