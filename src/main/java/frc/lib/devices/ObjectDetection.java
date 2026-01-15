@@ -16,7 +16,6 @@
 package frc.lib.devices;
 
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.lib.io.objectdetection.ObjectDetectionIO.ObjectDetectionIOInputs;
@@ -34,11 +33,11 @@ import edu.wpi.first.math.geometry.Translation2d;
  * Represents a single Object Detection camera on the robot.
  * 
  * <p>
- * Handles interfacing with the {@link ObjectDetectionIO} hardware layer. While the IO (hardware) 
- * layer is responsible for defining the variables of interest coming from our camera, this device 
- * layer is responsible for periodically polling that IO and performing relevant calculations 
- * on the return results to generate data for the robot to make decisions. Contains methods 
- * useful for both ML object detection as well as HSV Color detection.
+ * Handles interfacing with the {@link ObjectDetectionIO} hardware layer. While the IO (hardware)
+ * layer is responsible for defining the variables of interest coming from our camera, this device
+ * layer is responsible for periodically polling that IO and performing relevant calculations on the
+ * return results to generate data for the robot to make decisions. Contains methods useful for both
+ * ML object detection as well as HSV Color detection.
  */
 public class ObjectDetection {
     // IO implementation of ObjectDetectionIO
@@ -281,7 +280,7 @@ public class ObjectDetection {
      * re-added to the end of the list.
      * 
      * @param N The number of last detections to store in memory.
-     * @param lastNDetections The List of Translation2d objects representing the robot's memory of
+     * @param lastNDetections The list of Translation2d objects representing the robot's memory of
      *        last N detections.
      * @param toleranceMeters The tolerance in meters for determining whether a detection is new or
      *        old.
@@ -323,13 +322,23 @@ public class ObjectDetection {
         }
     }
 
-    // Selects & returns blob (contour) by specifiying LARGEST (largest area) or LOWEST (smallest pitch).
-    public Optional<PhotonTrackedTarget> selectContour (PhotonTrackedTarget[] targets, ContourSelectionMode selection) {
+    /**
+     * Selects & returns blob (contour) by specifiying LARGEST (largest area) or LOWEST (smallest
+     * pitch).
+     * 
+     * @param targets An array of PhotonTrackedTargets, likely from ObjectDetection.getTargets().
+     * @param selection An enum representing the two selection modes: LARGEST or LOWEST.
+     * @return An optional PhotonTrackedTarget representing the image target best meeting the
+     *         selection criterion.
+     */
+    public Optional<PhotonTrackedTarget> selectContour(PhotonTrackedTarget[] targets,
+        ContourSelectionMode selection)
+    {
         if (targets == null || targets.length == 0) {
             return Optional.empty();
         }
         switch (selection) {
-            case LARGEST: 
+            case LARGEST:
                 return Optional.ofNullable(getLargestContour(targets));
             case LOWEST:
                 return Optional.ofNullable(getLowestContour(targets));
@@ -339,10 +348,14 @@ public class ObjectDetection {
     }
 
     // Singleton selector for blob detection
-    public enum ContourSelectionMode { LARGEST, LOWEST }    
+    public enum ContourSelectionMode {
+        LARGEST,
+        LOWEST
+    }
 
-    // Private helper for selectContour(). Finds blob with largest area. 
-    private PhotonTrackedTarget getLargestContour(PhotonTrackedTarget[] result) {
+    // Private helper for selectContour(). Finds blob with largest area.
+    private PhotonTrackedTarget getLargestContour(PhotonTrackedTarget[] result)
+    {
         PhotonTrackedTarget largestTarget = null;
         double maxArea = 0.0;
         for (PhotonTrackedTarget target : result) {
@@ -355,7 +368,8 @@ public class ObjectDetection {
     }
 
     // Private helper for selectContour(). Finds blob with smallest pitch.
-    private PhotonTrackedTarget getLowestContour(PhotonTrackedTarget[] result) {
+    private PhotonTrackedTarget getLowestContour(PhotonTrackedTarget[] result)
+    {
         PhotonTrackedTarget lowestTarget = null;
         double smallestPitch = 90.0;
         for (PhotonTrackedTarget target : result) {
