@@ -1,3 +1,10 @@
+// Copyright (C) 2026 FRC 6328
+// http://github.com/Mechanical-Advantage
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
@@ -16,8 +23,8 @@ import edu.wpi.first.units.measure.Mass;
  * have a blue alliance origin.
  */
 public class FieldConstants {
-    public static final AprilTagFieldLayout APRILTAG_LAYOUT = AprilTagFieldLayout
-            .loadField(AprilTagFields.kDefaultField);
+    public static final AprilTagFieldLayout APRILTAG_LAYOUT =
+        AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
 
     public static final Distance FIELD_LENGTH = Meters.of(APRILTAG_LAYOUT.getFieldLength());
     public static final Distance FIELD_WIDTH = Meters.of(APRILTAG_LAYOUT.getFieldWidth());

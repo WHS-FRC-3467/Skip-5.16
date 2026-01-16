@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -22,10 +22,13 @@ import org.littletonrobotics.junction.Logger;
 /**
  * A Trigger that automatically logs state changes to AdvantageKit.
  * 
- * <p>This class extends WPILib's Trigger and adds automatic logging of the trigger's state
- * whenever it changes. The logging is handled internally without requiring external method calls.
+ * <p>
+ * This class extends WPILib's Trigger and adds automatic logging of the trigger's state whenever it
+ * changes. The logging is handled internally without requiring external method calls.
  * 
- * <p>Example usage:
+ * <p>
+ * Example usage:
+ * 
  * <pre>{@code
  * // In a subsystem, create a logged trigger that tracks when a beam break is triggered
  * public final LoggedTrigger broken = new LoggedTrigger("BeamBreak/Broken", beamBreak::isBroken);
@@ -46,7 +49,7 @@ public class LoggedTrigger extends Trigger {
     {
         super(new LoggingBooleanSupplier(name, condition));
     }
-    
+
     /**
      * Internal BooleanSupplier wrapper that logs state changes.
      */
@@ -55,25 +58,25 @@ public class LoggedTrigger extends Trigger {
         private final BooleanSupplier condition;
         private boolean lastState = false;
         private boolean initialized = false;
-        
+
         public LoggingBooleanSupplier(String logKey, BooleanSupplier condition)
         {
             this.logKey = logKey;
             this.condition = condition;
         }
-        
+
         @Override
         public boolean getAsBoolean()
         {
             boolean currentState = condition.getAsBoolean();
-            
+
             // Log on state change or first evaluation
             if (!initialized || currentState != lastState) {
                 Logger.recordOutput(logKey, currentState);
                 lastState = currentState;
                 initialized = true;
             }
-            
+
             return currentState;
         }
     }
