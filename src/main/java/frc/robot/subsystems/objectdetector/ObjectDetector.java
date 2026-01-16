@@ -15,7 +15,7 @@
 
 package frc.robot.subsystems.objectdetector;
 
-import frc.lib.devices.ObjectDetection;
+import frc.lib.devices.ObjectDetectionCamera;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.robot.RobotState;
 import org.littletonrobotics.junction.Logger;
@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 public class ObjectDetector extends SubsystemBase {
     private final RobotState robotState = RobotState.getInstance();
-    private final ObjectDetection objectDetection;
+    private final ObjectDetectionCamera objectDetection;
 
     private ArrayList<Translation2d> lastNDetections = new ArrayList<>(10);
 
@@ -33,7 +33,7 @@ public class ObjectDetector extends SubsystemBase {
     // objectDetectionIO interface [real or sim]
     public ObjectDetector(ObjectDetectionIO io)
     {
-        objectDetection = new ObjectDetection(io);
+        objectDetection = new ObjectDetectionCamera(io);
     }
 
     @Override
