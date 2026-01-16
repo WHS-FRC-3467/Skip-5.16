@@ -26,7 +26,6 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
@@ -166,18 +165,15 @@ public class VisionSubsystem extends SubsystemBase {
                     continue;
                 }
 
-                Optional<EstimatedRobotPose> estPose = null;
+                Optional<EstimatedRobotPose> estPose = Optional.empty();
 
                 if (result.multitagResult.isPresent()) {
                     estPose = poseEstimators[c].estimateCoprocMultiTagPose(result);
-                    Logger.recordOutput(cameraLogPrefix + "/StrategyUsed", "CoprocMultiTagPose"); //TODO: remove after testing
                     if (estPose.isEmpty()) {
                         estPose = poseEstimators[c].estimateLowestAmbiguityPose(result);
-                        Logger.recordOutput(cameraLogPrefix + "/StrategyUsed", "LowestAmbiguity"); //TODO: remove after testing
                     }
                 } else {
                     estPose = poseEstimators[c].estimateLowestAmbiguityPose(result);
-                    Logger.recordOutput(cameraLogPrefix + "/StrategyUsed", "LowestAmbiguity"); //TODO: remove after testing
                 }
 
                 if (estPose.isEmpty()) {
@@ -187,7 +183,7 @@ public class VisionSubsystem extends SubsystemBase {
 
                 VisionPoseRecord poseRecord = new VisionPoseRecord(
                     estPose.get().estimatedPose,
-                    getTagsUsed(estPose.get().targetsUsed), 
+                    getTagsUsed(estPose.get().targetsUsed),
                     getAvgDistanceMeters(estPose.get().targetsUsed));
 
                 if (!postFilter(poseRecord.pose())) {
@@ -197,6 +193,7 @@ public class VisionSubsystem extends SubsystemBase {
                     continue;
                 }
 
+                // Equation from AK template project https://github.com/Mechanical-Advantage/AdvantageKit/blob/5dbc08a680e8b105c75c18be7c3442029b08e32b/template_projects/sources/vision/src/main/java/frc/robot/subsystems/vision/Vision.java#L123
                 double stdDevFactor =
                     (Math.pow(poseRecord.averageDistanceMeters(), 2.0) / result.getTargets().size())
                         * cameras[c].getProperties().stdDevFactor();
@@ -250,8 +247,6 @@ public class VisionSubsystem extends SubsystemBase {
                     cameraLogPrefix + "/Poses/Rejected/" + i,
                     rejectedPoses.get(i));
             }
-
-            
         }
     }
 
