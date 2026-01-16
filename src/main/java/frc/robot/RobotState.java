@@ -29,6 +29,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
@@ -79,7 +80,7 @@ public class RobotState {
     {
         poseEstimator.addVisionObservation(observation);
     }
-    
+
     public Optional<Pose2d> getPoseAtTime(double timestampSeconds)
     {
         return poseEstimator.getPoseAtTime(timestampSeconds);
@@ -210,5 +211,58 @@ public class RobotState {
     public static Distance getHeightToTarget(Distance mechanismHeight)
     {
         return target.getHeight().minus(mechanismHeight);
+    }
+
+    public Trigger SelfHubActiveTrigger()
+    {
+
+        return new Trigger(() -> (isHubActive().isPresent() ? isHubActive().get() : false));
+        // TODO true false "empty"
+    }
+
+    public Optional<Boolean> isHubActive()
+    {
+        String gameData;
+        gameData = DriverStation.getGameSpecificMessage();
+        Alliance alliance = DriverStation.getAlliance().get();
+        if (gameData.length() > 0) {
+            switch (gameData.charAt(0)) {
+                case 'B':
+                    // Blue case code
+                    switch (alliance) {
+                        case Blue:
+                            return Optional.of(true);
+
+                        case Red:
+                            return Optional.of(false);
+
+                        default:
+                            return Optional.empty();
+
+                    }
+
+                case 'R':
+                    // Red case code
+                    switch (alliance) {
+                        case Blue:
+                            return Optional.of(false);
+
+                        case Red:
+                            return Optional.of(true);
+
+                        default:
+                            return Optional.empty();
+
+                    }
+
+                default:
+                    // This is corrupt data
+                    return Optional.empty();
+
+            }
+
+        } else {
+            return Optional.empty();
+        }
     }
 }
