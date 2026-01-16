@@ -16,6 +16,7 @@
 package frc.robot.subsystems.objectdetector;
 
 import frc.lib.devices.ObjectDetection;
+import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.robot.RobotState;
 import org.littletonrobotics.junction.Logger;
@@ -30,7 +31,7 @@ public class ObjectDetector extends SubsystemBase {
     private ArrayList<Translation2d> lastNDetections = new ArrayList<>(10);
 
     // Pass in any object detection IO implementation (e.g. PhotonVision) that implements
-    // objectDetectionIO interface [real or sim]
+    // objectDetectionIO interface [real or sim]. Currently factored for only PhotonVision.
     public ObjectDetector(ObjectDetectionIO io)
     {
         objectDetection = new ObjectDetection(io);
@@ -47,35 +48,48 @@ public class ObjectDetector extends SubsystemBase {
                     ObjectDetectorConstants.CAMERA0_TRANSFORM,
                     ObjectDetectorConstants.algaeHeightMeters / 2,
                     1, 0);
+
             double heading =
                 objectDetection.headingToTarget_Yaw(objectDetection.getTargets()[0],
                     ObjectDetectorConstants.CAMERA0_TRANSFORM,
                     range, 1, 0);
+
             double distance = objectDetection.distanceToTarget2d(range, heading);
+
             Translation2d targetLocation =
                 objectDetection.estimateTargetToField(
                     range,
                     heading,
                     robotState.getEstimatedPose());
+
             objectDetection.getLastNDetections(10, lastNDetections, 0.4572,
                 targetLocation);
 
+            // Logged calculations
             Logger.recordOutput("Detection/" + "Calculated Range", range);
+
             Logger.recordOutput("Detection/" + "Calculated Heading", heading);
+
             Logger.recordOutput("Detection/" + "Calculated Distance", distance);
+
             Logger.recordOutput("Detection/" + "Latest Detection's Calculated Coordinates",
                 targetLocation);
+
             Logger.recordOutput("Detection/" + "Newest Detection",
                 lastNDetections.get(lastNDetections.size() - 1));
+
             Logger.recordOutput("Detection/" + "Oldest Detection", lastNDetections.get(0));
+
             Logger.recordOutput("Detection/" + "Detection List Size", lastNDetections.size());
 
             Logger.recordOutput("Detection/" + "Sim Target #0 True Range",
                 ObjectDetectorConstants.SIM_TARGETS[0].getPose().toPose2d().getTranslation()
                     .minus(robotState.getEstimatedPose().getTranslation()).getX());
+
             Logger.recordOutput("Detection/" + "Sim Target #0 True Heading",
                 ObjectDetectorConstants.SIM_TARGETS[0].getPose().toPose2d().getTranslation()
                     .minus(robotState.getEstimatedPose().getTranslation()).getY());
+
             Logger.recordOutput("Detection/" + "Sim Target #0 True Distance",
                 ObjectDetectorConstants.SIM_TARGETS[0].getPose().toPose2d().getTranslation()
                     .getDistance(robotState.getEstimatedPose().getTranslation()));

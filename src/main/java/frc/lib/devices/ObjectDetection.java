@@ -19,6 +19,7 @@ import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.lib.io.objectdetection.ObjectDetectionIO.ObjectDetectionIOInputs;
+import static edu.wpi.first.units.Units.Degrees;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Angle;
 
 /**
  * Represents a single Object Detection camera on the robot.
@@ -44,6 +46,14 @@ public class ObjectDetection {
     private final ObjectDetectionIO io;
     private final ObjectDetectionIOInputs inputs =
         new ObjectDetectionIOInputs();
+
+    /*
+     * Basic object detection observation data structure. These baseline return values come directly
+     * from the camera and can be used for reference, in commands, or device-level calculations.
+     */
+    public record ObjectDetectionObservation(int objID, double confidence, Angle pitch, Angle yaw,
+        double area) {
+    }
 
     /*
      * Interface as a data type allows ObjectDetection to accept various implementations of
@@ -323,41 +333,53 @@ public class ObjectDetection {
     }
 
     /**
-     * Selects & returns blob (contour) by specifiying LARGEST (largest area) or LOWEST (smallest
-     * pitch).
+     * Returns contour (blob) heading by specifiying LARGEST (largest area) or LOWEST (smallest
+     * pitch) target and retrieving the basic camera observation best meeting that criterion.
      * 
      * @param targets An array of PhotonTrackedTargets, likely from ObjectDetection.getTargets().
      * @param selection An enum representing the two selection modes: LARGEST or LOWEST.
-     * @return An optional PhotonTrackedTarget representing the image target best meeting the
-     *         selection criterion.
+     * @return An optional ObjectDetectionObservation representing the image observation best
+     *         meeting the selection criterion.
      */
-    public Optional<PhotonTrackedTarget> selectContour(PhotonTrackedTarget[] targets,
+    public Optional<ObjectDetectionObservation> getObjectObservation(PhotonTrackedTarget[] targets,
         ContourSelectionMode selection)
     {
         if (targets == null || targets.length == 0) {
             return Optional.empty();
         }
+        PhotonTrackedTarget selectedTarget;
         switch (selection) {
             case LARGEST:
-                return Optional.ofNullable(getLargestContour(targets));
+                selectedTarget = getLargestContour(targets);
+                return Optional.ofNullable(
+                    new ObjectDetectionObservation(selectedTarget.getDetectedObjectClassID(),
+                        selectedTarget.getDetectedObjectConfidence(),
+                        Degrees.of(selectedTarget.getPitch()),
+                        Degrees.of(selectedTarget.getYaw()), selectedTarget.getArea()));
             case LOWEST:
-                return Optional.ofNullable(getLowestContour(targets));
+                selectedTarget = getLowestContour(targets);
+                return Optional.ofNullable(
+                    new ObjectDetectionObservation(selectedTarget.getDetectedObjectClassID(),
+                        selectedTarget.getDetectedObjectConfidence(),
+                        Degrees.of(selectedTarget.getPitch()),
+                        Degrees.of(selectedTarget.getYaw()), selectedTarget.getArea()));
             default:
-                throw new IllegalArgumentException("Unknown selection mode: " + selection);
+                return Optional.empty();
         }
     }
 
-    // Singleton selector for blob detection
+    // Singleton selector for returnContour().
     public enum ContourSelectionMode {
         LARGEST,
         LOWEST
     }
 
-    // Private helper for selectContour(). Finds blob with largest area.
+    // Private helper for returnContour(). Finds blob with largest area.
     private PhotonTrackedTarget getLargestContour(PhotonTrackedTarget[] result)
     {
         PhotonTrackedTarget largestTarget = null;
         double maxArea = 0.0;
+
         for (PhotonTrackedTarget target : result) {
             if (target.getArea() > maxArea) {
                 maxArea = target.getArea();
@@ -367,11 +389,12 @@ public class ObjectDetection {
         return largestTarget;
     }
 
-    // Private helper for selectContour(). Finds blob with smallest pitch.
+    // Private helper for returnContour(). Finds blob with smallest pitch.
     private PhotonTrackedTarget getLowestContour(PhotonTrackedTarget[] result)
     {
         PhotonTrackedTarget lowestTarget = null;
         double smallestPitch = 90.0;
+
         for (PhotonTrackedTarget target : result) {
             if (target.getPitch() < smallestPitch) {
                 smallestPitch = target.getPitch();
