@@ -47,6 +47,7 @@ import frc.lib.devices.AprilTagCamera;
 import frc.lib.io.vision.VisionIO;
 import frc.lib.io.vision.VisionIOPhotonVision;
 import frc.lib.io.vision.VisionIOPhotonVisionSim;
+import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.LoggedTunableNumber;
@@ -75,6 +76,8 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
@@ -128,6 +131,7 @@ public class RobotContainer {
     private final ObjectDetector objectDetector;
     private final Superstructure superstructure;
     private final TurretSuperstructure turret;
+    private final Indexer indexer;
 
     // Controller
     private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
@@ -152,6 +156,7 @@ public class RobotContainer {
         servo1 = Servo1Constants.get();
         objectDetector = ObjectDetectorConstants.get();
         turret = TurretSuperstructureConstants.get();
+        indexer = IndexerConstants.get();
         VisionConstants.create();
 
         conditionalChooser = new LoggedDashboardChooser<>("Conditional Choice");
@@ -161,7 +166,8 @@ public class RobotContainer {
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
-
+        SmartDashboard.putData("Run Indexer expel", indexer.intakeCommand(Indexer.State.EXPEL));
+        SmartDashboard.putData("Run Indexer intake", indexer.intakeCommand(Indexer.State.PULL));
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("ExampleAuto", new ExampleAuto(drive));
         autoChooser.addOption("BranchingAuto",
@@ -282,7 +288,6 @@ public class RobotContainer {
         SmartDashboard.putData("DriveToPose Command",
             new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
                 .withTolerance(Inches.of(3), Degrees.of(5)));
-
         Command steppableCommand = new SteppableCommandGroup(
             controller.x(),
             controller.y(),

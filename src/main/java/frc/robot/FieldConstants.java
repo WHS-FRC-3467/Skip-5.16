@@ -21,7 +21,7 @@ import edu.wpi.first.units.measure.Distance;
  */
 public class FieldConstants {
     public static final AprilTagFieldLayout APRILTAG_LAYOUT =
-        AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
 
     public static final Distance FIELD_LENGTH = Meters.of(APRILTAG_LAYOUT.getFieldLength());
     public static final Distance FIELD_WIDTH = Meters.of(APRILTAG_LAYOUT.getFieldWidth());
