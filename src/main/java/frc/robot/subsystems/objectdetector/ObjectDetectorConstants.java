@@ -7,9 +7,11 @@ package frc.robot.subsystems.objectdetector;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Supplier;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 
 import edu.wpi.first.math.MatBuilder;
@@ -29,7 +31,9 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.lib.io.objectdetection.*;
 import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.RobotState;
+import frc.robot.subsystems.vision.VisionConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -164,10 +168,14 @@ public class ObjectDetectorConstants {
         switch (Constants.currentMode) {
             case REAL:
                 // Real IO, inputs = PhotonVision implementation of ObjectDetectionIO
-                return new ObjectDetector(new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
+                return new ObjectDetector(new ObjectDetectionIOPhotonVision(CAMERA0));
             case SIM:
+                if (VisionConstants.visionSim.isEmpty()) {
+                    VisionConstants.visionSim = Optional.of(new VisionSystemSim("main"));
+                    VisionConstants.visionSim.get().addAprilTags(FieldConstants.APRILTAG_LAYOUT);
+                }
                 // Sim IO, inputs = sim implementation of ObjectionDetectionIO
-                return new ObjectDetector(new ObjectDetectionIOSim(CAMERA0,
+                return new ObjectDetector(new ObjectDetectionIOSim(CAMERA0, VisionConstants.visionSim.get(),
                     () -> robotState.getEstimatedPose(), SIM_NAME, visionTargetSimSupplier));
             case REPLAY:
                 // Replayed robot, use logged data for IO

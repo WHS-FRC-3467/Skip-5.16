@@ -187,7 +187,7 @@ public class VisionConstants {
             FRONT_RIGHT_LATENCY,
             FRONT_RIGHT_LATENCY_STDDEV);
 
-    private static Optional<VisionSystemSim> visionSim = Optional.empty();
+    public static Optional<VisionSystemSim> visionSim = Optional.empty();
 
     private static VisionIOPhotonVision getFrontLeftIOReal()
     {

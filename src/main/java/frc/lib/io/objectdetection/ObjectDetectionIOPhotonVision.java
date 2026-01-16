@@ -20,6 +20,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.lib.devices.AprilTagCamera.CameraProperties;
 import java.util.List;
 
 /**
@@ -36,16 +37,16 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
      *
      * @param cameraName The name of the camera
      */
-    public ObjectDetectionIOPhotonVision(String cameraName)
+    public ObjectDetectionIOPhotonVision(CameraProperties properties)
     {
         // CameraName is the name of the NetworkTable that PhotonVision is broadcasting information
         // over.
         // The name of the NetworkTable should be the same as the camera’s nickname (from the
         // PhotonVision UI).
+        cameraName = properties.name();
         camera = new PhotonCamera(cameraName);
         disconnectedAlert =
             new Alert("PhotoVision Camera " + cameraName + " is not connected.", AlertType.kError);
-        this.cameraName = cameraName;
     }
 
     @Override

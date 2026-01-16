@@ -21,7 +21,7 @@ import frc.lib.devices.AprilTagCamera.CameraProperties;
 public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     private final String target_name;
     private final PhotonCameraSim camSim;
-    private final VisionSystemSim visionSim;
+    private final VisionSystemSim system;
     private final Supplier<Pose2d> robotPoseSupplier;
     private final Supplier<VisionTargetSim[]> visionTargetSupplier;
 
@@ -29,12 +29,19 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     private Set<VisionTargetSim> targetSet;
     private List<VisionTargetSim> targetList;
 
-    public ObjectDetectionIOSim(CameraProperties cameraProperties,
+    public ObjectDetectionIOSim(
+        CameraProperties cameraProperties, 
+        VisionSystemSim system,
         Supplier<Pose2d> robotPoseSupplier,
-        String target_name, Supplier<VisionTargetSim[]> visionTargetSupplier)
+        String target_name, 
+        Supplier<VisionTargetSim[]> visionTargetSupplier)
     {
-        super(cameraProperties.name());
+        super(cameraProperties);
         this.target_name = target_name;
+        // Suppliers for dynamic sim object position updates
+        this.robotPoseSupplier = robotPoseSupplier;
+        this.visionTargetSupplier = visionTargetSupplier;
+        this.system = system;
 
         var simCameraProperties = new SimCameraProperties();
         simCameraProperties.setCalibration(
@@ -50,21 +57,18 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
 
         // Wireframe visualizer for objects
         camSim.enableDrawWireframe(true);
-        // Create a vision system sim and add the sim camera to it. Currently factored for only one ML camera.
-        visionSim = new VisionSystemSim("objectDetection");
-        visionSim.addCamera(camSim, cameraProperties.robotToCamera());
-        // Suppliers for dynamic sim object position updates
-        this.robotPoseSupplier = robotPoseSupplier;
-        this.visionTargetSupplier = visionTargetSupplier;
+
+        // Add the sim camera to the VisionSystemSim. Currently factored for only one ML camera.
+        system.addCamera(camSim, cameraProperties.robotToCamera());
         
         // Initialize sim vision targets on field
         // Current vision targets
         visionTargets = visionTargetSupplier.get();
         // Add current vision targets to the sim field
-        visionSim.addVisionTargets(target_name, visionTargets);
+        system.addVisionTargets(target_name, visionTargets);
         // Retrieve the vision targets on the sim field in a set and then convert it to a list for
         // easy indexing
-        targetSet = visionSim.getVisionTargets();
+        targetSet = system.getVisionTargets();
         targetList = new ArrayList<>(targetSet);
         // Initialize sim target pose logging; update in periodic below for AScope
         for (VisionTargetSim target : targetList) {
@@ -77,12 +81,12 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     public void updateInputs(ObjectDetectionIOInputs inputs)
     {
         // Update robot & target poses
-        visionSim.update(robotPoseSupplier.get());
-        visionSim.clearVisionTargets();
+        system.update(robotPoseSupplier.get());
+        system.clearVisionTargets();
         visionTargets = visionTargetSupplier.get();
-        visionSim.addVisionTargets(target_name, visionTargets);
+        system.addVisionTargets(target_name, visionTargets);
         // Log updated target poses for AScope
-        targetSet = visionSim.getVisionTargets();
+        targetSet = system.getVisionTargets();
         targetList = new ArrayList<>(targetSet);
         for (VisionTargetSim target : targetList) {
             Logger.recordOutput("TARGET POSE" + targetList.indexOf(target), target.getPose());
