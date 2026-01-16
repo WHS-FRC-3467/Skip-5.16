@@ -47,9 +47,19 @@ public class ObjectDetection {
     private final ObjectDetectionIOInputs inputs =
         new ObjectDetectionIOInputs();
 
-    /*
-     * Basic object detection observation data structure. These baseline return values come directly
-     * from the camera and can be used for reference, in commands, or device-level calculations.
+    /**
+     * Represents a basic Object Detection observation.
+     * 
+     * <p>
+     * These baseline return values come directly from the camera and can be used for reference, in
+     * commands, or device-level calculations. This structure can represent essential observations
+     * from an ML or HSV Color Detection pipeline.
+     * 
+     * @param objID Object ID (from ML pipeline only).
+     * @param confidence Object ID confidence (from ML pipeline only).
+     * @param pitch Pitch of the object relative to the centerline of the camera.
+     * @param yaw Yaw of the object relative to the centerline of the camera.
+     * @param area Area of the object in the image.
      */
     public record ObjectDetectionObservation(int objID, double confidence, Angle pitch, Angle yaw,
         double area) {
