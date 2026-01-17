@@ -74,6 +74,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
+import frc.robot.subsystems.intake.Intake.State;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerConstants;
 import frc.robot.subsystems.leds.LEDs;
@@ -129,6 +132,7 @@ public class RobotContainer {
     private final ObjectDetector objectDetector;
     private final Superstructure superstructure;
     private final TurretSuperstructure turret;
+    private final Intake intake;
     private final Indexer indexer;
 
     // Controller
@@ -154,6 +158,7 @@ public class RobotContainer {
         servo1 = Servo1Constants.get();
         objectDetector = ObjectDetectorConstants.get();
         turret = TurretSuperstructureConstants.get();
+        intake = IntakeConstants.get();
         indexer = IndexerConstants.get();
         VisionConstants.create();
 
@@ -238,6 +243,11 @@ public class RobotContainer {
                 new Pose2d(1, 4, Rotation2d.kZero),
                 PathConstants.ON_THE_FLY_PATH_CONSTRAINTS, MetersPerSecond.of(0.0),
                 PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
+
+        // Left Bumper: Intake while held
+        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.runIntake(State.STOP));
+        // Back Button: Eject while held
+        controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.runIntake(State.STOP));
 
         // On-the-fly path with waypoints while the Right Bumper is held
         controller.rightBumper().whileTrue(
