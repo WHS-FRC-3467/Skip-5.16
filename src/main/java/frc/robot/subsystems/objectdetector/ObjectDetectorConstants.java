@@ -142,7 +142,10 @@ public class ObjectDetectorConstants {
                 new TargetModel(algaeHeightMeters)),
             new VisionTargetSim(new Pose3d(12, 7, algaeHeightMeters / 2, new Rotation3d()),
                 new TargetModel(algaeHeightMeters)),
-            null,
+            new VisionTargetSim(
+                new Pose3d(16, 4.1,
+                    algaeHeightMeters / 2, new Rotation3d()),
+                new TargetModel(algaeHeightMeters))
     };
     // Dynamic supplier for moving sim targets
     public static Supplier<VisionTargetSim[]> visionTargetSimSupplier =
