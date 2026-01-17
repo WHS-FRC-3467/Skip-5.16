@@ -1,13 +1,27 @@
+/*
+ * Copyright (C) 2026 Windham Windup
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
+ */
+
 package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import java.util.function.Supplier;
-
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -23,16 +37,17 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         new LoggedTunableNumber("Intake/EjectRPS", 0.0);
 
     private final FlywheelMechanism io;
+    private String stateName;
 
     @RequiredArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
     @Getter
-    public enum Setpoint {
+    public enum State {
         INTAKE(() -> RotationsPerSecond.of(INTAKE_SETPOINT.get())),
         EJECT(() -> RotationsPerSecond.of(EJECT_SETPOINT.get())),
         STOP(() -> RotationsPerSecond.of(0.0));
 
-        private final Supplier<AngularVelocity> setpoint;
+        private final Supplier<AngularVelocity> angularVelocity;
 
     }
 
@@ -41,34 +56,28 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         this.io = intakeIO;
     }
 
-    /** Run the intake. Static speed torque control. */
-    public Command intake() {
-        return Commands.runOnce(() -> io.runVelocity(Setpoint.INTAKE.getSetpoint().get(), IntakeConstants.MAX_ACCELERATION,
-            PIDSlot.SLOT_0));
-    }
-
-    /** Eject the intake. Static speed torque control. */
-    public Command eject() {
-        return Commands.runOnce(() -> io.runVelocity(Setpoint.EJECT.getSetpoint().get(), IntakeConstants.MAX_ACCELERATION,
-            PIDSlot.SLOT_0));
-    }
-
-    /** Stop the intake as fast as possible. */
-    public Command stop() {
-        return Commands.runOnce(() -> io.runVelocity(RotationsPerSecond.of(0), IntakeConstants.MAX_ACCELERATION,
-            PIDSlot.SLOT_0));
+    /** Run the intake. Static speed torque control. 
+     * @param state The desired intake state.
+    */
+    public Command runIntake(State state)
+    {
+        return this.runOnce(() -> io.runVelocity(state.angularVelocity.get(),
+            IntakeConstants.MAX_ACCELERATION, PIDSlot.SLOT_0)
+        ).andThen(this.runOnce(() -> this.stateName = state.name()))
+            .withName(state.name());
     }
 
     /* Checks to see if the intake is near the setpoint */
-    public boolean nearSetpoint(Setpoint setpoint) {
+    public boolean nearSetpoint(State state) {
         return MathUtil.isNear(
-            setpoint.getSetpoint().get().in(RotationsPerSecond),
+            state.angularVelocity.get().in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
             IntakeConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     @Override
     public void periodic() {
+        Logger.recordOutput("Intake/State", this.stateName);
         io.periodic();
     }
 

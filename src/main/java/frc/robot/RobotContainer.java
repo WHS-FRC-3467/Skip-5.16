@@ -76,6 +76,7 @@ import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeConstants;
+import frc.robot.subsystems.intake.Intake.State;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerConstants;
 import frc.robot.subsystems.leds.LEDs;
@@ -244,9 +245,9 @@ public class RobotContainer {
                 PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
 
         // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intake.intake()).onFalse(intake.stop());
+        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.runIntake(State.STOP));
         // Back Button: Eject while held
-        controller.back().onTrue(intake.eject()).onFalse(intake.stop());
+        controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.runIntake(State.STOP));
 
         // On-the-fly path with waypoints while the Right Bumper is held
         controller.rightBumper().whileTrue(

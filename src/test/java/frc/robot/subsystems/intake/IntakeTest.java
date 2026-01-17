@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -57,12 +57,12 @@ public class IntakeTest {
     void intake()
     {
         TestUtil.runTest(
-            intake.intake(),
+            intake.runIntake(Intake.State.INTAKE),
             2,
             intake);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
-            assertTrue(intake.nearSetpoint(Intake.Setpoint.INTAKE));
+            assertTrue(intake.nearSetpoint(Intake.State.INTAKE));
         } catch (Exception e) {
             fail("Failed to run Intake to intake: " + e.getMessage());
         }
@@ -72,12 +72,12 @@ public class IntakeTest {
     void stop()
     {
         TestUtil.runTest(
-            intake.stop(),
+            intake.runIntake(Intake.State.STOP),
             2,
             intake);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped velocity.
-            assertTrue(intake.nearSetpoint(Intake.Setpoint.STOP));
+            assertTrue(intake.nearSetpoint(Intake.State.STOP));
         } catch (Exception e) {
             fail("Failed to stop intake: " + e.getMessage());
         }
