@@ -67,6 +67,11 @@ public class Intake extends SubsystemBase implements AutoCloseable {
             .withName(state.name());
     }
 
+    public Command stop() {
+        return this.runOnce(() -> io.runBrake())
+            .andThen(this.runOnce(() -> this.stateName = "STOP")).withName("STOP");
+    }
+
     /* Checks to see if the intake is near the setpoint */
     public boolean nearSetpoint(State state) {
         return MathUtil.isNear(
