@@ -14,8 +14,8 @@ public class TurretSuperstructureConstants {
     {
         return new TurretSuperstructure(
             TurretConstants.get(),
-            IndexerConstants.get(),
             HoodConstants.get(),
+            IndexerConstants.get(),
             FlywheelConstants.get(),
             TurretSensorConstants.get());
     }
