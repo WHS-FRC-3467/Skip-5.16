@@ -289,8 +289,7 @@ public class RobotContainer {
         controller.rightBumper().whileTrue(
             turret.shoot());
 
-        SmartDashboard.putData("HoodMovement", Commands
-            .runOnce(() -> turret.setHoodAngle(Degrees.of(100))));
+        SmartDashboard.putData("HoodMovement", turret.setHoodAngle(Degrees.of(100)));
 
         inAllianceRegionTrigger.onTrue(
             Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", true))
