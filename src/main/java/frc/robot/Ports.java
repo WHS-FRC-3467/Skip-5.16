@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -15,6 +15,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.CANBus;
+
 import frc.lib.util.Device;
 import frc.lib.util.Device.CAN;
 import frc.lib.util.Device.DIO;
@@ -25,6 +27,8 @@ public class Ports {
      * LIST OF CHANNEL AND CAN IDS
      */
 
+    public static final CANBus CANIVORE_CAN_BUS = new CANBus("canivore", "./logs/example.hoot");
+
     public static final Device.CAN laserCAN1 = new CAN(0, "rio");
     public static final Device.CAN lights = new CAN(1, "rio");
 
@@ -33,7 +37,6 @@ public class Ports {
     public static final Device.DIO diobeambreak = new DIO(0);
 
     public static final Device.CAN pdh = new CAN(50, "rio");
-
     public static final Device.CAN RotarySubsystemMotorMain = new CAN(3, "rio");
     public static final Device.CAN RotarySubsystemMotorFollower = new CAN(4, "rio");
     public static final Device.CAN RotarySubsystemEncoder = new CAN(6, "rio");

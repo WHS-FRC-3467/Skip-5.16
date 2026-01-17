@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -58,7 +58,7 @@ public class Robot extends LoggedRobot {
         Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
         switch (BuildConstants.DIRTY) {
             case 0 -> Logger.recordMetadata("GitDirty", "All changes committed");
-            case 1 -> Logger.recordMetadata("GitDirty", "Uncomitted changes");
+            case 1 -> Logger.recordMetadata("GitDirty", "Uncommitted changes");
             default -> Logger.recordMetadata("GitDirty", "Unknown");
         }
 
@@ -128,7 +128,7 @@ public class Robot extends LoggedRobot {
          * pathfinding command to warm up the library. Source: PathPlanner Docs
          */
         // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
-        PathfindingCommand.warmupCommand().schedule();
+        CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
 
         // Log first 8 character of robot serial
         Logger.recordOutput("Robot Serial",
@@ -180,7 +180,7 @@ public class Robot extends LoggedRobot {
 
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
-            autonomousCommand.schedule();
+            CommandScheduler.getInstance().schedule(autonomousCommand);
         }
     }
 

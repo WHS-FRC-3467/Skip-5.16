@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
@@ -68,7 +69,7 @@ public class Superstructure extends SubsystemBase implements AutoCloseable {
         this.rotaryIO = rotaryIO;
         this.linearIO = linearIO;
 
-        setGoal(SuperstructureConstants.DEFAULT_SETPOINT).schedule();
+        CommandScheduler.getInstance().schedule(setGoal(SuperstructureConstants.DEFAULT_SETPOINT));
     }
 
     public boolean nearSetpoint(Setpoint setpoint)
