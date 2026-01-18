@@ -6,6 +6,7 @@
 
 package frc.robot.util;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -16,6 +17,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.FieldConstants;
@@ -32,25 +34,25 @@ public class BallSimulator {
     private static final double DRAG_COEFFICIENT = 0.45;
     private static final double CROSSECTION_AREA =
         Math.PI * Math.pow(FieldConstants.FUEL_DIAMETER.in(Meters) / 2, 2);
-    private static final double MASS = 0.68;
+    private static final double MASS = 0.226;
 
     private static Distance ballDiameter = FieldConstants.FUEL_DIAMETER;
 
-    private static Transform3d shooterOffset =
+    public static void launch(LinearVelocity velocity, Angle launchAngle)
+    {
+        RobotState robotState = RobotState.getInstance();
+
+        objectTrajectory.clear();
+
+        Transform3d shooterOffset =
         new Transform3d(
             Inches.of(0),
             Inches.of(0),
             Inches.of(30),
             new Rotation3d(
                 0,
-                -Math.toRadians(45), 0 // 45 degree launch angle
+                -Math.toRadians(launchAngle.in(Degrees)), 0 // launch angle
             ));
-
-    public static void launch(LinearVelocity velocity)
-    {
-        RobotState robotState = RobotState.getInstance();
-
-        objectTrajectory.clear();
 
         // Set initial position
         currentPose = new Pose3d(robotState.getEstimatedPose()).plus(shooterOffset);

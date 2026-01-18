@@ -18,7 +18,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
+import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.robot.Constants.PathConstants;
@@ -41,9 +43,11 @@ import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import frc.robot.subsystems.turret.TurretSuperstructure;
 import frc.robot.subsystems.turret.TurretSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.BallSimulator;
 import frc.robot.subsystems.lasercan1.LaserCAN1;
 import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 
 public class RobotContainer {
@@ -122,6 +126,13 @@ public class RobotContainer {
     private void initializeDashboard() {
         SmartDashboard.putData("Run Indexer expel", indexer.intakeCommand(Indexer.State.EXPEL));
         SmartDashboard.putData("Run Indexer intake", indexer.intakeCommand(Indexer.State.PULL));
+
+        LoggedTunableNumber ballVel = new LoggedTunableNumber("Ball Sim Velocity (fps)", 15);
+        LoggedTunableNumber ballAngle = new LoggedTunableNumber("Ball Sim Launch Angle (degrees)", 45);
+        SmartDashboard.putData("Shoot Ball", Commands
+            .runOnce(() -> BallSimulator.launch(
+                FeetPerSecond.of(ballVel.getAsDouble()),
+                Degrees.of(ballAngle.getAsDouble()))));
     }
 
     public Command getAutonomousCommand()
