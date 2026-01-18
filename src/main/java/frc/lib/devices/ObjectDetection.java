@@ -19,12 +19,15 @@ import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.lib.io.objectdetection.ObjectDetectionIO.ObjectDetectionIOInputs;
+import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -177,7 +180,7 @@ public class ObjectDetection {
      *        as a result of either camera hardware or installation.
      * @return The estimated robot range to the target in meters.
      */
-    public double rangeToTarget_Pitch(PhotonTrackedTarget target,
+    private double rangeToTarget_Pitch(PhotonTrackedTarget target,
         Transform3d cameraTransform, double targetHeightMeters, double cameraCalFactor,
         double cameraOffset)
     {
@@ -242,7 +245,7 @@ public class ObjectDetection {
      * @return The estimated robot heading to the target in meters. Positive heading = robot local X
      *         axis right of target; negative heading = robot local X axis left of target.
      */
-    public double headingToTarget_Yaw(PhotonTrackedTarget target,
+    private double headingToTarget_Yaw(PhotonTrackedTarget target,
         Transform3d cameraTransform, double targetRangeMeters, double cameraCalFactor,
         double cameraOffset)
     {
@@ -267,7 +270,7 @@ public class ObjectDetection {
      * @param targetHeadingMeters Robot's heading to the target in meters.
      * @return The estimated 2d distance from the robot to the target in meters.
      */
-    public double distanceToTarget2d(double targetRangeMeters, double targetHeadingMeters)
+    private double distanceToTarget2d(double targetRangeMeters, double targetHeadingMeters)
     {
         // Distance from robot to target
         return Math.sqrt((Math.pow(targetRangeMeters, 2) + Math.pow(targetHeadingMeters, 2)));
@@ -287,7 +290,7 @@ public class ObjectDetection {
      * @param robotPose The 2D pose of the robot on the field.
      * @return A Translation2d of the detected object in field coordinates.
      */
-    public Translation2d estimateTargetToField(double targetRangeMeters,
+    private Translation2d estimateTargetToField(double targetRangeMeters,
         double targetHeadingMeters, Pose2d robotPose)
     {
         Translation2d fieldToTargetTranslation = robotPose
@@ -347,13 +350,64 @@ public class ObjectDetection {
     }
 
     /**
-     * Returns contour (blob) heading by specifiying LARGEST (largest area) or LOWEST (smallest
-     * pitch) target and retrieving the basic camera observation best meeting that criterion.
+     * Returns the latest Object Detection observation.
+     * 
+     * @param target A PhotonTrackedTarget representing the detected object of interest, likely from
+     *        ObjectDetection.getTargets()[i].
+     * @param robotToCamera robotToCamera transform.
+     * @param objectPhysicalHeightMeters Physical (real-world) height of the object being
+     *        represented by the PhotonTrackedTarget (e.g. 2025 Algae = 0.41 m = ball diameter) (m).
+     * @param rangeCalFactor Calibration scaling factor for range calculation (usually set to 1).
+     * @param rangeCalOffset Calibration offset factor for range calculation (usually set to 0).
+     * @param headingCalFactor Calibration scaling factor for heading calculation (usually set to
+     *        1).
+     * @param headingCalOffset Calibration offset factor for heading calculation (usually set to 0).
+     * @param robotPose Field-relative robot pose.
+     * @return An optional {@link ObjectDetectionObservation} representing the Object.
+     */
+    public Optional<ObjectDetectionObservation> getObjectObservation(PhotonTrackedTarget target,
+        Transform3d robotToCamera,
+        double objectPhysicalHeightMeters, double rangeCalFactor, double rangeCalOffset,
+        double headingCalFactor, double headingCalOffset,
+        Pose2d robotPose)
+    {
+        // Robot-local range to target
+        double range =
+            rangeToTarget_Pitch(target,
+                robotToCamera,
+                objectPhysicalHeightMeters / 2,
+                rangeCalFactor, rangeCalOffset);
+        // Robot-local heading to target
+        double heading =
+            headingToTarget_Yaw(target,
+                robotToCamera,
+                range, headingCalFactor, headingCalOffset);
+        // 2D distance from robot center to target
+        double distance = distanceToTarget2d(range, heading);
+        // Field-relative Translation2D of target
+        Translation2d targetLocation =
+            estimateTargetToField(
+                range,
+                heading,
+                robotPose);
+        // Return packaged ML Object Observation
+        return Optional.ofNullable(new ObjectDetectionObservation(
+            target.getDetectedObjectClassID(),
+            target.getDetectedObjectConfidence(),
+            Degrees.of(target.getPitch()),
+            Degrees.of(target.getYaw()),
+            target.getArea(),
+            Optional.of(Meters.of(distance)),
+            Optional.of(new Pose2d(targetLocation, new Rotation2d()))));
+    }
+
+    /**
+     * Returns the latest Color Contour observation.
      * 
      * @param targets An array of PhotonTrackedTargets, likely from ObjectDetection.getTargets().
-     * @param selection An enum representing the two selection modes: LARGEST or LOWEST.
-     * @return An optional ObjectDetectionObservation representing the image observation best
-     *         meeting the selection criterion.
+     * @param selection An enum representing the two selection modes: LARGEST or LOWEST. LARGEST
+     *        returns blob with greatest area, LOWEST returns blob with smallest pitch.
+     * @return An optional {@link ObjectDetectionObservation} representing the Color Contour.
      */
     public Optional<ObjectDetectionObservation> getContourObservation(PhotonTrackedTarget[] targets,
         ContourSelectionMode selection)
