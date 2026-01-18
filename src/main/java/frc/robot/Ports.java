@@ -45,6 +45,7 @@ public class Ports {
     public static final Device.CAN flywheel = new CAN(2, "rio");
     public static final Device.CAN indexer = new CAN(18, "rio");
     public static final Device.CAN indexerLaserCAN = new CAN(19, "rio");
+    public static final Device.CAN intake = new CAN(20, "rio");
 
     public static final Device.PWM servo1 = new PWM(1);
 
