@@ -52,7 +52,7 @@ public class Indexer extends SubsystemBase { // Don't extend if contained in sup
     @Override
     public void periodic()
     {
-        Logger.recordOutput("Intake/StateName", this.stateName);
+        Logger.recordOutput("Indexer/State", this.stateName);
         io.periodic();
 
     }
@@ -61,7 +61,7 @@ public class Indexer extends SubsystemBase { // Don't extend if contained in sup
     {
 
         return this.runOnce(() -> io.runVelocity(state.stateVelocity,
-            state.stateVelocity.per(Second), PIDSlot.SLOT_0)
+            IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0)
 
 
         ).andThen(this.runOnce(() -> this.stateName = state.name()))
