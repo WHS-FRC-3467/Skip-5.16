@@ -5,7 +5,6 @@
 package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Second;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -13,7 +12,6 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
-import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
