@@ -245,9 +245,9 @@ public class RobotContainer {
                 PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
 
         // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.runIntake(State.STOP));
+        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
         // Back Button: Eject while held
-        controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.runIntake(State.STOP));
+        controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
 
         // On-the-fly path with waypoints while the Right Bumper is held
         controller.rightBumper().whileTrue(
