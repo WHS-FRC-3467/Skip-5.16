@@ -13,8 +13,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.commands.autos;
+package frc.robot.commands;
 
+import java.util.OptionalDouble;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,26 +27,26 @@ import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.util.LoggedTuneableProfiledPID;
 
 public class AlignToObject extends Command {
-    private final Drive drive;
     private final ObjectDetector objectDetector;
     private final ContourSelectionMode mode;
     private final LoggedTuneableProfiledPID angularController;
     private final Velocity maxAngularVelocity;
 
-    public AlignToObject(Drive drive, ObjectDetector objectDetector, ContourSelectionMode mode,
+    public AlignToObject(ObjectDetector objectDetector, ContourSelectionMode mode,
         LoggedTuneableProfiledPID angularController, Velocity maxAngularVelocity)
     {
-        this.drive = drive;
         this.objectDetector = objectDetector;
         this.mode = mode;
         this.angularController = angularController;
         this.maxAngularVelocity = maxAngularVelocity;
 
         angularController.enableContinuousInput(-Math.PI, Math.PI);
-
-
-        ObjectDetectionObservation obj;
     }
+
+    // protected OptionalDouble getVisionOmega()
+    // {
+
+    // }
 
     @Override
     public void initialize()
@@ -54,7 +55,7 @@ public class AlignToObject extends Command {
     @Override
     public void execute()
     {
-        drive.setOverride(pidOutput)
+        // drive.setOverride(pidOutput) ?
     }
 
     @Override

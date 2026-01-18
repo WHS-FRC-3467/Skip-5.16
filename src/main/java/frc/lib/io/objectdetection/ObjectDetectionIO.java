@@ -25,8 +25,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
  */
 public interface ObjectDetectionIO {
 
-    /*
-     * Class defining data type for updateInputs method.
+    /**
+     * Class defining data type for Object Detection updateInputs method (i.e. data structure the
+     * camera will place its results into). Fields of this class will be populated downstream by the
+     * implemented IO layer (e.g. ObjectDetectionIOPhotonVision), used in calculations at the device
+     * layer, and used for decisions at the subsystem layer.
      */
     public class ObjectDetectionIOInputs implements LoggableInputs {
         /** Whether the camera is connected. */

@@ -30,6 +30,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 
 /**
  * Represents a single Object Detection camera on the robot.
@@ -42,17 +43,18 @@ import edu.wpi.first.units.measure.Angle;
  * ML object detection as well as HSV Color detection.
  */
 public class ObjectDetection {
-    // IO implementation of ObjectDetectionIO
-    private final ObjectDetectionIO io;
+    // Inputs data structure
     private final ObjectDetectionIOInputs inputs =
         new ObjectDetectionIOInputs();
+    // IO implementation of ObjectDetectionIO (how inputs data structure is populated)
+    private final ObjectDetectionIO io;
 
     /**
-     * Represents a basic Object Detection observation.
+     * Represents an Object Detection observation.
      * 
      * <p>
-     * These baseline return values come directly from the camera and can be used for reference, in
-     * commands, or device-level calculations. This structure can represent essential observations
+     * These values are a combination of baseline return values from the camera and device-level
+     * calculations using those basic values. This structure can represent essential observations
      * from an ML or HSV Color Detection pipeline.
      * 
      * @param objID Object ID (from ML pipeline only).
@@ -60,9 +62,11 @@ public class ObjectDetection {
      * @param pitch Pitch of the object relative to the centerline of the camera.
      * @param yaw Yaw of the object relative to the centerline of the camera.
      * @param area Area of the object in the image.
+     * @param distance Approximate 2d robot-relative distance to the detected object.
+     * @param objectPose Estimated field-relative pose of the detected object.
      */
     public record ObjectDetectionObservation(int objID, double confidence, Angle pitch, Angle yaw,
-        double area) {
+        double area, Optional<Distance> distance, Optional<Pose2d> objectPose) {
     }
 
     /*
@@ -293,20 +297,20 @@ public class ObjectDetection {
     }
 
     /**
-     * Generates an N-element FIFO list of the last N objects detected by the robot. 0th index
+     * Generates an N-element FIFO list of the last N object poses detected by the camera. 0th index
      * represents the oldest detection (i.e. start of the list), N-1th index represents the most
      * recent detection (i.e. end of the list). If a detection is deemed a repeat (according to the
      * passed Translation2D tolerance), it is removed from its current location in robot memory and
      * re-added to the end of the list.
      * 
      * @param N The number of last detections to store in memory.
-     * @param lastNDetections The list of Translation2d objects representing the robot's memory of
+     * @param lastNDetections The list of Translation2d objects representing the camera's memory of
      *        last N detections.
      * @param toleranceMeters The tolerance in meters for determining whether a detection is new or
      *        old.
      * @param targetTranslation The Translation2d of the current target detection to be evaluated.
      */
-    public void getLastNDetections(int N,
+    public void updateObservationPoseBuffer(int N,
         List<Translation2d> lastNDetections, double toleranceMeters,
         Translation2d targetTranslation)
     {
@@ -351,7 +355,7 @@ public class ObjectDetection {
      * @return An optional ObjectDetectionObservation representing the image observation best
      *         meeting the selection criterion.
      */
-    public Optional<ObjectDetectionObservation> getObjectObservation(PhotonTrackedTarget[] targets,
+    public Optional<ObjectDetectionObservation> getContourObservation(PhotonTrackedTarget[] targets,
         ContourSelectionMode selection)
     {
         if (targets == null || targets.length == 0) {
@@ -361,18 +365,28 @@ public class ObjectDetection {
         switch (selection) {
             case LARGEST:
                 selectedTarget = getLargestContour(targets);
-                return Optional.ofNullable(
-                    new ObjectDetectionObservation(selectedTarget.getDetectedObjectClassID(),
-                        selectedTarget.getDetectedObjectConfidence(),
-                        Degrees.of(selectedTarget.getPitch()),
-                        Degrees.of(selectedTarget.getYaw()), selectedTarget.getArea()));
+                if (selectedTarget == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.ofNullable(
+                        new ObjectDetectionObservation(selectedTarget.getDetectedObjectClassID(),
+                            selectedTarget.getDetectedObjectConfidence(),
+                            Degrees.of(selectedTarget.getPitch()),
+                            Degrees.of(selectedTarget.getYaw()), selectedTarget.getArea(),
+                            Optional.empty(), Optional.empty()));
+                }
             case LOWEST:
                 selectedTarget = getLowestContour(targets);
-                return Optional.ofNullable(
-                    new ObjectDetectionObservation(selectedTarget.getDetectedObjectClassID(),
-                        selectedTarget.getDetectedObjectConfidence(),
-                        Degrees.of(selectedTarget.getPitch()),
-                        Degrees.of(selectedTarget.getYaw()), selectedTarget.getArea()));
+                if (selectedTarget == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.ofNullable(
+                        new ObjectDetectionObservation(selectedTarget.getDetectedObjectClassID(),
+                            selectedTarget.getDetectedObjectConfidence(),
+                            Degrees.of(selectedTarget.getPitch()),
+                            Degrees.of(selectedTarget.getYaw()), selectedTarget.getArea(),
+                            Optional.empty(), Optional.empty()));
+                }
             default:
                 return Optional.empty();
         }
