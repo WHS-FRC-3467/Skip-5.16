@@ -72,7 +72,7 @@ public class IntakeTest {
     void stop()
     {
         TestUtil.runTest(
-            intake.runIntake(Intake.State.STOP),
+            intake.stop(),
             2,
             intake);
         try {
