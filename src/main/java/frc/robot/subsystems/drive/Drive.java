@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -360,12 +360,14 @@ public class Drive extends SubsystemBase {
     }
 
     /** Returns the acceleration of the gyro in the X direction. */
-    public double getAccelerationX() {
+    public double getAccelerationX()
+    {
         return gyroIO.getAccelerationX();
     }
 
     /** Returns the acceleration of the gyro in the Y direction. */
-    public double getAccelerationY() {
+    public double getAccelerationY()
+    {
         return gyroIO.getAccelerationY();
     }
 }

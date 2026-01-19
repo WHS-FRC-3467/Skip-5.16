@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -31,7 +31,7 @@ import java.util.Queue;
 public class GyroIOPigeon2 implements GyroIO {
     private final Pigeon2 pigeon = new Pigeon2(
         DriveConstants.drivetrainConstants.Pigeon2Id,
-        DriveConstants.drivetrainConstants.CANBusName);
+        DriveConstants.kCANBus);
     private final StatusSignal<Angle> yaw = pigeon.getYaw();
     private final Queue<Double> yawPositionQueue;
     private final Queue<Double> yawTimestampQueue;
@@ -55,7 +55,9 @@ public class GyroIOPigeon2 implements GyroIO {
     @Override
     public void updateInputs(GyroIOInputs inputs)
     {
-        inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity, accelerationX, accelerationY).equals(StatusCode.OK);
+        inputs.connected =
+            BaseStatusSignal.refreshAll(yaw, yawVelocity, accelerationX, accelerationY)
+                .equals(StatusCode.OK);
         inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
         inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
 
@@ -69,12 +71,14 @@ public class GyroIOPigeon2 implements GyroIO {
     }
 
     @Override
-    public double getAccelerationX() {
+    public double getAccelerationX()
+    {
         return pigeon.getAccelerationX().getValueAsDouble();
     }
 
     @Override
-    public double getAccelerationY() {
+    public double getAccelerationY()
+    {
         return pigeon.getAccelerationY().getValueAsDouble();
     }
 }

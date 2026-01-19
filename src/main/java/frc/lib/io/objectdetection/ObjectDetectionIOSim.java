@@ -9,43 +9,54 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.units.Units;
+import frc.lib.devices.AprilTagCamera.CameraProperties;
 
 /** An object detection sim class that utilizes the PhotonVision implementation for tests. */
 public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
-    private final VisionSystemSim visionSim;
-    private final PhotonCamera cam;
+    private final String target_name;
     private final PhotonCameraSim camSim;
+    private final VisionSystemSim visionSim;
     private final Supplier<Pose2d> robotPoseSupplier;
     private final Supplier<VisionTargetSim[]> visionTargetSupplier;
+
     private VisionTargetSim[] visionTargets;
     private Set<VisionTargetSim> targetSet;
     private List<VisionTargetSim> targetList;
-    private final String target_name;
 
-    public ObjectDetectionIOSim(String cameraName, Transform3d cameraTransform,
+    public ObjectDetectionIOSim(CameraProperties cameraProperties,
         Supplier<Pose2d> robotPoseSupplier,
         String target_name, Supplier<VisionTargetSim[]> visionTargetSupplier)
     {
-        super(cameraName);
+        super(cameraProperties.name());
         this.target_name = target_name;
-        // Initialize simulated object detection camera
-        cam = new PhotonCamera(cameraName);
-        camSim = new PhotonCameraSim(cam, new SimCameraProperties());
+
+        var simCameraProperties = new SimCameraProperties();
+        simCameraProperties.setCalibration(
+            cameraProperties.resolutionWidth(),
+            cameraProperties.resolutionHeight(),
+            cameraProperties.cameraMatrix(),
+            cameraProperties.distCoeffs());
+        simCameraProperties.setFPS(cameraProperties.fps());
+        simCameraProperties.setAvgLatencyMs(cameraProperties.latency().in(Units.Milliseconds));  
+        simCameraProperties.setLatencyStdDevMs(cameraProperties.latencyStdDev().in(Units.Milliseconds));
+        // Generate a sim camera associated with the super's real PhotonVision camera
+        camSim = new PhotonCameraSim(super.camera, simCameraProperties);
+
         // Wireframe visualizer for objects
         camSim.enableDrawWireframe(true);
-        // Create a vision system sim and add the sim camera to it
+        // Create a vision system sim and add the sim camera to it. Currently factored for only one ML camera.
         visionSim = new VisionSystemSim("objectDetection");
-        visionSim.addCamera(camSim, cameraTransform);
+        visionSim.addCamera(camSim, cameraProperties.robotToCamera());
         // Suppliers for dynamic sim object position updates
         this.robotPoseSupplier = robotPoseSupplier;
         this.visionTargetSupplier = visionTargetSupplier;
+        
         // Initialize sim vision targets on field
         // Current vision targets
         visionTargets = visionTargetSupplier.get();

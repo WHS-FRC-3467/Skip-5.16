@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -29,7 +29,7 @@ public class Ports {
     // Don't use the rio for drivetrain:
     // - It has slower odometry
     // - We assign CAN ID 0 to the pigeon
-    public static final CANBus drivetrainBus = new CANBus("Drivetrain");
+    public static final CANBus DRIVETRAIN_BUS = new CANBus("Drivetrain");
 
     public static final Device.CAN laserCAN1 = new CAN(0, "rio");
     public static final Device.CAN lights = new CAN(1, "rio");
@@ -39,7 +39,6 @@ public class Ports {
     public static final Device.DIO diobeambreak = new DIO(0);
 
     public static final Device.CAN pdh = new CAN(50, "rio");
-
     public static final Device.CAN RotarySubsystemMotorMain = new CAN(3, "rio");
     public static final Device.CAN RotarySubsystemMotorFollower = new CAN(4, "rio");
     public static final Device.CAN RotarySubsystemEncoder = new CAN(6, "rio");
@@ -48,6 +47,7 @@ public class Ports {
     public static final Device.CAN flywheel = new CAN(2, "rio");
     public static final Device.CAN indexer = new CAN(18, "rio");
     public static final Device.CAN indexerLaserCAN = new CAN(19, "rio");
+    public static final Device.CAN intake = new CAN(20, "rio");
 
     public static final Device.PWM servo1 = new PWM(1);
 

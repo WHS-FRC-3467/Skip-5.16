@@ -1,0 +1,102 @@
+{
+  "cSpell.words": [
+    "cancoder",
+    "CANIVORE",
+    "Grapplehook",
+    "pathfinding",
+    "teleop",
+    "Windham",
+    "WPILOG"
+  ],
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.server.launchMode": "Standard",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "bin/": true,
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true,
+    "**/*~": true
+  },
+  "java.test.config": [
+    {
+      "name": "WPIlibUnitTests",
+      "workingDirectory": "${workspaceFolder}/build/jni/release",
+      "vmargs": [
+        "-Djava.library.path=${workspaceFolder}/build/jni/release"
+      ],
+      "env": {
+        "LD_LIBRARY_PATH": "${workspaceFolder}/build/jni/release",
+        "DYLD_LIBRARY_PATH": "${workspaceFolder}/build/jni/release"
+      }
+    }
+  ],
+  "java.test.defaultConfig": "WPIlibUnitTests",
+  "java.import.gradle.annotationProcessing.enabled": false,
+  "java.completion.favoriteStaticMembers": [
+    "org.junit.Assert.*",
+    "org.junit.Assume.*",
+    "org.junit.jupiter.api.Assertions.*",
+    "org.junit.jupiter.api.Assumptions.*",
+    "org.junit.jupiter.api.DynamicContainer.*",
+    "org.junit.jupiter.api.DynamicTest.*",
+    "org.mockito.Mockito.*",
+    "org.mockito.ArgumentMatchers.*",
+    "org.mockito.Answers.*",
+    "edu.wpi.first.units.Units.*"
+  ],
+  "java.completion.filteredTypes": [
+    "java.awt.*",
+    "com.sun.*",
+    "sun.*",
+    "jdk.*",
+    "org.graalvm.*",
+    "io.micrometer.shaded.*",
+    "java.beans.*",
+    "java.util.Base64.*",
+    "java.util.Timer",
+    "java.sql.*",
+    "javax.swing.*",
+    "javax.management.*",
+    "javax.smartcardio.*",
+    "edu.wpi.first.math.proto.*",
+    "edu.wpi.first.math.**.proto.*",
+    "edu.wpi.first.math.**.struct.*"
+  ],
+  "java.templates.fileHeader": [
+    "/* Copyright (C) ${year} Windham Windup",
+    " *",
+    " * This program is free software: you can redistribute it and/or modify",
+    " * it under the terms of the GNU General Public License as published by",
+    " * the Free Software Foundation, either version 3 of the License, or",
+    " * any later version.",
+    " *",
+    " * This program is distributed in the hope that it will be useful,",
+    " * but WITHOUT ANY WARRANTY; without even the implied warranty of",
+    " * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
+    " * GNU General Public License for more details.",
+    " *",
+    " * You should have received a copy of the GNU General Public License",
+    " * along with this program.  If not, see <https://www.gnu.org/licenses/>.",
+    " */",
+    ""
+  ],
+  "editor.formatOnSave": true,
+  "java.format.settings.url": "./style.xml",
+  "[java]": {
+    "editor.detectIndentation": false
+  },
+  "java.project.sourcePaths": [
+    "src/main/java",
+    "processor/src/main/java"
+  ],
+  "java.project.referencedLibraries": [
+    "processor/build/libs/**/*.jar"
+  ],
+  "java.compile.nullAnalysis.mode": "automatic"
+}

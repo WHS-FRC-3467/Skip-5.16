@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -100,11 +100,9 @@ public class ModuleIOTalonFX implements ModuleIO {
         SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants)
     {
         this.constants = constants;
-        driveTalon =
-            new TalonFX(constants.DriveMotorId, DriveConstants.drivetrainConstants.CANBusName);
-        turnTalon =
-            new TalonFX(constants.SteerMotorId, DriveConstants.drivetrainConstants.CANBusName);
-        cancoder = new CANcoder(constants.EncoderId, DriveConstants.drivetrainConstants.CANBusName);
+        driveTalon = new TalonFX(constants.DriveMotorId, DriveConstants.kCANBus);
+        turnTalon = new TalonFX(constants.SteerMotorId, DriveConstants.kCANBus);
+        cancoder = new CANcoder(constants.EncoderId, DriveConstants.kCANBus);
 
         // Configure drive motor
         var driveConfig = constants.DriveMotorInitialConfigs;
