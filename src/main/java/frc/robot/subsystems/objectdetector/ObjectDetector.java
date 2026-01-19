@@ -22,8 +22,10 @@ import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.robot.RobotState;
 import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -56,62 +58,98 @@ public class ObjectDetector extends SubsystemBase {
 
     // Private helper for generating latest ML Object Observation and updating internal buffer of
     // detected objects.
-    private Optional<ObjectDetectionObservation> latestObjectObservation()
+    private Optional<ObjectDetectionObservation> latestObjectObservation(PhotonTrackedTarget target)
     {
+        // Generate full object record using ML model
         Optional<ObjectDetectionObservation> observation =
-            objectDetection.getObjectObservation(objectDetection.getTargets()[0],
+            objectDetection.getObjectObservation(target,
                 ObjectDetectorConstants.CAMERA0_TRANSFORM,
                 ObjectDetectorConstants.OBJECT0_HEIGHT_METERS, 1, 0, 1, 0,
                 robotState.getEstimatedPose());
-        if (observation.isEmpty() || observation.get().objectPose().isEmpty()) {
+        if (observation.isEmpty()) {
             return Optional.empty();
         }
         // Update object pose buffer of most-recently detected objects
         objectDetection.updateObservationPoseBuffer(10, objectPoseBuffer, 0.4572,
             observation.get().objectPose().get().getTranslation());
         // Object pose determined and buffer updated -- log results
-        logObjectObservation(observation.get().distance().get().in(Meters),
-            observation.get().objectPose().get().getTranslation());
-        // Return packaged latest ML detection
+        logObjectObservation(observation);
+        // Return packaged latest Object observation
         return observation;
     }
 
-    // Private helper for generating latest Color Contour Object observation
+    // Private helper for generating latest Contour observation
     private Optional<ObjectDetectionObservation> latestContourObservation(
         ContourSelectionMode selection)
     {
-        // Return packaged latest Color Contour observation
-        return objectDetection.getContourObservation(objectDetection.getTargets(), selection);
+        // Generate partial object record using blob model
+        Optional<ObjectDetectionObservation> observation =
+            objectDetection.getContourObservation(objectDetection.getTargets(), selection);
+        if (observation.isEmpty()) {
+            return Optional.empty();
+        }
+        // Contour orientation determined -- log results
+        logContourObservation(observation, selection);
+        // Return packaged latest Blob observation
+        return observation;
     }
 
     // Private helper for logging Object Detection values
-    private void logObjectObservation(double distance,
-        Translation2d targetLocation)
+    private void logObjectObservation(Optional<ObjectDetectionObservation> observation)
     {
         // Logged calculations
-        Logger.recordOutput("Detection/" + "Calculated Distance", distance);
+        Logger.recordOutput("Detection/" + "ML:" + "Latest Detection's Object ID",
+            observation.get().objID());
 
-        Logger.recordOutput("Detection/" + "Latest Detection's Calculated Coordinates",
-            targetLocation);
+        Logger.recordOutput("Detection/" + "ML:" + "Latest Detection's Detection Confidence",
+            observation.get().confidence());
 
-        Logger.recordOutput("Detection/" + "Newest Detection",
+        Logger.recordOutput("Detection/" + "ML:" + "Latest Detection's Calculated Coordinates",
+            observation.get().objectPose().get().getTranslation());
+
+        Logger.recordOutput("Detection/" + "ML:" + "Latest Detection's Calculated Distance",
+            observation.get().distance().get().in(Meters));
+
+        Logger.recordOutput("Detection/" + "ML:" + "Newest Coordinate Detection",
             objectPoseBuffer.get(objectPoseBuffer.size() - 1));
 
-        Logger.recordOutput("Detection/" + "Oldest Detection", objectPoseBuffer.get(0));
+        Logger.recordOutput("Detection/" + "ML:" + "Oldest Coordinate Detection",
+            objectPoseBuffer.get(0));
 
-        Logger.recordOutput("Detection/" + "Detection List Size", objectPoseBuffer.size());
+        Logger.recordOutput("Detection/" + "ML:" + "Detection List Size", objectPoseBuffer.size());
 
-        Logger.recordOutput("Detection/" + "Sim Target #0 True Range",
+        Logger.recordOutput("Detection/" + "ML:" + "Sim Target #0 True Range",
             ObjectDetectorConstants.SIM_TARGETS[0].getPose().toPose2d().getTranslation()
                 .minus(robotState.getEstimatedPose().getTranslation()).getX());
 
-        Logger.recordOutput("Detection/" + "Sim Target #0 True Heading",
+        Logger.recordOutput("Detection/" + "ML:" + "Sim Target #0 True Heading",
             ObjectDetectorConstants.SIM_TARGETS[0].getPose().toPose2d().getTranslation()
                 .minus(robotState.getEstimatedPose().getTranslation()).getY());
 
-        Logger.recordOutput("Detection/" + "Sim Target #0 True Distance",
+        Logger.recordOutput("Detection/" + "ML:" + "Sim Target #0 True Distance",
             ObjectDetectorConstants.SIM_TARGETS[0].getPose().toPose2d().getTranslation()
                 .getDistance(robotState.getEstimatedPose().getTranslation()));
+    }
+
+    // Private helper for logging Contour values
+    private void logContourObservation(Optional<ObjectDetectionObservation> observation,
+        ContourSelectionMode mode)
+    {
+        // Logged calculations
+        Logger.recordOutput("Detection/" + "Contour: " + mode + ": Object ID",
+            observation.get().objID());
+
+        Logger.recordOutput("Detection/" + "Contour: " + mode + ": Confidence",
+            observation.get().confidence());
+
+        Logger.recordOutput("Detection/" + "Contour: " + mode + ": Pitch",
+            observation.get().pitch().in(Degrees));
+
+        Logger.recordOutput("Detection/" + "Contour: " + mode + ": Yaw",
+            observation.get().yaw().in(Degrees));
+
+        Logger.recordOutput("Detection/" + "Contour: " + mode + ": Area",
+            observation.get().area());
     }
 
     @Override
@@ -120,11 +158,11 @@ public class ObjectDetector extends SubsystemBase {
         // Update the inputs data structure associated with this object detection camera with latest
         // readings.
         objectDetection.periodic();
-        // Inputs from camera now updated, re-populate observations with new data.
+        // Now that inputs are updated, re-populate observations with new data.
         if (objectDetection.getTargets().length > 0) {
             // Generate latest ML Object observation
-            latestObjectObservation = latestObjectObservation();
-            // Generate latest Color Contour observations
+            latestObjectObservation = latestObjectObservation(objectDetection.getTargets()[0]);
+            // Generate latest Contour observations
             latestBigContourObservation = latestContourObservation(ContourSelectionMode.LARGEST);
             latestLowContourObservation = latestContourObservation(ContourSelectionMode.LOWEST);
         } else {

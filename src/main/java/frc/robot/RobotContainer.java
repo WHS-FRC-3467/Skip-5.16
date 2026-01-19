@@ -51,12 +51,12 @@ public class RobotContainer {
 
     // Subsystems
     public final Drive drive;
-    private final LEDs leds;
-    private final LaserCAN1 laserCAN1;
+    // private final LEDs leds;
+    // private final LaserCAN1 laserCAN1;
     private final ObjectDetector objectDetector;
-    private final TurretSuperstructure turret;
-    private final Intake intake;
-    private final Indexer indexer;
+    // private final TurretSuperstructure turret;
+    // private final Intake intake;
+    // private final Indexer indexer;
 
     // Controller
     private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
@@ -71,12 +71,12 @@ public class RobotContainer {
     public RobotContainer()
     {
         drive = DriveConstants.get();
-        laserCAN1 = LaserCAN1Constants.get();
-        leds = LEDsConstants.get();
+        // laserCAN1 = LaserCAN1Constants.get();
+        // leds = LEDsConstants.get();
         objectDetector = ObjectDetectorConstants.get();
-        turret = TurretSuperstructureConstants.get();
-        intake = IntakeConstants.get();
-        indexer = IndexerConstants.get();
+        // turret = TurretSuperstructureConstants.get();
+        // intake = IntakeConstants.get();
+        // indexer = IndexerConstants.get();
         VisionConstants.create();
 
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
@@ -107,21 +107,22 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-        // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
+        // // Left Bumper: Intake while held
+        // controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
 
-        // Back Button: Eject while held
-        controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
+        // // Back Button: Eject while held
+        // controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
 
-        // Right bumper: Shoot on the Move
-        controller.rightBumper().whileTrue(
-            turret.shoot(drive, () -> -controller.getLeftX(), () -> -controller.getLeftY()));
+        // // Right bumper: Shoot on the Move
+        // controller.rightBumper().whileTrue(
+        // turret.shoot(drive, () -> -controller.getLeftX(), () -> -controller.getLeftY()));
     }
 
-    //Setup all SmartDashboard commands
-    private void initializeDashboard() {
-        SmartDashboard.putData("Run Indexer expel", indexer.intakeCommand(Indexer.State.EXPEL));
-        SmartDashboard.putData("Run Indexer intake", indexer.intakeCommand(Indexer.State.PULL));
+    // Setup all SmartDashboard commands
+    private void initializeDashboard()
+    {
+        // SmartDashboard.putData("Run Indexer expel", indexer.intakeCommand(Indexer.State.EXPEL));
+        // SmartDashboard.putData("Run Indexer intake", indexer.intakeCommand(Indexer.State.PULL));
     }
 
     public Command getAutonomousCommand()

@@ -43,20 +43,22 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
             cameraProperties.cameraMatrix(),
             cameraProperties.distCoeffs());
         simCameraProperties.setFPS(cameraProperties.fps());
-        simCameraProperties.setAvgLatencyMs(cameraProperties.latency().in(Units.Milliseconds));  
-        simCameraProperties.setLatencyStdDevMs(cameraProperties.latencyStdDev().in(Units.Milliseconds));
+        simCameraProperties.setAvgLatencyMs(cameraProperties.latency().in(Units.Milliseconds));
+        simCameraProperties
+            .setLatencyStdDevMs(cameraProperties.latencyStdDev().in(Units.Milliseconds));
         // Generate a sim camera associated with the super's real PhotonVision camera
         camSim = new PhotonCameraSim(super.camera, simCameraProperties);
 
         // Wireframe visualizer for objects
         camSim.enableDrawWireframe(true);
-        // Create a vision system sim and add the sim camera to it. Currently factored for only one ML camera.
+        // Create a vision system sim and add the sim camera to it. Currently factored for only one
+        // ML camera.
         visionSim = new VisionSystemSim("objectDetection");
         visionSim.addCamera(camSim, cameraProperties.robotToCamera());
         // Suppliers for dynamic sim object position updates
         this.robotPoseSupplier = robotPoseSupplier;
         this.visionTargetSupplier = visionTargetSupplier;
-        
+
         // Initialize sim vision targets on field
         // Current vision targets
         visionTargets = visionTargetSupplier.get();
@@ -78,6 +80,19 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     {
         // Update robot & target poses
         visionSim.update(robotPoseSupplier.get());
+        // updateTargetPoses();
+        super.updateInputs(inputs);
+    }
+
+    @Override
+    public String getCamera()
+    {
+        return cameraName;
+    }
+
+    // Private helper for simulating moving game pieces. Calls can have performance impact.
+    private void updateTargetPoses()
+    {
         visionSim.clearVisionTargets();
         visionTargets = visionTargetSupplier.get();
         visionSim.addVisionTargets(target_name, visionTargets);
@@ -87,12 +102,5 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
         for (VisionTargetSim target : targetList) {
             Logger.recordOutput("TARGET POSE" + targetList.indexOf(target), target.getPose());
         }
-        super.updateInputs(inputs);
-    }
-
-    @Override
-    public String getCamera()
-    {
-        return cameraName;
     }
 }

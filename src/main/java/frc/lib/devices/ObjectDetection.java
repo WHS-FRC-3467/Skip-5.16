@@ -219,7 +219,7 @@ public class ObjectDetection {
 
         } else {
             // Use rangeToTarget_FocalLength.
-            return -1.0d;
+            return -1.0;
         }
     }
 
@@ -350,10 +350,17 @@ public class ObjectDetection {
     }
 
     /**
-     * Returns the latest Object Detection observation.
+     * Returns the latest Object observation.
      * 
-     * @param target A PhotonTrackedTarget representing the detected object of interest, likely from
-     *        ObjectDetection.getTargets()[i].
+     * <p>
+     * This function returns a full record representing the detected object -- object ID,
+     * confidence, pitch, yaw, area, robot distance to target, and target's field pose -- usually
+     * requiring a functional ML pipeline. A PhotonVision ML detection that fails to identify the
+     * object will return object ID & confidence as -1. Failed pose estimation will return relevant
+     * fields as empty.
+     * 
+     * @param target A single PhotonTrackedTarget representing the detected object of interest,
+     *        likely from objectDetection.getTargets()[i].
      * @param robotToCamera robotToCamera transform.
      * @param objectPhysicalHeightMeters Physical (real-world) height of the object being
      *        represented by the PhotonTrackedTarget (e.g. 2025 Algae = 0.41 m = ball diameter) (m).
@@ -363,7 +370,7 @@ public class ObjectDetection {
      *        1).
      * @param headingCalOffset Calibration offset factor for heading calculation (usually set to 0).
      * @param robotPose Field-relative robot pose.
-     * @return An optional {@link ObjectDetectionObservation} representing the Object.
+     * @return An optional {@link ObjectDetectionObservation}.
      */
     public Optional<ObjectDetectionObservation> getObjectObservation(PhotonTrackedTarget target,
         Transform3d robotToCamera,
@@ -377,6 +384,18 @@ public class ObjectDetection {
                 robotToCamera,
                 objectPhysicalHeightMeters / 2,
                 rangeCalFactor, rangeCalOffset);
+        if (range == -1.0) {
+            // Range finding algorithm failed due to geometric constraints,
+            // return partial ML Object Observation
+            return Optional.ofNullable(new ObjectDetectionObservation(
+                target.getDetectedObjectClassID(),
+                target.getDetectedObjectConfidence(),
+                Degrees.of(target.getPitch()),
+                Degrees.of(target.getYaw()),
+                target.getArea(),
+                Optional.empty(),
+                Optional.empty()));
+        }
         // Robot-local heading to target
         double heading =
             headingToTarget_Yaw(target,
@@ -402,12 +421,20 @@ public class ObjectDetection {
     }
 
     /**
-     * Returns the latest Color Contour observation.
+     * Returns the latest Contour (blob) observation.
      * 
-     * @param targets An array of PhotonTrackedTargets, likely from ObjectDetection.getTargets().
+     * <p>
+     * This function returns a partial record representing the detected blob -- pitch, yaw, & area
+     * -- these are baseline PhotonVision pipeline results relevant to multiple APIs (Color, ML,
+     * etc.). Pose estimation is not attempted here so relevant fields are returned empty.
+     * Additionally, object ID & confidence are definitionally not populated for a blob and
+     * therefore assigned -2 to differeniate this result from an ML detection that failed to
+     * generate both an ID & a pose (-1). See {@link getObjectObservation}.
+     * 
+     * @param targets An array of PhotonTrackedTargets, likely from objectDetection.getTargets().
      * @param selection An enum representing the two selection modes: LARGEST or LOWEST. LARGEST
      *        returns blob with greatest area, LOWEST returns blob with smallest pitch.
-     * @return An optional {@link ObjectDetectionObservation} representing the Color Contour.
+     * @return An optional {@link ObjectDetectionObservation}.
      */
     public Optional<ObjectDetectionObservation> getContourObservation(PhotonTrackedTarget[] targets,
         ContourSelectionMode selection)
@@ -423,10 +450,10 @@ public class ObjectDetection {
                     return Optional.empty();
                 } else {
                     return Optional.ofNullable(
-                        new ObjectDetectionObservation(selectedTarget.getDetectedObjectClassID(),
-                            selectedTarget.getDetectedObjectConfidence(),
+                        new ObjectDetectionObservation(-2, -2,
                             Degrees.of(selectedTarget.getPitch()),
-                            Degrees.of(selectedTarget.getYaw()), selectedTarget.getArea(),
+                            Degrees.of(selectedTarget.getYaw()),
+                            selectedTarget.getArea(),
                             Optional.empty(), Optional.empty()));
                 }
             case LOWEST:
@@ -435,10 +462,10 @@ public class ObjectDetection {
                     return Optional.empty();
                 } else {
                     return Optional.ofNullable(
-                        new ObjectDetectionObservation(selectedTarget.getDetectedObjectClassID(),
-                            selectedTarget.getDetectedObjectConfidence(),
+                        new ObjectDetectionObservation(-2, -2,
                             Degrees.of(selectedTarget.getPitch()),
-                            Degrees.of(selectedTarget.getYaw()), selectedTarget.getArea(),
+                            Degrees.of(selectedTarget.getYaw()),
+                            selectedTarget.getArea(),
                             Optional.empty(), Optional.empty()));
                 }
             default:

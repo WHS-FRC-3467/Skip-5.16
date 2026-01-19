@@ -128,9 +128,9 @@ public class ObjectDetectorConstants {
             CAMERA0_LATENCY,
             CAMERA0_LATENCY_STDDEV);
 
-    // Target constants // TODO: Refactor these names when 2026 targets are included
-    public final static String OBJECT0_NAME = "Fuel";
-    public final static double OBJECT0_HEIGHT_METERS = 0.41;
+    // Target constants
+    public final static String OBJECT0_NAME = "FUEL";
+    public final static double OBJECT0_HEIGHT_METERS = 0.150114;
     // Initialize fixed array of sim targets
     public static VisionTargetSim[] SIM_TARGETS = new VisionTargetSim[] {
             new VisionTargetSim(new Pose3d(3, 2, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
@@ -139,6 +139,8 @@ public class ObjectDetectorConstants {
                 new TargetModel(OBJECT0_HEIGHT_METERS)),
             new VisionTargetSim(new Pose3d(12, 7, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
                 new TargetModel(OBJECT0_HEIGHT_METERS)),
+            new VisionTargetSim(new Pose3d(13, 6, 5 * OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                new TargetModel(5 * OBJECT0_HEIGHT_METERS)),
             null,
     };
     // Dynamic supplier for moving sim targets
@@ -150,6 +152,9 @@ public class ObjectDetectorConstants {
                     new TargetModel(OBJECT0_HEIGHT_METERS)),
                 new VisionTargetSim(new Pose3d(12, 7, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
                     new TargetModel(OBJECT0_HEIGHT_METERS)),
+                new VisionTargetSim(
+                    new Pose3d(13, 6, 5 * OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                    new TargetModel(5 * OBJECT0_HEIGHT_METERS)),
                 new VisionTargetSim(
                     new Pose3d(16, 3.5 * Math.sin(0.25 * Math.PI * Timer.getFPGATimestamp()) + 4.1,
                         OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
