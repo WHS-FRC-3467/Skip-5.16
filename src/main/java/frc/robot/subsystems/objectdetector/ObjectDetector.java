@@ -74,7 +74,7 @@ public class ObjectDetector extends SubsystemBase {
             observation.get().objectPose().get().getTranslation());
         // Object pose determined and buffer updated -- log results
         logObjectObservation(observation);
-        // Return packaged latest Object observation
+        // Return latest Object observation
         return observation;
     }
 
@@ -90,7 +90,7 @@ public class ObjectDetector extends SubsystemBase {
         }
         // Contour orientation determined -- log results
         logContourObservation(observation, selection);
-        // Return packaged latest Blob observation
+        // Return latest Blob observation
         return observation;
     }
 
@@ -166,8 +166,10 @@ public class ObjectDetector extends SubsystemBase {
             latestBigContourObservation = latestContourObservation(ContourSelectionMode.LARGEST);
             latestLowContourObservation = latestContourObservation(ContourSelectionMode.LOWEST);
         } else {
-            return;
+            // Prevent stale data from persisting
+            latestObjectObservation = Optional.empty();
+            latestBigContourObservation = Optional.empty();
+            latestLowContourObservation = Optional.empty();
         }
     }
 }
-

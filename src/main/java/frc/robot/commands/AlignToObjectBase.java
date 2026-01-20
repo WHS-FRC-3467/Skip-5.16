@@ -34,6 +34,7 @@ public abstract class AlignToObjectBase {
     private final LoggedTuneableProfiledPID angularController;
     private final double maxAngularVelocityRadPerSec;
     private double contourYaw;
+    private boolean hadTarget = false;
 
     public AlignToObjectBase(ObjectDetector objectDetector, ContourSelectionMode mode,
         LoggedTuneableProfiledPID angularController, double maxAngularVelocityRadPerSec)
@@ -68,12 +69,17 @@ public abstract class AlignToObjectBase {
         }
 
         if (contourObservation.isEmpty()) {
-            angularController.reset(0.0);
+            if (hadTarget) {
+                angularController.reset(contourYaw, 0.0);
+            }
+            hadTarget = false;
             return OptionalDouble.empty();
         }
-
+        hadTarget = true;
         contourYaw = contourObservation.get().yaw().in(Radians);
-        double omega = angularController.calculate(contourYaw, 0.0);
+
+        // PhotonVision positive right, WPILib positive left
+        double omega = angularController.calculate(-contourYaw, 0.0);
         omega = MathUtil.clamp(omega, -maxAngularVelocityRadPerSec, maxAngularVelocityRadPerSec);
 
         return OptionalDouble.of(omega);
@@ -81,6 +87,6 @@ public abstract class AlignToObjectBase {
 
     protected Boolean isAligned(double tolRad)
     {
-        return (contourYaw < tolRad);
+        return (hadTarget && Math.abs(contourYaw) < tolRad);
     }
 }

@@ -19,10 +19,13 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.util.LoggedDashboardChooser;
+import frc.lib.util.LoggedTuneableProfiledPID;
+import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.TeleopAlignToObject;
 import frc.robot.commands.autos.ExampleAuto;
 import frc.robot.commands.autos.NoneAuto;
 import frc.robot.commands.autos.WheelCharacterizationAuto;
@@ -65,6 +68,10 @@ public class RobotContainer {
     private final LoggedDashboardChooser<AutoCommand> autoChooser;
     public static Field2d autoPreviewField = new Field2d();
 
+    // Object angular controlled (share between Teleop & Auto)
+    private final LoggedTuneableProfiledPID visionAngularController =
+        new LoggedTuneableProfiledPID("ObjectAlign/Angular", 3.0, 0, 0, 0, 0);
+
     /**
      * The container for the robot. Contains subsystems, IO devices, and commands.
      */
@@ -106,6 +113,14 @@ public class RobotContainer {
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
+
+        // Right Trigger: Teleop vision align to largest contour (translation allowed)
+        controller.rightTrigger(0.2)
+            .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
+                () -> -controller.getLeftY(), // forward/back
+                () -> -controller.getLeftX(), // strafe
+                () -> -controller.getRightX(), // fallback rotation
+                visionAngularController));
 
         // // Left Bumper: Intake while held
         // controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());

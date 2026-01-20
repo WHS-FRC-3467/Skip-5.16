@@ -25,21 +25,22 @@ import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 
 public class TeleopAlignToObject extends Command {
     private final Drive drive;
-    private final DoubleSupplier vxSupplier;
-    private final DoubleSupplier vySupplier;
+    private final DoubleSupplier xSupplier;
+    private final DoubleSupplier ySupplier;
     private final DoubleSupplier rotSupplier;
+    private final LoggedTuneableProfiledPID angularController;
     private final AlignToObjectBase strategy;
 
     public TeleopAlignToObject(Drive drive, ObjectDetector objectDetector,
-        ContourSelectionMode mode, DoubleSupplier vxSupplier,
-        DoubleSupplier vySupplier, DoubleSupplier rotSupplier,
+        ContourSelectionMode mode, DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier, DoubleSupplier rotSupplier,
         LoggedTuneableProfiledPID angularController)
     {
         this.drive = drive;
-        this.vxSupplier = vxSupplier;
-        this.vySupplier = vySupplier;
+        this.xSupplier = xSupplier;
+        this.ySupplier = ySupplier;
         this.rotSupplier = rotSupplier;
-
+        this.angularController = angularController;
         this.strategy = new AlignToObjectBase(objectDetector, mode, angularController,
             drive.getMaxAngularSpeedRadPerSec()) {};
 
@@ -50,8 +51,10 @@ public class TeleopAlignToObject extends Command {
     public void execute()
     {
         // Take translation inputs from joystick
-        double vx = vxSupplier.getAsDouble();
-        double vy = vySupplier.getAsDouble();
+        double vx = xSupplier.getAsDouble();
+        double vy = ySupplier.getAsDouble();
+        // Update PID tuning live
+        angularController.updatePID();
         // Implement heading strategy; if fails, fallback to joystick heading
         double omega = strategy.getVisionOmega().orElse(rotSupplier.getAsDouble());
         // Command vx, vy, omega

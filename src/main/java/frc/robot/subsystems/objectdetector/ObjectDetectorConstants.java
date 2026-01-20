@@ -45,11 +45,11 @@ public class ObjectDetectorConstants {
     // field from starting starboard edge, +theta -> right-hand rule. units: meters & degrees.
     public static final String CAMERA0_NAME = "Detection Camera #0";
     public static final Angle CAMERA0_ROLL = Units.Degrees.of(0.0);
-    public static final Angle CAMERA0_PITCH = Units.Degrees.of(25.0);
+    public static final Angle CAMERA0_PITCH = Units.Degrees.of(0.0);
     public static final Angle CAMERA0_YAW = Units.Degrees.of(0.0);
-    public static final double CAMERA0_X = 0.30;
-    public static final double CAMERA0_Y = -0.30;
-    public static final double CAMERA0_Z = 1.0;
+    public static final double CAMERA0_X = 0.0;
+    public static final double CAMERA0_Y = 0.0;
+    public static final double CAMERA0_Z = 0.5;
     public static final Transform3d CAMERA0_TRANSFORM =
         new Transform3d(CAMERA0_X, CAMERA0_Y, CAMERA0_Z,
             new Rotation3d(CAMERA0_ROLL, CAMERA0_PITCH, CAMERA0_YAW));
@@ -139,8 +139,8 @@ public class ObjectDetectorConstants {
                 new TargetModel(OBJECT0_HEIGHT_METERS)),
             new VisionTargetSim(new Pose3d(12, 7, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
                 new TargetModel(OBJECT0_HEIGHT_METERS)),
-            new VisionTargetSim(new Pose3d(13, 6, 5 * OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                new TargetModel(5 * OBJECT0_HEIGHT_METERS)),
+            new VisionTargetSim(new Pose3d(13, 4, 10 * OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                new TargetModel(10 * OBJECT0_HEIGHT_METERS)),
             null,
     };
     // Dynamic supplier for moving sim targets
@@ -153,8 +153,8 @@ public class ObjectDetectorConstants {
                 new VisionTargetSim(new Pose3d(12, 7, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
                     new TargetModel(OBJECT0_HEIGHT_METERS)),
                 new VisionTargetSim(
-                    new Pose3d(13, 6, 5 * OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                    new TargetModel(5 * OBJECT0_HEIGHT_METERS)),
+                    new Pose3d(13, 4, 10 * OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                    new TargetModel(10 * OBJECT0_HEIGHT_METERS)),
                 new VisionTargetSim(
                     new Pose3d(16, 3.5 * Math.sin(0.25 * Math.PI * Timer.getFPGATimestamp()) + 4.1,
                         OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
