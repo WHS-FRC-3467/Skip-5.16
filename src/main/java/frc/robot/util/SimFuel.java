@@ -52,4 +52,11 @@ public class SimFuel {
         Logger.recordOutput("Sim/Stored Fuel",  fuelStored);
         Logger.recordOutput("Sim/Depot Fuel", depotFuel.toArray(new Pose3d[0]));
     }
+
+    public void removeFuel() {
+        if (fuelStored > 0) {
+            fuelStored--;
+        }
+        Logger.recordOutput("Sim/Stored Fuel",  fuelStored);
+    }
 }
