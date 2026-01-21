@@ -16,7 +16,6 @@
 package frc.robot;
 
 import com.ctre.phoenix6.CANBus;
-
 import frc.lib.util.Device;
 import frc.lib.util.Device.CAN;
 import frc.lib.util.Device.DIO;
@@ -27,7 +26,10 @@ public class Ports {
      * LIST OF CHANNEL AND CAN IDS
      */
 
-    public static final CANBus CANIVORE_CAN_BUS = new CANBus("canivore", "./logs/example.hoot");
+    // Don't use the rio for drivetrain:
+    // - It has slower odometry
+    // - We assign CAN ID 0 to the pigeon
+    public static final CANBus DRIVETRAIN_BUS = new CANBus("Drivetrain");
 
     public static final Device.CAN laserCAN1 = new CAN(0, "rio");
     public static final Device.CAN lights = new CAN(1, "rio");
