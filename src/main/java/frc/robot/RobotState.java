@@ -47,6 +47,7 @@ public class RobotState {
 
     
     @Setter
+    @AutoLogOutput(key = "Drive/DrivetrainAngled")
     private boolean drivetrainAngled = false;
 
     @Getter(lazy = true)
@@ -86,6 +87,9 @@ public class RobotState {
             return;
         }
         poseEstimator.addVisionObservation(observation);
+        poseEstimator.getPoseAtTime(observation.timestampSeconds()).ifPresent((Pose2d pose) -> {
+            Logger.recordOutput("Odometry/VisionCorrectedPose", pose);
+        });
     }
     
     public Optional<Pose2d> getPoseAtTime(double timestampSeconds)

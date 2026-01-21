@@ -36,10 +36,6 @@ public class GyroIOPigeon2 implements GyroIO {
     private final StatusSignal<Angle> yaw = pigeon.getYaw();
     private final Queue<Double> yawPositionQueue;
     private final Queue<Double> yawTimestampQueue;
-    private final Queue<Double> pitchPositionQueue;
-    private final Queue<Double> pitchTimestampQueue;
-    private final Queue<Double> rollPositionQueue;
-    private final Queue<Double> rollTimestampQueue;
     private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
     private final StatusSignal<LinearAcceleration> accelerationX = pigeon.getAccelerationX();
     private final StatusSignal<LinearAcceleration> accelerationY = pigeon.getAccelerationY();
@@ -59,10 +55,6 @@ public class GyroIOPigeon2 implements GyroIO {
         pigeon.optimizeBusUtilization();
         yawTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
         yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(pigeon.getYaw());
-        pitchTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
-        pitchPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(pigeon.getPitch());
-        rollTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
-        rollPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(pigeon.getRoll());
     }
 
     @Override
@@ -101,12 +93,12 @@ public class GyroIOPigeon2 implements GyroIO {
     @Override
     public double getPitch()
     {
-        return pigeon.getPitch().getValueAsDouble();
+        return pitch.getValueAsDouble();
     }
     
     @Override
     public double getRoll()
     {
-        return pigeon.getRoll().getValueAsDouble();
+        return roll.getValueAsDouble();
     }
 }

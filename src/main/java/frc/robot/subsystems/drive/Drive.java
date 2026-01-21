@@ -372,7 +372,20 @@ public class Drive extends SubsystemBase {
         return gyroIO.getAccelerationY();
     }
 
-    /** Returns true if the drivetrain is angled. */
+    /**
+     * Returns whether the drivetrain is operating at a significant angle.
+     *
+     * <p>This checks the current pitch and roll reported by the gyro against the
+     * configured maximum allowed pitch ({@link DriveConstants#MAX_ALLOWED_PITCH})
+     * and roll ({@link DriveConstants#MAX_ALLOWED_ROLL}) thresholds. It is used
+     * to detect when the robot is on an incline or traversing a bump so that
+     * vision-based pose updates can be temporarily ignored while the drivetrain
+     * is not level.
+     *
+     * @return {@code true} if the absolute pitch or roll exceeds the allowed
+     *         thresholds, indicating the drivetrain is sufficiently angled;
+     *         {@code false} otherwise.
+     */
     public boolean isAngled() {
         return Math.abs(gyroIO.getPitch()) > DriveConstants.MAX_ALLOWED_PITCH.in(Degrees)
             || Math.abs(gyroIO.getRoll()) > DriveConstants.MAX_ALLOWED_ROLL.in(Degrees);
