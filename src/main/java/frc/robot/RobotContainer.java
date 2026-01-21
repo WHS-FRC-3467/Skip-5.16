@@ -90,9 +90,8 @@ import frc.robot.subsystems.servo1.Servo1Constants;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.SuperstructureConstants;
 import frc.robot.subsystems.turret.FlywheelConstants;
-import frc.robot.subsystems.turret.TurretSuperstructure;
-import frc.robot.subsystems.turret.TurretConstants;
-import frc.robot.subsystems.turret.TurretSuperstructureConstants;
+import frc.robot.subsystems.turret.ShooterSuperstructure;
+import frc.robot.subsystems.turret.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.BallSimulator;
 import frc.robot.subsystems.lasercan1.LaserCAN1;
@@ -131,7 +130,7 @@ public class RobotContainer {
     private final Servo1 servo1;
     private final ObjectDetector objectDetector;
     private final Superstructure superstructure;
-    private final TurretSuperstructure turret;
+    private final ShooterSuperstructure turret;
     private final Intake intake;
     private final Indexer indexer;
 
@@ -157,7 +156,7 @@ public class RobotContainer {
         superstructure = SuperstructureConstants.get();
         servo1 = Servo1Constants.get();
         objectDetector = ObjectDetectorConstants.get();
-        turret = TurretSuperstructureConstants.get();
+        turret = ShooterSuperstructureConstants.get();
         intake = IntakeConstants.get();
         indexer = IndexerConstants.get();
         VisionConstants.create();
@@ -245,9 +244,11 @@ public class RobotContainer {
                 PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
 
         // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.runIntake(State.STOP));
+        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE))
+            .onFalse(intake.runIntake(State.STOP));
         // Back Button: Eject while held
-        controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.runIntake(State.STOP));
+        controller.back().onTrue(intake.runIntake(State.EJECT))
+            .onFalse(intake.runIntake(State.STOP));
 
         // On-the-fly path with waypoints while the Right Bumper is held
         controller.rightBumper().whileTrue(
@@ -286,18 +287,6 @@ public class RobotContainer {
             Commands.runOnce(() -> System.out.println("Step 3")));
 
         SmartDashboard.putData("Steppable Command", steppableCommand);
-
-        // controller.x()
-        // .whileTrue(new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
-        // .withTolerance(Inches.of(3), Degrees.of(5)));
-
-        // controller.x()
-        // .whileTrue(new AlignToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(0)),
-        // AlignMode.STRAFE, () -> controller.getRightX()));
-
-        // Right bumper: Shoot on the Move
-        controller.rightBumper().whileTrue(
-            turret.shoot());
 
         SmartDashboard.putData("HoodMovement", turret.setHoodAngle(Degrees.of(100)));
 

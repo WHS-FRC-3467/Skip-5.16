@@ -9,14 +9,12 @@ import lombok.NoArgsConstructor;
 
 /** Add your docs here. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class TurretSuperstructureConstants {
-    public static TurretSuperstructure get()
+public class ShooterSuperstructureConstants {
+    public static ShooterSuperstructure get()
     {
-        return new TurretSuperstructure(
-            TurretConstants.get(),
+        return new ShooterSuperstructure(
             HoodConstants.get(),
             IndexerConstants.get(),
-            FlywheelConstants.get(),
-            TurretSensorConstants.get());
+            FlywheelConstants.get());
     }
 }

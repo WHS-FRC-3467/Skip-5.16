@@ -15,31 +15,25 @@
 
 package frc.robot.subsystems.turret;
 
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.devices.BeamBreak;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
-import frc.lib.util.FallingEdge;
 import frc.lib.util.LoggedTunableNumber;
-import frc.lib.util.RisingEdge;
 import frc.robot.RobotState;
 
-public class TurretSuperstructure extends SubsystemBase implements AutoCloseable {
+public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
 
     /** Distance from goal in meters -> hood angle in degrees */
     private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
@@ -77,65 +71,17 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
 
     private final RobotState robotState = RobotState.getInstance();
 
-    private final BeamBreak indexerBeamBreak;
-
-    private final RotaryMechanism turretIO;
     private final RotaryMechanism hoodIO;
     private final RotaryMechanism indexerIO;
     private final FlywheelMechanism flywheelIO;
 
-    public TurretSuperstructure(RotaryMechanism turretIO, RotaryMechanism hoodIO,
+    public ShooterSuperstructure(RotaryMechanism hoodIO,
         RotaryMechanism indexerIO,
-        FlywheelMechanism flywheelIO,
-        BeamBreak indexerBeamBreak)
+        FlywheelMechanism flywheelIO)
     {
-        this.turretIO = turretIO;
         this.hoodIO = hoodIO;
         this.indexerIO = indexerIO;
         this.flywheelIO = flywheelIO;
-        this.indexerBeamBreak = indexerBeamBreak;
-    }
-
-    private void runIndexer()
-    {
-        indexerIO.runVelocity(IndexerConstants.CRUISE_VELOCITY, IndexerConstants.ACCELERATION,
-            PIDSlot.SLOT_0);
-    }
-
-    private void stopIndexer()
-    {
-        indexerIO.runVelocity(RotationsPerSecond.zero(), IndexerConstants.ACCELERATION,
-            PIDSlot.SLOT_0);
-    }
-
-    @SuppressWarnings("unused")
-    private Command indexerIntake()
-    {
-        return Commands.startEnd(this::runIndexer, this::stopIndexer)
-            .until(RisingEdge.of(indexerBeamBreak::isBroken));
-    }
-
-    private Command indexerShoot()
-    {
-        return Commands.startEnd(this::runIndexer, this::stopIndexer)
-            .until(FallingEdge.of(indexerBeamBreak::isBroken));
-    }
-
-    // Turret
-
-    private void setTurretPosition(Angle angle)
-    {
-        turretIO.runPosition(angle, PIDSlot.SLOT_0);
-    }
-
-    private boolean turretIsAt(Angle angle)
-    {
-        return turretIO.nearGoal(angle, TurretConstants.TOLERANCE);
-    }
-
-    private boolean turretIsAt(Rotation2d angle)
-    {
-        return turretIsAt(Radians.of(angle.getRadians()));
     }
 
     private void spinFlywheel(AngularVelocity velocity)
@@ -151,16 +97,6 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
             FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
-    public Command moveTurretRobotRelative(Supplier<Rotation2d> robotRelativeHeading)
-    {
-        return Commands
-            .run(() -> setTurretPosition(Radians.of(robotRelativeHeading.get().getRadians())));
-    }
-
-    // MJW: When handling the drivebase we should refrain from modifying the command outside of
-    // robot container.
-    // we should repurpose this in Robot container
-
     // Hood
 
     private void setHoodPosition(Angle angle)
@@ -173,7 +109,7 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
         return hoodIO.nearGoal(angle, HoodConstants.TOLERANCE);
     }
 
-    public Command shoot()
+    public Command prepareShot()
     {
         Supplier<Pose2d> futurePoseSupplier = () -> robotState.getEstimatedPose()
             .exp(robotState.getFieldRelativeVelocity().toTwist2d(timeToBeReady.get()));
@@ -183,26 +119,13 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
         Supplier<Angle> hoodSupplier = () -> Degrees.of(hoodAngleMap
             .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
 
-        return Commands.sequence(
-            Commands.parallel(
-                moveTurretRobotRelative(
-                    () -> SHOOT_GOAL.minus(futurePoseSupplier.get()).getRotation()),
-                Commands.run(() -> spinFlywheel(flywheelVelocitySupplier.get())),
-                Commands.run(() -> setHoodPosition(hoodSupplier.get())),
-                // Wait until at goal positions and make sequences depend on this
-                Commands.idle(this))
-                .until(() -> flywheelIsAt(flywheelVelocitySupplier.get())
-                    && turretIsAt(
-                        SHOOT_GOAL.minus(futurePoseSupplier.get()).getRotation()
-                            .plus(robotState.getRotation().unaryMinus()))
-                    && hoodIsAt(hoodSupplier.get())),
-            // Shoot
-            indexerShoot(),
-            // Spin down flywheel
-            Commands.sequence(
-                Commands.parallel(
-                    Commands.runOnce(() -> spinFlywheel(RotationsPerSecond.zero())),
-                    Commands.runOnce(() -> setHoodPosition(Degrees.zero())))));
+        return Commands.parallel(
+            Commands.run(() -> spinFlywheel(flywheelVelocitySupplier.get())),
+            Commands.run(() -> setHoodPosition(hoodSupplier.get())),
+            // Wait until at goal positions and make sequences depend on this
+            Commands.idle(this).until(
+                () -> hoodIsAt(hoodSupplier.get())
+                    && flywheelIsAt(flywheelVelocitySupplier.get())));
     }
 
     // Create commands for simple shooter tasks.
@@ -218,32 +141,17 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.runOnce(() -> spinFlywheel(velocity));
     }
 
-    // Set Turret Angle
-    public Command setTurretAngle(Angle angle)
-    {
-        return Commands.runOnce(() -> setTurretPosition(angle));
-    }
-
     @Override
     public void periodic()
     {
-        turretIO.periodic();
         flywheelIO.periodic();
         indexerIO.periodic();
         hoodIO.periodic();
-        indexerBeamBreak.periodic();
-
-        var currentRobotHeading = robotState.getEstimatedPose().getRotation();
-
-        // Robot relative
-        var currentTurretHeading = Rotation2d.fromRadians(turretIO.getPosition().in(Radians));
-        Logger.recordOutput("Turret/Orientation", currentTurretHeading.plus(currentRobotHeading));
     }
 
     @Override
     public void close()
     {
-        turretIO.close();
         flywheelIO.close();
         indexerIO.close();
         hoodIO.close();
