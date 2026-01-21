@@ -70,18 +70,18 @@ public class FieldConstants {
         hoodAngleMap.put(4.50, 90.00); //Highest
     }
 
-    public static final InterpolatingDoubleTreeMap flyWheelMap = new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap flywheelMap = new InterpolatingDoubleTreeMap();
     static {
-        flyWheelMap.put(1.01, 43.00); //Lowest
-        flyWheelMap.put(2.15, 27.00);
-        flyWheelMap.put(2.56, 23.00);
-        flyWheelMap.put(3.0, 21.00);
-        flyWheelMap.put(3.5, 17.00);
-        flyWheelMap.put(4.02, 15.00);
-        flyWheelMap.put(4.6, 11.50);
-        flyWheelMap.put(4.95, 10.00);
-        flyWheelMap.put(5.5,9.00);
-        flyWheelMap.put(6.08,8.00); //Highest
+        flywheelMap.put(1.01, 43.00); //Lowest
+        flywheelMap.put(2.15, 27.00);
+        flywheelMap.put(2.56, 23.00);
+        flywheelMap.put(3.0, 21.00);
+        flywheelMap.put(3.5, 17.00);
+        flywheelMap.put(4.02, 15.00);
+        flywheelMap.put(4.6, 11.50);
+        flywheelMap.put(4.95, 10.00);
+        flywheelMap.put(5.5,9.00);
+        flywheelMap.put(6.08,8.00); //Highest
     }
     //MJW - PR 30: Shooter Lookup Table
 
