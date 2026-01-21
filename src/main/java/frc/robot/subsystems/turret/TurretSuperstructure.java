@@ -192,7 +192,7 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.runOnce(() -> spinFlywheel(velocity));
     }
     // Set Turret Angle
-    public Command setTurretAngle(Angle angle){
+    public Command setTurretAngle(Angle angle) {
         return Commands.runOnce(() -> setTurretPosition(angle));
     }
 
