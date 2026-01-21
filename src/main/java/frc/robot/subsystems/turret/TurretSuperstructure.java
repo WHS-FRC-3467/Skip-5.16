@@ -60,7 +60,8 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
     private final RotaryMechanism indexerIO;
     private final FlywheelMechanism flywheelIO;
 
-    public TurretSuperstructure(RotaryMechanism turretIO, RotaryMechanism hoodIO, RotaryMechanism indexerIO,
+    public TurretSuperstructure(RotaryMechanism turretIO, RotaryMechanism hoodIO,
+        RotaryMechanism indexerIO,
         FlywheelMechanism flywheelIO,
         BeamBreak indexerBeamBreak)
     {
@@ -132,7 +133,8 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
             .run(() -> setTurretPosition(Radians.of(robotRelativeHeading.get().getRadians())));
     }
 
-    // MJW: When handling the drivebase we should refrain from modifying the command outside of robot container.
+    // MJW: When handling the drivebase we should refrain from modifying the command outside of
+    // robot container.
     // we should repurpose this in Robot container
 
     // Hood
@@ -152,7 +154,7 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
         Supplier<Pose2d> futurePoseSupplier = () -> robotState.getEstimatedPose()
             .exp(robotState.getFieldRelativeVelocity().toTwist2d(timeToBeReady.get()));
         Supplier<AngularVelocity> flywheelVelocitySupplier = () -> RadiansPerSecond.of(
-            FieldConstants.flyWheelMap
+            FieldConstants.flywheelMap
                 .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
         Supplier<Angle> hoodSupplier = () -> Degrees.of(FieldConstants.hoodAngleMap
             .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
@@ -176,21 +178,25 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
             Commands.sequence(
                 Commands.parallel(
                     Commands.runOnce(() -> spinFlywheel(RotationsPerSecond.zero())),
-                    Commands.runOnce(() -> setHoodPosition(Degrees.zero()))
-                )));
+                    Commands.runOnce(() -> setHoodPosition(Degrees.zero())))));
     }
 
     // Create commands for simple shooter tasks.
     // Set Hood Position
-    public Command setHoodAngle(Angle angle) {
+    public Command setHoodAngle(Angle angle)
+    {
         return Commands.runOnce(() -> setHoodPosition(angle));
     }
+
     // Set Shooter Speed
-    public Command setFlyWheelSpeed(AngularVelocity velocity) {
+    public Command setFlyWheelSpeed(AngularVelocity velocity)
+    {
         return Commands.runOnce(() -> spinFlywheel(velocity));
     }
+
     // Set Turret Angle
-    public Command setTurretAngle(Angle angle) {
+    public Command setTurretAngle(Angle angle)
+    {
         return Commands.runOnce(() -> setTurretPosition(angle));
     }
 
