@@ -134,19 +134,6 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
 
     // MJW: When handling the drivebase we should refrain from modifying the command outside of robot container.
     // we should repurpose this in Robot container
-    // private Command moveTurretFieldRelative(
-    //     Drive drive,
-    //     Double xSupplier,
-    //     Double ySupplier,
-    //     Supplier<Rotation2d> fieldRelativeHeadingSupplier)
-    // {
-    //     return Commands.parallel(
-    //         DriveCommands.joystickDriveAtAngle(drive, xSupplier, ySupplier,
-    //             fieldRelativeHeadingSupplier),
-    //         moveTurretRobotRelative(
-    //             () -> fieldRelativeHeadingSupplier.get()
-    //                 .plus(robotState.getRotation().unaryMinus())));
-    // }
 
     // Hood
 
