@@ -59,36 +59,6 @@ public class FieldConstants {
         Inches.of(158.6),
         FIELD_WIDTH.div(2));
 
-    // MJW - PR 30: Shooter Lookup Table
-    public static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
-    static {
-        hoodAngleMap.put(0.00, 0.00); // Lowest
-        hoodAngleMap.put(0.50, 10.00);
-        hoodAngleMap.put(1.00, 20.00);
-        hoodAngleMap.put(1.50, 30.00);
-        hoodAngleMap.put(2.00, 40.00);
-        hoodAngleMap.put(2.50, 50.00);
-        hoodAngleMap.put(3.00, 60.50);
-        hoodAngleMap.put(3.50, 70.00);
-        hoodAngleMap.put(4.00, 80.00);
-        hoodAngleMap.put(4.50, 90.00); // Highest
-    }
-
-    public static final InterpolatingDoubleTreeMap flywheelMap = new InterpolatingDoubleTreeMap();
-    static {
-        flywheelMap.put(1.01, 43.00); // Lowest
-        flywheelMap.put(2.15, 27.00);
-        flywheelMap.put(2.56, 23.00);
-        flywheelMap.put(3.0, 21.00);
-        flywheelMap.put(3.5, 17.00);
-        flywheelMap.put(4.02, 15.00);
-        flywheelMap.put(4.6, 11.50);
-        flywheelMap.put(4.95, 10.00);
-        flywheelMap.put(5.5, 9.00);
-        flywheelMap.put(6.08, 8.00); // Highest
-    }
-    // MJW - PR 30: Shooter Lookup Table
-
     public static final Distance FUEL_DIAMETER = Inches.of(5.91);
     public static final Mass FUEL_WEIGHT = Pounds.of(0.474);
 

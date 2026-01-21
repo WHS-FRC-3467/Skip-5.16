@@ -19,13 +19,11 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -40,12 +38,38 @@ import frc.lib.util.FallingEdge;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.RisingEdge;
 import frc.robot.RobotState;
-import frc.robot.commands.DriveCommands;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.FieldConstants;
-import frc.robot.RobotContainer;
 
 public class TurretSuperstructure extends SubsystemBase implements AutoCloseable {
+
+    /** Distance from goal in meters -> hood angle in degrees */
+    private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
+    static {
+        hoodAngleMap.put(0.00, 0.00); // Lowest
+        hoodAngleMap.put(0.50, 10.00);
+        hoodAngleMap.put(1.00, 20.00);
+        hoodAngleMap.put(1.50, 30.00);
+        hoodAngleMap.put(2.00, 40.00);
+        hoodAngleMap.put(2.50, 50.00);
+        hoodAngleMap.put(3.00, 60.50);
+        hoodAngleMap.put(3.50, 70.00);
+        hoodAngleMap.put(4.00, 80.00);
+        hoodAngleMap.put(4.50, 90.00); // Highest
+    }
+
+    /** Distance from goal in meters -> flywheel speed in radians per second */
+    private static final InterpolatingDoubleTreeMap flywheelMap = new InterpolatingDoubleTreeMap();
+    static {
+        flywheelMap.put(1.01, 43.00); // Lowest
+        flywheelMap.put(2.15, 27.00);
+        flywheelMap.put(2.56, 23.00);
+        flywheelMap.put(3.0, 21.00);
+        flywheelMap.put(3.5, 17.00);
+        flywheelMap.put(4.02, 15.00);
+        flywheelMap.put(4.6, 11.50);
+        flywheelMap.put(4.95, 10.00);
+        flywheelMap.put(5.5, 9.00);
+        flywheelMap.put(6.08, 8.00); // Highest
+    }
 
     private static final Pose2d SHOOT_GOAL = Pose2d.kZero;
 
@@ -154,9 +178,9 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
         Supplier<Pose2d> futurePoseSupplier = () -> robotState.getEstimatedPose()
             .exp(robotState.getFieldRelativeVelocity().toTwist2d(timeToBeReady.get()));
         Supplier<AngularVelocity> flywheelVelocitySupplier = () -> RadiansPerSecond.of(
-            FieldConstants.flywheelMap
+            flywheelMap
                 .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
-        Supplier<Angle> hoodSupplier = () -> Degrees.of(FieldConstants.hoodAngleMap
+        Supplier<Angle> hoodSupplier = () -> Degrees.of(hoodAngleMap
             .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
 
         return Commands.sequence(
