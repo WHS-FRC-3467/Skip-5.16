@@ -44,10 +44,10 @@ public class FieldConstants {
     public static final Distance ROBOT_STARTING_LINE = Inches.of(158.6);
 
     public static final List<Translation2d> NEUTRAL_ZONE = List.of(
-            new Translation2d(FIELD_LENGTH.div(2).minus(Inches.of(143.50)), Inches.of(0)),
-            new Translation2d(FIELD_LENGTH.div(2).minus(Inches.of(143.50)), FIELD_WIDTH),
-            new Translation2d(FIELD_LENGTH.div(2).plus(Inches.of(143.50)), FIELD_WIDTH),
-            new Translation2d(FIELD_LENGTH.div(2).plus(Inches.of(143.50)), Inches.of(0)));
+            new Translation2d(FIELD_LENGTH.div(2).minus(Inches.of(143.50)).in(Meters), Inches.of(0).in(Meters)),
+            new Translation2d(FIELD_LENGTH.div(2).minus(Inches.of(143.50)).in(Meters), FIELD_WIDTH.in(Meters)),
+            new Translation2d(FIELD_LENGTH.div(2).plus(Inches.of(143.50)).in(Meters), FIELD_WIDTH.in(Meters)),
+            new Translation2d(FIELD_LENGTH.div(2).plus(Inches.of(143.50)).in(Meters), Inches.of(0).in(Meters)));
 
     public static final List<Distance> TUNNEL_CENTER_Y = List.of(
             Inches.of(24.97),
