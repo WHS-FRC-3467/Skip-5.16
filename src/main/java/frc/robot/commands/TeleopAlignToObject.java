@@ -23,6 +23,10 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 
+/**
+ * Command layer that actuates robot heading align robot with centroid of detected contour. Utilizes
+ * a communal teleop/auto strategy layer containing the required CV (angular velocity) calculation.
+ */
 public class TeleopAlignToObject extends Command {
     private final Drive drive;
     private final DoubleSupplier xSupplier;
@@ -33,16 +37,15 @@ public class TeleopAlignToObject extends Command {
 
     public TeleopAlignToObject(Drive drive, ObjectDetector objectDetector,
         ContourSelectionMode mode, DoubleSupplier xSupplier,
-        DoubleSupplier ySupplier, DoubleSupplier rotSupplier,
-        LoggedTuneableProfiledPID angularController)
+        DoubleSupplier ySupplier, DoubleSupplier rotSupplier)
     {
         this.drive = drive;
         this.xSupplier = xSupplier;
         this.ySupplier = ySupplier;
         this.rotSupplier = rotSupplier;
-        this.angularController = angularController;
-        this.strategy = new AlignToObjectBase(objectDetector, mode, angularController,
+        this.strategy = new AlignToObjectBase(objectDetector, mode,
             drive.getMaxAngularSpeedRadPerSec()) {};
+        this.angularController = strategy.getAngularController();
 
         addRequirements(drive);
     }
@@ -68,5 +71,3 @@ public class TeleopAlignToObject extends Command {
         return false;
     }
 }
-
-

@@ -15,40 +15,44 @@
 
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
+import lombok.Getter;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.util.LoggedTuneableProfiledPID;
 
 /**
  * Strategy layer that determines robot heading required to align robot with centroid of detected
- * contour. Communal layer for both teleop & auto.
+ * contour. Communal for both teleop & auto.
  */
 public abstract class AlignToObjectBase {
+    @Getter
+    private final LoggedTuneableProfiledPID angularController;
     private final ObjectDetector objectDetector;
     private final ContourSelectionMode mode;
-    private final LoggedTuneableProfiledPID angularController;
     private final double maxAngularVelocityRadPerSec;
     private double contourYaw;
-    private boolean hadTarget = false;
+    private boolean hasTarget = false;
 
     public AlignToObjectBase(ObjectDetector objectDetector, ContourSelectionMode mode,
-        LoggedTuneableProfiledPID angularController, double maxAngularVelocityRadPerSec)
+        double maxAngularVelocityRadPerSec)
     {
         this.objectDetector = objectDetector;
         this.mode = mode;
-        this.angularController = angularController;
         this.maxAngularVelocityRadPerSec = maxAngularVelocityRadPerSec;
-
-        angularController.enableContinuousInput(-Math.PI, Math.PI);
+        this.angularController =
+            new LoggedTuneableProfiledPID("ObjectAlign/Angular", 5.0, 0, 0.1, 0, 0);
     }
 
     /**
-     * Generate CV required to match the robot's heading to the centroid of the detected object.
+     * Generate angular velocity required to match the robot's heading to the centroid of the
+     * detected object.
      * 
      * @return Error-reduced angular velocity (rad/s).
      */
@@ -67,26 +71,48 @@ public abstract class AlignToObjectBase {
                 contourObservation = objectDetector.getLatestBigContourObservation();
                 break;
         }
-
+        // If Object Detection camera sees no targets or record fails to generate
         if (contourObservation.isEmpty()) {
-            if (hadTarget) {
+            if (hasTarget) {
+                // If camera loses sight of target temporarily, assume heading is approximately
+                // equal to prevent derivative kick
                 angularController.reset(contourYaw, 0.0);
+            } else {
+                angularController.reset(0.0, 0.0);
             }
-            hadTarget = false;
+            hasTarget = false;
+            ObjectAlignLogger(contourObservation, 0.0);
             return OptionalDouble.empty();
         }
-        hadTarget = true;
+        hasTarget = true;
         contourYaw = contourObservation.get().yaw().in(Radians);
 
-        // PhotonVision positive right, WPILib positive left
-        double omega = angularController.calculate(-contourYaw, 0.0);
+        // Alignment PID using angular velocity as CV, heading as PV
+        double omega = angularController.calculate(contourYaw, 0.0);
         omega = MathUtil.clamp(omega, -maxAngularVelocityRadPerSec, maxAngularVelocityRadPerSec);
-
+        ObjectAlignLogger(contourObservation, omega);
         return OptionalDouble.of(omega);
+    }
+
+    // Private helper for sim logging
+    private void ObjectAlignLogger(Optional<ObjectDetectionObservation> observation,
+        double speedDegPerSec)
+    {
+        // Log for sim
+        if (observation.isPresent()) {
+            Logger.recordOutput("VisionAlign/" + "ContourYawDeg",
+                observation.get().yaw().in(Degrees));
+        } else {
+            Logger.recordOutput("VisionAlign/" + "ContourYawDeg",
+                -9999.0);
+        }
+        Logger.recordOutput("VisionAlign/" + "OmegaCmdDegPerSec", speedDegPerSec);
+        Logger.recordOutput("VisionAlign/" + "HasTarget", hasTarget);
+
     }
 
     protected Boolean isAligned(double tolRad)
     {
-        return (hadTarget && Math.abs(contourYaw) < tolRad);
+        return (hasTarget && Math.abs(contourYaw) < tolRad);
     }
 }

@@ -54,11 +54,11 @@ public class RobotContainer {
 
     // Subsystems
     public final Drive drive;
-    // private final LEDs leds;
-    // private final LaserCAN1 laserCAN1;
+    private final LEDs leds;
+    private final LaserCAN1 laserCAN1;
     private final ObjectDetector objectDetector;
-    // private final TurretSuperstructure turret;
-    // private final Intake intake;
+    private final TurretSuperstructure turret;
+    private final Intake intake;
     // private final Indexer indexer;
 
     // Controller
@@ -68,21 +68,17 @@ public class RobotContainer {
     private final LoggedDashboardChooser<AutoCommand> autoChooser;
     public static Field2d autoPreviewField = new Field2d();
 
-    // Object angular controlled (share between Teleop & Auto)
-    private final LoggedTuneableProfiledPID visionAngularController =
-        new LoggedTuneableProfiledPID("ObjectAlign/Angular", 3.0, 0, 0, 0, 0);
-
     /**
      * The container for the robot. Contains subsystems, IO devices, and commands.
      */
     public RobotContainer()
     {
         drive = DriveConstants.get();
-        // laserCAN1 = LaserCAN1Constants.get();
-        // leds = LEDsConstants.get();
+        laserCAN1 = LaserCAN1Constants.get();
+        leds = LEDsConstants.get();
         objectDetector = ObjectDetectorConstants.get();
-        // turret = TurretSuperstructureConstants.get();
-        // intake = IntakeConstants.get();
+        turret = TurretSuperstructureConstants.get();
+        intake = IntakeConstants.get();
         // indexer = IndexerConstants.get();
         VisionConstants.create();
 
@@ -114,23 +110,29 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
+        // // TODO: Testing only
+        // drive.setDefaultCommand(
+        // new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
+        // () -> -controller.getLeftY(), // forward/back
+        // () -> -controller.getLeftX(), // strafe
+        // () -> -controller.getRightX()));// fallback rotation
+
         // Right Trigger: Teleop vision align to largest contour (translation allowed)
         controller.rightTrigger(0.2)
             .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
                 () -> -controller.getLeftY(), // forward/back
                 () -> -controller.getLeftX(), // strafe
-                () -> -controller.getRightX(), // fallback rotation
-                visionAngularController));
+                () -> -controller.getRightX())); // fallback rotation
 
-        // // Left Bumper: Intake while held
-        // controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
+        // Left Bumper: Intake while held
+        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
 
-        // // Back Button: Eject while held
-        // controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
+        // Back Button: Eject while held
+        controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
 
-        // // Right bumper: Shoot on the Move
-        // controller.rightBumper().whileTrue(
-        // turret.shoot(drive, () -> -controller.getLeftX(), () -> -controller.getLeftY()));
+        // Right bumper: Shoot on the Move
+        controller.rightBumper().whileTrue(
+            turret.shoot(drive, () -> -controller.getLeftX(), () -> -controller.getLeftY()));
     }
 
     // Setup all SmartDashboard commands
