@@ -156,6 +156,7 @@ public class Robot extends LoggedRobot {
 
         BallSimulator.update();
         RobotState.getInstance().publishMechanismPoses();
+
     }
 
     /** This function is called once when the robot is disabled. */
@@ -207,7 +208,9 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic()
-    {}
+    {
+        robotState.timeIncrement(5.0);
+    }
 
     /** This function is called once when test mode is enabled. */
     @Override

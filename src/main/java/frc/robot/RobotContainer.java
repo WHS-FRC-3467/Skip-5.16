@@ -30,6 +30,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -187,6 +188,7 @@ public class RobotContainer {
 
     }
 
+
     /**
      * Use this method to define your button->command mappings. Buttons can be created by
      * instantiating a {@link GenericHID} or one of its subclasses
@@ -272,6 +274,8 @@ public class RobotContainer {
 
         SmartDashboard.putData("Steppable Command", steppableCommand);
 
+
+
         // controller.x()
         // .whileTrue(new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
         // .withTolerance(Inches.of(3), Degrees.of(5)));
@@ -290,6 +294,11 @@ public class RobotContainer {
         inAllianceRegionTrigger.onFalse(
             Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", false))
                 .ignoringDisable(true));
+        SmartDashboard.putBoolean("imnabopol!!!!", robotState.HubActiveTrigger().getAsBoolean());
+        Trigger test = robotState.HubActiveTrigger();
+
+        test.onTrue(Commands.runOnce(() -> Logger.recordOutput("FMSInputs/test",
+            "are you rrrrready to rrrrrrrumbbbbllleee!!!! doo..doo..do. do-do-do-do..do do do-do-do-do! x3")));
     }
 
     /**

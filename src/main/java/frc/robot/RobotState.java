@@ -58,6 +58,7 @@ public class RobotState {
     @Getter
     @Setter
     private ChassisSpeeds velocity = new ChassisSpeeds();
+    private double getTime;
 
     @AutoLogOutput(key = "Odometry/OdometryPose")
     public Pose2d getOdometryPose()
@@ -213,18 +214,40 @@ public class RobotState {
         return target.getHeight().minus(mechanismHeight);
     }
 
-    public Trigger SelfHubActiveTrigger()
+    public Trigger HubActiveTrigger()
     {
+        if (isHubActive().isPresent() && (!isHubActive().get())) {
+
+            getTime = DriverStation.getMatchTime() + 25.0;
+
+        }
 
         return new Trigger(() -> (isHubActive().isPresent() ? isHubActive().get() : false));
         // TODO true false "empty"
     }
 
+    public Trigger timeIncrement(double secondsBefore)
+    {
+        if (getTime - secondsBefore == DriverStation.getMatchTime() + 25 - secondsBefore) {
+            return new Trigger(() -> true);
+        } else {
+            return new Trigger(() -> false);
+        }
+    }
+
+
+
     public Optional<Boolean> isHubActive()
     {
         String gameData;
         gameData = DriverStation.getGameSpecificMessage();
-        Alliance alliance = DriverStation.getAlliance().get();
+        Alliance alliance;
+        if (DriverStation.getAlliance().isPresent()) {
+            alliance = DriverStation.getAlliance().get();
+        } else {
+            alliance = DriverStation.Alliance.Red;
+        }
+
         if (gameData.length() > 0) {
             switch (gameData.charAt(0)) {
                 case 'B':
@@ -233,7 +256,9 @@ public class RobotState {
                         case Blue:
                             return Optional.of(true);
 
+
                         case Red:
+
                             return Optional.of(false);
 
                         default:
@@ -245,9 +270,11 @@ public class RobotState {
                     // Red case code
                     switch (alliance) {
                         case Blue:
+
                             return Optional.of(false);
 
                         case Red:
+
                             return Optional.of(true);
 
                         default:
