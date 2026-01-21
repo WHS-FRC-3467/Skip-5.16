@@ -50,9 +50,7 @@ public class FieldConstants {
             new Translation2d(FIELD_LENGTH.div(2).plus(Inches.of(143.50)).in(Meters), Inches.of(0).in(Meters)));
 
     public static final List<Distance> TUNNEL_CENTER_Y = List.of(
-            Inches.of(24.97),
-            FIELD_WIDTH.minus(Inches.of(24.97)));
-
+            Inches.of(24.97), FIELD_WIDTH.minus(Inches.of(24.97)));
     public static final Translation2d HUB_CENTER = new Translation2d(
             Inches.of(158.6),
             FIELD_WIDTH.div(2));
