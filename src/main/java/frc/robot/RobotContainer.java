@@ -168,8 +168,8 @@ public class RobotContainer {
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
-        SmartDashboard.putData("Run Indexer expel", indexer.intakeCommand(Indexer.State.EXPEL));
-        SmartDashboard.putData("Run Indexer intake", indexer.intakeCommand(Indexer.State.PULL));
+        SmartDashboard.putData("Run Indexer expel", indexer.setStateCommand(Indexer.State.EXPEL));
+        SmartDashboard.putData("Run Indexer intake", indexer.setStateCommand(Indexer.State.PULL));
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("ExampleAuto", new ExampleAuto(drive));
         autoChooser.addOption("BranchingAuto",
