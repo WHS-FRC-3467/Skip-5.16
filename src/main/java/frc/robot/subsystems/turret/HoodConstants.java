@@ -37,7 +37,11 @@ import frc.robot.Ports;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-/** Add your docs here. */
+/**
+ * Defines configuration and physical constants for the turret hood mechanism,
+ * including motion constraints, geometry, motor model, and control gains used
+ * to construct the {@link RotaryMechanism} instance for different robot modes.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HoodConstants {
     public static final String NAME = "Hood";
