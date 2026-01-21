@@ -184,7 +184,7 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
 
     // Create commands for simple shooter tasks.
     // Set Hood Position
-    public Command setHoodAngle(Angle angle){
+    public Command setHoodAngle(Angle angle) {
         return Commands.runOnce(() -> setHoodPosition(angle));
     }
     // Set Shooter Speed
