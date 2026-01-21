@@ -346,4 +346,7 @@ public class DriveConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
     }
+
+    public static final Angle MAX_ALLOWED_PITCH = Degrees.of(2.0);
+    public static final Angle MAX_ALLOWED_ROLL = Degrees.of(2.0);
 }

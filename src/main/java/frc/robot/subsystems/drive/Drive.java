@@ -203,6 +203,7 @@ public class Drive extends SubsystemBase {
 
         // Update RobotState velocity
         RobotState.getInstance().setVelocity(getChassisSpeeds());
+        RobotState.getInstance().setDrivetrainAngled(isAngled());
 
         Logger.recordOutput("Drive/Speed", new Translation2d(getChassisSpeeds().vxMetersPerSecond,
             getChassisSpeeds().vyMetersPerSecond).getNorm() * -1);
@@ -369,5 +370,11 @@ public class Drive extends SubsystemBase {
     public double getAccelerationY()
     {
         return gyroIO.getAccelerationY();
+    }
+
+    /** Returns true if the drivetrain is angled. */
+    public boolean isAngled() {
+        return Math.abs(gyroIO.getPitch()) > DriveConstants.MAX_ALLOWED_PITCH.in(Degrees)
+            || Math.abs(gyroIO.getRoll()) > DriveConstants.MAX_ALLOWED_ROLL.in(Degrees);
     }
 }

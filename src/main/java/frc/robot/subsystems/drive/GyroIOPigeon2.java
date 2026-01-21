@@ -36,31 +36,45 @@ public class GyroIOPigeon2 implements GyroIO {
     private final StatusSignal<Angle> yaw = pigeon.getYaw();
     private final Queue<Double> yawPositionQueue;
     private final Queue<Double> yawTimestampQueue;
+    private final Queue<Double> pitchPositionQueue;
+    private final Queue<Double> pitchTimestampQueue;
+    private final Queue<Double> rollPositionQueue;
+    private final Queue<Double> rollTimestampQueue;
     private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
     private final StatusSignal<LinearAcceleration> accelerationX = pigeon.getAccelerationX();
     private final StatusSignal<LinearAcceleration> accelerationY = pigeon.getAccelerationY();
+    private final StatusSignal<Angle> pitch = pigeon.getPitch();
+    private final StatusSignal<Angle> roll = pigeon.getRoll();
 
     public GyroIOPigeon2()
     {
         pigeon.getConfigurator().apply(new Pigeon2Configuration());
         pigeon.getConfigurator().setYaw(0.0);
         yaw.setUpdateFrequency(Drive.ODOMETRY_FREQUENCY);
+        pitch.setUpdateFrequency(Drive.ODOMETRY_FREQUENCY);
+        roll.setUpdateFrequency(Drive.ODOMETRY_FREQUENCY);
         yawVelocity.setUpdateFrequency(50.0);
         pigeon.getAccelerationX().setUpdateFrequency(50.0);
         pigeon.getAccelerationY().setUpdateFrequency(50.0);
         pigeon.optimizeBusUtilization();
         yawTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
         yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(pigeon.getYaw());
+        pitchTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
+        pitchPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(pigeon.getPitch());
+        rollTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
+        rollPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(pigeon.getRoll());
     }
 
     @Override
     public void updateInputs(GyroIOInputs inputs)
     {
         inputs.connected =
-            BaseStatusSignal.refreshAll(yaw, yawVelocity, accelerationX, accelerationY)
+            BaseStatusSignal.refreshAll(yaw, yawVelocity, pitch, roll, accelerationX, accelerationY)
                 .equals(StatusCode.OK);
         inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
         inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
+        inputs.pitchPosition = Rotation2d.fromDegrees(pitch.getValueAsDouble());
+        inputs.rollPosition = Rotation2d.fromDegrees(roll.getValueAsDouble());
 
         inputs.odometryYawTimestamps =
             yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
@@ -69,6 +83,7 @@ public class GyroIOPigeon2 implements GyroIO {
             .toArray(Rotation2d[]::new);
         yawTimestampQueue.clear();
         yawPositionQueue.clear();
+        
     }
 
     @Override
@@ -81,5 +96,17 @@ public class GyroIOPigeon2 implements GyroIO {
     public double getAccelerationY()
     {
         return pigeon.getAccelerationY().getValueAsDouble();
+    }
+
+    @Override
+    public double getPitch()
+    {
+        return pigeon.getPitch().getValueAsDouble();
+    }
+    
+    @Override
+    public double getRoll()
+    {
+        return pigeon.getRoll().getValueAsDouble();
     }
 }
