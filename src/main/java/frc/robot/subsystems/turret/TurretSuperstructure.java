@@ -175,11 +175,9 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
             // Spin down flywheel
             Commands.sequence(
                 Commands.parallel(
-                    Commands.run(() -> spinFlywheel(RotationsPerSecond.zero())),
-                    Commands.run(() -> setHoodPosition(Degrees.zero()))
+                    Commands.runOnce(() -> spinFlywheel(RotationsPerSecond.zero())),
+                    Commands.runOnce(() -> setHoodPosition(Degrees.zero()))
                 )));
-                //() -> 
-            //spinFlywheel(RotationsPerSecond.zero())));
     }
 
     // Create commands for simple shooter tasks.
