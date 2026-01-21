@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.indexer;
 
-import static edu.wpi.first.units.Units.Amps;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
