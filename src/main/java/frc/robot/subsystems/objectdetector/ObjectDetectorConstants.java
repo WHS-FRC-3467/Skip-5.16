@@ -6,11 +6,9 @@ package frc.robot.subsystems.objectdetector;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.photonvision.estimation.TargetModel;
-import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 
@@ -97,33 +95,14 @@ public class ObjectDetectorConstants {
     
     public static final Time CAMERA0_LATENCY_STDDEV = Milliseconds.of(5);  
 
-    public static final SimCameraProperties CAMERA0_CONFIG = getCameraProperties(
-        "vision_configs/ttb_cam_0/ttb_cam_0", // TODO: Replace with ML camera config path 
-        CAMERA0_RESOLUTION_WIDTH,
-        CAMERA0_RESOLUTION_HEIGHT);
-
-    // Private helper method returning camera intrinsics from JSON calibration path
-    private static SimCameraProperties getCameraProperties(String path, int width, int height) {
-        SimCameraProperties config;
-        try {
-            config = new SimCameraProperties(path, width, height);
-        } catch (IOException e) {
-            // Invalid path? Default to reasonable values. Currently factored for only one ML camera.
-            e.printStackTrace();
-            config = new SimCameraProperties();
-            config.setCalibration(width, height, CAMERA0_MATRIX, CAMERA0_DIST_COEFFS);
-        }
-        return config;
-    }
-
     public static final CameraProperties CAMERA0 =
         new CameraProperties(
             CAMERA0_NAME,
             CAMERA0_TRANSFORM,
-            CAMERA0_CONFIG.getIntrinsics(),
-            CAMERA0_CONFIG.getDistCoeffs(),
-            CAMERA0_CONFIG.getResWidth(),
-            CAMERA0_CONFIG.getResHeight(),
+            CAMERA0_MATRIX,
+            CAMERA0_DIST_COEFFS,
+            CAMERA0_RESOLUTION_WIDTH,
+            CAMERA0_RESOLUTION_HEIGHT,
             CAMERA0_STDDEV_FACTOR,
             CAMERA0_FOV,
             CAMERA0_FPS,
