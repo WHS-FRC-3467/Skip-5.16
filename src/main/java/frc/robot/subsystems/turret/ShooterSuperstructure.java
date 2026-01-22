@@ -111,6 +111,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
+     * Prepares the subsystem to shoot, and runs a command while it is ready
+     * 
      * @param whileAtPosition A command that runs while the shooter is ready to shoot. If the
      *        shooter's setpoint changes or otherwise is no longer at position, the command will be
      *        canceled, and started again once it has caught up. This is usually used for starting
