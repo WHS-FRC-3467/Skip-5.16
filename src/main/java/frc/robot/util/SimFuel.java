@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 public class SimFuel {
 
-    @Getter(lazy = true)
+    @Getter
     private static final SimFuel instance = new SimFuel();
 
     private Pose2d robotPose;
@@ -62,8 +62,20 @@ public class SimFuel {
             }
         }
         depotFuel.removeAll(toRemove);
+
+        List<Pose3d> neutralToRemove = new ArrayList<>();
+        for (Pose3d fuelPose : neutralZoneFuel) {
+            double distance = this.robotPose.getTranslation().getDistance(fuelPose.toPose2d().getTranslation());
+            if (distance < FieldConstants.FUEL_DIAMETER.in(Meters)) {
+                neutralToRemove.add(fuelPose);
+                fuelStored++;
+            }
+        }
+        neutralZoneFuel.removeAll(neutralToRemove);
+
         Logger.recordOutput("Sim/Stored Fuel",  fuelStored);
         Logger.recordOutput("Sim/Depot Fuel", depotFuel.toArray(new Pose3d[0]));
+        Logger.recordOutput("Sim/Neutral Zone Fuel", neutralZoneFuel.toArray(new Pose3d[0]));
     }
 
     public void removeFuel() {
