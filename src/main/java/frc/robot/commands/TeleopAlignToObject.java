@@ -16,6 +16,8 @@
 package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.util.LoggedTuneableProfiledPID;
@@ -46,7 +48,7 @@ public class TeleopAlignToObject extends Command {
         this.strategy = new AlignToObjectBase(objectDetector, mode,
             drive.getMaxAngularSpeedRadPerSec()) {};
         this.angularController = strategy.getAngularController();
-
+        // Reserve drive for this command
         addRequirements(drive);
     }
 
@@ -54,12 +56,23 @@ public class TeleopAlignToObject extends Command {
     public void execute()
     {
         // Take translation inputs from joystick
-        double vx = xSupplier.getAsDouble();
-        double vy = ySupplier.getAsDouble();
+        // Apply linear velocity shaping
+        Translation2d linearVelocity = DriveCommands
+            .getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+        double vx = linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec();
+        double vy = linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec();
+
         // Update PID tuning live
         angularController.updatePID();
+
         // Implement heading strategy; if fails, fallback to joystick heading
-        double omega = strategy.getVisionOmega().orElse(rotSupplier.getAsDouble());
+        // Apply deadband and shaping to fallback
+        double omega = strategy.getVisionOmega().orElseGet(() -> {
+            double raw = MathUtil.applyDeadband(rotSupplier.getAsDouble(), 0.05);
+            raw = Math.copySign(raw * raw, raw);
+            return raw * drive.getMaxAngularSpeedRadPerSec();
+        });
+
         // Command vx, vy, omega
         drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega,
             drive.robotState.getEstimatedPose().getRotation()));

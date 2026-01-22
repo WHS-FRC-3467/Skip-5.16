@@ -58,7 +58,7 @@ public class DriveCommands {
     private DriveCommands()
     {}
 
-    private static Translation2d getLinearVelocityFromJoysticks(double x, double y)
+    public static Translation2d getLinearVelocityFromJoysticks(double x, double y)
     {
         double linearMagnitude = Math.pow(Math.hypot(x, y), 2);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
