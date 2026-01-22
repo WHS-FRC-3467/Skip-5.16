@@ -48,7 +48,7 @@ public class Robot extends LoggedRobot {
     private Command autonomousCommand;
     private RobotContainer robotContainer;
 
-    SimFuel simFuel;
+    private final SimFuel simFuel = SimFuel.getInstance();
 
     public Robot()
     {
@@ -229,12 +229,13 @@ public class Robot extends LoggedRobot {
     /** This function is called once when the robot is first started up. */
     @Override
     public void simulationInit() {
-        simFuel = new SimFuel();
+        
     }
 
     /** This function is called periodically whilst in simulation. */
     @Override
     public void simulationPeriodic() {
         BallSimulator.update();
+        simFuel.checkCollisions(() -> RobotState.getInstance().getEstimatedPose());
     }
 }

@@ -44,6 +44,7 @@ import frc.robot.subsystems.turret.TurretSuperstructure;
 import frc.robot.subsystems.turret.TurretSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.BallSimulator;
+import frc.robot.util.SimFuel;
 import frc.robot.subsystems.lasercan1.LaserCAN1;
 import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
 import static edu.wpi.first.units.Units.Degrees;
@@ -68,6 +69,8 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoCommand> autoChooser;
     public static Field2d autoPreviewField = new Field2d();
+
+    private final SimFuel simFuel = SimFuel.getInstance();
 
     /**
      * The container for the robot. Contains subsystems, IO devices, and commands.
@@ -129,10 +132,12 @@ public class RobotContainer {
 
         LoggedTunableNumber ballVel = new LoggedTunableNumber("Ball Sim Velocity (fps)", 15);
         LoggedTunableNumber ballAngle = new LoggedTunableNumber("Ball Sim Launch Angle (degrees)", 45);
-        SmartDashboard.putData("Shoot Ball", Commands
-            .runOnce(() -> BallSimulator.launch(
+        SmartDashboard.putData("Shoot Ball", Commands.sequence(
+            Commands.runOnce(() -> 
+                BallSimulator.launch(
                 FeetPerSecond.of(ballVel.getAsDouble()),
-                Degrees.of(ballAngle.getAsDouble()))));
+                Degrees.of(ballAngle.getAsDouble()))),
+            Commands.runOnce(() -> simFuel.removeFuel())));
     }
 
     public Command getAutonomousCommand()

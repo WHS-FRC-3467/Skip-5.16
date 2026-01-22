@@ -13,12 +13,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import frc.robot.FieldConstants;
-
+import lombok.Getter;
 import static edu.wpi.first.units.Units.Meters;
 
 import java.util.ArrayList;
 
 public class SimFuel {
+
+    @Getter(lazy = true)
+    private static final SimFuel instance = new SimFuel();
 
     private Pose2d robotPose;
 
