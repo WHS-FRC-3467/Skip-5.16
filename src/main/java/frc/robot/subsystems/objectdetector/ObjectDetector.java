@@ -72,7 +72,7 @@ public class ObjectDetector extends SubsystemBase {
         if (observation.isEmpty() || (observation.get().objectPose().isEmpty())) {
             return observation;
         }
-        // Update object pose buffer of most-recently detected objects
+        // Pose generated: update object pose buffer of most-recently detected objects
         objectDetection.updateObservationPoseBuffer(10, objectPoseBuffer, 0.4572,
             observation.get().objectPose().get().getTranslation());
         // Return latest Object observation (full)

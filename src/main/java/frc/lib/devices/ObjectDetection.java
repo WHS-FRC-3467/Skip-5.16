@@ -385,7 +385,7 @@ public class ObjectDetection {
         if (range == -1.0) {
             // Range finding algorithm failed due to geometric constraints,
             // return partial ML Object Observation
-            return Optional.ofNullable(new ObjectDetectionObservation(
+            return Optional.of(new ObjectDetectionObservation(
                 target.getDetectedObjectClassID(),
                 target.getDetectedObjectConfidence(),
                 Degrees.of(target.getPitch()),
@@ -408,14 +408,14 @@ public class ObjectDetection {
                 heading,
                 robotPose);
         // Return packaged ML Object Observation
-        return Optional.ofNullable(new ObjectDetectionObservation(
+        return Optional.of(new ObjectDetectionObservation(
             target.getDetectedObjectClassID(),
             target.getDetectedObjectConfidence(),
             Degrees.of(target.getPitch()),
             Degrees.of(target.getYaw()),
             target.getArea(),
-            Optional.ofNullable(Meters.of(distance)),
-            Optional.ofNullable(new Pose2d(targetLocation, new Rotation2d()))));
+            Optional.of(Meters.of(distance)),
+            Optional.of(new Pose2d(targetLocation, new Rotation2d()))));
     }
 
     /**
@@ -447,7 +447,7 @@ public class ObjectDetection {
                 if (selectedTarget == null) {
                     return Optional.empty();
                 } else {
-                    return Optional.ofNullable(
+                    return Optional.of(
                         new ObjectDetectionObservation(-2, -2,
                             Degrees.of(selectedTarget.getPitch()),
                             Degrees.of(selectedTarget.getYaw()),
@@ -459,7 +459,7 @@ public class ObjectDetection {
                 if (selectedTarget == null) {
                     return Optional.empty();
                 } else {
-                    return Optional.ofNullable(
+                    return Optional.of(
                         new ObjectDetectionObservation(-2, -2,
                             Degrees.of(selectedTarget.getPitch()),
                             Degrees.of(selectedTarget.getYaw()),
