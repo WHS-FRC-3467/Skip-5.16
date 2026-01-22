@@ -25,6 +25,7 @@ public class SimFuel {
     public int fuelStored = 8;
 
     public List<Pose3d> depotFuel = new ArrayList<>();
+    public List<Pose3d> neutralZoneFuel = new ArrayList<>();
 
     public SimFuel() {
         for (int row = 0; row < 6; row++) {
@@ -34,8 +35,17 @@ public class SimFuel {
                 depotFuel.add(new Pose3d(x, y, FieldConstants.FUEL_DIAMETER.in(Meters)/2, new Rotation3d()));
             }
         }
+
+        for (int row = 0; row < 30; row++) {
+            for (int col = 0; col < 12; col++) {
+                double x = FieldConstants.NEUTRAL_ZONE_FIRST_FUEL.getX() + (col * FieldConstants.FUEL_DIAMETER.in(Meters));
+                double y = FieldConstants.NEUTRAL_ZONE_FIRST_FUEL.getY() + (row * FieldConstants.FUEL_DIAMETER.in(Meters));
+                neutralZoneFuel.add(new Pose3d(x, y, FieldConstants.FUEL_DIAMETER.in(Meters)/2, new Rotation3d()));
+            }
+        }
         Logger.recordOutput("Sim/Stored Fuel",  fuelStored);
         Logger.recordOutput("Sim/Depot Fuel", depotFuel.toArray(new Pose3d[0]));
+        Logger.recordOutput("Sim/Neutral Zone Fuel", neutralZoneFuel.toArray(new Pose3d[0]));
     }
 
     public void checkCollisions(Supplier<Pose2d> robotPose) {

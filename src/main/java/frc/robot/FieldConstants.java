@@ -58,4 +58,11 @@ public class FieldConstants {
         FUEL_DIAMETER.div(2),
         new Rotation3d());
 
+    public static final Pose3d NEUTRAL_ZONE_FIRST_FUEL = new Pose3d(
+        FIELD_CENTER.getMeasureX().minus(Inches.of(35.95)).plus(FUEL_DIAMETER.div(2)),
+        FIELD_CENTER.getMeasureY().minus(Inches.of(90.95)).plus(FUEL_DIAMETER.div(2)),
+        FUEL_DIAMETER.div(2),
+        new Rotation3d());
+
+
 }
