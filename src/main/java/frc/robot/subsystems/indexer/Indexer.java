@@ -13,14 +13,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
-import frc.lib.mechanisms.rotary.RotaryMechanism;
+import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.robot.subsystems.intake.IntakeConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /** Add your docs here. */
 public class Indexer extends SubsystemBase {
-    private final RotaryMechanism io;
+    private final FlywheelMechanism io;
 
     private State state = State.STOP;
 
@@ -38,7 +38,7 @@ public class Indexer extends SubsystemBase {
         private final AngularVelocity stateVelocity;
     }
 
-    public Indexer(RotaryMechanism io)
+    public Indexer(FlywheelMechanism io)
     {
         this.io = io;
     }

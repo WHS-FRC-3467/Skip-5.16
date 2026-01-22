@@ -45,7 +45,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class IntakeConstants {
-    
+
     public static final String NAME = "Intake";
 
     // TODO: Fill in and tune the intake (flywheel mechanism) values
