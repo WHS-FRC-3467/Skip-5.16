@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class Indexer extends SubsystemBase {
     private final RotaryMechanism io;
 
-    private State state;
+    private State state = State.STOP;
 
     @RequiredArgsConstructor
     @SuppressWarnings("Immutable")
