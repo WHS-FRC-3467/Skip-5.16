@@ -6,10 +6,8 @@ package frc.robot.subsystems.objectdetector;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
-import java.io.IOException;
 import java.util.function.Supplier;
 import org.photonvision.estimation.TargetModel;
-import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionTargetSim;
 
 import edu.wpi.first.math.MatBuilder;
@@ -118,10 +116,10 @@ public class ObjectDetectorConstants {
         new CameraProperties(
             CAMERA0_NAME,
             CAMERA0_TRANSFORM,
-            CAMERA0_CONFIG.getIntrinsics(),
-            CAMERA0_CONFIG.getDistCoeffs(),
-            CAMERA0_CONFIG.getResWidth(),
-            CAMERA0_CONFIG.getResHeight(),
+            CAMERA0_MATRIX,
+            CAMERA0_DIST_COEFFS,
+            CAMERA0_RESOLUTION_WIDTH,
+            CAMERA0_RESOLUTION_HEIGHT,
             CAMERA0_STDDEV_FACTOR,
             CAMERA0_FOV,
             CAMERA0_FPS,
