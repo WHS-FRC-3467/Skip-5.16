@@ -27,6 +27,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
@@ -109,23 +110,38 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return hoodIO.nearGoal(angle, HoodConstants.TOLERANCE);
     }
 
-    public Command prepareShot()
+    /**
+     * @param whileAtPosition A command that runs while the shooter is ready to shoot. If the
+     *        shooter's setpoint changes or otherwise is no longer at position, the command will be
+     *        canceled, and started again once it has caught up. This is usually used for starting
+     *        and stopping the indexer to ensure balls are not shot unless we are confident we will
+     *        make the shot.
+     * @return The command sequence
+     */
+    public Command prepareShot(Command whileAtPosition)
     {
         Supplier<Pose2d> futurePoseSupplier = () -> robotState.getEstimatedPose()
             .exp(robotState.getFieldRelativeVelocity().toTwist2d(timeToBeReady.get()));
-        Supplier<AngularVelocity> flywheelVelocitySupplier = () -> RadiansPerSecond.of(
+        Supplier<AngularVelocity> desiredFlywheelVelocitySupplier = () -> RadiansPerSecond.of(
             flywheelMap
                 .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
-        Supplier<Angle> hoodSupplier = () -> Degrees.of(hoodAngleMap
+        Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
             .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
 
-        return Commands.parallel(
-            Commands.run(() -> spinFlywheel(flywheelVelocitySupplier.get())),
-            Commands.run(() -> setHoodPosition(hoodSupplier.get())),
-            // Wait until at goal positions and make sequences depend on this
-            Commands.idle(this).until(
-                () -> hoodIsAt(hoodSupplier.get())
-                    && flywheelIsAt(flywheelVelocitySupplier.get())));
+        Trigger ready = new Trigger(() -> flywheelIsAt(desiredFlywheelVelocitySupplier.get())
+            && hoodIsAt(desiredHoodPositionSupplier.get()));
+
+        return Commands.sequence(
+            Commands.parallel(
+                Commands.run(() -> spinFlywheel(desiredFlywheelVelocitySupplier.get())),
+                Commands.run(() -> setHoodPosition(desiredHoodPositionSupplier.get())),
+                // Require this subsystem
+                Commands.idle(this),
+
+                Commands.repeatingSequence(
+                    Commands.waitUntil(ready),
+                    whileAtPosition.until(ready.negate()))),
+            this.runOnce(() -> spinFlywheel(RotationsPerSecond.zero())));
     }
 
     // Create commands for simple shooter tasks.
@@ -140,6 +156,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     {
         return Commands.runOnce(() -> spinFlywheel(velocity));
     }
+
+
 
     @Override
     public void periodic()

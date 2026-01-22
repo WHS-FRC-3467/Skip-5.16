@@ -112,6 +112,10 @@ public class RobotContainer {
 
         // Back Button: Eject while held
         controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
+
+        controller.rightBumper().whileTrue(
+            shooter.prepareShot(
+                indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
     }
 
     // Setup all SmartDashboard commands
