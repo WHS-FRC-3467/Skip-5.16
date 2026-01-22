@@ -29,8 +29,8 @@ import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Foot;
-import static edu.wpi.first.units.Units.Rotations;
 
 /** Add your docs here. */
 public class IndexerConstants {
@@ -47,16 +47,20 @@ public class IndexerConstants {
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(1.0);
+
+    public static final Angle MIN_ANGLE = Degrees.of(-90.0);
+    public static final Angle MAX_ANGLE = Degrees.of(90.0);
     public static final Angle STARTING_ANGLE = Radians.zero();
     public static final Distance ARM_LENGTH = Foot.one();
 
     public static final RotaryMechCharacteristics CONSTANTS =
         new RotaryMechCharacteristics(
             ARM_LENGTH,
-            Rotations.of(Double.NEGATIVE_INFINITY),
-            Rotations.of(Double.POSITIVE_INFINITY),
+            MIN_ANGLE,
+            MAX_ANGLE,
             STARTING_ANGLE,
             RotaryAxis.PITCH);
+
     // Velocity PID
     private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
         .withKP(1000.0)
