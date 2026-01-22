@@ -58,13 +58,15 @@ public class ObjectDetection {
      * calculations using those basic values. This structure can represent essential observations
      * from an ML or HSV Color Detection pipeline.
      * 
-     * @param objID Object ID (from ML pipeline only).
-     * @param confidence Object ID confidence (from ML pipeline only).
+     * @param objID Object ID (ML pipeline only, negative sentinel value otherwise).
+     * @param confidence Object ID confidence (ML pipeline only, negative sentinel value otherwise).
      * @param pitch Pitch of the object relative to the centerline of the camera.
      * @param yaw Yaw of the object relative to the centerline of the camera.
      * @param area Area of the object in the image.
-     * @param distance Approximate 2d robot-relative distance to the detected object.
-     * @param objectPose Estimated field-relative pose of the detected object.
+     * @param distance Approximate 2d robot-relative distance to the detected object (empty if pose
+     *        estimation is N/A or fails).
+     * @param objectPose Estimated field-relative pose of the detected object (empty if pose
+     *        estimation is N/A or fails).
      */
     public record ObjectDetectionObservation(int objID, double confidence, Angle pitch, Angle yaw,
         double area, Optional<Distance> distance, Optional<Pose2d> objectPose) {

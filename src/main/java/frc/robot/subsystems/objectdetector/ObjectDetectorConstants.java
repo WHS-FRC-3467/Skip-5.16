@@ -40,25 +40,19 @@ public class ObjectDetectorConstants {
     // Object detection camera #0
     // Extrinsics
     // Transform sign convention: +X -> towards other alliance's station, +Y -> towards center of
-    // field from starting starboard edge, +theta -> right-hand rule. units: meters & degrees.
+    // field from starting starboard edge, +theta -> right-hand rule.
     public static final String CAMERA0_NAME = "Detection Camera #0";
-    public static final Angle CAMERA0_ROLL = Units.Degrees.of(0.0);
-    public static final Angle CAMERA0_PITCH = Units.Degrees.of(0.0);
-    public static final Angle CAMERA0_YAW = Units.Degrees.of(0.0);
-    public static final double CAMERA0_X = 0.0;
-    public static final double CAMERA0_Y = 0.0;
-    public static final double CAMERA0_Z = 0.5;
     public static final Transform3d CAMERA0_TRANSFORM =
-        new Transform3d(CAMERA0_X, CAMERA0_Y, CAMERA0_Z,
-            new Rotation3d(CAMERA0_ROLL, CAMERA0_PITCH, CAMERA0_YAW));
+        new Transform3d(Units.Inches.of(0.0), Units.Inches.of(0.0), Units.Inches.of(20),
+            new Rotation3d(Units.Degrees.of(0.0), Units.Degrees.of(0.0), Units.Degrees.of(0.0)));
 
     // Intrinsics
     public static final int CAMERA0_RESOLUTION_WIDTH = 1600;
     public static final int CAMERA0_RESOLUTION_HEIGHT = 1304;
+    // from Thrifty docs
+    public static final Angle CAMERA0_FOV = Degrees.of(55);
 
-    public static final Angle CAMERA0_FOV = Degrees.of(55); // from Thrifty docs
-
-    // ThriftyCam Default Calibrations // TODO: Replace with actual ML camera calibration values
+    // ThriftyCam Default Calibrations
     public static final Matrix<N3, N3> CAMERA0_MATRIX =
         MatBuilder.fill(Nat.N3(), Nat.N3(),
             2002.948392331919,
