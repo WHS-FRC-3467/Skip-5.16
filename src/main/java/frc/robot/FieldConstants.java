@@ -16,8 +16,8 @@ import edu.wpi.first.units.measure.Mass;
  * have a blue alliance origin.
  */
 public class FieldConstants {
-    public static final AprilTagFieldLayout APRILTAG_LAYOUT = AprilTagFieldLayout
-            .loadField(AprilTagFields.kDefaultField);
+    public static final AprilTagFieldLayout APRILTAG_LAYOUT =
+        AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
 
     public static final Distance FIELD_LENGTH = Meters.of(APRILTAG_LAYOUT.getFieldLength());
     public static final Distance FIELD_WIDTH = Meters.of(APRILTAG_LAYOUT.getFieldWidth());

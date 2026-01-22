@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
@@ -88,7 +89,7 @@ public class MotorIOTalonFX implements MotorIO {
         TalonFXFollower... followerData)
     {
 
-        motor = new TalonFX(main.id(), main.bus());
+        motor = new TalonFX(main.id(), new CANBus(main.bus()));
         updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config));
 
         // Initialize lists
@@ -105,11 +106,13 @@ public class MotorIOTalonFX implements MotorIO {
                 followerOnWrongBusAlert[i].set(true);
             }
 
-            followers[i] = new TalonFX(id.id(), id.bus());
+            followers[i] = new TalonFX(id.id(), new CANBus(id.bus()));
 
             TalonFX follower = followers[i];
             updateThread.CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config));
-            follower.setControl(new Follower(main.id(), followerData[i].opposesMain() ? MotorAlignmentValue.Opposed : MotorAlignmentValue.Aligned));
+            follower.setControl(
+                new Follower(main.id(), followerData[i].opposesMain() ? MotorAlignmentValue.Opposed
+                    : MotorAlignmentValue.Aligned));
         }
 
         position = motor.getPosition();

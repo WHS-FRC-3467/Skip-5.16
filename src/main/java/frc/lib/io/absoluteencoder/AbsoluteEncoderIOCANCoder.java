@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -16,6 +16,7 @@
 package frc.lib.io.absoluteencoder;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -39,7 +40,7 @@ public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
         CANcoderConfiguration configuration)
     {
         this.name = name;
-        CANCoder = new CANcoder(id.id(), id.bus());
+        CANCoder = new CANcoder(id.id(), new CANBus(id.bus()));
 
         updateThread.CTRECheckErrorAndRetry(() -> CANCoder.getConfigurator().apply(configuration));
 

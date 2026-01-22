@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.superstructure;
+package frc.robot.subsystems.intake;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -25,15 +25,15 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
 
-class SuperstructureTest implements AutoCloseable {
-    Superstructure superstructure;
+public class IntakeTest {
+    Intake intake;
 
     @BeforeEach // this method will run before each test
     void setup()
     {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
-        superstructure = SuperstructureConstants.get();
+        intake = IntakeConstants.get();
 
         /* enable the robot */
         DriverStationSim.setEnabled(true);
@@ -46,27 +46,41 @@ class SuperstructureTest implements AutoCloseable {
     @AfterEach // this method will run after each test
     void shutdown()
     {
-        close();
-    }
-
-    @Test // marks this method as a test
-    void goToGoal()
-    {
-        TestUtil.runTest(
-            superstructure.setGoalWithWait(Superstructure.Setpoint.STOW),
-            3,
-            superstructure);
         try {
-            // Check position to check if the subsystem is actually in tolerance of STOW setpoint.
-            assertTrue(superstructure.nearSetpoint(Superstructure.Setpoint.STOW));
+            intake.close();
         } catch (Exception e) {
-            fail("Failed to run Rotary Subsystem to STOW: " + e.getMessage());
+            fail("Failed to close Intake subsystem: " + e.getMessage());
         }
     }
 
-    @Override
-    public void close()
+    @Test // marks this method as a test
+    void intake()
     {
-        superstructure.close();
+        TestUtil.runTest(
+            intake.runIntake(Intake.State.INTAKE),
+            2,
+            intake);
+        try {
+            // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
+            assertTrue(intake.nearSetpoint(Intake.State.INTAKE));
+        } catch (Exception e) {
+            fail("Failed to run Intake to intake: " + e.getMessage());
+        }
     }
+
+    @Test
+    void stop()
+    {
+        TestUtil.runTest(
+            intake.stop(),
+            2,
+            intake);
+        try {
+            // Check velocity to check if the subsystem is actually in tolerance of stopped velocity.
+            assertTrue(intake.nearSetpoint(Intake.State.STOP));
+        } catch (Exception e) {
+            fail("Failed to stop intake: " + e.getMessage());
+        }
+    }
+    
 }

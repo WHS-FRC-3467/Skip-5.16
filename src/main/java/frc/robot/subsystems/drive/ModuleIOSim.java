@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -37,10 +37,9 @@ public class ModuleIOSim implements ModuleIO {
     private static final double DRIVE_KP = 0.05;
     private static final double DRIVE_KD = 0.0;
     private static final double DRIVE_KS = 0.0;
-    private static final double DRIVE_KV_ROT = 0.91035; // Same units as TunerConstants: (volt *
-                                                        // secs) / rotation
+    private static final double DRIVE_KV_ROT = 0.742; // Updated from 0.91035 to reflect new gear ratio (6.0 vs 7.3636): 0.91035 * (6.0/7.3636) = 0.742
     private static final double DRIVE_KV = 1.0 / Units.rotationsToRadians(1.0 / DRIVE_KV_ROT);
-    private static final double TURN_KP = 8.0;
+    private static final double TURN_KP = 12.5;
     private static final double TURN_KD = 0.0;
     private static final DCMotor DRIVE_GEARBOX = DCMotor.getKrakenX60Foc(1);
     private static final DCMotor TURN_GEARBOX = DCMotor.getKrakenX60Foc(1);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Windham Windup
+ * Copyright (C) 2026 Windham Windup
  *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation, either version 3 of the
@@ -15,6 +15,7 @@
 
 package frc.lib.io.lights;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANdleConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.CANdle;
@@ -45,7 +46,7 @@ public class LightsIOCandle implements LightsIO {
     {
         this.name = name;
 
-        candle = new CANdle(id.id(), id.bus());
+        candle = new CANdle(id.id(), new CANBus(id.bus()));
 
         updateThread.CTRECheckErrorAndRetry(() -> candle.getConfigurator().apply(config));
     }
