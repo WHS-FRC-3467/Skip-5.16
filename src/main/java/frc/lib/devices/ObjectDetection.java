@@ -351,10 +351,10 @@ public class ObjectDetection {
      * Returns the latest Object observation.
      * 
      * <p>
-     * This function returns a full record representing the detected object -- object ID,
+     * This function returns a full record representing the detected Object -- Object ID,
      * confidence, pitch, yaw, area, robot distance to target, and target's field pose -- usually
      * requiring a functional ML pipeline. A PhotonVision ML detection that fails to identify the
-     * object will return object ID & confidence as -1. Failed pose estimation will return relevant
+     * Object will return object ID & confidence as -1. Failed pose estimation will return relevant
      * fields as empty.
      * 
      * @param target A single PhotonTrackedTarget representing the detected object of interest,
@@ -414,24 +414,24 @@ public class ObjectDetection {
             Degrees.of(target.getPitch()),
             Degrees.of(target.getYaw()),
             target.getArea(),
-            Optional.of(Meters.of(distance)),
-            Optional.of(new Pose2d(targetLocation, new Rotation2d()))));
+            Optional.ofNullable(Meters.of(distance)),
+            Optional.ofNullable(new Pose2d(targetLocation, new Rotation2d()))));
     }
 
     /**
-     * Returns the latest Contour (blob) observation.
+     * Returns the latest Contour (i.e. Color or Blob) observation.
      * 
      * <p>
-     * This function returns a partial record representing the detected blob -- pitch, yaw, & area
-     * -- these are baseline PhotonVision pipeline results relevant to multiple APIs (Color, ML,
-     * etc.). Pose estimation is not attempted here so relevant fields are returned empty.
-     * Additionally, object ID & confidence are definitionally not populated for a blob and
-     * therefore assigned -2 to differeniate this result from an ML detection that failed to
-     * generate both an ID & a pose (-1). See {@link getObjectObservation}.
+     * This function returns a partial record representing the detected Blob (i.e Color or Contour)
+     * containing pitch, yaw, & area. These are baseline PhotonVision results relevant to multiple
+     * pipelines (Color, ML, etc.). Blob observations don't attempt to generate poses, object IDs,
+     * or confidence. Therefore, fields relevant to pose estimation are returned empty and object ID
+     * / confidence are assigned assigned -2 to differentiate this result from an ML detection that
+     * failed to generate both an ID & a pose (-1). See {@link #getObjectObservation}.
      * 
      * @param targets An array of PhotonTrackedTargets, likely from objectDetection.getTargets().
      * @param selection An enum representing the two selection modes: LARGEST or LOWEST. LARGEST
-     *        returns blob with greatest area, LOWEST returns blob with smallest pitch.
+     *        returns Blob with greatest area, LOWEST returns Blob with smallest pitch.
      * @return An optional {@link ObjectDetectionObservation}.
      */
     public Optional<ObjectDetectionObservation> getContourObservation(PhotonTrackedTarget[] targets,
@@ -471,13 +471,13 @@ public class ObjectDetection {
         }
     }
 
-    // Singleton selector for returnContour().
+    // Singleton selector for getContourObservation().
     public enum ContourSelectionMode {
         LARGEST,
         LOWEST
     }
 
-    // Private helper for returnContour(). Finds blob with largest area.
+    // Private helper for getContourObservation(). Finds blob with largest area.
     private PhotonTrackedTarget getLargestContour(PhotonTrackedTarget[] result)
     {
         PhotonTrackedTarget largestTarget = null;
@@ -492,7 +492,7 @@ public class ObjectDetection {
         return largestTarget;
     }
 
-    // Private helper for returnContour(). Finds blob with smallest pitch.
+    // Private helper for getContourObservation(). Finds blob with smallest pitch.
     private PhotonTrackedTarget getLowestContour(PhotonTrackedTarget[] result)
     {
         PhotonTrackedTarget lowestTarget = null;

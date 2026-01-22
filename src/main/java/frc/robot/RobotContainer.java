@@ -110,13 +110,6 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-        // // TODO: Testing only
-        // drive.setDefaultCommand(
-        // new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
-        // () -> -controller.getLeftY(), // forward/back
-        // () -> -controller.getLeftX(), // strafe
-        // () -> -controller.getRightX()));// fallback rotation
-
         // Right Trigger: Teleop vision align to largest contour (translation allowed)
         controller.rightTrigger(0.2)
             .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,

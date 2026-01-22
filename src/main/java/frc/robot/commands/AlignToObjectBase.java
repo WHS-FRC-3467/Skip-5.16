@@ -81,21 +81,22 @@ public abstract class AlignToObjectBase {
                 angularController.reset(0.0, 0.0);
             }
             hasTarget = false;
-            ObjectAlignLogger(contourObservation, 0.0);
+            logObjectAlign(contourObservation, 0.0);
             return OptionalDouble.empty();
         }
         hasTarget = true;
         contourYaw = contourObservation.get().yaw().in(Radians);
 
-        // Alignment PID using angular velocity as CV, heading as PV
+        // Alignment PID: contourYaw is the heading measurement (feedback), 0.0 is the setpoint;
+        // the controller output omega is the angular velocity command (CV)
         double omega = angularController.calculate(contourYaw, 0.0);
         omega = MathUtil.clamp(omega, -maxAngularVelocityRadPerSec, maxAngularVelocityRadPerSec);
-        ObjectAlignLogger(contourObservation, omega);
+        logObjectAlign(contourObservation, omega);
         return OptionalDouble.of(omega);
     }
 
     // Private helper for sim logging
-    private void ObjectAlignLogger(Optional<ObjectDetectionObservation> observation,
+    private void logObjectAlign(Optional<ObjectDetectionObservation> observation,
         double speedDegPerSec)
     {
         // Log for sim
@@ -108,7 +109,6 @@ public abstract class AlignToObjectBase {
         }
         Logger.recordOutput("VisionAlign/" + "OmegaCmdDegPerSec", speedDegPerSec);
         Logger.recordOutput("VisionAlign/" + "HasTarget", hasTarget);
-
     }
 
     protected Boolean isAligned(double tolRad)

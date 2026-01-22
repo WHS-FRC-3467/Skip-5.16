@@ -58,7 +58,8 @@ public class ObjectDetector extends SubsystemBase {
 
     // Private helper for generating latest ML Object Observation and updating internal buffer of
     // detected object poses (if it was successfully generated).
-    private Optional<ObjectDetectionObservation> latestObjectObservation(PhotonTrackedTarget target)
+    private Optional<ObjectDetectionObservation> generateObjectObservation(
+        PhotonTrackedTarget target)
     {
         // Attempt to generate full Object record using ML model
         Optional<ObjectDetectionObservation> observation =
@@ -79,7 +80,7 @@ public class ObjectDetector extends SubsystemBase {
     }
 
     // Private helper for generating latest Contour observation.
-    private Optional<ObjectDetectionObservation> latestContourObservation(
+    private Optional<ObjectDetectionObservation> generateContourObservation(
         ContourSelectionMode selection)
     {
         // Attempt to generate partial Object record using Blob model
@@ -166,10 +167,10 @@ public class ObjectDetector extends SubsystemBase {
         // Now that inputs are updated, re-populate observations with new data
         if (objectDetection.getTargets().length > 0) {
             // Generate latest ML Object observation
-            latestObjectObservation = latestObjectObservation(objectDetection.getTargets()[0]);
+            latestObjectObservation = generateObjectObservation(objectDetection.getTargets()[0]);
             // Generate latest Contour observations
-            latestBigContourObservation = latestContourObservation(ContourSelectionMode.LARGEST);
-            latestLowContourObservation = latestContourObservation(ContourSelectionMode.LOWEST);
+            latestBigContourObservation = generateContourObservation(ContourSelectionMode.LARGEST);
+            latestLowContourObservation = generateContourObservation(ContourSelectionMode.LOWEST);
         } else {
             // Prevent stale data from persisting
             latestObjectObservation = Optional.empty();
