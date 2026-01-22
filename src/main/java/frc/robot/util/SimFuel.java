@@ -52,10 +52,9 @@ public class SimFuel {
     }
 
     public void checkCollisions(Supplier<Pose2d> robotPose) {
-        this.robotPose = robotPose.get();
         List<Pose3d> toRemove = new ArrayList<>();
         for (Pose3d fuelPose : depotFuel) {
-            double distance = this.robotPose.getTranslation().getDistance(fuelPose.toPose2d().getTranslation());
+            double distance = robotPose.get().getTranslation().getDistance(fuelPose.toPose2d().getTranslation());
             if (distance < FieldConstants.FUEL_DIAMETER.in(Meters)) {
                 toRemove.add(fuelPose);
                 fuelStored++;
