@@ -146,11 +146,15 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     // Set Shooter Speed
-    public Command setFlyWheelSpeed(AngularVelocity velocity)
+    public Command setFlywheelSpeed(AngularVelocity velocity)
     {
         return Commands.runOnce(() -> spinFlywheel(velocity));
     }
 
+    public Command setFlyWheelSpeed(AngularVelocity velocity)
+    {
+        return setFlywheelSpeed(velocity);
+    }
     @Override
     public void periodic()
     {
