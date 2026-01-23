@@ -107,7 +107,7 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-        // Left Bumper: Intake while held
+        // Left Trigger: Intake while held
         controller.leftTrigger().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
 
         // Back Button: Eject while held
