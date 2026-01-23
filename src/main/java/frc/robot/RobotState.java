@@ -87,9 +87,6 @@ public class RobotState {
             return;
         }
         poseEstimator.addVisionObservation(observation);
-        poseEstimator.getPoseAtTime(observation.timestampSeconds()).ifPresent((Pose2d pose) -> {
-            Logger.recordOutput("Odometry/VisionCorrectedPose", pose);
-        });
     }
     
     public Optional<Pose2d> getPoseAtTime(double timestampSeconds)
