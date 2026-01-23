@@ -119,13 +119,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     public Command prepareShot(Command whileAtPosition)
     {
-        Supplier<Pose2d> futurePoseSupplier = () -> robotState.getEstimatedPose()
-            .exp(robotState.getFieldRelativeVelocity().toTwist2d(timeToBeReady.get()));
         Supplier<AngularVelocity> desiredFlywheelVelocitySupplier = () -> RadiansPerSecond.of(
             flywheelMap
-                .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
+                .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
         Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
-            .get(SHOOT_GOAL.minus(futurePoseSupplier.get()).getTranslation().getNorm()));
+            .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
 
         Trigger ready = new Trigger(() -> flywheelIsAt(desiredFlywheelVelocitySupplier.get())
             && hoodIsAt(desiredHoodPositionSupplier.get()));
