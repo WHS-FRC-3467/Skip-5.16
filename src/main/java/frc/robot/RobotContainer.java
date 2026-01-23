@@ -121,9 +121,13 @@ public class RobotContainer {
     // Setup all SmartDashboard commands
     private void initializeDashboard()
     {
-        SmartDashboard.putData("Run Indexer expel", indexer.setStateCommand(Indexer.State.EXPEL));
-        SmartDashboard.putData("Run Indexer intake", indexer.setStateCommand(Indexer.State.PULL));
-        SmartDashboard.putData("Run Indexer stop", indexer.setStateCommand(Indexer.State.STOP));
+        SmartDashboard.putData("Indexer/Expel", indexer.setStateCommand(Indexer.State.EXPEL));
+        SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
+        SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
+
+        SmartDashboard.putData("Intake/Eject", intake.runIntake(Intake.State.EJECT));
+        SmartDashboard.putData("Intake/Intake", intake.runIntake(Intake.State.INTAKE));
+        SmartDashboard.putData("Intake/Stop", intake.runIntake(Intake.State.STOP));
     }
 
     public Command getAutonomousCommand()

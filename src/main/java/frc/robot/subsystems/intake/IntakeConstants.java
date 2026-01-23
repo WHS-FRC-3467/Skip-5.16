@@ -48,7 +48,6 @@ public class IntakeConstants {
 
     public static final String NAME = "Intake";
 
-    // TODO: Fill in and tune the intake (flywheel mechanism) values
     public static final AngularVelocity MAX_VELOCITY =
         Units.RadiansPerSecond.of(2 * Math.PI);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
@@ -58,15 +57,14 @@ public class IntakeConstants {
     public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.05);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(1.0);
-
-    public static final Distance FLYWHEEL_RADIUS = Units.Meters.of(0.0508); // 2 inches
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
     private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
-        .withKP(1000.0)
+        .withKP(80.0)
         .withKI(0.0)
-        .withKD(0.0);
+        .withKD(0.0)
+        .withKV(10.0);
 
     public static TalonFXConfiguration getFXConfig()
     {
