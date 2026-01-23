@@ -21,33 +21,39 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import lombok.Getter;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
-import frc.lib.util.LoggedTuneableProfiledPID;
 
 /**
  * Strategy layer that determines robot heading required to align robot with centroid of detected
- * contour. Communal for both teleop & auto.
+ * contour. Communal for both teleop & auto. Logs outputs for sim.
  */
 public abstract class AlignToObjectBase {
     @Getter
-    private final LoggedTuneableProfiledPID angularController;
+    private final ProfiledPIDController angularController;
     private final ObjectDetector objectDetector;
     private final ContourSelectionMode mode;
-    private final double maxAngularVelocityRadPerSec;
+    private final double maxAngularSpeed; // rad/s
+    private static final double K_P = 6.0;
+    private static final double K_I = 0.0;
+    private static final double K_D = 0.5;
     private double contourYaw;
-    private boolean hasTarget = false;
+    private boolean hasTarget;
 
     public AlignToObjectBase(ObjectDetector objectDetector, ContourSelectionMode mode,
-        double maxAngularVelocityRadPerSec)
+        double maxAngularSpeed, double maxAngularAcceleration)
     {
         this.objectDetector = objectDetector;
         this.mode = mode;
-        this.maxAngularVelocityRadPerSec = maxAngularVelocityRadPerSec;
+        this.maxAngularSpeed = maxAngularSpeed;
         this.angularController =
-            new LoggedTuneableProfiledPID("ObjectAlign/Angular", 5.0, 0, 0.1, 0, 0);
+            new ProfiledPIDController(K_P, K_I, K_D,
+                new TrapezoidProfile.Constraints(maxAngularSpeed, maxAngularAcceleration));
+        hasTarget = false;
     }
 
     /**
@@ -84,13 +90,14 @@ public abstract class AlignToObjectBase {
             logObjectAlign(contourObservation, 0.0);
             return OptionalDouble.empty();
         }
+        // Object Detection camera sees target(s) and record successfully generates
         hasTarget = true;
         contourYaw = contourObservation.get().yaw().in(Radians);
 
         // Alignment PID: contourYaw is the heading measurement (feedback), 0.0 is the setpoint;
         // the controller output omega is the angular velocity command (CV)
         double omega = angularController.calculate(contourYaw, 0.0);
-        omega = MathUtil.clamp(omega, -maxAngularVelocityRadPerSec, maxAngularVelocityRadPerSec);
+        omega = MathUtil.clamp(omega, -maxAngularSpeed, maxAngularSpeed);
         logObjectAlign(contourObservation, omega);
         return OptionalDouble.of(omega);
     }

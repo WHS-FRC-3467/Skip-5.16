@@ -17,24 +17,25 @@ package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 
 /**
  * Command layer that actuates robot heading align robot with centroid of detected contour. Utilizes
- * a communal teleop/auto strategy layer containing the required CV (angular velocity) calculation.
+ * a communal teleop/auto strategy layer containing the PID calculation.
  */
 public class TeleopAlignToObject extends Command {
     private final Drive drive;
     private final DoubleSupplier xSupplier;
     private final DoubleSupplier ySupplier;
     private final DoubleSupplier rotSupplier;
-    private final LoggedTuneableProfiledPID angularController;
     private final AlignToObjectBase strategy;
 
     public TeleopAlignToObject(Drive drive, ObjectDetector objectDetector,
@@ -46,10 +47,16 @@ public class TeleopAlignToObject extends Command {
         this.ySupplier = ySupplier;
         this.rotSupplier = rotSupplier;
         this.strategy = new AlignToObjectBase(objectDetector, mode,
-            drive.getMaxAngularSpeedRadPerSec()) {};
-        this.angularController = strategy.getAngularController();
+            DriveCommands.getANGLE_MAX_VELOCITY(), DriveCommands.getANGLE_MAX_ACCELERATION()) {};
         // Reserve drive for this command
         addRequirements(drive);
+    }
+
+    @Override
+    public void initialize()
+    {
+        // Conservatively reset upon initialization
+        strategy.getAngularController().reset(0.0);
     }
 
     @Override
@@ -62,20 +69,30 @@ public class TeleopAlignToObject extends Command {
         double vx = linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec();
         double vy = linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec();
 
-        // Update PID tuning live
-        angularController.updatePID();
-
         // Implement heading strategy; if fails, fallback to joystick heading
         // Apply deadband and shaping to fallback
         double omega = strategy.getVisionOmega().orElseGet(() -> {
-            double raw = MathUtil.applyDeadband(rotSupplier.getAsDouble(), 0.05);
+            double raw =
+                MathUtil.applyDeadband(rotSupplier.getAsDouble(), DriveCommands.getDEADBAND());
             raw = Math.copySign(raw * raw, raw);
             return raw * drive.getMaxAngularSpeedRadPerSec();
         });
+        // Generate scaled field-relative chassis speeds
+        ChassisSpeeds speeds = new ChassisSpeeds(vx, vy, omega);
+
+        // Facing away from blue alliance = 0 degrees
+        boolean isFlipped =
+            DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red;
 
         // Command vx, vy, omega
-        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega,
-            drive.robotState.getEstimatedPose().getRotation()));
+        drive.runVelocity(
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds,
+                isFlipped
+                    ? drive.robotState.getEstimatedPose().getRotation()
+                        .plus(new Rotation2d(Math.PI))
+                    : drive.robotState.getEstimatedPose().getRotation()));
     }
 
     @Override
