@@ -31,7 +31,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
-import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
@@ -68,8 +67,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private static final Pose2d SHOOT_GOAL = Pose2d.kZero;
 
-    private LoggedTunableNumber timeToBeReady = new LoggedTunableNumber("TimeToBeReady", 0.5);
-
     private final RobotState robotState = RobotState.getInstance();
 
     private final RotaryMechanism hoodIO;
@@ -87,7 +84,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         flywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
-    private boolean flywheelIsAt(AngularVelocity velocity)
+    private boolean isFlywheelAt(AngularVelocity velocity)
     {
         return MathUtil.isNear(
             velocity.in(RotationsPerSecond),
@@ -102,7 +99,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         hoodIO.runPosition(angle, PIDSlot.SLOT_0);
     }
 
-    private boolean hoodIsAt(Angle angle)
+    private boolean isHoodAt(Angle angle)
     {
         return hoodIO.nearGoal(angle, HoodConstants.TOLERANCE);
     }
@@ -125,8 +122,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
             .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
 
-        Trigger ready = new Trigger(() -> flywheelIsAt(desiredFlywheelVelocitySupplier.get())
-            && hoodIsAt(desiredHoodPositionSupplier.get()));
+        Trigger ready = new Trigger(() -> isFlywheelAt(desiredFlywheelVelocitySupplier.get())
+            && isHoodAt(desiredHoodPositionSupplier.get()));
 
         return Commands.sequence(
             Commands.parallel(
@@ -153,8 +150,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     {
         return Commands.runOnce(() -> spinFlywheel(velocity));
     }
-
-
 
     @Override
     public void periodic()
