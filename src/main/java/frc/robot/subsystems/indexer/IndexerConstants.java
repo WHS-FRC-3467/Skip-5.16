@@ -12,10 +12,8 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
@@ -25,9 +23,6 @@ import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Foot;
 
 /** Add your docs here. */
 public class IndexerConstants {
@@ -43,18 +38,14 @@ public class IndexerConstants {
     public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.1);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(1.0);
-
-    public static final Angle MIN_ANGLE = Degrees.of(-90.0);
-    public static final Angle MAX_ANGLE = Degrees.of(90.0);
-    public static final Angle STARTING_ANGLE = Radians.zero();
-    public static final Distance ARM_LENGTH = Foot.one();
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
     private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
-        .withKP(1000.0)
+        .withKP(80.0)
         .withKI(0.0)
-        .withKD(0.0);
+        .withKD(0.0)
+        .withKV(10.0);
 
     public static TalonFXConfiguration getFXConfig()
     {

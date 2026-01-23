@@ -108,12 +108,12 @@ public class RobotContainer {
                 () -> -controller.getRightX()));
 
         // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
+        controller.leftTrigger().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
 
         // Back Button: Eject while held
         controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
 
-        controller.rightBumper().whileTrue(
+        controller.rightTrigger().whileTrue(
             shooter.prepareShot(
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
     }
@@ -123,6 +123,7 @@ public class RobotContainer {
     {
         SmartDashboard.putData("Run Indexer expel", indexer.setStateCommand(Indexer.State.EXPEL));
         SmartDashboard.putData("Run Indexer intake", indexer.setStateCommand(Indexer.State.PULL));
+        SmartDashboard.putData("Run Indexer stop", indexer.setStateCommand(Indexer.State.STOP));
     }
 
     public Command getAutonomousCommand()

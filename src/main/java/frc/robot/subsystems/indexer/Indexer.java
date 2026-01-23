@@ -7,7 +7,6 @@ package frc.robot.subsystems.indexer;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -29,7 +28,7 @@ public class Indexer extends SubsystemBase {
     @Getter
     public enum State {
         STOP(
-            Units.RadiansPerSecond.of(0.0)),
+            RotationsPerSecond.zero()),
         PULL(
             IndexerConstants.MAX_VELOCITY),
         EXPEL(
