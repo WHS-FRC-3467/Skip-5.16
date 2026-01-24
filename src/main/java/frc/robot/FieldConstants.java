@@ -1,3 +1,9 @@
+// Copyright (C) 2026 FRC 6328
+// http://github.com/Mechanical-Advantage
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
@@ -12,8 +18,8 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
 
 /**
- * Contains various field dimensions and useful reference points. All poses
- * have a blue alliance origin.
+ * Contains various field dimensions and useful reference points. All poses have a blue alliance
+ * origin.
  */
 public class FieldConstants {
     public static final AprilTagFieldLayout APRILTAG_LAYOUT =
@@ -24,30 +30,32 @@ public class FieldConstants {
 
     public static final Distance STARTING_LINE_X = Inches.of(157.61);
 
-    public static final Translation2d FIELD_CENTER = new Translation2d(FIELD_LENGTH.in(Meters) / 2,
-            FIELD_WIDTH.in(Meters) / 2);
+    public static final Translation2d FIELD_CENTER = new Translation2d(FIELD_LENGTH.div(2),
+        FIELD_WIDTH.div(2));
 
     public static final List<Translation2d> ALLIANCE_ZONE = List.of(
-            new Translation2d(0, 0),
-            new Translation2d(0, FIELD_WIDTH.in(Meters)),
-            new Translation2d(Inches.of(158.6), FIELD_WIDTH),
-            new Translation2d(Inches.of(158.6), Inches.of(0)));
+        Translation2d.kZero,
+        new Translation2d(Meters.zero(), FIELD_WIDTH),
+        new Translation2d(Inches.of(158.6), FIELD_WIDTH),
+        new Translation2d(Inches.of(158.6), Inches.of(0)));
 
     public static final Distance ROBOT_STARTING_LINE = Inches.of(158.6);
 
     public static final List<Translation2d> NEUTRAL_ZONE = List.of(
-            new Translation2d(FIELD_LENGTH.div(2).minus(Inches.of(143.50)), Inches.of(0)),
-            new Translation2d(FIELD_LENGTH.div(2).minus(Inches.of(143.50)), FIELD_WIDTH),
-            new Translation2d(FIELD_LENGTH.div(2).plus(Inches.of(143.50)), FIELD_WIDTH),
-            new Translation2d(FIELD_LENGTH.div(2).plus(Inches.of(143.50)), Inches.of(0)));
+        new Translation2d(FIELD_LENGTH.div(2).minus(Inches.of(143.50)),
+            Inches.of(0)),
+        new Translation2d(FIELD_LENGTH.div(2).minus(Inches.of(143.50)),
+            FIELD_WIDTH),
+        new Translation2d(FIELD_LENGTH.div(2).plus(Inches.of(143.50)),
+            FIELD_WIDTH),
+        new Translation2d(FIELD_LENGTH.div(2).plus(Inches.of(143.50)),
+            Inches.of(0)));
 
     public static final List<Distance> TUNNEL_CENTER_Y = List.of(
-            Inches.of(24.97),
-            FIELD_WIDTH.minus(Inches.of(24.97)));
-
+        Inches.of(24.97), FIELD_WIDTH.minus(Inches.of(24.97)));
     public static final Translation2d HUB_CENTER = new Translation2d(
-            Inches.of(158.6),
-            FIELD_WIDTH.div(2));
+        Inches.of(158.6),
+        FIELD_WIDTH.div(2));
 
     public static final Distance FUEL_DIAMETER = Inches.of(5.91);
     public static final Mass FUEL_WEIGHT = Pounds.of(0.474);

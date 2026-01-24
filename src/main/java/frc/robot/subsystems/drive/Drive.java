@@ -196,13 +196,14 @@ public class Drive extends SubsystemBase {
                 gyroAngle = Optional.of(gyroInputs.yawPosition);
             }
 
-            RobotState.getInstance().addOdometryObservation(
+            robotState.addOdometryObservation(
                 new OdometryObservation(Seconds.of(sampleTimestamps[i]), modulePositions,
                     gyroAngle));
         }
 
         // Update RobotState velocity
-        RobotState.getInstance().setVelocity(getChassisSpeeds());
+        robotState.setVelocity(getChassisSpeeds());
+        robotState.setDrivetrainAngled(isAngled());
 
         Logger.recordOutput("Drive/Speed", new Translation2d(getChassisSpeeds().vxMetersPerSecond,
             getChassisSpeeds().vyMetersPerSecond).getNorm() * -1);
@@ -369,5 +370,24 @@ public class Drive extends SubsystemBase {
     public double getAccelerationY()
     {
         return gyroIO.getAccelerationY();
+    }
+
+    /**
+     * Returns whether the drivetrain is operating at a significant angle.
+     *
+     * <p>This checks the current pitch and roll reported by the gyro against the
+     * configured maximum allowed pitch ({@link DriveConstants#MAX_ALLOWED_PITCH})
+     * and roll ({@link DriveConstants#MAX_ALLOWED_ROLL}) thresholds. It is used
+     * to detect when the robot is on an incline or traversing a bump so that
+     * vision-based pose updates can be temporarily ignored while the drivetrain
+     * is not level.
+     *
+     * @return {@code true} if the absolute pitch or roll exceeds the allowed
+     *         thresholds, indicating the drivetrain is sufficiently angled;
+     *         {@code false} otherwise.
+     */
+    public boolean isAngled() {
+        return Math.abs(gyroIO.getPitch()) > DriveConstants.ANGLED_TOLERANCE.in(Degrees)
+            || Math.abs(gyroIO.getRoll()) > DriveConstants.ANGLED_TOLERANCE.in(Degrees);
     }
 }
