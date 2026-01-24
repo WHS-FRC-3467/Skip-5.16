@@ -196,14 +196,14 @@ public class Drive extends SubsystemBase {
                 gyroAngle = Optional.of(gyroInputs.yawPosition);
             }
 
-            RobotState.getInstance().addOdometryObservation(
+            robotState.addOdometryObservation(
                 new OdometryObservation(Seconds.of(sampleTimestamps[i]), modulePositions,
                     gyroAngle));
         }
 
         // Update RobotState velocity
-        RobotState.getInstance().setVelocity(getChassisSpeeds());
-        RobotState.getInstance().setDrivetrainAngled(isAngled());
+        robotState.setVelocity(getChassisSpeeds());
+        robotState.setDrivetrainAngled(isAngled());
 
         Logger.recordOutput("Drive/Speed", new Translation2d(getChassisSpeeds().vxMetersPerSecond,
             getChassisSpeeds().vyMetersPerSecond).getNorm() * -1);
