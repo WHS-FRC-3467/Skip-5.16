@@ -72,9 +72,9 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void enableTunablePID(PIDSlot slot, PID defaultPid)
     {
-        LoggedTunableNumber kp = new LoggedTunableNumber(name + "/PID/kP", defaultPid.P());
-        LoggedTunableNumber ki = new LoggedTunableNumber(name + "/PID/kI", defaultPid.I());
-        LoggedTunableNumber kd = new LoggedTunableNumber(name + "/PID/kD", defaultPid.D());
+        LoggedTunableNumber kp = new LoggedTunableNumber(name + "/PID/" + slot + "/kP", defaultPid.P());
+        LoggedTunableNumber ki = new LoggedTunableNumber(name + "/PID/" + slot + "/kI", defaultPid.I());
+        LoggedTunableNumber kd = new LoggedTunableNumber(name + "/PID/" + slot + "/kD", defaultPid.D());
         int id = Objects.hash(this, slot);
         tunablePidConfigs.add(new TunablePidConfig(slot, kp, ki, kd, id));
     }
