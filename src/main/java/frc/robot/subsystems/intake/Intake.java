@@ -32,9 +32,9 @@ import lombok.RequiredArgsConstructor;
 public class Intake extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber INTAKE_SETPOINT =
-        new LoggedTunableNumber("Intake/IntakeRPS", 0.0);
+        new LoggedTunableNumber("Intake/IntakeRPS", 10.0);
     private static final LoggedTunableNumber EJECT_SETPOINT =
-        new LoggedTunableNumber("Intake/EjectRPS", 0.0);
+        new LoggedTunableNumber("Intake/EjectRPS", -10.0);
 
     private final FlywheelMechanism<?> io;
     private String stateName;
@@ -52,28 +52,33 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     }
 
     /** Constructor for the Intake subsystem - accepts a FlywheelMechanism. */
-    public Intake(FlywheelMechanism<?> intakeIO) {
+    public Intake(FlywheelMechanism<?> intakeIO)
+    {
         this.io = intakeIO;
     }
 
-    /** Run the intake. Static speed torque control. 
+    /**
+     * Run the intake. Static speed torque control.
+     * 
      * @param state The desired intake state.
-    */
+     */
     public Command runIntake(State state)
     {
         return this.runOnce(() -> io.runVelocity(state.angularVelocity.get(),
-            IntakeConstants.MAX_ACCELERATION, PIDSlot.SLOT_0)
-        ).andThen(this.runOnce(() -> this.stateName = state.name()))
+            IntakeConstants.MAX_ACCELERATION, PIDSlot.SLOT_0))
+            .andThen(this.runOnce(() -> this.stateName = state.name()))
             .withName(state.name());
     }
 
-    public Command stop() {
+    public Command stop()
+    {
         return this.runOnce(() -> io.runBrake())
             .andThen(this.runOnce(() -> this.stateName = "STOP")).withName("STOP");
     }
 
     /* Checks to see if the intake is near the setpoint */
-    public boolean nearSetpoint(State state) {
+    public boolean nearSetpoint(State state)
+    {
         return MathUtil.isNear(
             state.angularVelocity.get().in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
@@ -81,13 +86,15 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     }
 
     @Override
-    public void periodic() {
+    public void periodic()
+    {
         Logger.recordOutput("Intake/State", this.stateName);
         io.periodic();
     }
 
     @Override
-    public void close() {
+    public void close()
+    {
         io.close();
     }
 }

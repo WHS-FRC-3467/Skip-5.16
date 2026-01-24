@@ -10,20 +10,23 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Second;
 import java.util.Optional;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.AngularAccelerationUnit;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.units.measure.Velocity;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
@@ -35,40 +38,50 @@ import frc.robot.Ports;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-/** Add your docs here. */
+/**
+ * Defines configuration and physical constants for the turret hood mechanism,
+ * including motion constraints, geometry, motor model, and control gains used
+ * to construct the {@link RotaryMechanism} instance for different robot modes.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class IndexerConstants {
-    public static final String NAME = "Indexer";
+public class HoodConstants {
+    public static final String NAME = "Hood";
 
     public static final Angle TOLERANCE = Degrees.of(1.0);
 
     public static final AngularVelocity CRUISE_VELOCITY =
         RadiansPerSecond.of(10);
     public static final AngularAcceleration ACCELERATION =
-        RadiansPerSecondPerSecond.of(10);
+        RadiansPerSecondPerSecond.of(100);
+    public static final Velocity<AngularAccelerationUnit> JERK =
+        RadiansPerSecondPerSecond.per(Second).of(0);
 
-    private static final double ROTOR_TO_SENSOR = (2.0 / 1.0);
+    private static final double ROTOR_TO_SENSOR = (50.0 / 1.0);
     private static final double SENSOR_TO_MECHANISM = 1.0;
 
+    public static final Angle MIN_ANGLE = Degrees.of(-90.0);
+    public static final Angle MAX_ANGLE = Degrees.of(90.0);
     public static final Angle STARTING_ANGLE = Radians.zero();
     public static final Distance ARM_LENGTH = Foot.one();
 
     public static final RotaryMechCharacteristics CONSTANTS =
         new RotaryMechCharacteristics(
             ARM_LENGTH,
-            Rotations.of(Double.NEGATIVE_INFINITY),
-            Rotations.of(Double.POSITIVE_INFINITY),
+            MIN_ANGLE,
+            MAX_ANGLE,
             STARTING_ANGLE,
             RotaryAxis.PITCH);
 
     public static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.25);
 
     // Positional PID
     private static final Slot0Configs SLOT_0_CONFIG = new Slot0Configs()
-        .withKP(1.0)
-        .withKI(0.0)
-        .withKD(0.0);
+        .withKP(10.0)
+        .withKI(2.0)
+        .withKD(8)
+        .withKS(0.07)
+        .withKV(0.1);
 
     public static TalonFXConfiguration getFXConfig()
     {
@@ -88,8 +101,11 @@ public class IndexerConstants {
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = MAX_ANGLE.in(Units.Rotations);
+
+        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = MIN_ANGLE.in(Units.Rotations);
 
         config.Feedback.RotorToSensorRatio = ROTOR_TO_SENSOR;
         config.Feedback.SensorToMechanismRatio = SENSOR_TO_MECHANISM;
@@ -99,6 +115,7 @@ public class IndexerConstants {
         config.Slot0 = SLOT_0_CONFIG;
         config.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY.in(RotationsPerSecond);
         config.MotionMagic.MotionMagicAcceleration = ACCELERATION.in(RotationsPerSecondPerSecond);
+        config.MotionMagic.MotionMagicJerk = JERK.in(RotationsPerSecondPerSecond.per(Second));
 
         return config;
     }
@@ -108,12 +125,12 @@ public class IndexerConstants {
         switch (Constants.currentMode) {
             case REAL:
                 return new RotaryMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer),
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.hood),
                     CONSTANTS,
                     Optional.empty());
             case SIM:
                 return new RotaryMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer),
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.hood),
                     DCMOTOR, MOI, false, CONSTANTS,
                     Optional.empty());
             case REPLAY:

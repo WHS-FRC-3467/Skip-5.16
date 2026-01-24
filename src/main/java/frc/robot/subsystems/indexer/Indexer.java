@@ -4,43 +4,39 @@
 
 package frc.robot.subsystems.indexer;
 
-import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import org.littletonrobotics.junction.Logger;
-import edu.wpi.first.units.Units;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
-import frc.lib.mechanisms.rotary.RotaryMechanism;
+import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /** Add your docs here. */
-public class Indexer extends SubsystemBase { // Don't extend if contained in superstructure
-    private final RotaryMechanism<?, ?> io;
+public class Indexer extends SubsystemBase {
+    private final FlywheelMechanism<?> io;
 
-    private String stateName;
-
+    private State state = State.STOP;
 
     @RequiredArgsConstructor
     @SuppressWarnings("Immutable")
     @Getter
     public enum State {
-        NONE(
-            Units.RadiansPerSecond.of(0.0)),
+        STOP(
+            RotationsPerSecond.zero()),
         PULL(
             IndexerConstants.MAX_VELOCITY),
         EXPEL(
             IndexerConstants.MAX_VELOCITY.times(-1.0));
 
         private final AngularVelocity stateVelocity;
-
     }
 
-
-
-    public Indexer(RotaryMechanism<?, ?> io)
+    public Indexer(FlywheelMechanism<?> io)
     {
         this.io = io;
     }
@@ -48,43 +44,53 @@ public class Indexer extends SubsystemBase { // Don't extend if contained in sup
     @Override
     public void periodic()
     {
-        Logger.recordOutput("Indexer/State", this.stateName);
+        Logger.recordOutput("Indexer/State", this.state.name());
         io.periodic();
-
     }
 
-    public Command intakeCommand(State state)
+    private void setState(State state)
     {
-
-        return this.runOnce(() -> io.runVelocity(state.stateVelocity,
-            IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0)
-
-
-        ).andThen(this.runOnce(() -> this.stateName = state.name()))
-            .withName("Shoot");
+        this.state = state;
+        io.runVelocity(state.stateVelocity,
+            IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
-
-
-    public Command stop()
+    /**
+     * Sets the subsystem's state
+     * 
+     * In a sequence, this command is non-blocking (finishes instantly), but still requires the
+     * subsystem (you cannot set the subsystem's state twice in a {@link ParallelCommandGroup}))
+     * 
+     * @param state The state to hold
+     * @return The command sequence
+     */
+    public Command setStateCommand(State state)
     {
-        return this.runOnce(() -> io.runCoast()).withName("Stop");
+        return this.runOnce(() -> setState(state))
+            .withName(state.name());
     }
 
-    // For unit testing
-    protected Command shootAmps()
+    /**
+     * Holds a state until the command is interrupted. Once the command is interrupted, its state
+     * will automatically be set to {@link State#STOP}
+     * 
+     * In a sequence, this command is blocking and requires this subsystem
+     * 
+     * @param state The state to hold
+     * @return The command sequence
+     */
+    public Command holdStateUntilInterrupted(State state)
     {
-        return this.runOnce(() -> io.runCurrent(Amps.of(30))).withName("Shoot Amps");
+        return this.startEnd(() -> setState(state), () -> setState(State.STOP))
+            .withName(state.name() + " Until Interrupted");
     }
 
-    public Current getTorqueCurrent()
+    public boolean nearSetpoint()
     {
-        return io.getTorqueCurrent();
-    }
-
-    public AngularVelocity getVelocity()
-    {
-        return io.getVelocity();
+        return MathUtil.isNear(
+            state.stateVelocity.in(RotationsPerSecond),
+            io.getVelocity().in(RotationsPerSecond),
+            IndexerConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     public void close()
