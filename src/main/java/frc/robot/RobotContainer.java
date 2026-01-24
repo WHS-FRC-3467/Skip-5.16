@@ -39,8 +39,8 @@ import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
-import frc.robot.subsystems.turret.TurretSuperstructure;
-import frc.robot.subsystems.turret.TurretSuperstructureConstants;
+import frc.robot.subsystems.turret.ShooterSuperstructure;
+import frc.robot.subsystems.turret.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.lasercan1.LaserCAN1;
 import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
@@ -55,7 +55,7 @@ public class RobotContainer {
     private final LEDs leds;
     private final LaserCAN1 laserCAN1;
     private final ObjectDetector objectDetector;
-    private final TurretSuperstructure turret;
+    private final ShooterSuperstructure shooter;
     private final Intake intake;
     private final Indexer indexer;
 
@@ -75,7 +75,7 @@ public class RobotContainer {
         laserCAN1 = LaserCAN1Constants.get();
         leds = LEDsConstants.get();
         objectDetector = ObjectDetectorConstants.get();
-        turret = TurretSuperstructureConstants.get();
+        shooter = ShooterSuperstructureConstants.get();
         intake = IntakeConstants.get();
         indexer = IndexerConstants.get();
         VisionConstants.create();
@@ -108,21 +108,28 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-        // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
+        // Left Trigger: Intake while held
+        controller.leftTrigger().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
 
         // Back Button: Eject while held
         controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
 
-        // Right bumper: Shoot on the Move
-        controller.rightBumper().whileTrue(
-            turret.shoot(drive, () -> -controller.getLeftX(), () -> -controller.getLeftY()));
+        controller.rightTrigger().whileTrue(
+            shooter.prepareShot(
+                indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
     }
 
-    //Setup all SmartDashboard commands
-    private void initializeDashboard() {
-        SmartDashboard.putData("Run Indexer expel", indexer.intakeCommand(Indexer.State.EXPEL));
-        SmartDashboard.putData("Run Indexer intake", indexer.intakeCommand(Indexer.State.PULL));
+
+    // Setup all SmartDashboard commands
+    private void initializeDashboard()
+    {
+        SmartDashboard.putData("Indexer/Expel", indexer.setStateCommand(Indexer.State.EXPEL));
+        SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
+        SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
+
+        SmartDashboard.putData("Intake/Eject", intake.runIntake(Intake.State.EJECT));
+        SmartDashboard.putData("Intake/Intake", intake.runIntake(Intake.State.INTAKE));
+        SmartDashboard.putData("Intake/Stop", intake.runIntake(Intake.State.STOP));
         SmartDashboard.putData("Sim Test: Toggle Tip Drivebase", Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
     }
 
