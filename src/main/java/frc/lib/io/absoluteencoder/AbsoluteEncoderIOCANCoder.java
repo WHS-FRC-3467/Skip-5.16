@@ -23,13 +23,12 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import edu.wpi.first.units.measure.Angle;
-import frc.lib.io.distancesensor.DistanceSensorIOCANRange;
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.Device;
 import lombok.Getter;
 
 public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
-    private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AbsoluteEncoderIOCANCoder.class.getName());
 
     @Getter
     private final String name;
