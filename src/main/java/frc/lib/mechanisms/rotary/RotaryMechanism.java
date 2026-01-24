@@ -79,12 +79,15 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     @Override
     public void periodic()
     {
+        // First, refresh motor inputs from hardware in the base class.
+        super.periodic();
+
+        // Then, use the up-to-date inputs to update the visualizer.
         visualizer.setCurrentAngle(inputs.position);
         visualizer.setTrajectoryAngle(getTrajectoryAngle());
         visualizer.setGoalAngle(getGoalAngle());
 
-        super.periodic();
-
+        // Finally, update and log absolute encoder inputs if present.
         absoluteEncoder.ifPresent(encoder -> {
             encoder.updateInputs(absoluteEncoderInputs);
             Logger.processInputs(encoder.getName(), absoluteEncoderInputs);
