@@ -346,4 +346,14 @@ public class DriveConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
     }
+
+
+    /**
+     * Maximum absolute pitch/roll angle at which the drivetrain is still considered level.
+     * When the robot's pitch/roll exceeds this threshold, the drivetrain is treated as
+     * angled and vision-based pose updates are ignored to prevent inaccurate pose
+     * estimation while the robot is on an incline or bump.
+     */
+    public static final Angle ANGLED_TOLERANCE = Degrees.of(2.0);
+
 }
