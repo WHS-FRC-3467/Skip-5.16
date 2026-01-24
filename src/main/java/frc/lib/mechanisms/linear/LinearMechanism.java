@@ -91,11 +91,11 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
     @Override
     public void periodic()
     {
+        super.periodic();
+
         visualizer.setMeasuredDistance(converter.toDistance(inputs.position));
         visualizer.setTrajectoryDistance(getTrajectoryDistance());
         visualizer.setGoalDistance(getGoalDistance());
-
-        super.periodic();
     }
 
     @Override
