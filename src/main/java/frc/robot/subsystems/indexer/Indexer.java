@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
-import frc.robot.subsystems.intake.IntakeConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -91,7 +90,7 @@ public class Indexer extends SubsystemBase {
         return MathUtil.isNear(
             state.stateVelocity.in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
-            IntakeConstants.TOLERANCE.in(RotationsPerSecond));
+            IndexerConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     public void close()
