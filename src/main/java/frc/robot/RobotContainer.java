@@ -123,8 +123,7 @@ public class RobotContainer {
     private void initializeDashboard() {
         SmartDashboard.putData("Run Indexer expel", indexer.intakeCommand(Indexer.State.EXPEL));
         SmartDashboard.putData("Run Indexer intake", indexer.intakeCommand(Indexer.State.PULL));
-        SmartDashboard.putData("Sim Test: Tip Drivebase", Commands.runOnce(() -> RobotState.getInstance().setDrivetrainAngled(true)));
-        SmartDashboard.putData("Sim Test: Untip Drivebase", Commands.runOnce(() -> RobotState.getInstance().setDrivetrainAngled(false)));
+        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase", Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
     }
 
     public Command getAutonomousCommand()
