@@ -66,12 +66,12 @@ public class TurretSuperstructure extends SubsystemBase implements AutoCloseable
 
     private final BeamBreak indexerBeamBreak;
 
-    private final RotaryMechanism rotaryIO;
-    private final RotaryMechanism indexerIO;
-    private final FlywheelMechanism flywheelIO;
+    private final RotaryMechanism<?, ?> rotaryIO;
+    private final RotaryMechanism<?, ?> indexerIO;
+    private final FlywheelMechanism<?> flywheelIO;
 
-    public TurretSuperstructure(RotaryMechanism rotaryIO, RotaryMechanism indexerIO,
-        FlywheelMechanism flywheelIO,
+    public TurretSuperstructure(RotaryMechanism<?, ?> rotaryIO, RotaryMechanism<?, ?> indexerIO,
+        FlywheelMechanism<?> flywheelIO,
         BeamBreak indexerBeamBreak)
     {
         this.rotaryIO = rotaryIO;

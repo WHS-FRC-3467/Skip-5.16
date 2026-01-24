@@ -36,7 +36,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     private static final LoggedTunableNumber EJECT_SETPOINT =
         new LoggedTunableNumber("Intake/EjectRPS", 0.0);
 
-    private final FlywheelMechanism io;
+    private final FlywheelMechanism<?> io;
     private String stateName;
 
     @RequiredArgsConstructor
@@ -52,7 +52,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     }
 
     /** Constructor for the Intake subsystem - accepts a FlywheelMechanism. */
-    public Intake(FlywheelMechanism intakeIO) {
+    public Intake(FlywheelMechanism<?> intakeIO) {
         this.io = intakeIO;
     }
 

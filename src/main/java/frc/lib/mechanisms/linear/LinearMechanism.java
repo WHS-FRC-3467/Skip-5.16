@@ -4,13 +4,21 @@
 
 package frc.lib.mechanisms.linear;
 
+import frc.lib.io.motor.MotorIO;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.BaseUnits;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Voltage;
+import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIO.ControlType;
 import frc.lib.io.motor.MotorInputsAutoLogged;
 import frc.lib.mechanisms.Mechanism;
@@ -22,7 +30,7 @@ import frc.lib.util.MechanismUtil.DistanceAngleConverter;
  * mechanisms. Supports mechanisms at any orientation angle, including dynamic angle updates for
  * pivoting mechanisms.
  */
-public abstract class LinearMechanism implements Mechanism {
+public abstract class LinearMechanism<T extends MotorIO> implements Mechanism {
 
     /**
      * Characteristics for a linear mechanism.
@@ -50,13 +58,15 @@ public abstract class LinearMechanism implements Mechanism {
 
     protected final String name;
     protected final MotorInputsAutoLogged inputs = new MotorInputsAutoLogged();
+    protected final T io;
     protected final DistanceAngleConverter converter;
 
     private final LinearMechanismVisualizer visualizer;
 
-    public LinearMechanism(String name, LinearMechCharacteristics characteristics)
+    public LinearMechanism(String name, LinearMechCharacteristics characteristics, T io)
     {
         this.name = name;
+        this.io = io;
         visualizer = new LinearMechanismVisualizer(name, characteristics);
         converter = characteristics.converter();
     }
@@ -94,6 +104,82 @@ public abstract class LinearMechanism implements Mechanism {
         visualizer.setMeasuredDistance(converter.toDistance(inputs.position));
         visualizer.setTrajectoryDistance(getTrajectoryDistance());
         visualizer.setGoalDistance(getGoalDistance());
+
+        io.updateInputs(inputs);
+        Logger.processInputs(name, inputs);
+    }
+
+    @Override
+    public void runCoast()
+    {
+        io.runCoast();
+    }
+
+    @Override
+    public void runBrake()
+    {
+        io.runBrake();
+    }
+
+    @Override
+    public void runVoltage(Voltage voltage)
+    {
+        io.runVoltage(voltage);
+    }
+
+    @Override
+    public void runCurrent(Current current)
+    {
+        io.runCurrent(current);
+    }
+
+    @Override
+    public void runDutyCycle(double dutyCycle)
+    {
+        io.runDutyCycle(dutyCycle);
+    }
+
+    @Override
+    public void runPosition(Angle position, PIDSlot slot)
+    {
+        io.runPosition(position, slot);
+    }
+
+    @Override
+    public void runVelocity(AngularVelocity velocity, AngularAcceleration acceleration,
+        PIDSlot slot)
+    {
+        io.runVelocity(velocity, acceleration, slot);
+    }
+
+    @Override
+    public void setEncoderPosition(Angle position)
+    {
+        io.setEncoderPosition(position);
+    }
+
+    @Override
+    public Current getSupplyCurrent()
+    {
+        return inputs.supplyCurrent;
+    }
+
+    @Override
+    public Angle getPosition()
+    {
+        return inputs.position;
+    }
+
+    @Override
+    public AngularVelocity getVelocity()
+    {
+        return inputs.velocity;
+    }
+
+    @Override
+    public void close()
+    {
+        io.close();
     }
 
     /**

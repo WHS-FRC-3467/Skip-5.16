@@ -4,18 +4,28 @@
 
 package frc.lib.mechanisms.rotary;
 
+import frc.lib.io.absoluteencoder.AbsoluteEncoderIO;
+import frc.lib.io.absoluteencoder.AbsoluteEncoderInputsAutoLogged;
+import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.ControlType;
+import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorInputsAutoLogged;
 import frc.lib.mechanisms.Mechanism;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Voltage;
 
-public abstract class RotaryMechanism implements Mechanism {
+public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncoderIO>
+    implements Mechanism {
 
     public enum RotaryAxis {
         PITCH,
@@ -33,12 +43,20 @@ public abstract class RotaryMechanism implements Mechanism {
 
     protected final String name;
     protected final MotorInputsAutoLogged inputs = new MotorInputsAutoLogged();
+    protected final T io;
+
+    protected final AbsoluteEncoderInputsAutoLogged absoluteEncoderInputs =
+        new AbsoluteEncoderInputsAutoLogged();
+    protected final Optional<E> absoluteEncoder;
 
     private final RotaryVisualizer visualizer;
 
-    public RotaryMechanism(String name, RotaryMechCharacteristics characteristics)
+    public RotaryMechanism(String name, RotaryMechCharacteristics characteristics, T io,
+        Optional<E> absoluteEncoder)
     {
         this.name = name;
+        this.io = io;
+        this.absoluteEncoder = absoluteEncoder;
         visualizer = new RotaryVisualizer(name, characteristics);
     }
 
@@ -75,6 +93,76 @@ public abstract class RotaryMechanism implements Mechanism {
         visualizer.setCurrentAngle(inputs.position);
         visualizer.setTrajectoryAngle(getTrajectoryAngle());
         visualizer.setGoalAngle(getGoalAngle());
+
+        io.updateInputs(inputs);
+        Logger.processInputs(name, inputs);
+
+        absoluteEncoder.ifPresent(encoder -> {
+            encoder.updateInputs(absoluteEncoderInputs);
+            Logger.processInputs(encoder.getName(), absoluteEncoderInputs);
+        });
+    }
+
+    @Override
+    public void runCoast()
+    {
+        io.runCoast();
+    }
+
+    @Override
+    public void runBrake()
+    {
+        io.runBrake();
+    }
+
+    @Override
+    public void runVoltage(Voltage voltage)
+    {
+        io.runVoltage(voltage);
+    }
+
+    @Override
+    public void runCurrent(Current current)
+    {
+        io.runCurrent(current);
+    }
+
+    @Override
+    public void runDutyCycle(double dutyCycle)
+    {
+        io.runDutyCycle(dutyCycle);
+    }
+
+    @Override
+    public void runPosition(Angle position, PIDSlot slot)
+    {
+        io.runPosition(position, slot);
+    }
+
+    @Override
+    public void runVelocity(AngularVelocity velocity, AngularAcceleration acceleration,
+        PIDSlot slot)
+    {
+        io.runVelocity(velocity, acceleration, slot);
+    }
+
+    @Override
+    public Angle getPosition()
+    {
+        return inputs.position;
+    }
+
+    @Override
+    public AngularVelocity getVelocity()
+    {
+        return inputs.velocity;
+    }
+
+    @Override
+    public void close()
+    {
+        io.close();
+        absoluteEncoder.ifPresent(AbsoluteEncoderIO::close);
     }
 
     @Override

@@ -31,6 +31,7 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -102,7 +103,7 @@ public class IntakeConstants {
         return config;
     }
 
-    public static FlywheelMechanism getMechanism()
+    public static FlywheelMechanism<?> getMechanism()
     {
         switch (Constants.currentMode) {
             case REAL:
@@ -113,7 +114,7 @@ public class IntakeConstants {
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intake),
                     DCMOTOR, MOI, TOLERANCE);
             case REPLAY:
-                return new FlywheelMechanism() {};
+                return new FlywheelMechanism<>(NAME, new MotorIO() {}) {};
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }

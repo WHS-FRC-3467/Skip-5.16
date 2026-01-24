@@ -18,9 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 /** Add your docs here. */
 public class Indexer extends SubsystemBase { // Don't extend if contained in superstructure
-
-
-    private final RotaryMechanism io;
+    private final RotaryMechanism<?, ?> io;
 
     private String stateName;
 
@@ -42,7 +40,7 @@ public class Indexer extends SubsystemBase { // Don't extend if contained in sup
 
 
 
-    public Indexer(RotaryMechanism io)
+    public Indexer(RotaryMechanism<?, ?> io)
     {
         this.io = io;
     }

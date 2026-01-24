@@ -18,6 +18,7 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
@@ -108,7 +109,8 @@ public class IndexerConstants {
                     DCMOTOR, MOI, false, CONSTANTS,
                     Optional.empty()));
             case REPLAY:
-                return new Indexer(new RotaryMechanism(NAME, CONSTANTS) {});
+                return new Indexer(new RotaryMechanism<>(NAME, CONSTANTS, new MotorIO() {},
+                    Optional.empty()) {});
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
