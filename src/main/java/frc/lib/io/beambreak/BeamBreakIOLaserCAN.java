@@ -74,29 +74,20 @@ public class BeamBreakIOLaserCAN implements BeamBreakIO {
 
         laserCAN = new LaserCANConfigurator(id.id());
 
-        updateThread.LaserCANCheckErrorAndRetry(() -> {
-            laserCAN.setRangingMode(rangingMode);
-            return null;
-        })
+        updateThread.laserCANCheckErrorAndRetry(() -> laserCAN.setRangingMode(rangingMode))
             .exceptionally(ex -> {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 return null;
             });
 
         updateThread
-            .LaserCANCheckErrorAndRetry(() -> {
-                laserCAN.setRegionOfInterest(regionOfInterest);
-                return null;
-            })
+            .laserCANCheckErrorAndRetry(() -> laserCAN.setRegionOfInterest(regionOfInterest))
             .exceptionally(ex -> {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 return null;
             });
 
-        updateThread.LaserCANCheckErrorAndRetry(() -> {
-            laserCAN.setTimingBudget(timingBudget);
-            return null;
-        })
+        updateThread.laserCANCheckErrorAndRetry(() -> laserCAN.setTimingBudget(timingBudget))
             .exceptionally(ex -> {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 return null;

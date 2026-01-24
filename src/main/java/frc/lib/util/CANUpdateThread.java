@@ -1,7 +1,6 @@
 package frc.lib.util;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -43,15 +42,15 @@ public class CANUpdateThread implements AutoCloseable {
     /**
      * Attempts a LaserCAN configuration action up to MAX_RETRIES times.
      */
-    public CompletableFuture<Void> LaserCANCheckErrorAndRetry(
-        Callable<ConfigurationFailedException> action)
+    public CompletableFuture<Void> laserCANCheckErrorAndRetry(
+        ThrowingRunnable<ConfigurationFailedException> action)
     {
         return CompletableFuture.runAsync(() -> {
             ConfigurationFailedException lastException = null;
 
             for (int i = 0; i < MAX_RETRIES; i++) {
                 try {
-                    action.call();
+                    action.run();
                     return; // success
                 } catch (ConfigurationFailedException e) {
                     lastException = e;
