@@ -21,12 +21,11 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import lombok.Getter;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
+import frc.lib.util.LoggedTuneableProfiledPID;
 
 /**
  * Strategy layer that determines robot heading required to align robot with centroid of detected
@@ -34,13 +33,13 @@ import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
  */
 public abstract class AlignToObjectBase {
     @Getter
-    private final ProfiledPIDController angularController;
+    private final LoggedTuneableProfiledPID angularController;
     private final ObjectDetector objectDetector;
     private final ContourSelectionMode mode;
     private final double maxAngularSpeed; // rad/s
-    private static final double K_P = 6.0;
+    private static final double K_P = 8.3;
     private static final double K_I = 0.0;
-    private static final double K_D = 0.5;
+    private static final double K_D = 1.0;
     private double contourYaw;
     private boolean hasTarget;
 
@@ -51,8 +50,8 @@ public abstract class AlignToObjectBase {
         this.mode = mode;
         this.maxAngularSpeed = maxAngularSpeed;
         this.angularController =
-            new ProfiledPIDController(K_P, K_I, K_D,
-                new TrapezoidProfile.Constraints(maxAngularSpeed, maxAngularAcceleration));
+            new LoggedTuneableProfiledPID("AlignToObject", K_P, K_I, K_D, maxAngularSpeed,
+                maxAngularAcceleration);
         hasTarget = false;
     }
 
@@ -87,7 +86,7 @@ public abstract class AlignToObjectBase {
                 angularController.reset(0.0, 0.0);
             }
             hasTarget = false;
-            logObjectAlign(contourObservation, 0.0);
+            logObjectAlign(contourObservation, -9999.0);
             return OptionalDouble.empty();
         }
         // Object Detection camera sees target(s) and record successfully generates

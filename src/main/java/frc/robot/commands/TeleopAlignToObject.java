@@ -91,7 +91,7 @@ public class TeleopAlignToObject extends Command {
                 speeds,
                 isFlipped
                     ? drive.robotState.getEstimatedPose().getRotation()
-                        .plus(new Rotation2d(Math.PI))
+                        .plus(Rotation2d.k180deg)
                     : drive.robotState.getEstimatedPose().getRotation()));
     }
 

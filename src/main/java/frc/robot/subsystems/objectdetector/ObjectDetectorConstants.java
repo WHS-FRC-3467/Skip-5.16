@@ -43,7 +43,7 @@ public class ObjectDetectorConstants {
     // field from starting starboard edge, +theta -> right-hand rule.
     public static final String CAMERA0_NAME = "Detection Camera #0";
     public static final Transform3d CAMERA0_TRANSFORM =
-        new Transform3d(Units.Inches.of(0.0), Units.Inches.of(0.0), Units.Inches.of(20),
+        new Transform3d(Units.Inches.of(0.0), Units.Inches.of(0.0), Units.Inches.of(30),
             new Rotation3d(Units.Degrees.of(0.0), Units.Degrees.of(0.0), Units.Degrees.of(0.0)));
 
     // Intrinsics
