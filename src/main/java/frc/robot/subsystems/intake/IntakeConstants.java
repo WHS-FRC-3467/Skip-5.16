@@ -26,7 +26,6 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -50,13 +49,12 @@ public class IntakeConstants {
 
     public static final String NAME = "Intake";
 
-    public static final AngularVelocity MAX_VELOCITY =
-        Units.RadiansPerSecond.of(2 * Math.PI);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(10.0);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
 
     private static final double GEARING = (2.0 / 1.0);
 
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.2);
+    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.5);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
