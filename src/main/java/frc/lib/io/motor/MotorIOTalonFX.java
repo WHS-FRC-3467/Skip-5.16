@@ -21,6 +21,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.SlotConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -36,6 +37,7 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.util.Device;
+import frc.lib.util.PID;
 import frc.lib.util.CANUpdateThread;
 
 /**
@@ -378,12 +380,28 @@ public class MotorIOTalonFX implements MotorIO {
     }
 
     @Override
+    public void setPID(PIDSlot slot, PID pid)
+    {
+        SlotConfigs config = new SlotConfigs()
+            .withKP(pid.P())
+            .withKI(pid.I())
+            .withKD(pid.D());
+        config.SlotNumber = slot.num;
+
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config));
+        for (TalonFX follower : followers) {
+            updateThread.CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config));
+        }
+    }
+
+    @Override
     public void close()
     {
         motor.close();
         for (TalonFX follower : followers) {
             follower.close();
         }
+
         updateThread.close();
     }
 }
