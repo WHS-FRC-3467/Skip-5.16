@@ -18,6 +18,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
@@ -118,6 +119,7 @@ public class RobotContainer {
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
     }
 
+
     // Setup all SmartDashboard commands
     private void initializeDashboard()
     {
@@ -128,6 +130,7 @@ public class RobotContainer {
         SmartDashboard.putData("Intake/Eject", intake.runIntake(Intake.State.EJECT));
         SmartDashboard.putData("Intake/Intake", intake.runIntake(Intake.State.INTAKE));
         SmartDashboard.putData("Intake/Stop", intake.runIntake(Intake.State.STOP));
+        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase", Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
     }
 
     public Command getAutonomousCommand()
