@@ -37,10 +37,14 @@ import frc.robot.Ports;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-/** Add your docs here. */
+/**
+ * Defines configuration and physical constants for the turret hood mechanism,
+ * including motion constraints, geometry, motor model, and control gains used
+ * to construct the {@link RotaryMechanism} instance for different robot modes.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class TurretConstants {
-    public static final String NAME = "Turret";
+public class HoodConstants {
+    public static final String NAME = "Hood";
 
     public static final Angle TOLERANCE = Degrees.of(1.0);
 
@@ -120,12 +124,12 @@ public class TurretConstants {
         switch (Constants.currentMode) {
             case REAL:
                 return new RotaryMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.turret),
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.hood),
                     CONSTANTS,
                     Optional.empty());
             case SIM:
                 return new RotaryMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.turret),
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.hood),
                     DCMOTOR, MOI, false, CONSTANTS,
                     Optional.empty());
             case REPLAY:
