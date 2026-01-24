@@ -15,10 +15,13 @@
 
 package frc.lib.io.lights;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANdleConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.CANdle;
+import frc.lib.io.distancesensor.DistanceSensorIOCANRange;
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.Device;
 import lombok.Getter;
@@ -27,6 +30,8 @@ import lombok.Getter;
  * A lights implementation that uses a CANdle
  */
 public class LightsIOCandle implements LightsIO {
+    private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
+
     @Getter
     private final String name;
 
@@ -48,7 +53,11 @@ public class LightsIOCandle implements LightsIO {
 
         candle = new CANdle(id.id(), new CANBus(id.bus()));
 
-        updateThread.CTRECheckErrorAndRetry(() -> candle.getConfigurator().apply(config));
+        updateThread.CTRECheckErrorAndRetry(() -> candle.getConfigurator().apply(config))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
     }
 
     @Override

@@ -16,6 +16,8 @@
 package frc.lib.io.distancesensor;
 
 import static edu.wpi.first.units.Units.Millimeters;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import au.grapplerobotics.interfaces.LaserCanInterface;
 import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
 import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
@@ -32,6 +34,8 @@ import lombok.Getter;
  * A distance sensor implementation that uses a LaserCAN
  */
 public class DistanceSensorIOLaserCAN implements DistanceSensorIO {
+    private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
+
     @Getter
     private final String name;
     private final LaserCANConfigurator laserCAN;
@@ -70,10 +74,33 @@ public class DistanceSensorIOLaserCAN implements DistanceSensorIO {
 
         laserCAN = new LaserCANConfigurator(id.id());
 
-        updateThread.LaserCANCheckErrorAndRetry(() -> laserCAN.setRangingMode(rangingMode));
+        updateThread.LaserCANCheckErrorAndRetry(() -> {
+            laserCAN.setRangingMode(rangingMode);
+            return null;
+        })
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+
         updateThread
-            .LaserCANCheckErrorAndRetry(() -> laserCAN.setRegionOfInterest(regionOfInterest));
-        updateThread.LaserCANCheckErrorAndRetry(() -> laserCAN.setTimingBudget(timingBudget));
+            .LaserCANCheckErrorAndRetry(() -> {
+                laserCAN.setRegionOfInterest(regionOfInterest);
+                return null;
+            })
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+
+        updateThread.LaserCANCheckErrorAndRetry(() -> {
+            laserCAN.setTimingBudget(timingBudget);
+            return null;
+        })
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
     }
 
     @Override

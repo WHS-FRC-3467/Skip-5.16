@@ -38,13 +38,15 @@ public class IndexerConstants {
 
     private static final double GEARING = (2.0 / 1.0);
 
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.1);
+    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.2);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0);
+    public static final PID SLOT1_PID = new PID(0.0, 0.0, 0.0);
+    public static final PID SLOT2_PID = new PID(0.0, 0.0, 0.0);
     private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
         .withKP(SLOT0_PID.P())
         .withKI(SLOT0_PID.I())
@@ -102,6 +104,8 @@ public class IndexerConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_2, SLOT2_PID);
         return new Indexer(mechanism);
     }
 

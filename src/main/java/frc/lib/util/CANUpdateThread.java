@@ -1,84 +1,72 @@
-/*
- * Copyright (C) 2026 Windham Windup
- *
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU General Public License as published by the Free Software Foundation, either version 3 of the
- * License, or any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with this program. If
- * not, see <https://www.gnu.org/licenses/>.
- */
-
 package frc.lib.util;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+
 import com.ctre.phoenix6.StatusCode;
-import frc.lib.util.LaserCANConfigurator.ConfigurationStatus;
+import au.grapplerobotics.ConfigurationFailedException;
 
 public class CANUpdateThread implements AutoCloseable {
-    // Executor for retrying config operations asynchronously
-    private BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
-    private ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(1, 1, 5,
-        java.util.concurrent.TimeUnit.MILLISECONDS, queue);
 
-    public <T> CompletableFuture<T> toCompletableFuture(Future<T> future)
+    private static final int MAX_RETRIES = 5;
+
+    private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
+    private final ThreadPoolExecutor executor =
+        new ThreadPoolExecutor(1, 1, 5, TimeUnit.MILLISECONDS, queue);
+
+    /**
+     * Attempts a CTRE status-returning action up to MAX_RETRIES times.
+     */
+    public CompletableFuture<Void> CTRECheckErrorAndRetry(
+        Supplier<StatusCode> action)
     {
-        // supplyAsync runs the provided Supplier asynchronously
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                // The get() method blocks the virtual thread until the result is available
-                return future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                // Wrap and propagate any exceptions
-                throw new CompletionException(e);
+        return CompletableFuture.runAsync(() -> {
+            StatusCode lastStatus = StatusCode.OK;
+
+            for (int i = 0; i < MAX_RETRIES; i++) {
+                lastStatus = action.get();
+                if (lastStatus.isOK()) {
+                    return;
+                }
             }
-        }, threadPoolExecutor);
+
+            throw new RuntimeException("CTRE config failed: " + lastStatus);
+        }, executor);
     }
 
     /**
-     * Attempts a CTRE action up to 5 times until it succeeds.
-     *
-     * @param action The status-returning operation to retry.
+     * Attempts a LaserCAN configuration action up to MAX_RETRIES times.
      */
-    public CompletableFuture<?> CTRECheckErrorAndRetry(Supplier<StatusCode> action)
+    public CompletableFuture<Void> LaserCANCheckErrorAndRetry(
+        Callable<ConfigurationFailedException> action)
     {
-        return toCompletableFuture(threadPoolExecutor.submit(() -> {
-            for (int i = 0; i < 5; i++) {
-                StatusCode result = action.get();
-                if (result.isOK()) {
-                    break;
-                }
-            }
-        }));
-    }
+        return CompletableFuture.runAsync(() -> {
+            ConfigurationFailedException lastException = null;
 
-    @SuppressWarnings("FutureReturnValueIgnored")
-    public CompletableFuture<?> LaserCANCheckErrorAndRetry(Supplier<ConfigurationStatus> action)
-    {
-        return toCompletableFuture(threadPoolExecutor.submit(() -> {
-            for (int i = 0; i < 5; i++) {
-                ConfigurationStatus result = action.get();
-                if (result == ConfigurationStatus.SUCCESS) {
-                    break;
+            for (int i = 0; i < MAX_RETRIES; i++) {
+                try {
+                    action.call();
+                    return; // success
+                } catch (ConfigurationFailedException e) {
+                    lastException = e;
+                } catch (Exception e) {
+                    throw new CompletionException(e);
                 }
             }
-        }));
+
+            throw new CompletionException(lastException);
+        }, executor);
     }
 
     @Override
     public void close()
     {
-        threadPoolExecutor.shutdownNow();
+        executor.shutdownNow();
     }
 }

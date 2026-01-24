@@ -17,6 +17,8 @@ package frc.lib.io.motor;
 
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
@@ -37,6 +39,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.util.Device;
 import frc.lib.util.PID;
+import frc.lib.io.distancesensor.DistanceSensorIOCANRange;
 import frc.lib.util.CANUpdateThread;
 
 /**
@@ -44,6 +47,7 @@ import frc.lib.util.CANUpdateThread;
  * setup, control modes, telemetry polling, and error handling.
  */
 public class MotorIOTalonFX implements MotorIO {
+    private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
 
     public record TalonFXFollower(Device.CAN id, boolean opposesMain) {
     }
@@ -90,7 +94,11 @@ public class MotorIOTalonFX implements MotorIO {
         TalonFXFollower... followerData)
     {
         motor = new TalonFX(main.id(), new CANBus(main.bus()));
-        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config));
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
 
         // Initialize lists
         followerOnWrongBusAlert = new Alert[followerData.length];
@@ -109,7 +117,11 @@ public class MotorIOTalonFX implements MotorIO {
             followers[i] = new TalonFX(id.id(), new CANBus(id.bus()));
 
             TalonFX follower = followers[i];
-            updateThread.CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config));
+            updateThread.CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config))
+                .exceptionally(ex -> {
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                    return null;
+                });
             follower.setControl(
                 new Follower(main.id(), followerData[i].opposesMain() ? MotorAlignmentValue.Opposed
                     : MotorAlignmentValue.Aligned));
@@ -132,13 +144,21 @@ public class MotorIOTalonFX implements MotorIO {
             supplyCurrent,
             supplyCurrent,
             torqueCurrent,
-            temperature));
+            temperature))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
 
         updateThread.CTRECheckErrorAndRetry(() -> BaseStatusSignal.setUpdateFrequencyForAll(
             200,
             closedLoopError,
             closedLoopReference,
-            closedLoopReferenceSlope));
+            closedLoopReferenceSlope))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
 
         motor.optimizeBusUtilization(0, 1.0);
     }
@@ -386,7 +406,11 @@ public class MotorIOTalonFX implements MotorIO {
             .withKD(pid.D());
         config.SlotNumber = slot.num;
 
-        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config));
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
     }
 
     @Override

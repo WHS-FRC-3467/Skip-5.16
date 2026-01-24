@@ -16,6 +16,8 @@
 package frc.lib.io.beambreak;
 
 import static edu.wpi.first.units.Units.Millimeters;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import au.grapplerobotics.interfaces.LaserCanInterface;
 import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
 import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
@@ -25,6 +27,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.util.Device;
+import frc.lib.io.distancesensor.DistanceSensorIOCANRange;
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.LaserCANConfigurator;
 import lombok.Getter;
@@ -33,6 +36,8 @@ import lombok.Getter;
  * A beam break sensor implementation that uses a LaserCAN
  */
 public class BeamBreakIOLaserCAN implements BeamBreakIO {
+    private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
+
     @Getter
     private final String name;
     private final LaserCANConfigurator laserCAN;
@@ -70,10 +75,33 @@ public class BeamBreakIOLaserCAN implements BeamBreakIO {
 
         laserCAN = new LaserCANConfigurator(id.id());
 
-        updateThread.LaserCANCheckErrorAndRetry(() -> laserCAN.setRangingMode(rangingMode));
+        updateThread.LaserCANCheckErrorAndRetry(() -> {
+            laserCAN.setRangingMode(rangingMode);
+            return null;
+        })
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+
         updateThread
-            .LaserCANCheckErrorAndRetry(() -> laserCAN.setRegionOfInterest(regionOfInterest));
-        updateThread.LaserCANCheckErrorAndRetry(() -> laserCAN.setTimingBudget(timingBudget));
+            .LaserCANCheckErrorAndRetry(() -> {
+                laserCAN.setRegionOfInterest(regionOfInterest);
+                return null;
+            })
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+
+        updateThread.LaserCANCheckErrorAndRetry(() -> {
+            laserCAN.setTimingBudget(timingBudget);
+            return null;
+        })
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
     }
 
     @Override

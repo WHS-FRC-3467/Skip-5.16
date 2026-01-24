@@ -69,11 +69,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private final RobotState robotState = RobotState.getInstance();
 
-    private final RotaryMechanism hoodIO;
-    private final FlywheelMechanism flywheelIO;
+    private final RotaryMechanism<?, ?> hoodIO;
+    private final FlywheelMechanism<?> flywheelIO;
 
-    public ShooterSuperstructure(RotaryMechanism hoodIO,
-        FlywheelMechanism flywheelIO)
+    public ShooterSuperstructure(RotaryMechanism<?, ?> hoodIO,
+        FlywheelMechanism<?> flywheelIO)
     {
         this.hoodIO = hoodIO;
         this.flywheelIO = flywheelIO;
@@ -155,6 +155,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     {
         return setFlywheelSpeed(velocity);
     }
+
     @Override
     public void periodic()
     {

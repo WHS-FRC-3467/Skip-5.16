@@ -97,4 +97,9 @@ public class Indexer extends SubsystemBase {
     {
         io.close();
     }
+
+    public double getSpeed()
+    {
+        return io.getVelocity().in(RotationsPerSecond);
+    }
 }

@@ -50,6 +50,8 @@ public class FlywheelConstants {
 
     // Velocity PID
     public static final PID SLOT0_PID = new PID(1000.0, 0.0, 0.0);
+    public static final PID SLOT1_PID = new PID(0.0, 0.0, 0.0);
+    public static final PID SLOT2_PID = new PID(0.0, 0.0, 0.0);
     private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
         .withKP(SLOT0_PID.P())
         .withKI(SLOT0_PID.I())
@@ -109,6 +111,8 @@ public class FlywheelConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_2, SLOT2_PID);
         return mechanism;
     }
 }
