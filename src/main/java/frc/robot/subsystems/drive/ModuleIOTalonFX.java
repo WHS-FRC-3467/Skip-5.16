@@ -15,6 +15,9 @@
 
 package frc.robot.subsystems.drive;
 
+import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -40,12 +43,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import frc.lib.io.distancesensor.DistanceSensorIOCANRange;
 import frc.lib.util.CANUpdateThread;
 import frc.robot.Ports;
-import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Module IO implementation for Talon FX drive motor controller, Talon FX turn motor controller, and
@@ -55,7 +54,7 @@ import java.util.logging.Logger;
  * Device configuration and other behaviors not exposed by TunerConstants can be customized here.
  */
 public class ModuleIOTalonFX implements ModuleIO {
-    private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ModuleIOTalonFX.class.getName());
 
     private final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants;
 
