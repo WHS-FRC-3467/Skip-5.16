@@ -34,7 +34,7 @@ import lombok.Getter;
  * A distance sensor implementation that uses a LaserCAN
  */
 public class DistanceSensorIOLaserCAN implements DistanceSensorIO {
-    private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOLaserCAN.class.getName());
 
     @Getter
     private final String name;
