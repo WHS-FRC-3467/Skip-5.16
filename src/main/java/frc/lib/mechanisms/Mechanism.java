@@ -183,7 +183,9 @@ public abstract class Mechanism<T extends MotorIO> {
      * @param position Desired position to set encoder to
      */
     public void setEncoderPosition(Angle position)
-    {}
+    {
+        io.setEncoderPosition(position);
+    }
 
     public Current getSupplyCurrent()
     {
