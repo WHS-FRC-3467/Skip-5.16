@@ -387,7 +387,7 @@ public class Drive extends SubsystemBase {
      *         {@code false} otherwise.
      */
     public boolean isAngled() {
-        return Math.abs(gyroIO.getPitch()) > DriveConstants.MAX_ALLOWED_PITCH.in(Degrees)
-            || Math.abs(gyroIO.getRoll()) > DriveConstants.MAX_ALLOWED_ROLL.in(Degrees);
+        return Math.abs(gyroIO.getPitch()) > DriveConstants.ANGLED_TOLERANCE.in(Degrees)
+            || Math.abs(gyroIO.getRoll()) > DriveConstants.ANGLED_TOLERANCE.in(Degrees);
     }
 }

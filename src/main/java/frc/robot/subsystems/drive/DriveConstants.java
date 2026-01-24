@@ -349,17 +349,11 @@ public class DriveConstants {
 
 
     /**
-     * Maximum absolute pitch angle at which the drivetrain is still considered level.
-     * When the robot's pitch exceeds this threshold, the drivetrain is treated as
+     * Maximum absolute pitch/roll angle at which the drivetrain is still considered level.
+     * When the robot's pitch/roll exceeds this threshold, the drivetrain is treated as
      * angled and vision-based pose updates are ignored to prevent inaccurate pose
      * estimation while the robot is on an incline or bump.
      */
-    public static final Angle MAX_ALLOWED_PITCH = Degrees.of(2.0);
-    /**
-     * Maximum absolute roll angle at which the drivetrain is still considered level.
-     * When the robot's roll exceeds this threshold, the drivetrain is treated as
-     * angled and vision-based pose updates are ignored to prevent inaccurate pose
-     * estimation while the robot is on an incline or bump.
-     */
-    public static final Angle MAX_ALLOWED_ROLL = Degrees.of(2.0);
+    public static final Angle ANGLED_TOLERANCE = Degrees.of(2.0);
+
 }
