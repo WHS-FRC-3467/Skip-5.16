@@ -16,6 +16,10 @@
 package frc.lib.util;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
@@ -28,35 +32,48 @@ public class CANUpdateThread implements AutoCloseable {
     private ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(1, 1, 5,
         java.util.concurrent.TimeUnit.MILLISECONDS, queue);
 
+    public <T> CompletableFuture<T> toCompletableFuture(Future<T> future)
+    {
+        // supplyAsync runs the provided Supplier asynchronously
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // The get() method blocks the virtual thread until the result is available
+                return future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                // Wrap and propagate any exceptions
+                throw new CompletionException(e);
+            }
+        }, threadPoolExecutor);
+    }
+
     /**
      * Attempts a CTRE action up to 5 times until it succeeds.
      *
      * @param action The status-returning operation to retry.
      */
-    @SuppressWarnings("FutureReturnValueIgnored")
-    public void CTRECheckErrorAndRetry(Supplier<StatusCode> action)
+    public CompletableFuture<?> CTRECheckErrorAndRetry(Supplier<StatusCode> action)
     {
-        threadPoolExecutor.submit(() -> {
+        return toCompletableFuture(threadPoolExecutor.submit(() -> {
             for (int i = 0; i < 5; i++) {
                 StatusCode result = action.get();
                 if (result.isOK()) {
                     break;
                 }
             }
-        });
+        }));
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")
-    public void LaserCANCheckErrorAndRetry(Supplier<ConfigurationStatus> action)
+    public CompletableFuture<?> LaserCANCheckErrorAndRetry(Supplier<ConfigurationStatus> action)
     {
-        threadPoolExecutor.submit(() -> {
+        return toCompletableFuture(threadPoolExecutor.submit(() -> {
             for (int i = 0; i < 5; i++) {
                 ConfigurationStatus result = action.get();
                 if (result == ConfigurationStatus.SUCCESS) {
                     break;
                 }
             }
-        });
+        }));
     }
 
     @Override

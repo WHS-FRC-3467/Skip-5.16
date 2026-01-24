@@ -16,6 +16,9 @@
 package frc.lib.mechanisms;
 
 import static edu.wpi.first.units.Units.Amps;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -27,12 +30,15 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorInputsAutoLogged;
+import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.PID;
 
 public abstract class Mechanism<T extends MotorIO> {
 
     protected final String name;
     protected final MotorInputsAutoLogged inputs = new MotorInputsAutoLogged();
     protected final T io;
+    private final List<TunablePidConfig> tunablePidConfigs = new ArrayList<>();
 
     protected Mechanism(String name, T io)
     {
@@ -40,9 +46,52 @@ public abstract class Mechanism<T extends MotorIO> {
         this.io = io;
     }
 
+    private static final class TunablePidConfig {
+        private final PIDSlot slot;
+        private final LoggedTunableNumber kp;
+        private final LoggedTunableNumber ki;
+        private final LoggedTunableNumber kd;
+        private final int id;
+
+        private TunablePidConfig(PIDSlot slot, LoggedTunableNumber kp, LoggedTunableNumber ki,
+            LoggedTunableNumber kd, int id)
+        {
+            this.slot = slot;
+            this.kp = kp;
+            this.ki = ki;
+            this.kd = kd;
+            this.id = id;
+        }
+    }
+
+    /**
+     * Enables tunable PID for a slot using this mechanism's name as the logging prefix.
+     * 
+     * @param slot The slot to update
+     * @param defaultPid The default PID values
+     */
+    public void enableTunablePID(PIDSlot slot, PID defaultPid)
+    {
+        LoggedTunableNumber kp = new LoggedTunableNumber(name + "/PID/kP", defaultPid.P());
+        LoggedTunableNumber ki = new LoggedTunableNumber(name + "/PID/kI", defaultPid.I());
+        LoggedTunableNumber kd = new LoggedTunableNumber(name + "/PID/kD", defaultPid.D());
+        int id = Objects.hash(this, slot);
+        tunablePidConfigs.add(new TunablePidConfig(slot, kp, ki, kd, id));
+    }
+
     /** Call this method periodically */
     public void periodic()
     {
+        for (TunablePidConfig config : tunablePidConfigs) {
+            LoggedTunableNumber.ifChanged(
+                config.id,
+                () -> io.setPID(
+                    config.slot,
+                    new PID(config.kp.get(), config.ki.get(), config.kd.get())),
+                config.kp,
+                config.ki,
+                config.kd);
+        }
         io.updateInputs(inputs);
         Logger.processInputs(name, inputs);
     }
@@ -115,6 +164,17 @@ public abstract class Mechanism<T extends MotorIO> {
         PIDSlot slot)
     {
         io.runVelocity(velocity, acceleration, slot);
+    }
+
+    /**
+     * Updates one PID slot on the motor
+     * 
+     * @param slot The slot to update
+     * @param pid The PID to set
+     */
+    public void setPID(PIDSlot slot, PID pid)
+    {
+        io.setPID(slot, pid);
     }
 
     /**

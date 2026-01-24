@@ -17,7 +17,9 @@ package frc.lib.io.motor;
 
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
@@ -77,6 +79,8 @@ public class MotorIOTalonFX implements MotorIO {
 
     private final Alert[] followerOnWrongBusAlert;
 
+    private Map<PIDSlot, PID> pid = Collections.synchronizedMap(new HashMap<>());
+
     protected Angle goalPosition = Rotations.of(0.0);
 
     /**
@@ -90,9 +94,12 @@ public class MotorIOTalonFX implements MotorIO {
     public MotorIOTalonFX(String name, TalonFXConfiguration config, Device.CAN main,
         TalonFXFollower... followerData)
     {
-
         motor = new TalonFX(main.id(), new CANBus(main.bus()));
         updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config));
+
+        pid.put(PIDSlot.SLOT_0, new PID(config.Slot0.kP, config.Slot0.kI, config.Slot0.kD));
+        pid.put(PIDSlot.SLOT_1, new PID(config.Slot1.kP, config.Slot1.kI, config.Slot1.kD));
+        pid.put(PIDSlot.SLOT_2, new PID(config.Slot2.kP, config.Slot2.kI, config.Slot2.kD));
 
         // Initialize lists
         followerOnWrongBusAlert = new Alert[followerData.length];
@@ -277,6 +284,10 @@ public class MotorIOTalonFX implements MotorIO {
         }
 
         inputs.controlType = getCurrentControlType();
+
+        pid.computeIfPresent(PIDSlot.SLOT_0, (slot, pid) -> inputs.slot0PID = pid);
+        pid.computeIfPresent(PIDSlot.SLOT_1, (slot, pid) -> inputs.slot1PID = pid);
+        pid.computeIfPresent(PIDSlot.SLOT_2, (slot, pid) -> inputs.slot2PID = pid);
     }
 
     /**
@@ -388,10 +399,8 @@ public class MotorIOTalonFX implements MotorIO {
             .withKD(pid.D());
         config.SlotNumber = slot.num;
 
-        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config));
-        for (TalonFX follower : followers) {
-            updateThread.CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config));
-        }
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config))
+            .thenRun(() -> this.pid.put(slot, pid));
     }
 
     @Override

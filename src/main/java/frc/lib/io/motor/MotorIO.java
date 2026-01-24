@@ -89,6 +89,12 @@ public interface MotorIO extends AutoCloseable {
         public Angle goalPosition = Rotations.zero();
         /** Current control type */
         public ControlType controlType = ControlType.BRAKE;
+        /** Current PID values for Slot 0 */
+        public PID slot0PID = new PID();
+        /** Current PID values for Slot 1 */
+        public PID slot1PID = new PID();
+        /** Current PID values for Slot 2 */
+        public PID slot2PID = new PID();
     }
 
     /**

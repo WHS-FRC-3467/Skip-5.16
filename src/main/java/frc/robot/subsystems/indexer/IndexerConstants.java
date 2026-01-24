@@ -16,11 +16,13 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIO;
+import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
+import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
@@ -42,10 +44,11 @@ public class IndexerConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
+    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0);
     private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
-        .withKP(80.0)
-        .withKI(0.0)
-        .withKD(0.0)
+        .withKP(SLOT0_PID.P())
+        .withKI(SLOT0_PID.I())
+        .withKD(SLOT0_PID.D())
         .withKV(10.0);
 
     public static TalonFXConfiguration getFXConfig()
@@ -81,19 +84,25 @@ public class IndexerConstants {
 
     public static Indexer get()
     {
+        FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                return new Indexer(new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer)));
+                mechanism = new FlywheelMechanismReal(NAME,
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer));
+                break;
             case SIM:
-                return new Indexer(new FlywheelMechanismSim(NAME,
+                mechanism = new FlywheelMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer), DCMOTOR, MOI,
-                    TOLERANCE));
+                    TOLERANCE);
+                break;
             case REPLAY:
-                return new Indexer(new FlywheelMechanism<>(NAME, new MotorIO() {}) {});
+                mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}) {};
+                break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
+        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        return new Indexer(mechanism);
     }
 
 }
