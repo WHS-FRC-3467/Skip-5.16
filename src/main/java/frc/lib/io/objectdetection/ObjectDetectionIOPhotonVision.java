@@ -59,19 +59,17 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
         }
         /* Update results. */
         disconnectedAlert.set(false);
-        // PhotonVision container containing all information about stored targets from
-        // camera.
+        // PhotonVision container containing all information about stored targets from camera.
         // List retrieved via .getAllUnreadResults() is FIFO, max size 20, and each call clears
         // the queue. Call once per loop().
         List<PhotonPipelineResult> result = camera.getAllUnreadResults();
-        // Manipulating targets data when result is empty may result in null pointer
-        // exception.
+        // Manipulating targets data when result is empty may result in null pointer exception.
         if (result.isEmpty()) {
             return;
         }
-        // Most recent set of targets.
+        // Update latestTargets field of ObjectDetectionIOInputs class with most recent set of targets.
         inputs.latestTargets =
-            // Check if target is from object detection
+            // Array of PhotonTrackedTargets from latest pipeline result.
             result.get(0).getTargets().toArray(PhotonTrackedTarget[]::new);
     }
 

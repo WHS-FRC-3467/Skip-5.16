@@ -18,11 +18,15 @@ package frc.robot;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
+import frc.lib.util.LoggedTuneableProfiledPID;
+import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.TeleopAlignToObject;
 import frc.robot.commands.autos.ExampleAuto;
 import frc.robot.commands.autos.NoneAuto;
 import frc.robot.commands.autos.WheelCharacterizationAuto;
@@ -38,8 +42,8 @@ import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
-import frc.robot.subsystems.turret.TurretSuperstructure;
-import frc.robot.subsystems.turret.TurretSuperstructureConstants;
+import frc.robot.subsystems.turret.ShooterSuperstructure;
+import frc.robot.subsystems.turret.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.lasercan1.LaserCAN1;
 import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
@@ -54,7 +58,7 @@ public class RobotContainer {
     private final LEDs leds;
     private final LaserCAN1 laserCAN1;
     private final ObjectDetector objectDetector;
-    private final TurretSuperstructure turret;
+    private final ShooterSuperstructure shooter;
     private final Intake intake;
     private final Indexer indexer;
 
@@ -74,7 +78,7 @@ public class RobotContainer {
         laserCAN1 = LaserCAN1Constants.get();
         leds = LEDsConstants.get();
         objectDetector = ObjectDetectorConstants.get();
-        turret = TurretSuperstructureConstants.get();
+        shooter = ShooterSuperstructureConstants.get();
         intake = IntakeConstants.get();
         indexer = IndexerConstants.get();
         VisionConstants.create();
@@ -107,21 +111,36 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
+        // Right Trigger: Teleop vision align to largest contour (translation allowed)
+        controller.rightTrigger(0.2)
+            .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
+                () -> -controller.getLeftY(), // forward/back
+                () -> -controller.getLeftX(), // strafe
+                () -> -controller.getRightX())); // fallback rotation
+
         // Left Bumper: Intake while held
         controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
 
         // Back Button: Eject while held
         controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
 
-        // Right bumper: Shoot on the Move
-        controller.rightBumper().whileTrue(
-            turret.shoot(drive, () -> -controller.getLeftX(), () -> -controller.getLeftY()));
+        controller.rightTrigger().whileTrue(
+            shooter.prepareShot(
+                indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
     }
 
-    //Setup all SmartDashboard commands
-    private void initializeDashboard() {
-        SmartDashboard.putData("Run Indexer expel", indexer.intakeCommand(Indexer.State.EXPEL));
-        SmartDashboard.putData("Run Indexer intake", indexer.intakeCommand(Indexer.State.PULL));
+
+    // Setup all SmartDashboard commands
+    private void initializeDashboard()
+    {
+        SmartDashboard.putData("Indexer/Expel", indexer.setStateCommand(Indexer.State.EXPEL));
+        SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
+        SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
+
+        SmartDashboard.putData("Intake/Eject", intake.runIntake(Intake.State.EJECT));
+        SmartDashboard.putData("Intake/Intake", intake.runIntake(Intake.State.INTAKE));
+        SmartDashboard.putData("Intake/Stop", intake.runIntake(Intake.State.STOP));
+        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase", Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
     }
 
     public Command getAutonomousCommand()

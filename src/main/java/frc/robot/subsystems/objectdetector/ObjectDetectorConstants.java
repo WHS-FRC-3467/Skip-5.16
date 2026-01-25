@@ -40,25 +40,19 @@ public class ObjectDetectorConstants {
     // Object detection camera #0
     // Extrinsics
     // Transform sign convention: +X -> towards other alliance's station, +Y -> towards center of
-    // field from starting starboard edge, +theta -> right-hand rule. units: meters & degrees.
+    // field from starting starboard edge, +theta -> right-hand rule.
     public static final String CAMERA0_NAME = "Detection Camera #0";
-    public static final Angle CAMERA0_ROLL = Units.Degrees.of(0.0);
-    public static final Angle CAMERA0_PITCH = Units.Degrees.of(25.0);
-    public static final Angle CAMERA0_YAW = Units.Degrees.of(0.0);
-    public static final double CAMERA0_X = 0.30;
-    public static final double CAMERA0_Y = -0.30;
-    public static final double CAMERA0_Z = 1.0;
     public static final Transform3d CAMERA0_TRANSFORM =
-        new Transform3d(CAMERA0_X, CAMERA0_Y, CAMERA0_Z,
-            new Rotation3d(CAMERA0_ROLL, CAMERA0_PITCH, CAMERA0_YAW));
+        new Transform3d(Units.Inches.of(0.0), Units.Inches.of(0.0), Units.Inches.of(30),
+            new Rotation3d(Units.Degrees.of(0.0), Units.Degrees.of(0.0), Units.Degrees.of(0.0)));
 
     // Intrinsics
     public static final int CAMERA0_RESOLUTION_WIDTH = 1600;
     public static final int CAMERA0_RESOLUTION_HEIGHT = 1304;
+    // from Thrifty docs
+    public static final Angle CAMERA0_FOV = Degrees.of(55);
 
-    public static final Angle CAMERA0_FOV = Degrees.of(55); // from Thrifty docs
-
-    // ThriftyCam Default Calibrations // TODO: Replace with actual ML camera calibration values
+    // ThriftyCam Default Calibrations
     public static final Matrix<N3, N3> CAMERA0_MATRIX =
         MatBuilder.fill(Nat.N3(), Nat.N3(),
             2002.948392331919,
@@ -86,10 +80,10 @@ public class ObjectDetectorConstants {
 
     public static final double CAMERA0_STDDEV_FACTOR = 1.0;
 
-    // Exposure 5 ms, USB 5 ms, detection 15 ms, scheduling 5 ms  
-    public static final Time CAMERA0_LATENCY = Milliseconds.of(30); 
-    
-    public static final Time CAMERA0_LATENCY_STDDEV = Milliseconds.of(5);  
+    // Exposure 5 ms, USB 5 ms, detection 15 ms, scheduling 5 ms
+    public static final Time CAMERA0_LATENCY = Milliseconds.of(30);
+
+    public static final Time CAMERA0_LATENCY_STDDEV = Milliseconds.of(5);
 
     public static final CameraProperties CAMERA0 =
         new CameraProperties(
@@ -105,36 +99,38 @@ public class ObjectDetectorConstants {
             CAMERA0_LATENCY,
             CAMERA0_LATENCY_STDDEV);
 
-    // Target constants // TODO: Refactor these names when 2026 targets are included
-    // 2025 Simulated Algae Targets
-    public final static String SIM_NAME = "Algae";
-    public final static double algaeHeightMeters = 0.41;
+    // Target constants
+    public final static String OBJECT0_NAME = "FUEL";
+    public final static double OBJECT0_HEIGHT_METERS = 0.150114;
     // Initialize fixed array of sim targets
     public static VisionTargetSim[] SIM_TARGETS = new VisionTargetSim[] {
-            new VisionTargetSim(new Pose3d(3, 2, algaeHeightMeters / 2, new Rotation3d()),
-                new TargetModel(algaeHeightMeters)),
-            new VisionTargetSim(new Pose3d(7, 6, algaeHeightMeters / 2, new Rotation3d()),
-                new TargetModel(algaeHeightMeters)),
-            new VisionTargetSim(new Pose3d(12, 7, algaeHeightMeters / 2, new Rotation3d()),
-                new TargetModel(algaeHeightMeters)),
+            new VisionTargetSim(new Pose3d(3, 2, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                new TargetModel(OBJECT0_HEIGHT_METERS)),
+            new VisionTargetSim(new Pose3d(7, 6, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                new TargetModel(OBJECT0_HEIGHT_METERS)),
+            new VisionTargetSim(new Pose3d(12, 7, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                new TargetModel(OBJECT0_HEIGHT_METERS)),
+            new VisionTargetSim(new Pose3d(13, 4, 10 * OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                new TargetModel(10 * OBJECT0_HEIGHT_METERS)),
             null,
     };
     // Dynamic supplier for moving sim targets
     public static Supplier<VisionTargetSim[]> visionTargetSimSupplier =
         () -> SIM_TARGETS = new VisionTargetSim[] {
-                new VisionTargetSim(new Pose3d(3, 2, algaeHeightMeters / 2, new Rotation3d()),
-                    new TargetModel(algaeHeightMeters)),
-                new VisionTargetSim(new Pose3d(7, 6, algaeHeightMeters / 2, new Rotation3d()),
-                    new TargetModel(algaeHeightMeters)),
-                new VisionTargetSim(new Pose3d(12, 7, algaeHeightMeters / 2, new Rotation3d()),
-                    new TargetModel(algaeHeightMeters)),
+                new VisionTargetSim(new Pose3d(3, 2, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                    new TargetModel(OBJECT0_HEIGHT_METERS)),
+                new VisionTargetSim(new Pose3d(7, 6, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                    new TargetModel(OBJECT0_HEIGHT_METERS)),
+                new VisionTargetSim(new Pose3d(12, 7, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                    new TargetModel(OBJECT0_HEIGHT_METERS)),
+                new VisionTargetSim(
+                    new Pose3d(13, 4, 10 * OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                    new TargetModel(10 * OBJECT0_HEIGHT_METERS)),
                 new VisionTargetSim(
                     new Pose3d(16, 3.5 * Math.sin(0.25 * Math.PI * Timer.getFPGATimestamp()) + 4.1,
-                        algaeHeightMeters / 2, new Rotation3d()),
-                    new TargetModel(algaeHeightMeters)),
+                        OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
+                    new TargetModel(OBJECT0_HEIGHT_METERS)),
         };
-    // 2026 Targets
-    // ...
 
     // Robot runtime mode for use in roboRIO & AKit
     public static ObjectDetector get()
@@ -147,7 +143,7 @@ public class ObjectDetectorConstants {
             case SIM:
                 // Sim IO, inputs = sim implementation of ObjectionDetectionIO
                 return new ObjectDetector(new ObjectDetectionIOSim(CAMERA0,
-                    () -> robotState.getEstimatedPose(), SIM_NAME, visionTargetSimSupplier));
+                    () -> robotState.getEstimatedPose(), OBJECT0_NAME, visionTargetSimSupplier));
             case REPLAY:
                 // Replayed robot, use logged data for IO
                 return new ObjectDetector(new ObjectDetectionIO() {});

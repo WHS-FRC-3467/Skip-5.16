@@ -6,31 +6,23 @@ package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Second;
-import java.util.Optional;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
-import frc.lib.mechanisms.rotary.RotaryMechanism;
-import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryAxis;
-import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryMechCharacteristics;
-import frc.lib.mechanisms.rotary.RotaryMechanismReal;
-import frc.lib.mechanisms.rotary.RotaryMechanismSim;
+import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
+import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Foot;
-import static edu.wpi.first.units.Units.Rotations;
 
 /** Add your docs here. */
 public class IndexerConstants {
@@ -46,22 +38,14 @@ public class IndexerConstants {
     public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.1);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(1.0);
-    public static final Angle STARTING_ANGLE = Radians.zero();
-    public static final Distance ARM_LENGTH = Foot.one();
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
-    public static final RotaryMechCharacteristics CONSTANTS =
-        new RotaryMechCharacteristics(
-            ARM_LENGTH,
-            Rotations.of(Double.NEGATIVE_INFINITY),
-            Rotations.of(Double.POSITIVE_INFINITY),
-            STARTING_ANGLE,
-            RotaryAxis.PITCH);
     // Velocity PID
     private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
-        .withKP(1000.0)
+        .withKP(80.0)
         .withKI(0.0)
-        .withKD(0.0);
+        .withKD(0.0)
+        .withKV(10.0);
 
     public static TalonFXConfiguration getFXConfig()
     {
@@ -98,17 +82,14 @@ public class IndexerConstants {
     {
         switch (Constants.currentMode) {
             case REAL:
-                return new Indexer(new RotaryMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer),
-                    CONSTANTS,
-                    Optional.empty()));
+                return new Indexer(new FlywheelMechanismReal(NAME,
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer)));
             case SIM:
-                return new Indexer(new RotaryMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer),
-                    DCMOTOR, MOI, false, CONSTANTS,
-                    Optional.empty()));
+                return new Indexer(new FlywheelMechanismSim(NAME,
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer), DCMOTOR, MOI,
+                    TOLERANCE));
             case REPLAY:
-                return new Indexer(new RotaryMechanism(NAME, CONSTANTS) {});
+                return new Indexer(new FlywheelMechanism() {});
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
