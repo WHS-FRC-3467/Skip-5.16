@@ -124,6 +124,7 @@ public class RobotContainer {
                 controller.x().onTrue(Commands.runOnce(() -> System.out.println("X Pressed")));
     }
 
+
     // Setup all SmartDashboard commands
     private void initializeDashboard()
     {
@@ -134,6 +135,7 @@ public class RobotContainer {
         SmartDashboard.putData("Intake/Eject", intake.runIntake(Intake.State.EJECT));
         SmartDashboard.putData("Intake/Intake", intake.runIntake(Intake.State.INTAKE));
         SmartDashboard.putData("Intake/Stop", intake.runIntake(Intake.State.STOP));
+        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase", Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
     }
 
 private void configureFuelSim() {
