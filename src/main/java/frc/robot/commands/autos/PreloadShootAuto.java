@@ -56,8 +56,8 @@ public class PreloadShootAuto extends AutoCommands {
                     shooter.spinUpShooter(),
                     indexer.holdStateUntilInterrupted(State.PULL)
                         .onlyWhile(shooter.readyToShoot())),
-                indexer.holdStateUntilInterrupted(State.STOP),
-                shooter.setFlyWheelSpeed(RadiansPerSecond.zero())));
+                shooter.setFlyWheelSpeed(RadiansPerSecond.zero()),
+                indexer.holdStateUntilInterrupted(State.STOP)));
 
         } catch (Exception e) {
             DriverStation.reportError("Failed to load PreloadShootAuto: " + e.getMessage(),
