@@ -19,18 +19,14 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import org.littletonrobotics.junction.Logger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.Indexer.State;
 import frc.robot.subsystems.turret.ShooterSuperstructure;
-import frc.robot.RobotState;
 
 /*
  * Auto moves robot to a safe shooting position and then shoots all preloaded fuel.
@@ -48,7 +44,7 @@ public class PreloadShootAuto extends AutoCommands {
                 addCommands(AutoCommands.resetOdom(drive, driveToShot));
             }
 
-            // Drive to shooting location while spinning up shooter but not feeding. Once at
+            // Drive to shooting location while spinning up shooter but not indexing. Once at
             // position, with the shooter still spinning, bring up the indexer to begin shooting.
             // Shoot all preload. Bring down indexer and shooter to end.
             addCommands(Commands.sequence(
