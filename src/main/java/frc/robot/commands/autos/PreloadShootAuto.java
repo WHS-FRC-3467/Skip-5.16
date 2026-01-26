@@ -46,7 +46,7 @@ public class PreloadShootAuto extends AutoCommands {
 
             // Drive to shooting location while spinning up shooter but not indexing. Once at
             // position, with the shooter still spinning, bring up the indexer to begin shooting.
-            // Shoot all preload. Bring down indexer and shooter to end.
+            // Shoot all preload. Bring down shooter and indexer to end.
             addCommands(Commands.sequence(
                 new ParallelDeadlineGroup(
                     AutoBuilder.followPath(driveToShot),
