@@ -105,6 +105,42 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
+     * Spins the flywheel and actuates the hood to the proper values given field-relative robot
+     * pose. Perpetual command -- never spins down. Therefore, to end, this should be interrupted by
+     * a parent command group or timed-out. Primarily for use in autos.
+     * 
+     * @return Shooter spin-up command.
+     */
+    public Command spinUpShooter()
+    {
+        Supplier<AngularVelocity> desiredFlywheelVelocitySupplier =
+            () -> RadiansPerSecond.of(flywheelMap
+                .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+        Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
+            .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+
+        return Commands.run(() -> {
+            spinFlywheel(desiredFlywheelVelocitySupplier.get());
+            setHoodPosition(desiredHoodPositionSupplier.get());
+        }, this).withName("Spin-Up Shooter");
+    }
+
+    /**
+     * Returns whether shooter is ready to shoot (flywheel at speed & hood at position).
+     * 
+     * @return readyToShoot trigger.
+     */
+    public Trigger readyToShoot()
+    {
+        return new Trigger(() -> {
+            double dist =
+                SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm();
+            return isFlywheelAt(RadiansPerSecond.of(flywheelMap.get(dist)))
+                && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+        });
+    }
+
+    /**
      * Prepares the subsystem to shoot, and runs a command while it is ready
      * 
      * @param whileAtPosition A command that runs while the shooter is ready to shoot. If the
@@ -155,6 +191,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     {
         return setFlywheelSpeed(velocity);
     }
+
     @Override
     public void periodic()
     {

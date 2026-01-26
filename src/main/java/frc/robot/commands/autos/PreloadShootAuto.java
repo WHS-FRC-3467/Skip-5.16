@@ -15,10 +15,12 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import org.littletonrobotics.junction.Logger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -40,29 +42,27 @@ public class PreloadShootAuto extends AutoCommands {
     public PreloadShootAuto(Drive drive, Indexer indexer, ShooterSuperstructure shooter)
     {
         try {
-            RobotState robotState = RobotState.getInstance();
             driveToShot = PathPlannerPath.fromPathFile("PreloadShootAuto"); // TODO: actual path
-            // Margin of error on PathPlanner ending pose for determining indexer bring-up
-            Pose2d shotPose = driveToShot.getPathPoses().get(driveToShot.getPathPoses().size() - 1);
-            Trigger atShotPose = new Trigger(
-                () -> (robotState.getEstimatedPose().getTranslation()
-                    .getDistance(shotPose.getTranslation())) < 0.15); // TODO: acceptance radius
 
             if (Robot.isSimulation() && !Logger.hasReplaySource()) {
                 addCommands(AutoCommands.resetOdom(drive, driveToShot));
             }
 
-            // Drive to shooting location while spinning up shooter but not feeding. Don't run
-            // indexer until within shotPose acceptance radius. Once in range, spin up indexer to
-            // begin feeding & shooting. Shoot preload over timeout. Fallback: if path finding fails
-            // within 5s, attempt shot anyway and move on
+            // Drive to shooting location while spinning up shooter but not feeding. Once at
+            // position, with the shooter still spinning, bring up the indexer to begin shooting.
+            // Shoot all preload. Bring down indexer and shooter to end.
             addCommands(Commands.sequence(
-                Commands.parallel(
-                    new ParallelDeadlineGroup(AutoBuilder.followPath(driveToShot),
-                        shooter.prepareShot(Commands.none())).withTimeout(5.0)),
-                shooter.prepareShot(indexer.holdStateUntilInterrupted(State.PULL))
-                    .onlyWhile(atShotPose)
-                    .withTimeout(1.0))); // TODO: beambreak feedback or confirmed bps for timer
+                new ParallelDeadlineGroup(
+                    AutoBuilder.followPath(driveToShot),
+                    shooter.spinUpShooter()).withTimeout(5.0), // TODO: update with actual 1.2x time
+                new ParallelDeadlineGroup(
+                    Commands.waitSeconds(1.0), // TODO: beam-break feedback or confirm bps for timer
+                    shooter.spinUpShooter(),
+                    indexer.holdStateUntilInterrupted(State.PULL)
+                        .onlyWhile(shooter.readyToShoot())),
+                indexer.holdStateUntilInterrupted(State.STOP),
+                shooter.setFlyWheelSpeed(RadiansPerSecond.zero())));
+
         } catch (Exception e) {
             DriverStation.reportError("Failed to load PreloadShootAuto: " + e.getMessage(),
                 e.getStackTrace());
