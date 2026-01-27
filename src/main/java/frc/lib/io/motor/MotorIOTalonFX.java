@@ -80,12 +80,10 @@ public class MotorIOTalonFX implements MotorIO {
     protected final VelocityTorqueCurrentFOC velocityControl = new VelocityTorqueCurrentFOC(0);
 
     private final CANUpdateThread updateThread = new CANUpdateThread();
-
     private final Alert[] followerOnWrongBusAlert;
 
-    protected Angle goalPosition = Rotations.of(0.0);
-
-    private TalonFXConfiguration currentConfig;
+    private volatile TalonFXConfiguration currentConfig;
+    protected volatile Angle goalPosition = Rotations.of(0.0);
 
     /**
      * Constructs and initializes a TalonFX motor.
@@ -441,20 +439,23 @@ public class MotorIOTalonFX implements MotorIO {
         config.SlotNumber = slot.num;
 
         updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config))
+            .thenRun(() -> {
+                // Skip manual update if we can pull from the motor
+                if (updateConfig())
+                    return;
+
+                var newConfig = currentConfig.clone();
+                switch (slot) {
+                    case SLOT_0 -> newConfig.withSlot0(Slot0Configs.from(config));
+                    case SLOT_1 -> newConfig.withSlot1(Slot1Configs.from(config));
+                    case SLOT_2 -> newConfig.withSlot2(Slot2Configs.from(config));
+                };
+                currentConfig = newConfig;
+            })
             .exceptionally(ex -> {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 return null;
             });
-
-        // Skip manual update if we can pull from the motor
-        if (updateConfig())
-            return;
-
-        switch (slot) {
-            case SLOT_0 -> currentConfig.withSlot0(Slot0Configs.from(config));
-            case SLOT_1 -> currentConfig.withSlot1(Slot1Configs.from(config));
-            case SLOT_2 -> currentConfig.withSlot2(Slot2Configs.from(config));
-        };
     }
 
     @Override
