@@ -24,7 +24,7 @@ import frc.lib.io.absoluteencoder.AbsoluteEncoderIOSim;
 import frc.lib.io.motor.MotorIOSim;
 
 /**
- * A simulated implementation of the RotaryMechanism interface that uses SingleJointedArmSim to
+ * A simulated implementation of the RotaryMechanism base class that uses SingleJointedArmSim to
  * simulate the behavior of a rotary mechanism.
  */
 public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEncoderIOSim> {
