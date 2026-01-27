@@ -22,6 +22,9 @@ import java.util.logging.Logger;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
+import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.SlotConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
@@ -82,6 +85,8 @@ public class MotorIOTalonFX implements MotorIO {
 
     protected Angle goalPosition = Rotations.of(0.0);
 
+    private TalonFXConfiguration currentConfig;
+
     /**
      * Constructs and initializes a TalonFX motor.
      *
@@ -93,6 +98,8 @@ public class MotorIOTalonFX implements MotorIO {
     public MotorIOTalonFX(String name, TalonFXConfiguration config, Device.CAN main,
         TalonFXFollower... followerData)
     {
+        currentConfig = config;
+
         motor = new TalonFX(main.id(), new CANBus(main.bus()));
         updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config))
             .exceptionally(ex -> {
@@ -232,6 +239,26 @@ public class MotorIOTalonFX implements MotorIO {
 
         return ControlType.COAST;
     }
+
+    /**
+     * Attempts to update the `currentConfig` with the connected motor's configuration If this
+     * fails, no change will be made to `currentConfig`, and the method will return false.
+     * 
+     * @return Whether or not the update was successful
+     */
+    public boolean updateConfig()
+    {
+        var newConfig = new TalonFXConfiguration();
+        var status = motor.getConfigurator().refresh(newConfig);
+
+        if (status.isOK()) {
+            currentConfig = newConfig;
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * Updates the passed-in MotorInputs structure with the latest sensor readings.
@@ -400,7 +427,14 @@ public class MotorIOTalonFX implements MotorIO {
     @Override
     public void setPID(PIDSlot slot, PID pid)
     {
-        SlotConfigs config = new SlotConfigs()
+        SlotConfigs base =
+            switch (slot) {
+                case SLOT_0 -> SlotConfigs.from(currentConfig.Slot0);
+                case SLOT_1 -> SlotConfigs.from(currentConfig.Slot1);
+                case SLOT_2 -> SlotConfigs.from(currentConfig.Slot2);
+            };
+
+        SlotConfigs config = base
             .withKP(pid.P())
             .withKI(pid.I())
             .withKD(pid.D());
@@ -411,6 +445,16 @@ public class MotorIOTalonFX implements MotorIO {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 return null;
             });
+
+        // Skip manual update if we can pull from the motor
+        if (updateConfig())
+            return;
+
+        switch (slot) {
+            case SLOT_0 -> currentConfig.withSlot0(Slot0Configs.from(config));
+            case SLOT_1 -> currentConfig.withSlot1(Slot1Configs.from(config));
+            case SLOT_2 -> currentConfig.withSlot2(Slot2Configs.from(config));
+        };
     }
 
     @Override
