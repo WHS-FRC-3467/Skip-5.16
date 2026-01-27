@@ -189,7 +189,7 @@ public abstract class Mechanism<T extends MotorIO> {
 
     public Current getSupplyCurrent()
     {
-        return Amps.of(0.0);
+        return inputs.supplyCurrent;
     }
 
     /**
