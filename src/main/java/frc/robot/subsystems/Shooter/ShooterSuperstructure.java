@@ -150,7 +150,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public Command prepareShot(Command whileAtPosition)
     {
         Supplier<AngularVelocity> desiredFlywheelVelocitySupplier = () -> RadiansPerSecond.of(
-            RobotState.target == Target.ONE // This logic will decide whether our target is going to
+            RobotState.target == Target.HUB // This logic will decide whether our target is going to
 
                 ? flywheelMap.get(
                     SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation()
@@ -160,7 +160,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         .getNorm()));
 
         Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(
-            RobotState.target == Target.ONE // This logic will decide whether our target is going to
+            RobotState.target == Target.HUB // This logic will decide whether our target is going to
                 ? hoodAngleMap.get(
                     SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm())
                 : hoodAngleFeedMap.get(
