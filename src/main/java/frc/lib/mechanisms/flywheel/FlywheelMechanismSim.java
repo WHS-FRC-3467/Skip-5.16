@@ -33,8 +33,8 @@ import edu.wpi.first.wpilibj.util.Color;
 import frc.lib.io.motor.MotorIOSim;
 
 /**
- * A simulated implementation of the FlywheelMechanism interface that uses FlywheelSim to simulate
- * the behavior of a flywheel mechanism.
+ * A simulated implementation of the FlywheelMechanism abstract class that uses FlywheelSim to
+ * simulate the behavior of a flywheel mechanism.
  */
 public class FlywheelMechanismSim extends FlywheelMechanism<MotorIOSim> {
     private final FlywheelSim sim;
