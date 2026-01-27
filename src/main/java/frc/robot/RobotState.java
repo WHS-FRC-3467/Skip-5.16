@@ -58,7 +58,6 @@ public class RobotState {
     @Getter
     @Setter
     private ChassisSpeeds velocity = new ChassisSpeeds();
-    private double getTime;
 
     @AutoLogOutput(key = "Odometry/OdometryPose")
     public Pose2d getOdometryPose()
@@ -216,20 +215,35 @@ public class RobotState {
 
     public Trigger HubActiveTrigger()
     {
-        if (isHubActive().isPresent() && (!isHubActive().get())) {
-
-            getTime = DriverStation.getMatchTime() + 25.0;
-
-        }
-
         return new Trigger(() -> (isHubActive().isPresent() ? isHubActive().get() : false));
         // TODO true false "empty"
     }
 
+    /* List of times that the hub can change from on/off */
+    private static double[] hubChangeTimes = {
+            130.0,
+            105.0,
+            80.0,
+            55.0,
+            30.0
+    };
+
+    // Counter for tracking hub changes
+    private int hubChangeInt = 0;
+
+    /**
+     * @return a trigger that reports true when remaining match time is within seconds of a hub
+     *         change time
+     */
     public Trigger timeIncrement(double secondsBefore)
     {
-        if (getTime - secondsBefore == DriverStation.getMatchTime() + 25 - secondsBefore) {
-            return new Trigger(() -> true);
+        if (hubChangeInt < 5) {
+            hubChangeInt++;
+            return new Trigger(
+                () -> DriverStation.getMatchTime() <= hubChangeTimes[hubChangeInt - 1]
+                    + secondsBefore
+                        ? true
+                        : false);
         } else {
             return new Trigger(() -> false);
         }
@@ -258,8 +272,8 @@ public class RobotState {
 
 
                         case Red:
-
                             return Optional.of(false);
+
 
                         default:
                             return Optional.empty();
@@ -270,16 +284,13 @@ public class RobotState {
                     // Red case code
                     switch (alliance) {
                         case Blue:
-
                             return Optional.of(false);
 
                         case Red:
-
                             return Optional.of(true);
 
                         default:
                             return Optional.empty();
-
                     }
 
                 default:
