@@ -37,6 +37,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -45,7 +46,7 @@ public class RobotState {
     private static final double LINEAR_ODOMETRY_STD_DEV = 0.01;
     private static final double ANGULAR_ODOMETRY_STD_DEV = 0.01;
 
-    
+
     @Setter
     @AutoLogOutput(key = "Drive/DrivetrainAngled")
     private boolean drivetrainAngled = false;
@@ -88,7 +89,7 @@ public class RobotState {
         }
         poseEstimator.addVisionObservation(observation);
     }
-    
+
     public Optional<Pose2d> getPoseAtTime(double timestampSeconds)
     {
         return poseEstimator.getPoseAtTime(timestampSeconds);
@@ -156,6 +157,7 @@ public class RobotState {
         private final Distance height;
 
     }
+
 
     /** Keeps track of current target to aim for */
     @AutoLogOutput(key = "Robot/CurrentTarget")
