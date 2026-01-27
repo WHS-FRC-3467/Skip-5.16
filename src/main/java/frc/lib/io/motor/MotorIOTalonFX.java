@@ -141,7 +141,7 @@ public class MotorIOTalonFX implements MotorIO {
             100,
             position,
             velocity,
-            supplyCurrent,
+            supplyVoltage,
             supplyCurrent,
             torqueCurrent,
             temperature))
