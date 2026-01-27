@@ -42,8 +42,8 @@ import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
-import frc.robot.subsystems.turret.ShooterSuperstructure;
-import frc.robot.subsystems.turret.ShooterSuperstructureConstants;
+import frc.robot.subsystems.Shooter.ShooterSuperstructure;
+import frc.robot.subsystems.Shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.lasercan1.LaserCAN1;
 import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
@@ -140,7 +140,8 @@ public class RobotContainer {
         SmartDashboard.putData("Intake/Eject", intake.runIntake(Intake.State.EJECT));
         SmartDashboard.putData("Intake/Intake", intake.runIntake(Intake.State.INTAKE));
         SmartDashboard.putData("Intake/Stop", intake.runIntake(Intake.State.STOP));
-        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase", Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
+        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
+            Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
     }
 
     public Command getAutonomousCommand()
