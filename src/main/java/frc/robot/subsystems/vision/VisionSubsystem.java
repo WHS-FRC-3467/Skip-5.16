@@ -65,10 +65,10 @@ public class VisionSubsystem extends SubsystemBase {
     public static final double MAX_AMBIGUITY = 0.2;
 
     /** Width of the field in meters. */
-    public static final double FIELD_WIDTH = FieldConstants.FIELD_WIDTH.in(Meters);
+    public static final double FIELD_WIDTH = FieldConstants.fieldWidth;
 
     /** Length of the field in meters. */
-    public static final double FIELD_LENGTH = FieldConstants.FIELD_LENGTH.in(Meters);
+    public static final double FIELD_LENGTH = FieldConstants.fieldLength;
 
     public static final record VisionPoseRecord(
         Pose3d pose,
@@ -193,7 +193,8 @@ public class VisionSubsystem extends SubsystemBase {
                     continue;
                 }
 
-                // Equation from AK template project https://github.com/Mechanical-Advantage/AdvantageKit/blob/5dbc08a680e8b105c75c18be7c3442029b08e32b/template_projects/sources/vision/src/main/java/frc/robot/subsystems/vision/Vision.java#L123
+                // Equation from AK template project
+                // https://github.com/Mechanical-Advantage/AdvantageKit/blob/5dbc08a680e8b105c75c18be7c3442029b08e32b/template_projects/sources/vision/src/main/java/frc/robot/subsystems/vision/Vision.java#L123
                 double stdDevFactor =
                     (Math.pow(poseRecord.averageDistanceMeters(), 2.0) / result.getTargets().size())
                         * cameras[c].getProperties().stdDevFactor();
