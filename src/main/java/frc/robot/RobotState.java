@@ -45,7 +45,7 @@ public class RobotState {
     private static final double LINEAR_ODOMETRY_STD_DEV = 0.01;
     private static final double ANGULAR_ODOMETRY_STD_DEV = 0.01;
 
-    
+
     @Setter
     @AutoLogOutput(key = "Drive/DrivetrainAngled")
     private boolean drivetrainAngled = false;
@@ -88,7 +88,7 @@ public class RobotState {
         }
         poseEstimator.addVisionObservation(observation);
     }
-    
+
     public Optional<Pose2d> getPoseAtTime(double timestampSeconds)
     {
         return poseEstimator.getPoseAtTime(timestampSeconds);
@@ -141,7 +141,7 @@ public class RobotState {
     public enum Target {
         // NAME(BLUE, RED, HEIGHT)
         ONE(new Pose2d(Meters.of(0), Meters.of(0), Rotation2d.kZero),
-            new Pose2d(FieldConstants.FIELD_LENGTH, FieldConstants.FIELD_WIDTH,
+            new Pose2d(FieldConstants.fieldLength, FieldConstants.fieldWidth,
                 Rotation2d.k180deg),
             Meters.of(2.64)),
         TWO(new Pose2d(), new Pose2d(), Meters.of(0.0));
