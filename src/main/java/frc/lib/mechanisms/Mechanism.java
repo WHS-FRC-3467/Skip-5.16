@@ -204,7 +204,7 @@ public abstract class Mechanism<T extends MotorIO> {
 
     public Current getTorqueCurrent()
     {
-        return Amps.of(0.0);
+        return inputs.torqueCurrent;
     }
 
     public AngularVelocity getVelocity()
