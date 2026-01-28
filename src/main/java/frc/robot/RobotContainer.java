@@ -122,8 +122,6 @@ public class RobotContainer {
         controller.rightTrigger().whileTrue(
             shooter.prepareShot(
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
-
-        controller.x().onTrue(Commands.runOnce(() -> System.out.println("X Pressed")));
     }
 
 
@@ -155,7 +153,7 @@ public class RobotContainer {
             Constants.FULL_ROBOT_LENGTH.in(Meters),
             Constants.BUMPER_HEIGHT.in(Meters),
             robotState::getEstimatedPose,
-            drive::getChassisSpeeds);
+            robotState::getVelocity);
         instance.registerIntake(
             -Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
             Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(10)).in(Meters),
