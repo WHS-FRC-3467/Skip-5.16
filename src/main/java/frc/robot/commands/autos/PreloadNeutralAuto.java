@@ -36,9 +36,9 @@ public class PreloadNeutralAuto extends AutoCommand {
     {
         // Choose path names based on start position
         pathNames = switch (start) {
-            case LEFT -> List.of("PreloadShoot-Left", "Neutral-Left");
-            case CENTER -> List.of("PreloadShoot-Center", "Neutral-Center");
-            case RIGHT -> List.of("PreloadShoot-Right", "Neutral-Right");
+            case LEFT -> List.of("PreloadShoot-Left", "placeholder");
+            case CENTER -> List.of("PreloadShoot-Center", "1SweepNeutral-Bump-Center");
+            case RIGHT -> List.of("PreloadShoot-Right", "placeholder");
         };
 
         // Load PathPlanner paths based on path names
@@ -46,7 +46,7 @@ public class PreloadNeutralAuto extends AutoCommand {
 
         // Chain AutoSegments here
         addCommands(
-            AutoSegments.makePreloadShot(drive, indexer, shooter, start)
+            AutoSegments.makePreloadShot(drive, indexer, shooter, pathNames.get(0))
         // Autosegments.makeNeutralRun()
         );
 

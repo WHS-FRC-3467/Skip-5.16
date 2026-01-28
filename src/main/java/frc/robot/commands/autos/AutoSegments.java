@@ -33,15 +33,10 @@ public class AutoSegments {
 
     // Follow a path and shoot preload
     public static Command makePreloadShot(Drive drive, Indexer indexer,
-        ShooterSuperstructure shooter, StartPosition start)
+        ShooterSuperstructure shooter, String pathName)
     {
         PathPlannerPath driveToShot;
         try {
-            String pathName = switch (start) {
-                case LEFT -> "PreloadShoot-Left";
-                case CENTER -> "PreloadShoot-Center";
-                case RIGHT -> "PreloadShoot-Right";
-            };
             driveToShot = PathPlannerPath.fromPathFile(pathName);
         } catch (Exception e) {
             DriverStation.reportError("Failed to load PreloadShootAuto: " + e.getMessage(),
@@ -64,9 +59,17 @@ public class AutoSegments {
             indexer.holdStateUntilInterrupted(State.STOP));
     }
 
-    // Make a run for the neutral zone TODO: logic
-    public static Command makeNeutralRun(Drive drive, Intake intake, StartPosition start)
+    // Make a run for the neutral zone TODO: logic - placeholders for now
+    public static Command makeNeutralRun(Drive drive, Intake intake, String pathName)
     {
+        PathPlannerPath driveToNeutral;
+        try {
+            driveToNeutral = PathPlannerPath.fromPathFile(pathName);
+        } catch (Exception e) {
+            DriverStation.reportError("Failed to load PreloadShootAuto: " + e.getMessage(),
+                e.getStackTrace());
+            return Commands.none();
+        }
         return Commands.none();
     }
 }
