@@ -13,28 +13,29 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.intake;
+package frc.robot.subsystems.intakeLinear;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Second;
-
+import static edu.wpi.first.units.Units.Kilograms;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
-import frc.lib.mechanisms.flywheel.FlywheelMechanism;
-import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
-import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
+import frc.lib.mechanisms.linear.LinearMechanism;
+import frc.lib.mechanisms.linear.LinearMechanism.LinearMechCharacteristics;
+import frc.lib.mechanisms.linear.LinearMechanismReal;
+import frc.lib.mechanisms.linear.LinearMechanismSim;
+import frc.lib.util.MechanismUtil.DistanceAngleConverter;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
@@ -43,20 +44,34 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class IntakeConstants {
+public class IntakeLinearConstants {
 
-    public static final String NAME = "Intake";
-
-    public static final AngularVelocity MAX_VELOCITY =
-        Units.RadiansPerSecond.of(2 * Math.PI);
-    public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
+    public static final String NAME = "Intake Linear";
 
     private static final double GEARING = (2.0 / 1.0);
 
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.1);
+    private static final Distance MIN_DISTANCE = Inches.of(0.0);
+    private static final Distance MAX_DISTANCE = Inches.of(36.0);
+    private static final Distance STARTING_DISTANCE = Inches.of(0.0);
+
+    private static final Distance DRUM_RADIUS = Inches.of(1.0);
+    private static final Mass CARRIAGE_MASS = Kilograms.of(.01);
+    public static final DistanceAngleConverter CONVERTER = new DistanceAngleConverter(DRUM_RADIUS);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
+
+    // Orientation for the linear mechanism.
+    // Uses WPILib's counter-clockwise positive convention around Y-axis:
+    // A pitch of -90 degrees represents a vertical mechanism extending upward (like an elevator).
+    // Pitch of 0 degrees would be horizontal extending forward.
+    // Roll and yaw can be used for mechanisms that extend in other directions.
+    private static final Rotation3d ORIENTATION =
+        new Rotation3d(0.0, Degrees.of(0.0).in(Units.Radians), 0.0);
+
+    private static final LinearMechCharacteristics CHARACTERISTICS =
+        new LinearMechCharacteristics(MIN_DISTANCE, MAX_DISTANCE,
+            STARTING_DISTANCE, CONVERTER, ORIENTATION);
 
     // Velocity PID
     private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
@@ -92,32 +107,29 @@ public class IntakeConstants {
         config.Feedback.SensorToMechanismRatio = GEARING;
 
         config.Slot0 = SLOT0CONFIG;
-        config.MotionMagic.MotionMagicCruiseVelocity = MAX_VELOCITY.in(RotationsPerSecond);
-        config.MotionMagic.MotionMagicAcceleration =
-            MAX_ACCELERATION.in(RotationsPerSecondPerSecond);
 
         return config;
     }
 
-    public static FlywheelMechanism getMechanism()
+    public static LinearMechanism getMechanism()
     {
         switch (Constants.currentMode) {
             case REAL:
-                return new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intake));
+                return new LinearMechanismReal(NAME,
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeLinear), CHARACTERISTICS);
             case SIM:
-                return new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intake),
-                    DCMOTOR, MOI, TOLERANCE);
+                return new LinearMechanismSim(NAME,
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeLinear),
+                    DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
             case REPLAY:
-                return new FlywheelMechanism() {};
+                return new LinearMechanism(NAME, CHARACTERISTICS) {};
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
     }
 
-    public static Intake get()
+    public static IntakeLinear get()
     {
-        return new Intake(getMechanism());
+        return new IntakeLinear(getMechanism());
     }
 }

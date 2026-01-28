@@ -19,7 +19,6 @@ import com.ctre.phoenix6.CANBus;
 import frc.lib.util.Device;
 import frc.lib.util.Device.CAN;
 import frc.lib.util.Device.DIO;
-import frc.lib.util.Device.PWM;
 
 public class Ports {
     /*
@@ -34,10 +33,6 @@ public class Ports {
     public static final Device.CAN laserCAN1 = new CAN(0, "rio");
     public static final Device.CAN lights = new CAN(1, "rio");
 
-    public static final Device.CAN linear = new CAN(5, "rio");
-
-    public static final Device.DIO diobeambreak = new DIO(0);
-
     public static final Device.CAN pdh = new CAN(50, "rio");
     public static final Device.CAN RotarySubsystemMotorMain = new CAN(3, "rio");
     public static final Device.CAN RotarySubsystemMotorFollower = new CAN(4, "rio");
@@ -48,8 +43,7 @@ public class Ports {
     public static final Device.CAN indexer = new CAN(18, "rio");
     public static final Device.CAN hood = new CAN(20, "rio");
     public static final Device.CAN indexerLaserCAN = new CAN(19, "rio");
-    public static final Device.CAN intake = new CAN(21, "rio");
 
-    public static final Device.PWM servo1 = new PWM(1);
-
+    public static final Device.CAN intakeRoller = new CAN(21, "rio");
+    public static final Device.CAN intakeLinear = new CAN(22, "rio");
 }
