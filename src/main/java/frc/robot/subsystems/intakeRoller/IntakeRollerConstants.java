@@ -45,7 +45,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class IntakeRollerConstants {
 
-    public static final String NAME = "Intake";
+    public static final String NAME = "Intake Roller";
 
     public static final AngularVelocity MAX_VELOCITY =
         Units.RadiansPerSecond.of(2 * Math.PI);

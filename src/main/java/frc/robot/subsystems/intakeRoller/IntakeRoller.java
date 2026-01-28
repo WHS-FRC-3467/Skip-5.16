@@ -32,9 +32,9 @@ import lombok.RequiredArgsConstructor;
 public class IntakeRoller extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber INTAKE_SETPOINT =
-        new LoggedTunableNumber("Intake/IntakeRPS", 10.0);
+        new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 10.0);
     private static final LoggedTunableNumber EJECT_SETPOINT =
-        new LoggedTunableNumber("Intake/EjectRPS", -10.0);
+        new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);
 
     private final FlywheelMechanism io;
     private String stateName;
@@ -88,7 +88,7 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
     @Override
     public void periodic()
     {
-        Logger.recordOutput("Intake/State", this.stateName);
+        Logger.recordOutput(IntakeRollerConstants.NAME + "/State", this.stateName);
         io.periodic();
     }
 

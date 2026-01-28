@@ -140,12 +140,12 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
-        SmartDashboard.putData("Intake/Eject", intakeRoller.runIntake(IntakeRoller.State.EJECT));
-        SmartDashboard.putData("Intake/Intake", intakeRoller.runIntake(IntakeRoller.State.INTAKE));
-        SmartDashboard.putData("Intake/Stop", intakeRoller.runIntake(IntakeRoller.State.STOP));
-        SmartDashboard.putData("IntakeLinear/Extend",intakeLinear.extend());
-        SmartDashboard.putData("IntakeLinear/Retract",intakeLinear.retract());
-        SmartDashboard.putData("IntakeLinear/Cycle",intakeLinear.cycle());
+        SmartDashboard.putData("Intake Roller/Eject", intakeRoller.runIntake(IntakeRoller.State.EJECT));
+        SmartDashboard.putData("Intake Roller/Intake", intakeRoller.runIntake(IntakeRoller.State.INTAKE));
+        SmartDashboard.putData("Intake Roller/Stop", intakeRoller.runIntake(IntakeRoller.State.STOP));
+        SmartDashboard.putData("Intake Linear/Extend",intakeLinear.extend());
+        SmartDashboard.putData("Intake Linear/Retract",intakeLinear.retract());
+        SmartDashboard.putData("Intake Linear/Cycle",intakeLinear.cycle());
         SmartDashboard.putData("Sim Test: Toggle Tip Drivebase", Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
     }
 
