@@ -72,6 +72,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final RotaryMechanism hoodIO;
     private final FlywheelMechanism flywheelIO;
 
+    private final Trigger readyToShoot = new Trigger(() -> {
+        double dist =
+            SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm();
+        return isFlywheelAt(RadiansPerSecond.of(flywheelMap.get(dist)))
+            && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+    });
+
     public ShooterSuperstructure(RotaryMechanism hoodIO,
         FlywheelMechanism flywheelIO)
     {
@@ -132,12 +139,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     public Trigger readyToShoot()
     {
-        return new Trigger(() -> {
-            double dist =
-                SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm();
-            return isFlywheelAt(RadiansPerSecond.of(flywheelMap.get(dist)))
-                && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
-        });
+        return readyToShoot;
     }
 
     /**
