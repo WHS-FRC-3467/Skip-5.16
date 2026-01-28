@@ -124,25 +124,6 @@ public class FieldConstants {
         public static final Translation2d farRightCorner =
             new Translation2d(topCenterPoint.getX() + width / 2.0, fieldWidth / 2.0 - width / 2.0);
 
-        // Relevant reference points on the opposite side
-        public static final Translation3d oppTopCenterPoint =
-            new Translation3d(
-                AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(4).get().getX() + width / 2.0,
-                fieldWidth / 2.0,
-                height);
-        public static final Translation2d oppNearLeftCorner =
-            new Translation2d(oppTopCenterPoint.getX() - width / 2.0,
-                fieldWidth / 2.0 + width / 2.0);
-        public static final Translation2d oppNearRightCorner =
-            new Translation2d(oppTopCenterPoint.getX() - width / 2.0,
-                fieldWidth / 2.0 - width / 2.0);
-        public static final Translation2d oppFarLeftCorner =
-            new Translation2d(oppTopCenterPoint.getX() + width / 2.0,
-                fieldWidth / 2.0 + width / 2.0);
-        public static final Translation2d oppFarRightCorner =
-            new Translation2d(oppTopCenterPoint.getX() + width / 2.0,
-                fieldWidth / 2.0 - width / 2.0);
-
         // Hub faces
         public static final Pose2d nearFace =
             AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(26).get().toPose2d();
@@ -169,14 +150,6 @@ public class FieldConstants {
         public static final Translation2d farLeftCorner =
             new Translation2d(LinesVertical.hubCenter + width / 2, Units.inchesToMeters(255));
         public static final Translation2d farRightCorner = Hub.farLeftCorner;
-
-        // Relevant reference points on opposing side
-        public static final Translation2d oppNearLeftCorner =
-            new Translation2d(LinesVertical.hubCenter - width / 2, Units.inchesToMeters(255));
-        public static final Translation2d oppNearRightCorner = Hub.oppNearLeftCorner;
-        public static final Translation2d oppFarLeftCorner =
-            new Translation2d(LinesVertical.hubCenter + width / 2, Units.inchesToMeters(255));
-        public static final Translation2d oppFarRightCorner = Hub.oppFarLeftCorner;
     }
 
     /** Right Bump related constants */
@@ -193,14 +166,6 @@ public class FieldConstants {
         public static final Translation2d farLeftCorner =
             new Translation2d(LinesVertical.hubCenter - width / 2, Units.inchesToMeters(255));
         public static final Translation2d farRightCorner = Hub.farLeftCorner;
-
-        // Relevant reference points on opposing side
-        public static final Translation2d oppNearLeftCorner =
-            new Translation2d(LinesVertical.hubCenter + width / 2, Units.inchesToMeters(255));
-        public static final Translation2d oppNearRightCorner = Hub.oppNearLeftCorner;
-        public static final Translation2d oppFarLeftCorner =
-            new Translation2d(LinesVertical.hubCenter - width / 2, Units.inchesToMeters(255));
-        public static final Translation2d oppFarRightCorner = Hub.oppFarLeftCorner;
     }
 
     /** Left Trench related constants */
