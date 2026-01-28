@@ -35,15 +35,20 @@ public class PreloadShootAuto extends AutoCommands {
 
     private PathPlannerPath driveToShot;
 
-    public PreloadShootAuto(Drive drive, Indexer indexer, ShooterSuperstructure shooter)
+    public PreloadShootAuto(Drive drive, Indexer indexer, ShooterSuperstructure shooter,
+        StartPosition start)
     {
         try {
-            driveToShot = PathPlannerPath.fromPathFile("PreloadShootAuto"); // TODO: actual path
+            String pathName = switch (start) {
+                case LEFT -> "PreloadShoot-Left";
+                case CENTER -> "PreloadShoot-Center";
+                case RIGHT -> "PreloadShoot-Right";
+            };
+            driveToShot = PathPlannerPath.fromPathFile(pathName);
 
             if (Robot.isSimulation() && !Logger.hasReplaySource()) {
                 addCommands(AutoCommands.resetOdom(drive, driveToShot));
             }
-
             // Drive to shooting location while spinning up shooter but not indexing. Once at
             // position, with the shooter still spinning, bring up the indexer to begin shooting.
             // Shoot all preload. Bring down shooter and indexer to end. If path doesn't complete in
@@ -51,7 +56,7 @@ public class PreloadShootAuto extends AutoCommands {
             addCommands(Commands.sequence(
                 new ParallelDeadlineGroup(
                     AutoBuilder.followPath(driveToShot),
-                    shooter.spinUpShooter()).withTimeout(5.0), // TODO: update with actual 1.2x time
+                    shooter.spinUpShooter()).withTimeout(2.5),
                 new ParallelDeadlineGroup(
                     Commands.waitSeconds(1.0), // TODO: beam-break feedback or confirm bps for timer
                     shooter.spinUpShooter(),
