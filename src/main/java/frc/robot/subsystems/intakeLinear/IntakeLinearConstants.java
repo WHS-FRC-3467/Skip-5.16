@@ -17,7 +17,6 @@ package frc.robot.subsystems.intakeLinear;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Kilograms;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -28,7 +27,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
-import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.linear.LinearMechanism;
@@ -59,7 +57,6 @@ public class IntakeLinearConstants {
     public static final DistanceAngleConverter CONVERTER = new DistanceAngleConverter(DRUM_RADIUS);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Orientation for the linear mechanism.
     // Uses WPILib's counter-clockwise positive convention around Y-axis:
