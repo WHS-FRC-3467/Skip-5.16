@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
-import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
