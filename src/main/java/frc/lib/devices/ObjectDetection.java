@@ -1,6 +1,17 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/*
+ * Copyright (C) 2025 Windham Windup
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
+ */
 
 package frc.lib.devices;
 
@@ -8,30 +19,63 @@ import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.lib.io.objectdetection.ObjectDetectionIO.ObjectDetectionIOInputs;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 
 /**
- * Device level implementation of an object detection camera. While the IO layer is responsible for
- * defining the variables of interest coming from our camera, the device layer is responsible for
- * periodically polling that IO and performing relevant calculations on the return results to
- * generate data for the robot to make decisions.
+ * Represents a single Object Detection camera on the robot.
+ * 
+ * <p>
+ * Handles interfacing with the {@link ObjectDetectionIO} hardware layer. While the IO (hardware)
+ * layer is responsible for defining the variables of interest coming from our camera, this device
+ * layer is responsible for periodically polling that IO and performing relevant calculations on the
+ * return results to generate data for the robot to make decisions. Contains methods useful for both
+ * ML object detection as well as HSV Color detection.
  */
 public class ObjectDetection {
-    // Placeholder for concrete implementation of ObjectDetectionIO.
-    private final ObjectDetectionIO io;
-    // DetectionMLIOInputs (e.g. skew, yaw, objID, etc.) from the AutoLog file.
+    // Inputs data structure
     private final ObjectDetectionIOInputs inputs =
         new ObjectDetectionIOInputs();
+    // IO implementation of ObjectDetectionIO (how inputs data structure is populated)
+    private final ObjectDetectionIO io;
+
+    /**
+     * Represents an Object Detection observation.
+     * 
+     * <p>
+     * These values are a combination of baseline return values from the camera and device-level
+     * calculations using those basic values. This structure can represent essential observations
+     * from an ML or HSV Color Detection pipeline.
+     * 
+     * @param objID Object ID (ML pipeline only, negative sentinel value otherwise).
+     * @param confidence Object ID confidence (ML pipeline only, negative sentinel value otherwise).
+     * @param pitch Pitch of the object relative to the centerline of the camera.
+     * @param yaw Yaw of the object relative to the centerline of the camera.
+     * @param area Area of the object in the image.
+     * @param distance Approximate 2d robot-relative distance to the detected object (empty if pose
+     *        estimation is N/A or fails).
+     * @param objectPose Estimated field-relative pose of the detected object (empty if pose
+     *        estimation is N/A or fails).
+     */
+    public record ObjectDetectionObservation(int objID, double confidence, Angle pitch, Angle yaw,
+        double area, Optional<Distance> distance, Optional<Pose2d> objectPose) {
+    }
 
     /*
      * Interface as a data type allows ObjectDetection to accept various implementations of
      * ObjectDetectionIO (e.g. ObjectDetectionIOPhotonVision or ObjectDetectionIOLimelight).
+     * Currently factored for PhotonVision only.
      */
     public ObjectDetection(ObjectDetectionIO io)
     {
@@ -136,7 +180,7 @@ public class ObjectDetection {
      *        as a result of either camera hardware or installation.
      * @return The estimated robot range to the target in meters.
      */
-    public double rangeToTarget_Pitch(PhotonTrackedTarget target,
+    private double rangeToTarget_Pitch(PhotonTrackedTarget target,
         Transform3d cameraTransform, double targetHeightMeters, double cameraCalFactor,
         double cameraOffset)
     {
@@ -175,7 +219,7 @@ public class ObjectDetection {
 
         } else {
             // Use rangeToTarget_FocalLength.
-            return -1.0d;
+            return -1.0;
         }
     }
 
@@ -201,7 +245,7 @@ public class ObjectDetection {
      * @return The estimated robot heading to the target in meters. Positive heading = robot local X
      *         axis right of target; negative heading = robot local X axis left of target.
      */
-    public double headingToTarget_Yaw(PhotonTrackedTarget target,
+    private double headingToTarget_Yaw(PhotonTrackedTarget target,
         Transform3d cameraTransform, double targetRangeMeters, double cameraCalFactor,
         double cameraOffset)
     {
@@ -226,7 +270,7 @@ public class ObjectDetection {
      * @param targetHeadingMeters Robot's heading to the target in meters.
      * @return The estimated 2d distance from the robot to the target in meters.
      */
-    public double distanceToTarget2d(double targetRangeMeters, double targetHeadingMeters)
+    private double distanceToTarget2d(double targetRangeMeters, double targetHeadingMeters)
     {
         // Distance from robot to target
         return Math.sqrt((Math.pow(targetRangeMeters, 2) + Math.pow(targetHeadingMeters, 2)));
@@ -246,7 +290,7 @@ public class ObjectDetection {
      * @param robotPose The 2D pose of the robot on the field.
      * @return A Translation2d of the detected object in field coordinates.
      */
-    public Translation2d estimateTargetToField(double targetRangeMeters,
+    private Translation2d estimateTargetToField(double targetRangeMeters,
         double targetHeadingMeters, Pose2d robotPose)
     {
         Translation2d fieldToTargetTranslation = robotPose
@@ -256,20 +300,20 @@ public class ObjectDetection {
     }
 
     /**
-     * Generates an N-element FIFO list of the last N objects detected by the robot. 0th index
+     * Generates an N-element FIFO list of the last N object poses detected by the camera. 0th index
      * represents the oldest detection (i.e. start of the list), N-1th index represents the most
      * recent detection (i.e. end of the list). If a detection is deemed a repeat (according to the
      * passed Translation2D tolerance), it is removed from its current location in robot memory and
      * re-added to the end of the list.
      * 
      * @param N The number of last detections to store in memory.
-     * @param lastNDetections The List of Translation2d objects representing the robot's memory of
+     * @param lastNDetections The list of Translation2d objects representing the camera's memory of
      *        last N detections.
      * @param toleranceMeters The tolerance in meters for determining whether a detection is new or
      *        old.
      * @param targetTranslation The Translation2d of the current target detection to be evaluated.
      */
-    public void getLastNDetections(int N,
+    public void updateObservationPoseBuffer(int N,
         List<Translation2d> lastNDetections, double toleranceMeters,
         Translation2d targetTranslation)
     {
@@ -305,6 +349,166 @@ public class ObjectDetection {
         }
     }
 
+    /**
+     * Returns the latest Object observation.
+     * 
+     * <p>
+     * This function returns a full record representing the detected Object -- Object ID,
+     * confidence, pitch, yaw, area, robot distance to target, and target's field pose -- usually
+     * requiring a functional ML pipeline. A PhotonVision ML detection that fails to identify the
+     * Object will return object ID & confidence as -1. Failed pose estimation will return relevant
+     * fields as empty.
+     * 
+     * @param target A single PhotonTrackedTarget representing the detected object of interest,
+     *        likely from objectDetection.getTargets()[i].
+     * @param robotToCamera robotToCamera transform.
+     * @param objectPhysicalHeightMeters Physical (real-world) height of the object being
+     *        represented by the PhotonTrackedTarget (e.g. 2025 Algae = 0.41 m = ball diameter) (m).
+     * @param rangeCalFactor Calibration scaling factor for range calculation (usually set to 1).
+     * @param rangeCalOffset Calibration offset factor for range calculation (usually set to 0).
+     * @param headingCalFactor Calibration scaling factor for heading calculation (usually set to
+     *        1).
+     * @param headingCalOffset Calibration offset factor for heading calculation (usually set to 0).
+     * @param robotPose Field-relative robot pose.
+     * @return An optional {@link ObjectDetectionObservation}.
+     */
+    public Optional<ObjectDetectionObservation> getObjectObservation(PhotonTrackedTarget target,
+        Transform3d robotToCamera,
+        double objectPhysicalHeightMeters, double rangeCalFactor, double rangeCalOffset,
+        double headingCalFactor, double headingCalOffset,
+        Pose2d robotPose)
+    {
+        // Robot-local range to target
+        double range =
+            rangeToTarget_Pitch(target,
+                robotToCamera,
+                objectPhysicalHeightMeters / 2,
+                rangeCalFactor, rangeCalOffset);
+        if (range == -1.0) {
+            // Range finding algorithm failed due to geometric constraints,
+            // return partial ML Object Observation
+            return Optional.of(new ObjectDetectionObservation(
+                target.getDetectedObjectClassID(),
+                target.getDetectedObjectConfidence(),
+                Degrees.of(target.getPitch()),
+                Degrees.of(target.getYaw()),
+                target.getArea(),
+                Optional.empty(),
+                Optional.empty()));
+        }
+        // Robot-local heading to target
+        double heading =
+            headingToTarget_Yaw(target,
+                robotToCamera,
+                range, headingCalFactor, headingCalOffset);
+        // 2D distance from robot center to target
+        double distance = distanceToTarget2d(range, heading);
+        // Field-relative Translation2D of target
+        Translation2d targetLocation =
+            estimateTargetToField(
+                range,
+                heading,
+                robotPose);
+        // Return packaged ML Object Observation
+        return Optional.of(new ObjectDetectionObservation(
+            target.getDetectedObjectClassID(),
+            target.getDetectedObjectConfidence(),
+            Degrees.of(target.getPitch()),
+            Degrees.of(target.getYaw()),
+            target.getArea(),
+            Optional.of(Meters.of(distance)),
+            Optional.of(new Pose2d(targetLocation, new Rotation2d()))));
+    }
+
+    /**
+     * Returns the latest Contour (i.e. Color or Blob) observation.
+     * 
+     * <p>
+     * This function returns a partial record representing the detected Blob (i.e Color or Contour)
+     * containing pitch, yaw, & area. These are baseline PhotonVision results relevant to multiple
+     * pipelines (Color, ML, etc.). Blob observations don't attempt to generate poses, object IDs,
+     * or confidence. Therefore, fields relevant to pose estimation are returned empty and object ID
+     * / confidence are assigned assigned -2 to differentiate this result from an ML detection that
+     * failed to generate both an ID & a pose (-1). See {@link #getObjectObservation}.
+     * 
+     * @param targets An array of PhotonTrackedTargets, likely from objectDetection.getTargets().
+     * @param selection An enum representing the two selection modes: LARGEST or LOWEST. LARGEST
+     *        returns Blob with greatest area, LOWEST returns Blob with smallest pitch.
+     * @return An optional {@link ObjectDetectionObservation}.
+     */
+    public Optional<ObjectDetectionObservation> getContourObservation(PhotonTrackedTarget[] targets,
+        ContourSelectionMode selection)
+    {
+        if (targets == null || targets.length == 0) {
+            return Optional.empty();
+        }
+        PhotonTrackedTarget selectedTarget;
+        switch (selection) {
+            case LARGEST:
+                selectedTarget = getLargestContour(targets);
+                if (selectedTarget == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(
+                        new ObjectDetectionObservation(-2, -2,
+                            Degrees.of(selectedTarget.getPitch()),
+                            Degrees.of(selectedTarget.getYaw()),
+                            selectedTarget.getArea(),
+                            Optional.empty(), Optional.empty()));
+                }
+            case LOWEST:
+                selectedTarget = getLowestContour(targets);
+                if (selectedTarget == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(
+                        new ObjectDetectionObservation(-2, -2,
+                            Degrees.of(selectedTarget.getPitch()),
+                            Degrees.of(selectedTarget.getYaw()),
+                            selectedTarget.getArea(),
+                            Optional.empty(), Optional.empty()));
+                }
+            default:
+                return Optional.empty();
+        }
+    }
+
+    // Singleton selector for getContourObservation().
+    public enum ContourSelectionMode {
+        LARGEST,
+        LOWEST
+    }
+
+    // Private helper for getContourObservation(). Finds blob with largest area.
+    private PhotonTrackedTarget getLargestContour(PhotonTrackedTarget[] result)
+    {
+        PhotonTrackedTarget largestTarget = null;
+        double maxArea = 0.0;
+
+        for (PhotonTrackedTarget target : result) {
+            if (target.getArea() > maxArea) {
+                maxArea = target.getArea();
+                largestTarget = target;
+            }
+        }
+        return largestTarget;
+    }
+
+    // Private helper for getContourObservation(). Finds blob with smallest pitch.
+    private PhotonTrackedTarget getLowestContour(PhotonTrackedTarget[] result)
+    {
+        PhotonTrackedTarget lowestTarget = null;
+        double smallestPitch = 90.0;
+
+        for (PhotonTrackedTarget target : result) {
+            if (target.getPitch() < smallestPitch) {
+                smallestPitch = target.getPitch();
+                lowestTarget = target;
+            }
+        }
+        return lowestTarget;
+    }
+
     /*
      * Return whether the camera is connected.
      */
@@ -313,4 +517,3 @@ public class ObjectDetection {
         return inputs.connected;
     }
 }
-

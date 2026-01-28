@@ -20,10 +20,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
+import frc.lib.util.LoggedTuneableProfiledPID;
+import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.TeleopAlignToObject;
 import frc.robot.commands.autos.ExampleAuto;
 import frc.robot.commands.autos.NoneAuto;
 import frc.robot.commands.autos.WheelCharacterizationAuto;
@@ -113,8 +116,15 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-        // Left Trigger: Intake while held
-        controller.leftTrigger().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
+        // Right Trigger: Teleop vision align to largest contour (translation allowed)
+        controller.rightTrigger(0.2)
+            .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
+                () -> -controller.getLeftY(), // forward/back
+                () -> -controller.getLeftX(), // strafe
+                () -> -controller.getRightX())); // fallback rotation
+
+        // Left Bumper: Intake while held
+        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
 
         // Back Button: Eject while held
         controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
