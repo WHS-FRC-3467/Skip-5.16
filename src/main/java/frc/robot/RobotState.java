@@ -225,28 +225,68 @@ public class RobotState {
             105.0,
             80.0,
             55.0,
-            30.0
+            30.0,
     };
 
     // Counter for tracking hub changes
     private int hubChangeInt = 0;
+    private boolean timeout = false;
+    private static double secondsBefore = 5.0;
+    public Trigger hubChange = new Trigger(() -> isHubCloseToActive());
 
     /**
-     * @return a trigger that reports true when remaining match time is within seconds of a hub
-     *         change time
+     * @return a trigger that briefly reports true when remaining match time is first within x
+     *         seconds of a hub change time
      */
-    public Trigger timeIncrement(double secondsBefore)
+    public boolean timeIncrement(double secondsBefore)
     {
-        if (hubChangeInt < 5) {
-            hubChangeInt++;
-            return new Trigger(
-                () -> DriverStation.getMatchTime() <= hubChangeTimes[hubChangeInt - 1]
-                    + secondsBefore
-                        ? true
-                        : false);
+
+        boolean isWithinTime;
+        if (timeout) {
+            if (DriverStation.getMatchTime() <= hubChangeTimes[hubChangeInt]) {
+                timeout = false;
+                return false;
+            } else {
+                return true;
+            }
         } else {
-            return new Trigger(() -> false);
+            if (hubChangeInt < 5) {
+
+                if (DriverStation.getMatchTime() <= hubChangeTimes[hubChangeInt]
+                    + secondsBefore) {
+                    hubChangeInt++;
+                    isWithinTime = true;
+                    timeout = true;
+                } else {
+                    isWithinTime = false;
+                }
+                return isWithinTime;
+
+            } else {
+                return false;
+            }
         }
+    }
+
+    public boolean isHubCloseToActive()
+    {
+        if (DriverStation.getMatchTime() - findClosestTime() <= secondsBefore) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private double findClosestTime()
+    {
+        double getTime = DriverStation.getMatchTime();
+
+        for (int i = 0; i < hubChangeTimes.length; i++) {
+            if (getTime > hubChangeTimes[i]) {
+                return hubChangeTimes[i];
+            }
+        }
+        return 0.0;
     }
 
 

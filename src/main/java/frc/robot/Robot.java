@@ -209,7 +209,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void teleopPeriodic()
     {
-        robotState.timeIncrement(5.0);
+
     }
 
     /** This function is called once when test mode is enabled. */

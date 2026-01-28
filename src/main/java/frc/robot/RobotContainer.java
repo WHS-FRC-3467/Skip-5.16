@@ -273,9 +273,10 @@ public class RobotContainer {
             Commands.runOnce(() -> System.out.println("Step 3")));
 
         SmartDashboard.putData("Steppable Command", steppableCommand);
-
-
-
+        robotState.hubChange
+            .onTrue(Commands.runOnce(() -> SmartDashboard.putBoolean("hub warn", true)));
+        robotState.hubChange
+            .onTrue(Commands.runOnce(() -> SmartDashboard.putBoolean("hub warn", false)));
         // controller.x()
         // .whileTrue(new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
         // .withTolerance(Inches.of(3), Degrees.of(5)));
@@ -294,11 +295,7 @@ public class RobotContainer {
         inAllianceRegionTrigger.onFalse(
             Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", false))
                 .ignoringDisable(true));
-        SmartDashboard.putBoolean("imnabopol!!!!", robotState.HubActiveTrigger().getAsBoolean());
-        Trigger test = robotState.HubActiveTrigger();
 
-        test.onTrue(Commands.runOnce(() -> Logger.recordOutput("FMSInputs/test",
-            "are you rrrrready to rrrrrrrumbbbbllleee!!!! doo..doo..do. do-do-do-do..do do do-do-do-do! x3")));
     }
 
     /**
