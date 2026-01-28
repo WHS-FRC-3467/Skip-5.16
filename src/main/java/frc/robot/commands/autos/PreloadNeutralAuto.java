@@ -19,14 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.lib.util.AutoCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.turret.ShooterSuperstructure;
 
-// Auto routine that utilizes AutoSegments commands to shoot a preload, collect pieces from the
-// neutral zone, and then shoot them
+// Auto routine that utilizes AutoSegment commands sequences to shoot a preload, collect pieces from
+// the neutral zone, and then shoot them
 public class PreloadNeutralAuto extends AutoCommand {
     private final List<String> pathNames;
     private final List<PathPlannerPath> pathsUsed = new ArrayList<>();
@@ -44,11 +45,17 @@ public class PreloadNeutralAuto extends AutoCommand {
         // Load PathPlanner paths based on path names
         loadPaths();
 
-        // Chain AutoSegments here
-        addCommands(
-            AutoSegments.makePreloadShot(drive, indexer, shooter, pathNames.get(0))
-        // Autosegments.makeNeutralRun()
-        );
+        // Execute auto if all paths successfully loaded. If not, do nothing.
+        if (!pathsUsed.contains(null)) {
+            // Chain AutoSegments here
+            addCommands(
+                AutoSegments.makePreloadShot(drive, indexer, shooter, pathNames.get(0))
+            // Autosegments.makeNeutralRun()
+            );
+        } else {
+            DriverStation.reportWarning("Skipping PreloadNeutralAuto due to missing path(s).",
+                null);
+        }
 
     }
 
@@ -71,7 +78,9 @@ public class PreloadNeutralAuto extends AutoCommand {
             try {
                 pathsUsed.add(PathPlannerPath.fromPathFile(name));
             } catch (Exception e) {
-                throw new RuntimeException("Failed to load PathPlanner path: " + name);
+                DriverStation.reportError("Failed to load PathPlanner path: " + name,
+                    e.getStackTrace());
+                pathsUsed.add(null);
             }
         }
     }
