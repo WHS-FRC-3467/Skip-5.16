@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.turret;
+package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -19,6 +19,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIOTalonFX;
+import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
@@ -51,7 +52,7 @@ public class FlywheelConstants {
         .withKI(0.0)
         .withKD(0.0);
 
-    public static TalonFXConfiguration getFXConfig()
+    public static TalonFXConfiguration getFXConfig(boolean invert)
     {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -67,7 +68,7 @@ public class FlywheelConstants {
         config.Voltage.PeakReverseVoltage = -12.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        config.MotorOutput.Inverted = invert ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
 
@@ -85,15 +86,32 @@ public class FlywheelConstants {
         return config;
     }
 
-    public static FlywheelMechanism get()
+    public static FlywheelMechanism getLeft()
     {
         switch (Constants.currentMode) {
             case REAL:
-                return new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.flywheel));
+                return new FlywheelMechanismReal("Left " + NAME,
+                    new MotorIOTalonFX("Left " + NAME, getFXConfig(false), Ports.leftFlywheelMain, new TalonFXFollower(Ports.leftFlywheelFollower, false)));
             case SIM:
-                return new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.flywheel),
+                return new FlywheelMechanismSim("Left " + NAME,
+                    new MotorIOTalonFXSim("Left " + NAME, getFXConfig(false), Ports.leftFlywheelMain, new TalonFXFollower(Ports.leftFlywheelFollower, false)),
+                    DCMOTOR, MOI, TOLERANCE);
+            case REPLAY:
+                return new FlywheelMechanism() {};
+            default:
+                throw new IllegalStateException("Unrecognized Robot Mode");
+        }
+    }
+
+        public static FlywheelMechanism getRight()
+    {
+        switch (Constants.currentMode) {
+            case REAL:
+                return new FlywheelMechanismReal("Right " + NAME,
+                    new MotorIOTalonFX("Right " + NAME, getFXConfig(true), Ports.rightFlywheelMain, new TalonFXFollower(Ports.rightFlywheelFollower, false)));
+            case SIM:
+                return new FlywheelMechanismSim("Right " + NAME,
+                    new MotorIOTalonFXSim("Right " + NAME, getFXConfig(true), Ports.rightFlywheelMain, new TalonFXFollower(Ports.rightFlywheelFollower, false)),
                     DCMOTOR, MOI, TOLERANCE);
             case REPLAY:
                 return new FlywheelMechanism() {};
