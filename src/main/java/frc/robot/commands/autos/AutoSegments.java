@@ -39,7 +39,8 @@ public class AutoSegments {
         try {
             driveToShot = PathPlannerPath.fromPathFile(pathName);
         } catch (Exception e) {
-            DriverStation.reportError("Failed to load PreloadShootAuto: " + e.getMessage(),
+            DriverStation.reportError(
+                "Failed to load makePreloadShot AutoSegment: " + e.getMessage(),
                 e.getStackTrace());
             return Commands.none();
         }
@@ -66,7 +67,8 @@ public class AutoSegments {
         try {
             driveToNeutral = PathPlannerPath.fromPathFile(pathName);
         } catch (Exception e) {
-            DriverStation.reportError("Failed to load PreloadShootAuto: " + e.getMessage(),
+            DriverStation.reportError(
+                "Failed to load driveToNeutral AutoSegment: " + e.getMessage(),
                 e.getStackTrace());
             return Commands.none();
         }
