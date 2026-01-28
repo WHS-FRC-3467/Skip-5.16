@@ -29,7 +29,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
     private static final LoggedTunableNumber INTAKE_CURRENT =
         new LoggedTunableNumber(IntakeLinearConstants.NAME + "/IntakeCurrent", 10.0);
 
-        public final Trigger linearStopped;
+    public final Trigger linearStopped;
 
     private final LinearMechanism io;
 
@@ -47,7 +47,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
         return this.runOnce(() -> io.runCurrent(Amps.of(-INTAKE_CURRENT.get())));
     }
 
-    //Repeating sequence to extend, wait until stopped, then retract
+    // Repeating sequence to extend, wait until stopped, then retract
     public Command cycle() {
         return Commands.repeatingSequence(
             this.extend(),
