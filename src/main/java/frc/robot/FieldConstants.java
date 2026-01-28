@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Pounds;
+import frc.lib.util.FieldUtil;
 
 /**
  * Contains information for location of field element and other useful reference points.
@@ -49,6 +50,9 @@ public class FieldConstants {
 
     public static final Translation2d FIELD_CENTER = new Translation2d(fieldLength / 2,
         fieldWidth / 2);
+
+    public static final Translation3d FIELD_CENTER3D =
+        new Translation3d(fieldLength / 2, fieldWidth / 2, 0.00);
 
     /**
      * Officially defined and relevant vertical lines found on the field (defined by X-axis offset)
@@ -103,12 +107,16 @@ public class FieldConstants {
         public static final double innerWidth = Units.inchesToMeters(41.7);
         public static final double innerHeight = Units.inchesToMeters(56.5);
 
+        // 2D Locations
+
+
         // Relevant reference points on alliance side
         public static final Translation3d topCenterPoint =
             new Translation3d(
                 AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(26).get().getX() + width / 2.0,
                 fieldWidth / 2.0,
                 height);
+
         public static final Translation3d innerCenterPoint =
             new Translation3d(
                 AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(26).get().getX() + width / 2.0,
@@ -133,6 +141,12 @@ public class FieldConstants {
             AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(18).get().toPose2d();
         public static final Pose2d leftFace =
             AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(21).get().toPose2d();
+
+        // Final Positions:
+        public static final Translation3d HubUpperLimit =
+            FieldUtil.handleAllianceFlip(topCenterPoint); // Lowest Opening to score in
+        public static final Translation3d HubLowerLimit =
+            FieldUtil.handleAllianceFlip(innerCenterPoint); // Highest opening to score in
     }
 
     /** Left Bump related constants */
