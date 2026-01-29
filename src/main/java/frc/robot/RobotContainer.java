@@ -41,12 +41,10 @@ import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
-import frc.robot.subsystems.turret.ShooterSuperstructure;
-import frc.robot.subsystems.turret.ShooterSuperstructureConstants;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.FuelSim;
-import frc.robot.subsystems.lasercan1.LaserCAN1;
-import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
 import frc.robot.commands.autos.StartPosition;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
@@ -60,7 +58,6 @@ public class RobotContainer {
     // Subsystems
     public final Drive drive;
     private final LEDs leds;
-    private final LaserCAN1 laserCAN1;
     private final ObjectDetector objectDetector;
     private final ShooterSuperstructure shooter;
     private final Intake intake;
@@ -79,7 +76,6 @@ public class RobotContainer {
     public RobotContainer()
     {
         drive = DriveConstants.get();
-        laserCAN1 = LaserCAN1Constants.get();
         leds = LEDsConstants.get();
         objectDetector = ObjectDetectorConstants.get();
         shooter = ShooterSuperstructureConstants.get();
