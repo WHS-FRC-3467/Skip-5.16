@@ -27,6 +27,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
+import frc.lib.io.motor.MotorIO;
+import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.linear.LinearMechanism;
@@ -34,6 +36,7 @@ import frc.lib.mechanisms.linear.LinearMechanism.LinearMechCharacteristics;
 import frc.lib.mechanisms.linear.LinearMechanismReal;
 import frc.lib.mechanisms.linear.LinearMechanismSim;
 import frc.lib.util.MechanismUtil.DistanceAngleConverter;
+import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
@@ -70,12 +73,8 @@ public class IntakeLinearConstants {
         new LinearMechCharacteristics(MIN_DISTANCE, MAX_DISTANCE,
             STARTING_DISTANCE, CONVERTER, ORIENTATION);
 
-    // Velocity PID
-    private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
-        .withKP(80.0)
-        .withKI(0.0)
-        .withKD(0.0)
-        .withKV(10.0);
+    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
+
 
     public static TalonFXConfiguration getFXConfig()
     {
@@ -103,26 +102,32 @@ public class IntakeLinearConstants {
 
         config.Feedback.SensorToMechanismRatio = GEARING;
 
-        config.Slot0 = SLOT0CONFIG;
+        config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
 
         return config;
     }
 
-    public static LinearMechanism getMechanism()
+    public static LinearMechanism<?> getMechanism()
     {
+        LinearMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                return new LinearMechanismReal(NAME,
+                mechanism = new LinearMechanismReal(NAME,
                     new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeLinear), CHARACTERISTICS);
+                    break;
             case SIM:
-                return new LinearMechanismSim(NAME,
+                mechanism =  new LinearMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeLinear),
                     DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
+                    break;
             case REPLAY:
-                return new LinearMechanism(NAME, CHARACTERISTICS) {};
+                mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS,new MotorIO() {}) {};
+                    break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
+                mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        return mechanism;
     }
 
     public static IntakeLinear get()

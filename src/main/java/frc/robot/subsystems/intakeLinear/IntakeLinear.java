@@ -31,9 +31,9 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     public final Trigger linearStopped;
 
-    private final LinearMechanism io;
+    private final LinearMechanism<?> io;
 
-    public IntakeLinear(LinearMechanism intakeLinearIO)
+    public IntakeLinear(LinearMechanism<?> intakeLinearIO)
     {
         this.io = intakeLinearIO;
         this.linearStopped = new Trigger(() -> isLinearStopped());
