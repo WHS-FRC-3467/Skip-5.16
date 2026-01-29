@@ -23,11 +23,6 @@ import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
 import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
 
 public class LaserCANConfigurator implements AutoCloseable {
-    public enum ConfigurationStatus {
-        SUCCESS,
-        FAILURE;
-    }
-
     private final LaserCan laserCAN;
 
     public LaserCANConfigurator(int can_id)
@@ -40,34 +35,19 @@ public class LaserCANConfigurator implements AutoCloseable {
         return laserCAN.getMeasurement();
     }
 
-    public ConfigurationStatus setRangingMode(RangingMode mode)
+    public void setRangingMode(RangingMode mode) throws ConfigurationFailedException
     {
-        try {
-            laserCAN.setRangingMode(mode);
-            return ConfigurationStatus.SUCCESS;
-        } catch (ConfigurationFailedException exception) {
-            return ConfigurationStatus.FAILURE;
-        }
+        laserCAN.setRangingMode(mode);
     }
 
-    public ConfigurationStatus setTimingBudget(TimingBudget budget)
+    public void setTimingBudget(TimingBudget budget) throws ConfigurationFailedException
     {
-        try {
-            laserCAN.setTimingBudget(budget);
-            return ConfigurationStatus.SUCCESS;
-        } catch (ConfigurationFailedException exception) {
-            return ConfigurationStatus.FAILURE;
-        }
+        laserCAN.setTimingBudget(budget);
     }
 
-    public ConfigurationStatus setRegionOfInterest(RegionOfInterest roi)
+    public void setRegionOfInterest(RegionOfInterest roi) throws ConfigurationFailedException
     {
-        try {
-            laserCAN.setRegionOfInterest(roi);
-            return ConfigurationStatus.SUCCESS;
-        } catch (ConfigurationFailedException exception) {
-            return ConfigurationStatus.FAILURE;
-        }
+        laserCAN.setRegionOfInterest(roi);
     }
 
     @Override

@@ -15,5 +15,30 @@
 
 package frc.lib.util;
 
-public record PID(double P, double I, double D) {
+import com.ctre.phoenix6.configs.SlotConfigs;
+import lombok.With;
+
+@With
+public record PID(double P, double I, double D, double A, double V, double G, double S) {
+    public PID(double P, double I, double D)
+    {
+        this(P, I, D, 0.0, 0.0, 0.0, 0.0);
+    }
+
+    public PID()
+    {
+        this(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    }
+
+    public SlotConfigs toSlotConfigs()
+    {
+        return new SlotConfigs()
+            .withKP(P)
+            .withKI(I)
+            .withKD(D)
+            .withKA(A)
+            .withKV(V)
+            .withKG(G)
+            .withKS(S);
+    }
 }

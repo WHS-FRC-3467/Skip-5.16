@@ -10,19 +10,21 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.BaseUnits;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.ControlType;
-import frc.lib.io.motor.MotorInputsAutoLogged;
 import frc.lib.mechanisms.Mechanism;
 import frc.lib.util.MechanismUtil.DistanceAngleConverter;
 
 /**
  * Abstract class for linear mechanisms, which are mechanisms that move in a straight line. This
- * class implements the Mechanism interface and provides characteristics specific to linear
+ * class extends Mechanism and provides characteristics specific to linear
  * mechanisms. Supports mechanisms at any orientation angle, including dynamic angle updates for
  * pivoting mechanisms.
  */
-public abstract class LinearMechanism implements Mechanism {
+public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
 
     /**
      * Characteristics for a linear mechanism.
@@ -48,15 +50,13 @@ public abstract class LinearMechanism implements Mechanism {
         Rotation3d orientation) {
     }
 
-    protected final String name;
-    protected final MotorInputsAutoLogged inputs = new MotorInputsAutoLogged();
     protected final DistanceAngleConverter converter;
 
     private final LinearMechanismVisualizer visualizer;
 
-    public LinearMechanism(String name, LinearMechCharacteristics characteristics)
+    public LinearMechanism(String name, LinearMechCharacteristics characteristics, T io)
     {
-        this.name = name;
+        super(name, io);
         visualizer = new LinearMechanismVisualizer(name, characteristics);
         converter = characteristics.converter();
     }
@@ -91,9 +91,23 @@ public abstract class LinearMechanism implements Mechanism {
     @Override
     public void periodic()
     {
+        super.periodic();
+
         visualizer.setMeasuredDistance(converter.toDistance(inputs.position));
         visualizer.setTrajectoryDistance(getTrajectoryDistance());
         visualizer.setGoalDistance(getGoalDistance());
+    }
+
+    @Override
+    public void setEncoderPosition(Angle position)
+    {
+        io.setEncoderPosition(position);
+    }
+
+    @Override
+    public Current getSupplyCurrent()
+    {
+        return inputs.supplyCurrent;
     }
 
     /**
