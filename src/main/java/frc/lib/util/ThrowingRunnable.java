@@ -13,22 +13,9 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.lib.mechanisms.flywheel;
+package frc.lib.util;
 
-import edu.wpi.first.units.measure.Current;
-import frc.lib.io.motor.MotorIO;
-import frc.lib.mechanisms.Mechanism;
-
-public abstract class FlywheelMechanism<T extends MotorIO> extends Mechanism<T> {
-
-    public FlywheelMechanism(String name, T io)
-    {
-        super(name, io);
-    }
-
-    @Override
-    public Current getTorqueCurrent()
-    {
-        return inputs.torqueCurrent;
-    }
+@FunctionalInterface
+public interface ThrowingRunnable<T extends Exception> {
+    public void run() throws T;
 }

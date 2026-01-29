@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
-import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
@@ -46,8 +45,6 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.FuelSim;
-import frc.robot.subsystems.lasercan1.LaserCAN1;
-import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
@@ -60,7 +57,6 @@ public class RobotContainer {
     // Subsystems
     public final Drive drive;
     private final LEDs leds;
-    private final LaserCAN1 laserCAN1;
     private final ObjectDetector objectDetector;
     private final ShooterSuperstructure shooter;
     private final Intake intake;
@@ -79,7 +75,6 @@ public class RobotContainer {
     public RobotContainer()
     {
         drive = DriveConstants.get();
-        laserCAN1 = LaserCAN1Constants.get();
         leds = LEDsConstants.get();
         objectDetector = ObjectDetectorConstants.get();
         shooter = ShooterSuperstructureConstants.get();

@@ -19,20 +19,14 @@ import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
-import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOSim;
 
 /**
@@ -40,9 +34,7 @@ import frc.lib.io.motor.MotorIOSim;
  * behavior of a linear mechanism at any orientation. The orientation's pitch component (Y-axis
  * rotation) determines the angle from horizontal, affecting gravity simulation.
  */
-public class LinearMechanismSim extends LinearMechanism {
-
-    private final MotorIOSim io;
+public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
     private final ElevatorSim sim;
 
     private Time lastTime = Seconds.zero();
@@ -60,9 +52,7 @@ public class LinearMechanismSim extends LinearMechanism {
     public LinearMechanismSim(String name, MotorIOSim io, DCMotor dcMotor, Mass mass,
         LinearMechCharacteristics constraints, Boolean useGravity)
     {
-        super(name, constraints);
-
-        this.io = io;
+        super(name, constraints, io);
 
         // ElevatorSim is used as the underlying physics simulation.
         // Note: ElevatorSim assumes vertical orientation for gravity simulation.
@@ -84,8 +74,6 @@ public class LinearMechanismSim extends LinearMechanism {
     @Override
     public void periodic()
     {
-        super.periodic();
-
         Time currentTime = RobotController.getMeasureTime();
         double deltaTime = currentTime.minus(lastTime).in(Seconds);
 
@@ -109,80 +97,12 @@ public class LinearMechanismSim extends LinearMechanism {
         io.setRotorVelocity(
             converter.toAngle(Meters.of(sim.getVelocityMetersPerSecond())).per(Seconds));
 
-        io.updateInputs(inputs);
-        Logger.processInputs(name, inputs);
-    }
-
-    @Override
-    public void runCoast()
-    {
-        io.runCoast();
-    }
-
-    @Override
-    public void runBrake()
-    {
-        io.runBrake();
-    }
-
-    @Override
-    public void runVoltage(Voltage voltage)
-    {
-        io.runVoltage(voltage);
-    }
-
-    @Override
-    public void runCurrent(Current current)
-    {
-        io.runCurrent(current);
-    }
-
-    @Override
-    public void runDutyCycle(double dutyCycle)
-    {
-        io.runDutyCycle(dutyCycle);
-    }
-
-    @Override
-    public void runPosition(Angle position, PIDSlot slot)
-    {
-        io.runPosition(position, slot);
-    }
-
-    @Override
-    public void runVelocity(AngularVelocity velocity, AngularAcceleration acceleration,
-        PIDSlot slot)
-    {
-        io.runVelocity(velocity, acceleration, slot);
+        super.periodic();
     }
 
     @Override
     public void setEncoderPosition(Angle position)
     {
         sim.setState(converter.toDistance(position).in(Meters), 0);
-    }
-
-    @Override
-    public Current getSupplyCurrent()
-    {
-        return inputs.supplyCurrent;
-    }
-
-    @Override
-    public Angle getPosition()
-    {
-        return inputs.position;
-    }
-
-    @Override
-    public AngularVelocity getVelocity()
-    {
-        return inputs.velocity;
-    }
-
-    @Override
-    public void close()
-    {
-        io.close();
     }
 }

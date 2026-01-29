@@ -18,12 +18,15 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import frc.lib.io.motor.MotorIO;
+import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
+import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
@@ -47,10 +50,13 @@ public class FlywheelConstants {
     public static final Distance FLYWHEEL_RADIUS = Units.Meters.of(0.0508); // 2 inches
 
     // Velocity PID
+    public static final PID SLOT0_PID = new PID(1000.0, 0.0, 0.0);
+    public static final PID SLOT1_PID = new PID(0.0, 0.0, 0.0);
+    public static final PID SLOT2_PID = new PID(0.0, 0.0, 0.0);
     private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
-        .withKP(1000.0)
-        .withKI(0.0)
-        .withKD(0.0);
+        .withKP(SLOT0_PID.P())
+        .withKI(SLOT0_PID.I())
+        .withKD(SLOT0_PID.D());
 
     public static TalonFXConfiguration getFXConfig(boolean invert)
     {
@@ -86,37 +92,54 @@ public class FlywheelConstants {
         return config;
     }
 
-    public static FlywheelMechanism getLeft()
+
+    public static FlywheelMechanism<?> getLeft()
     {
+        FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                return new FlywheelMechanismReal("Left " + NAME,
+                mechanism = new FlywheelMechanismReal("Left " + NAME,
                     new MotorIOTalonFX("Left " + NAME, getFXConfig(false), Ports.leftFlywheelMain, new TalonFXFollower(Ports.leftFlywheelFollower, false)));
+                break;
             case SIM:
-                return new FlywheelMechanismSim("Left " + NAME,
+                mechanism = new FlywheelMechanismSim("Left " + NAME,
                     new MotorIOTalonFXSim("Left " + NAME, getFXConfig(false), Ports.leftFlywheelMain, new TalonFXFollower(Ports.leftFlywheelFollower, false)),
                     DCMOTOR, MOI, TOLERANCE);
+                break;
             case REPLAY:
-                return new FlywheelMechanism() {};
+                mechanism = new FlywheelMechanism<>("Left " + NAME, new MotorIO() {}) {};
+                break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
+        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_2, SLOT2_PID);
+        return mechanism;
     }
 
-        public static FlywheelMechanism getRight()
+    public static FlywheelMechanism<?> getRight()
     {
+        FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                return new FlywheelMechanismReal("Right " + NAME,
+                mechanism = new FlywheelMechanismReal("Right " + NAME,
                     new MotorIOTalonFX("Right " + NAME, getFXConfig(true), Ports.rightFlywheelMain, new TalonFXFollower(Ports.rightFlywheelFollower, false)));
+                break;
             case SIM:
-                return new FlywheelMechanismSim("Right " + NAME,
+                mechanism = new FlywheelMechanismSim("Right " + NAME,
                     new MotorIOTalonFXSim("Right " + NAME, getFXConfig(true), Ports.rightFlywheelMain, new TalonFXFollower(Ports.rightFlywheelFollower, false)),
                     DCMOTOR, MOI, TOLERANCE);
+                break;
             case REPLAY:
-                return new FlywheelMechanism() {};
+                mechanism = new FlywheelMechanism<>("Right " + NAME, new MotorIO() {}) {};
+                break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
+        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_2, SLOT2_PID);
+        return mechanism;
     }
 }
