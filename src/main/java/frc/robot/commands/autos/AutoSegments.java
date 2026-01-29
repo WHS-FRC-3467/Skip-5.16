@@ -25,7 +25,7 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.Indexer.State;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.turret.ShooterSuperstructure;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
 // Class containing command sequences that can be chained together in different configurations for
 // different autos

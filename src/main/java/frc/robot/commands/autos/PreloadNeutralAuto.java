@@ -24,7 +24,7 @@ import frc.lib.util.AutoCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.turret.ShooterSuperstructure;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
 // Auto routine that utilizes AutoSegment commands sequences to shoot a preload, collect pieces from
 // the neutral zone, and then shoot them
