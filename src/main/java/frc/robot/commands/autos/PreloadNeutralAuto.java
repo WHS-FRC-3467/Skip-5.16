@@ -40,7 +40,7 @@ public class PreloadNeutralAuto extends AutoRoutine {
         // Load commands defensively
         if (!pathPlannerPaths.isEmpty() && pathPlannerPaths.get(0) != null) {
             loadCommands(
-                AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
+                AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 AutoSegments.makePreloadShot(drive, indexer, shooter, pathPlannerPaths.get(0)));
         }
     }
