@@ -60,14 +60,7 @@ public class IntakeConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0);
-    public static final PID SLOT1_PID = new PID(0.0, 0.0, 0.0);
-    public static final PID SLOT2_PID = new PID(0.0, 0.0, 0.0);
-    private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
-        .withKP(SLOT0_PID.P())
-        .withKI(SLOT0_PID.I())
-        .withKD(SLOT0_PID.D())
-        .withKV(10.0);
+    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
 
     public static TalonFXConfiguration getFXConfig()
     {
@@ -95,7 +88,7 @@ public class IntakeConstants {
 
         config.Feedback.SensorToMechanismRatio = GEARING;
 
-        config.Slot0 = SLOT0CONFIG;
+        config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
         config.MotionMagic.MotionMagicCruiseVelocity = MAX_VELOCITY.in(RotationsPerSecond);
         config.MotionMagic.MotionMagicAcceleration =
             MAX_ACCELERATION.in(RotationsPerSecondPerSecond);
@@ -123,8 +116,6 @@ public class IntakeConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
-        mechanism.enableTunablePID(PIDSlot.SLOT_2, SLOT2_PID);
         return mechanism;
     }
 

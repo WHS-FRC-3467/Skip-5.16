@@ -38,7 +38,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.util.Device;
 import frc.lib.util.PID;
-import frc.lib.io.distancesensor.DistanceSensorIOCANRange;
 import frc.lib.util.CANUpdateThread;
 
 /**
@@ -46,7 +45,7 @@ import frc.lib.util.CANUpdateThread;
  * setup, control modes, telemetry polling, and error handling.
  */
 public class MotorIOTalonFX implements MotorIO {
-    private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MotorIOTalonFX.class.getName());
 
     public record TalonFXFollower(Device.CAN id, boolean opposesMain) {
     }

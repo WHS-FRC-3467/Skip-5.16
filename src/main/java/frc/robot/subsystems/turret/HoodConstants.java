@@ -41,9 +41,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Defines configuration and physical constants for the turret hood mechanism,
- * including motion constraints, geometry, motor model, and control gains used
- * to construct the {@link RotaryMechanism} instance for different robot modes.
+ * Defines configuration and physical constants for the turret hood mechanism, including motion
+ * constraints, geometry, motor model, and control gains used to construct the
+ * {@link RotaryMechanism} instance for different robot modes.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HoodConstants {
@@ -78,15 +78,9 @@ public class HoodConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.25);
 
     // Positional PID
-    public static final PID SLOT0_PID = new PID(10.0, 2.0, 8.0);
-    public static final PID SLOT1_PID = new PID(0.0, 0.0, 0.0);
-    public static final PID SLOT2_PID = new PID(0.0, 0.0, 0.0);
-    private static final Slot0Configs SLOT_0_CONFIG = new Slot0Configs()
-        .withKP(SLOT0_PID.P())
-        .withKI(SLOT0_PID.I())
-        .withKD(SLOT0_PID.D())
-        .withKS(0.07)
-        .withKV(0.1);
+    public static final PID SLOT0_PID = new PID(10.0, 2.0, 8.0)
+        .withS(0.07)
+        .withV(0.1);
 
     public static TalonFXConfiguration getFXConfig()
     {
@@ -117,7 +111,7 @@ public class HoodConstants {
 
         config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
 
-        config.Slot0 = SLOT_0_CONFIG;
+        config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
         config.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY.in(RotationsPerSecond);
         config.MotionMagic.MotionMagicAcceleration = ACCELERATION.in(RotationsPerSecondPerSecond);
         config.MotionMagic.MotionMagicJerk = JERK.in(RotationsPerSecondPerSecond.per(Second));
@@ -149,8 +143,6 @@ public class HoodConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
-        mechanism.enableTunablePID(PIDSlot.SLOT_2, SLOT2_PID);
         return mechanism;
     }
 }
