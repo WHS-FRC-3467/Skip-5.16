@@ -15,6 +15,8 @@
 
 package frc.robot.commands.autos;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -28,7 +30,7 @@ public class AutoSegments {
 
     // Follow a path and shoot preload
     public static Command makePreloadShot(Drive drive, Indexer indexer,
-        ShooterSuperstructure shooter, String pathName) {
+        ShooterSuperstructure shooter, PathPlannerPath path) {
 
         // Drive to shooting location while spinning up shooter but not indexing. Once at
         // position, with the shooter still spinning, bring up the indexer to begin shooting.
@@ -36,7 +38,7 @@ public class AutoSegments {
         // doesn't complete in 1.2x path time, attempt a shot anyway.
         return Commands.sequence(
             new ParallelDeadlineGroup(
-                AutoCommands.followPath(pathName),
+                AutoBuilder.followPath(path),
                 shooter.spinUpShooter()).withTimeout(2.5),
             AutoCommands.shootFuel(indexer, shooter, 1));
     }

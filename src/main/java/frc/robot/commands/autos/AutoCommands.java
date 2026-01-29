@@ -4,10 +4,8 @@
 
 package frc.robot.commands.autos;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -20,6 +18,14 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
 public class AutoCommands {
 
+    /**
+     * Resets the robot's odometry to the starting pose of the specified path.
+     * Handles alliance flipping if necessary.
+     *
+     * @param drive the drive subsystem
+     * @param path the PathPlanner path containing the starting pose
+     * @return a command that resets the robot's pose to the path's starting position
+     */
     public static Command resetOdom(Drive drive, PathPlannerPath path)
     {
         final RobotState robotState = RobotState.getInstance();
@@ -35,19 +41,15 @@ public class AutoCommands {
             });
     }
 
-    public static Command followPath(String pathName) {
-        PathPlannerPath path;
-        try {
-            path = PathPlannerPath.fromPathFile(pathName);
-        } catch (Exception e) {
-            DriverStation.reportError(
-                "Failed to load " + pathName + " Path: " + e.getMessage(),
-                e.getStackTrace());
-            return Commands.none();
-        }
-        return AutoBuilder.followPath(path);
-    }
-
+    /**
+     * Creates a command sequence to shoot fuel from the robot.
+     * Spins up the shooter, pulls fuel through the indexer when ready, and stops after the duration.
+     *
+     * @param indexer the indexer subsystem
+     * @param shooter the shooter superstructure
+     * @param duration the maximum duration in seconds to run the shooting sequence
+     * @return a command that shoots fuel and then stops the indexer
+     */
     public static Command shootFuel(Indexer indexer, ShooterSuperstructure shooter, double duration)
     {
         return Commands.sequence(
@@ -59,6 +61,13 @@ public class AutoCommands {
             indexer.holdStateUntilInterrupted(Indexer.State.STOP));
     }
 
+    /**
+     * Creates a command to run the intake mechanism to collect game pieces.
+     * The intake will stop automatically when the command ends.
+     *
+     * @param intake the intake subsystem
+     * @return a command that runs the intake and stops it when finished
+     */
     public static Command runIntake(Intake intake) {
         return intake.runIntake(Intake.State.INTAKE).finallyDo(() -> intake.stop());
     }

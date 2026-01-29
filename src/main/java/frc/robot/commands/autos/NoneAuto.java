@@ -17,11 +17,11 @@ package frc.robot.commands.autos;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.lib.util.AutoCommand;
+import frc.lib.util.AutoRoutine;
 import java.util.Collections;
 import java.util.List;
 
-public class NoneAuto extends AutoCommand {
+public class NoneAuto extends AutoRoutine {
     public NoneAuto()
     {
         addCommands(Commands.none());
