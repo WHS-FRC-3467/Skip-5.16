@@ -94,13 +94,13 @@ public abstract class Mechanism<T extends MotorIO> {
         LoggedTunableNumber kd =
             new LoggedTunableNumber(name + "/PID/" + slot + "/kD", defaultPid.D());
         LoggedTunableNumber ka =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kA", defaultPid.D());
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kA", defaultPid.A());
         LoggedTunableNumber kv =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kV", defaultPid.D());
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kV", defaultPid.V());
         LoggedTunableNumber kg =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kG", defaultPid.D());
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kG", defaultPid.G());
         LoggedTunableNumber ks =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kS", defaultPid.D());
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kS", defaultPid.S());
         int id = Objects.hash(this, slot);
         tunablePidConfigs.add(new TunablePidConfig(slot, kp, ki, kd, ka, kv, kg, ks, id));
     }
