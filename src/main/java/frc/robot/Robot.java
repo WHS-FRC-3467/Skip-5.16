@@ -22,15 +22,12 @@ import au.grapplerobotics.CanBridge;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.BallSimulator;
 import frc.robot.util.FuelSim;
 import frc.robot.util.HubState;
-import frc.robot.util.FuelSim;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -50,8 +47,6 @@ public class Robot extends LoggedRobot {
 
     private Command autonomousCommand;
     private RobotContainer robotContainer;
-
-    private final HubState hubState = HubState.getInstance();
 
     public Robot()
     {
