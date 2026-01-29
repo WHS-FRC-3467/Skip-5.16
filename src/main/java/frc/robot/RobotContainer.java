@@ -44,8 +44,12 @@ import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.FuelSim;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import edu.wpi.first.math.geometry.Translation3d;
 
 public class RobotContainer {
     private final RobotState robotState = RobotState.getInstance();
@@ -94,6 +98,7 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
+        configureFuelSim();
     }
 
     private void configureButtonBindings()
@@ -137,6 +142,37 @@ public class RobotContainer {
         SmartDashboard.putData("Intake/Stop", intake.runIntake(Intake.State.STOP));
         SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
             Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
+
+        SmartDashboard.putData("Shoot ball",
+            Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
+                new Translation3d(robotState.getEstimatedPose().getTranslation()),
+                FuelSim.getInstance().launchVel(FeetPerSecond.of(25), Degrees.of(60)))));
+    }
+
+    private void configureFuelSim()
+    {
+        FuelSim instance = FuelSim.getInstance();
+        instance.spawnStartingFuel();
+        instance.registerRobot(
+            Constants.FULL_ROBOT_WIDTH.in(Meters),
+            Constants.FULL_ROBOT_LENGTH.in(Meters),
+            Constants.BUMPER_HEIGHT.in(Meters),
+            robotState::getEstimatedPose,
+            robotState::getVelocity);
+        instance.registerIntake(
+            -Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
+            Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(10)).in(Meters),
+            -Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
+            Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
+            controller.x());
+
+        instance.start();
+        SmartDashboard.putData(Commands.runOnce(() -> {
+            FuelSim.getInstance().clearFuel();
+            FuelSim.getInstance().spawnStartingFuel();
+        })
+            .withName("Reset Fuel")
+            .ignoringDisable(true));
     }
 
     public Command getAutonomousCommand()
