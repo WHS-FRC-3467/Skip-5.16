@@ -24,22 +24,24 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
-// Class containing command sequences that can be chained together in different configurations for
-// different autos
+// Class containing larger command units consisting of individual commands or small-group command
+// sequences (AutoCommands) strung together for use in creating full Autos. Command integration
+// layer.
 public class AutoSegments {
 
     // Follow a path and shoot preload
     public static Command makePreloadShot(Drive drive, Indexer indexer,
-        ShooterSuperstructure shooter, PathPlannerPath path) {
+        ShooterSuperstructure shooter, PathPlannerPath path)
+    {
 
         // Drive to shooting location while spinning up shooter but not indexing. Once at
         // position, with the shooter still spinning, bring up the indexer to begin shooting.
         // Shoot all preload. Bring down indexer to end -- shooter will idle at speed. If path
-        // doesn't complete in 1.2x path time, attempt a shot anyway.
+        // doesn't complete in 2.75s, attempt a shot anyway.
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
-                shooter.spinUpShooter()).withTimeout(2.5),
+                shooter.spinUpShooter()).withTimeout(2.75),
             AutoCommands.shootFuel(indexer, shooter, 1));
     }
 }

@@ -22,8 +22,8 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
-// Auto routine that utilizes AutoSegment commands sequences to shoot a preload, collect pieces from
-// the neutral zone, and then shoot them
+// Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect pieces from
+// the neutral zone, and then shoot them. Strategy layer.
 public class PreloadNeutralAuto extends AutoRoutine {
 
     public PreloadNeutralAuto(Drive drive, Intake intake, Indexer indexer,
@@ -32,12 +32,16 @@ public class PreloadNeutralAuto extends AutoRoutine {
         // Choose path names based on start position
         switch (start) {
             case LEFT -> this.loadAllPaths(List.of("PreloadShoot-Left", "placeholder"));
-            case CENTER -> this.loadAllPaths(List.of("PreloadShoot-Center", "1SweepNeutral-Bump-Center"));
+            case CENTER -> this
+                .loadAllPaths(List.of("PreloadShoot-Center", "1SweepNeutral-Bump-Center"));
             case RIGHT -> this.loadAllPaths(List.of("PreloadShoot-Right", "placeholder"));
         };
 
-        loadCommands(
-            AutoSegments.makePreloadShot(drive, indexer, shooter, pathPlannerPaths.get(0)));
-
+        // Load commands defensively
+        if (!pathPlannerPaths.isEmpty() && pathPlannerPaths.get(0) != null) {
+            loadCommands(
+                AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
+                AutoSegments.makePreloadShot(drive, indexer, shooter, pathPlannerPaths.get(0)));
+        }
     }
 }
