@@ -6,6 +6,7 @@ package frc.robot.commands.autos;
 
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -24,16 +25,17 @@ public class AutoCommands {
 
     /**
      * Resets the robot's odometry to the starting pose of the specified path. Handles alliance
-     * flipping if necessary.
+     * flipping if necessary. ONLY RUNS IN SIMULATION.
      *
      * @param drive the drive subsystem
      * @param path the PathPlanner path containing the starting pose
      * @return a command that resets the robot's pose to the path's starting position
      */
-    public static Command resetOdom(Drive drive, PathPlannerPath path)
+    public static Command resetSimOdom(Drive drive, PathPlannerPath path)
     {
         final RobotState robotState = RobotState.getInstance();
-        return drive.runOnce(
+        if (RobotBase.isSimulation()) {
+            return drive.runOnce(
             () -> {
                 Pose2d pose =
                     path.getStartingHolonomicPose().get();
@@ -43,6 +45,10 @@ public class AutoCommands {
 
                 robotState.resetPose(pose);
             });
+            
+        } else {
+            return Commands.none();
+        }
     }
 
     /**
