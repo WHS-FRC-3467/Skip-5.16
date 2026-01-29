@@ -24,16 +24,18 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
+import frc.robot.subsystems.intakeRoller.IntakeRoller;
+import frc.robot.subsystems.intakeRoller.IntakeRollerConstants;
 
 public class IntakeTest {
-    Intake intake;
+    IntakeRoller intake;
 
     @BeforeEach // this method will run before each test
     void setup()
     {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
-        intake = IntakeConstants.get();
+        intake = IntakeRollerConstants.get();
 
         /* enable the robot */
         DriverStationSim.setEnabled(true);
@@ -57,12 +59,12 @@ public class IntakeTest {
     void intake()
     {
         TestUtil.runTest(
-            intake.runIntake(Intake.State.INTAKE),
+            intake.runIntake(IntakeRoller.State.INTAKE),
             2,
             intake);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
-            assertTrue(intake.nearSetpoint(Intake.State.INTAKE));
+            assertTrue(intake.nearSetpoint(IntakeRoller.State.INTAKE));
         } catch (Exception e) {
             fail("Failed to run Intake to intake: " + e.getMessage());
         }
@@ -77,7 +79,7 @@ public class IntakeTest {
             intake);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped velocity.
-            assertTrue(intake.nearSetpoint(Intake.State.STOP));
+            assertTrue(intake.nearSetpoint(IntakeRoller.State.STOP));
         } catch (Exception e) {
             fail("Failed to stop intake: " + e.getMessage());
         }

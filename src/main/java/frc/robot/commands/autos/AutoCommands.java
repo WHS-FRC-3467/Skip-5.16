@@ -14,7 +14,7 @@ import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
 /**
@@ -81,8 +81,8 @@ public class AutoCommands {
      * @param intake the intake subsystem
      * @return a command that runs the intake and stops it when finished
      */
-    public static Command runIntake(Intake intake)
+    public static Command runIntake(IntakeRoller intake)
     {
-        return intake.runIntake(Intake.State.INTAKE).finallyDo(() -> intake.stop());
+        return intake.runIntake(IntakeRoller.State.INTAKE).finallyDo(() -> intake.stop());
     }
 }
