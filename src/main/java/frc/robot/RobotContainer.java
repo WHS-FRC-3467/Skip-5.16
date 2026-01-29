@@ -87,7 +87,7 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Preview", autoPreviewField);
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("PreloadNeutralAuto",
-            new PreloadNeutralAuto(drive, intake, indexer, shooter, StartPosition.CENTER));
+            new PreloadNeutralAuto(drive, intakeRoller, indexer, shooter, StartPosition.CENTER));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
