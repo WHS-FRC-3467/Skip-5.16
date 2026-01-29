@@ -5,8 +5,6 @@
 package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import java.util.Collections;
-import java.util.List;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -22,15 +20,9 @@ public class WheelSlipAuto extends AutoRoutine {
 
     public WheelSlipAuto(Drive drive)
     {
-        addCommands(Commands.sequence(
+        loadCommands(Commands.sequence(
             Commands.run(() -> drive.runCharacterization(0.0)).withTimeout(2),
             rampUntilVelocity(drive, 0.2, RotationsPerSecond.of(1))));
-    }
-
-    @Override
-    public List<Pose2d> getAllPathPoses()
-    {
-        return Collections.emptyList();
     }
 
     @Override

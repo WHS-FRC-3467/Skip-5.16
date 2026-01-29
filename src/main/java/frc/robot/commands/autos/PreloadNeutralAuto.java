@@ -36,7 +36,8 @@ public class PreloadNeutralAuto extends AutoRoutine {
             case RIGHT -> this.loadAllPaths(List.of("PreloadShoot-Right", "placeholder"));
         };
 
-        loadCommands(AutoSegments.makePreloadShot(drive, indexer, shooter, pathPlannerPaths.get(0)));
+        loadCommands(
+            AutoSegments.makePreloadShot(drive, indexer, shooter, pathPlannerPaths.get(0)));
 
     }
 }
