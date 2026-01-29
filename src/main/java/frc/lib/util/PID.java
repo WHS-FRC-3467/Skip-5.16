@@ -15,5 +15,9 @@
 
 package frc.lib.util;
 
-public record PID(double P, double I, double D) {
+public record PID(double P, double I, double D, double A, double V, double G, double S) {
+    public PID(double P, double I, double D)
+    {
+        this(P, I, D, 0.0, 0.0, 0.0, 0.0);
+    }
 }

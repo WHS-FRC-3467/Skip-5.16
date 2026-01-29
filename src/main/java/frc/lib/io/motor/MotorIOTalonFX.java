@@ -22,10 +22,6 @@ import java.util.logging.Logger;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot1Configs;
-import com.ctre.phoenix6.configs.Slot2Configs;
-import com.ctre.phoenix6.configs.SlotConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -238,25 +234,6 @@ public class MotorIOTalonFX implements MotorIO {
         return ControlType.COAST;
     }
 
-    /**
-     * Attempts to update the `currentConfig` with the connected motor's configuration If this
-     * fails, no change will be made to `currentConfig`, and the method will return false.
-     * 
-     * @return Whether or not the update was successful
-     */
-    public boolean updateConfig()
-    {
-        var newConfig = new TalonFXConfiguration();
-        var status = motor.getConfigurator().refresh(newConfig);
-
-        if (status.isOK()) {
-            currentConfig = newConfig;
-            return true;
-        }
-
-        return false;
-    }
-
 
     /**
      * Updates the passed-in MotorInputs structure with the latest sensor readings.
@@ -422,40 +399,68 @@ public class MotorIOTalonFX implements MotorIO {
         motor.setPosition(position);
     }
 
-    @Override
-    public void setPID(PIDSlot slot, PID pid)
+    private void setPIDSlot0(PID pid)
     {
-        SlotConfigs base =
-            switch (slot) {
-                case SLOT_0 -> SlotConfigs.from(currentConfig.Slot0);
-                case SLOT_1 -> SlotConfigs.from(currentConfig.Slot1);
-                case SLOT_2 -> SlotConfigs.from(currentConfig.Slot2);
-            };
-
-        SlotConfigs config = base
+        currentConfig.Slot0
             .withKP(pid.P())
             .withKI(pid.I())
-            .withKD(pid.D());
-        config.SlotNumber = slot.num;
+            .withKD(pid.D())
+            .withKA(pid.A())
+            .withKV(pid.V())
+            .withKG(pid.G())
+            .withKS(pid.S());
 
-        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config))
-            .thenRun(() -> {
-                // Skip manual update if we can pull from the motor
-                if (updateConfig())
-                    return;
-
-                var newConfig = currentConfig.clone();
-                switch (slot) {
-                    case SLOT_0 -> newConfig.withSlot0(Slot0Configs.from(config));
-                    case SLOT_1 -> newConfig.withSlot1(Slot1Configs.from(config));
-                    case SLOT_2 -> newConfig.withSlot2(Slot2Configs.from(config));
-                };
-                currentConfig = newConfig;
-            })
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
             .exceptionally(ex -> {
                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
                 return null;
             });
+    }
+
+    private void setPIDSlot1(PID pid)
+    {
+        currentConfig.Slot1
+            .withKP(pid.P())
+            .withKI(pid.I())
+            .withKD(pid.D())
+            .withKA(pid.A())
+            .withKV(pid.V())
+            .withKG(pid.G())
+            .withKS(pid.S());
+
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+    }
+
+    private void setPIDSlot2(PID pid)
+    {
+        currentConfig.Slot2
+            .withKP(pid.P())
+            .withKI(pid.I())
+            .withKD(pid.D())
+            .withKA(pid.A())
+            .withKV(pid.V())
+            .withKG(pid.G())
+            .withKS(pid.S());
+
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+    }
+
+    @Override
+    public void setPID(PIDSlot slot, PID pid)
+    {
+        switch (slot) {
+            case SLOT_0 -> setPIDSlot0(pid);
+            case SLOT_1 -> setPIDSlot1(pid);
+            case SLOT_2 -> setPIDSlot2(pid);
+        }
     }
 
     @Override

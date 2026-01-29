@@ -15,7 +15,6 @@
 
 package frc.lib.mechanisms;
 
-import static edu.wpi.first.units.Units.Amps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -51,15 +50,31 @@ public abstract class Mechanism<T extends MotorIO> {
         private final LoggedTunableNumber kp;
         private final LoggedTunableNumber ki;
         private final LoggedTunableNumber kd;
+        private final LoggedTunableNumber ka;
+        private final LoggedTunableNumber kv;
+        private final LoggedTunableNumber kg;
+        private final LoggedTunableNumber ks;
         private final int id;
 
-        private TunablePidConfig(PIDSlot slot, LoggedTunableNumber kp, LoggedTunableNumber ki,
-            LoggedTunableNumber kd, int id)
+        private TunablePidConfig(
+            PIDSlot slot,
+            LoggedTunableNumber kp,
+            LoggedTunableNumber ki,
+            LoggedTunableNumber kd,
+            LoggedTunableNumber ka,
+            LoggedTunableNumber kv,
+            LoggedTunableNumber kg,
+            LoggedTunableNumber ks,
+            int id)
         {
             this.slot = slot;
             this.kp = kp;
             this.ki = ki;
             this.kd = kd;
+            this.ka = ka;
+            this.kv = kv;
+            this.kg = kg;
+            this.ks = ks;
             this.id = id;
         }
     }
@@ -72,11 +87,22 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void enableTunablePID(PIDSlot slot, PID defaultPid)
     {
-        LoggedTunableNumber kp = new LoggedTunableNumber(name + "/PID/" + slot + "/kP", defaultPid.P());
-        LoggedTunableNumber ki = new LoggedTunableNumber(name + "/PID/" + slot + "/kI", defaultPid.I());
-        LoggedTunableNumber kd = new LoggedTunableNumber(name + "/PID/" + slot + "/kD", defaultPid.D());
+        LoggedTunableNumber kp =
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kP", defaultPid.P());
+        LoggedTunableNumber ki =
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kI", defaultPid.I());
+        LoggedTunableNumber kd =
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kD", defaultPid.D());
+        LoggedTunableNumber ka =
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kA", defaultPid.D());
+        LoggedTunableNumber kv =
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kV", defaultPid.D());
+        LoggedTunableNumber kg =
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kG", defaultPid.D());
+        LoggedTunableNumber ks =
+            new LoggedTunableNumber(name + "/PID/" + slot + "/kS", defaultPid.D());
         int id = Objects.hash(this, slot);
-        tunablePidConfigs.add(new TunablePidConfig(slot, kp, ki, kd, id));
+        tunablePidConfigs.add(new TunablePidConfig(slot, kp, ki, kd, ka, kv, kg, ks, id));
     }
 
     /** Call this method periodically */
@@ -87,10 +113,21 @@ public abstract class Mechanism<T extends MotorIO> {
                 config.id,
                 () -> io.setPID(
                     config.slot,
-                    new PID(config.kp.get(), config.ki.get(), config.kd.get())),
+                    new PID(
+                        config.kp.get(),
+                        config.ki.get(),
+                        config.kd.get(),
+                        config.ka.get(),
+                        config.kv.get(),
+                        config.kg.get(),
+                        config.ks.get())),
                 config.kp,
                 config.ki,
-                config.kd);
+                config.kd,
+                config.ka,
+                config.kv,
+                config.kg,
+                config.ks);
         }
         io.updateInputs(inputs);
         Logger.processInputs(name, inputs);
