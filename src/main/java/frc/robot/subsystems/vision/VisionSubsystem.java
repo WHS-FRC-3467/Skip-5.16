@@ -15,7 +15,6 @@
 
 package frc.robot.subsystems.vision;
 
-import static edu.wpi.first.units.Units.Meters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.robot.FieldConstants;
+import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
 
 /**
@@ -65,10 +65,10 @@ public class VisionSubsystem extends SubsystemBase {
     public static final double MAX_AMBIGUITY = 0.2;
 
     /** Width of the field in meters. */
-    public static final double FIELD_WIDTH = FieldConstants.FIELD_WIDTH.in(Meters);
+    public static final double FIELD_WIDTH = FieldConstants.FIELD_WIDTH;
 
     /** Length of the field in meters. */
-    public static final double FIELD_LENGTH = FieldConstants.FIELD_LENGTH.in(Meters);
+    public static final double FIELD_LENGTH = FieldConstants.FIELD_LENGTH;
 
     public static final record VisionPoseRecord(
         Pose3d pose,
@@ -138,7 +138,7 @@ public class VisionSubsystem extends SubsystemBase {
         this.poseEstimators = new PhotonPoseEstimator[cameras.length];
         for (int i = 0; i < cameras.length; i++) {
             this.poseEstimators[i] = new PhotonPoseEstimator(
-                FieldConstants.APRILTAG_LAYOUT,
+                AprilTagLayoutType.OFFICIAL.getLayout(),
                 cameras[i].getProperties().robotToCamera());
         }
     }
@@ -193,7 +193,8 @@ public class VisionSubsystem extends SubsystemBase {
                     continue;
                 }
 
-                // Equation from AK template project https://github.com/Mechanical-Advantage/AdvantageKit/blob/5dbc08a680e8b105c75c18be7c3442029b08e32b/template_projects/sources/vision/src/main/java/frc/robot/subsystems/vision/Vision.java#L123
+                // Equation from AK template project
+                // https://github.com/Mechanical-Advantage/AdvantageKit/blob/5dbc08a680e8b105c75c18be7c3442029b08e32b/template_projects/sources/vision/src/main/java/frc/robot/subsystems/vision/Vision.java#L123
                 double stdDevFactor =
                     (Math.pow(poseRecord.averageDistanceMeters(), 2.0) / result.getTargets().size())
                         * cameras[c].getProperties().stdDevFactor();
