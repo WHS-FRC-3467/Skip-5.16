@@ -29,9 +29,11 @@ import frc.robot.commands.TeleopAlignToObject;
 import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeConstants;
-import frc.robot.subsystems.intake.Intake.State;
+import frc.robot.subsystems.intakeLinear.IntakeLinear;
+import frc.robot.subsystems.intakeLinear.IntakeLinearConstants;
+import frc.robot.subsystems.intakeRoller.IntakeRoller;
+import frc.robot.subsystems.intakeRoller.IntakeRollerConstants;
+import frc.robot.subsystems.intakeRoller.IntakeRoller.State;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerConstants;
 import frc.robot.subsystems.leds.LEDs;
@@ -56,7 +58,8 @@ public class RobotContainer {
     private final LEDs leds;
     private final ObjectDetector objectDetector;
     private final ShooterSuperstructure shooter;
-    private final Intake intake;
+    private final IntakeRoller intakeRoller;
+    private final IntakeLinear intakeLinear;
     private final Indexer indexer;
 
     // Controller
@@ -75,7 +78,8 @@ public class RobotContainer {
         leds = LEDsConstants.get();
         objectDetector = ObjectDetectorConstants.get();
         shooter = ShooterSuperstructureConstants.get();
-        intake = IntakeConstants.get();
+        intakeRoller = IntakeRollerConstants.get();
+        intakeLinear = IntakeLinearConstants.get();
         indexer = IndexerConstants.get();
         VisionConstants.create();
 
@@ -83,11 +87,11 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Preview", autoPreviewField);
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("PreloadNeutralAuto",
-            new PreloadNeutralAuto(drive, intake, indexer, shooter, StartPosition.CENTER));
+            new PreloadNeutralAuto(drive, intakeRoller, indexer, shooter, StartPosition.CENTER));
         
         // Depot Auto - Start at Center
         autoChooser.addOption("DepotAuto",
-            new DepotAuto(drive, intake, indexer, shooter, StartPosition.CENTER));
+            new DepotAuto(drive, intakeRoller, indexer, shooter, StartPosition.CENTER));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
@@ -122,10 +126,11 @@ public class RobotContainer {
                 () -> -controller.getRightX())); // fallback rotation
 
         // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
+        controller.leftBumper().onTrue(intakeRoller.runIntake(State.INTAKE))
+            .onFalse(intakeRoller.stop());
 
         // Back Button: Eject while held
-        controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
+        controller.back().onTrue(intakeRoller.runIntake(State.EJECT)).onFalse(intakeRoller.stop());
 
         controller.rightTrigger().whileTrue(
             shooter.prepareShot(
@@ -140,9 +145,16 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
-        SmartDashboard.putData("Intake/Eject", intake.runIntake(Intake.State.EJECT));
-        SmartDashboard.putData("Intake/Intake", intake.runIntake(Intake.State.INTAKE));
-        SmartDashboard.putData("Intake/Stop", intake.runIntake(Intake.State.STOP));
+        SmartDashboard.putData("Intake Roller/Eject",
+            intakeRoller.runIntake(IntakeRoller.State.EJECT));
+        SmartDashboard.putData("Intake Roller/Intake",
+            intakeRoller.runIntake(IntakeRoller.State.INTAKE));
+        SmartDashboard.putData("Intake Roller/Stop",
+            intakeRoller.runIntake(IntakeRoller.State.STOP));
+        SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
+        SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
+        SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
+
         SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
             Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
 
@@ -176,6 +188,17 @@ public class RobotContainer {
         })
             .withName("Reset Fuel")
             .ignoringDisable(true));
+        SmartDashboard.putData("Intake Roller/Eject",
+            intakeRoller.runIntake(IntakeRoller.State.EJECT));
+        SmartDashboard.putData("Intake Roller/Intake",
+            intakeRoller.runIntake(IntakeRoller.State.INTAKE));
+        SmartDashboard.putData("Intake Roller/Stop",
+            intakeRoller.runIntake(IntakeRoller.State.STOP));
+        SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
+        SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
+        SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
+        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
+            Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
     }
 
     public Command getAutonomousCommand()

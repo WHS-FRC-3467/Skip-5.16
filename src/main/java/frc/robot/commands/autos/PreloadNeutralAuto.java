@@ -19,14 +19,14 @@ import java.util.List;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
 // Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect pieces from
 // the neutral zone, and then shoot them. Strategy layer.
 public class PreloadNeutralAuto extends AutoRoutine {
 
-    public PreloadNeutralAuto(Drive drive, Intake intake, Indexer indexer,
+    public PreloadNeutralAuto(Drive drive, IntakeRoller intake, Indexer indexer,
         ShooterSuperstructure shooter, StartPosition start)
     {
         // Choose path names based on start position
