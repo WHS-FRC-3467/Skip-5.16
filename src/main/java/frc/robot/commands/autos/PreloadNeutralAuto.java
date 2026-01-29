@@ -38,7 +38,7 @@ public class PreloadNeutralAuto extends AutoCommand {
         // Choose path names based on start position
         pathNames = switch (start) {
             case LEFT -> List.of("PreloadShoot-Left", "placeholder");
-            case CENTER -> List.of("PreloadShoot-Center", "1SweepNeutral-Bump-Center");
+            case CENTER -> List.of("PreloadShoot-Center", "placeholder");
             case RIGHT -> List.of("PreloadShoot-Right", "placeholder");
         };
 
