@@ -163,7 +163,6 @@ public class Robot extends LoggedRobot {
 
         BallSimulator.update();
         RobotState.getInstance().publishMechanismPoses();
-        SmartDashboard.putNumber("time", DriverStation.getMatchTime());
     }
 
     /** This function is called once when the robot is disabled. */
@@ -215,13 +214,7 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic()
-    {
-        hubState.hubChange.onChange(Commands.runOnce(
-            () -> SmartDashboard.putBoolean("hub change", hubState.hubChange.getAsBoolean())));
-        hubState.hubActive.onChange(Commands.runOnce(
-            () -> SmartDashboard.putBoolean("hub active", hubState.hubActive.getAsBoolean())));
-        SmartDashboard.putString("active allience", hubState.getActiveAlliance.name());
-    }
+    {}
 
 
     /** This function is called once when test mode is enabled. */

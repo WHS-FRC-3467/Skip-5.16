@@ -29,7 +29,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
@@ -46,7 +45,7 @@ public class RobotState {
     private static final double LINEAR_ODOMETRY_STD_DEV = 0.01;
     private static final double ANGULAR_ODOMETRY_STD_DEV = 0.01;
 
-    
+
     @Setter
     @AutoLogOutput(key = "Drive/DrivetrainAngled")
     private boolean drivetrainAngled = false;
@@ -220,167 +219,5 @@ public class RobotState {
     public static Distance getHeightToTarget(Distance mechanismHeight)
     {
         return target.getHeight().minus(mechanismHeight);
-    }
-
-    public Trigger HubActiveTrigger()
-    {
-        return new Trigger(() -> (isHubActive().isPresent() ? isHubActive().get() : false));
-        // TODO true false "empty"
-    }
-
-    /* List of times that the hub can change from on/off */
-    private static double[] hubChangeTimes = {
-            130.0,
-            105.0,
-            80.0,
-            55.0,
-            30.0,
-    };
-
-    // Counter for tracking hub changes
-    private int hubChangeInt = 0;
-    private boolean timeout = false;
-    private static double secondsBefore = 5.0;
-    public Trigger hubChange = new Trigger(() -> isHubCloseToActive());
-    public Trigger hubActive = new Trigger(this::isHubActive2);
-
-    public DriverStation.Alliance getActiveAlliance;
-
-    public void checkActiveAlliance()
-    {
-        if (findClosestTime() >= 130.0) {
-            getActiveAlliance = switch (DriverStation.getGameSpecificMessage().charAt(0)) {
-                case 'R' -> Alliance.Red;
-                case 'B' -> Alliance.Blue;
-                default -> Alliance.Blue;
-            };
-        } else if (getActiveAlliance == Alliance.Blue) {
-            getActiveAlliance = Alliance.Red;
-        } else if (getActiveAlliance == Alliance.Red) {
-            getActiveAlliance = Alliance.Blue;
-        }
-
-    }
-
-    boolean isHubActive2()
-    {
-
-        checkActiveAlliance();
-        if (getActiveAlliance == DriverStation.getAlliance().get()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * @return a trigger that briefly reports true when remaining match time is first within x
-     *         seconds of a hub change time
-     */
-    public boolean timeIncrement(double secondsBefore)
-    {
-
-        boolean isWithinTime;
-        if (timeout) {
-            if (DriverStation.getMatchTime() <= hubChangeTimes[hubChangeInt]) {
-                timeout = false;
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            if (hubChangeInt < 5) {
-
-                if (DriverStation.getMatchTime() <= hubChangeTimes[hubChangeInt]
-                    + secondsBefore) {
-                    hubChangeInt++;
-                    isWithinTime = true;
-                    timeout = true;
-                } else {
-                    isWithinTime = false;
-                }
-                return isWithinTime;
-
-            } else {
-                return false;
-            }
-        }
-    }
-
-    public boolean isHubCloseToActive()
-    {
-        if (DriverStation.getMatchTime() - findClosestTime() <= secondsBefore) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-
-    private double findClosestTime()
-    {
-        double getTime = DriverStation.getMatchTime();
-
-        for (int i = 0; i < hubChangeTimes.length; i++) {
-            if (getTime > hubChangeTimes[i]) {
-                return hubChangeTimes[i];
-            }
-        }
-        return 0.0;
-    }
-
-
-
-    public Optional<Boolean> isHubActive()
-    {
-        String gameData;
-        gameData = DriverStation.getGameSpecificMessage();
-        Alliance alliance;
-        if (DriverStation.getAlliance().isPresent()) {
-            alliance = DriverStation.getAlliance().get();
-        } else {
-            alliance = DriverStation.Alliance.Red;
-        }
-
-        if (gameData.length() > 0) {
-            switch (gameData.charAt(0)) {
-                case 'B':
-                    // Blue case code
-                    switch (alliance) {
-                        case Blue:
-                            return Optional.of(true);
-
-
-                        case Red:
-                            return Optional.of(false);
-
-
-                        default:
-                            return Optional.empty();
-
-                    }
-
-                case 'R':
-                    // Red case code
-                    switch (alliance) {
-                        case Blue:
-                            return Optional.of(false);
-
-                        case Red:
-                            return Optional.of(true);
-
-                        default:
-                            return Optional.empty();
-                    }
-
-                default:
-                    // This is corrupt data
-                    return Optional.empty();
-
-            }
-
-        } else {
-            return Optional.empty();
-        }
     }
 }

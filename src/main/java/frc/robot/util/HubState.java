@@ -39,13 +39,14 @@ public class HubState {
     private static final HubState instance = new HubState();
 
     public Trigger hubChange = new Trigger(() -> isHubCloseToActive());
-    public Trigger hubActive = new Trigger(this::isAllianceHubActive);
+    public Trigger hubActive = new Trigger(() -> isAllianceHubActive());
 
-    public DriverStation.Alliance getActiveAlliance;
+    public DriverStation.Alliance getActiveAlliance = Alliance.Red;
+
 
     public void checkActiveAlliance()
     {
-        if (findClosestTime() >= HUB_CHANGE_TIMES[0]) {
+        if (DriverStation.getMatchTime() >= 130) {
             getActiveAlliance = switch (DriverStation.getGameSpecificMessage().charAt(0)) {
                 case 'R' -> Alliance.Red;
                 case 'B' -> Alliance.Blue;
@@ -59,7 +60,7 @@ public class HubState {
 
     }
 
-    private double findClosestTime()
+    public double findClosestTime()
     {
         double getTime = DriverStation.getMatchTime();
 
@@ -74,20 +75,32 @@ public class HubState {
     public boolean isHubCloseToActive()
     {
         if (DriverStation.getMatchTime() - findClosestTime() <= SECONDS_BEFORE) {
+
             return true;
         } else {
             return false;
         }
     }
 
+    private boolean toggle = true; // toggle turns off when the match time is 0.1 seconds away from
+                                   // the closest hub change times
+
     public boolean isAllianceHubActive()
     {
-        if (DriverStation.getMatchTime() <= findClosestTime()) {
-            checkActiveAlliance();
-            return getActiveAlliance == DriverStation.getAlliance().get() ? true : false;
+
+        if (toggle) {
+            if (DriverStation.getMatchTime() - findClosestTime() <= 0.1) {
+                checkActiveAlliance();
+                toggle = false;
+            }
+
         } else {
-            return false;
+            if (DriverStation.getMatchTime() - findClosestTime() >= 0.1) {
+                toggle = true;
+            }
         }
+        return getActiveAlliance == DriverStation.getAlliance().get() ? true : false;
+
     }
 
 
