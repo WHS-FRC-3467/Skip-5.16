@@ -27,11 +27,14 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Velocity;
+import frc.lib.io.motor.MotorIO;
+import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.rotary.*;
 import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryAxis;
 import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryMechCharacteristics;
+import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import lombok.AccessLevel;
@@ -75,12 +78,9 @@ public class HoodConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.25);
 
     // Positional PID
-    private static final Slot0Configs SLOT_0_CONFIG = new Slot0Configs()
-        .withKP(10.0)
-        .withKI(2.0)
-        .withKD(8)
-        .withKS(0.07)
-        .withKV(0.1);
+    public static final PID SLOT0_PID = new PID(10.0, 2.0, 8.0)
+        .withS(0.07)
+        .withV(0.1);
 
     public static TalonFXConfiguration getFXConfig()
     {
@@ -111,7 +111,7 @@ public class HoodConstants {
 
         config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
 
-        config.Slot0 = SLOT_0_CONFIG;
+        config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
         config.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY.in(RotationsPerSecond);
         config.MotionMagic.MotionMagicAcceleration = ACCELERATION.in(RotationsPerSecondPerSecond);
         config.MotionMagic.MotionMagicJerk = JERK.in(RotationsPerSecondPerSecond.per(Second));
@@ -119,23 +119,30 @@ public class HoodConstants {
         return config;
     }
 
-    public static RotaryMechanism get()
+    public static RotaryMechanism<?, ?> get()
     {
+        RotaryMechanism<?, ?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                return new RotaryMechanismReal(NAME,
+                mechanism = new RotaryMechanismReal(NAME,
                     new MotorIOTalonFX(NAME, getFXConfig(), Ports.hood),
                     CONSTANTS,
                     Optional.empty());
+                break;
             case SIM:
-                return new RotaryMechanismSim(NAME,
+                mechanism = new RotaryMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.hood),
                     DCMOTOR, MOI, false, CONSTANTS,
                     Optional.empty());
+                break;
             case REPLAY:
-                return new RotaryMechanism(NAME, CONSTANTS) {};
+                mechanism = new RotaryMechanism<>(NAME, CONSTANTS, new MotorIO() {},
+                    Optional.empty()) {};
+                break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
+        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        return mechanism;
     }
 }

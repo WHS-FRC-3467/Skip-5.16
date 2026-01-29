@@ -15,6 +15,9 @@
 
 package frc.robot.subsystems.drive;
 
+import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -42,7 +45,6 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.lib.util.CANUpdateThread;
 import frc.robot.Ports;
-import java.util.Queue;
 
 /**
  * Module IO implementation for Talon FX drive motor controller, Talon FX turn motor controller, and
@@ -52,6 +54,8 @@ import java.util.Queue;
  * Device configuration and other behaviors not exposed by TunerConstants can be customized here.
  */
 public class ModuleIOTalonFX implements ModuleIO {
+    private static final Logger LOGGER = Logger.getLogger(ModuleIOTalonFX.class.getName());
+
     private final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants;
 
     // Hardware objects
@@ -118,9 +122,17 @@ public class ModuleIOTalonFX implements ModuleIO {
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
         updateThread
-            .CTRECheckErrorAndRetry(() -> driveTalon.getConfigurator().apply(driveConfig, 0.25));
+            .CTRECheckErrorAndRetry(() -> driveTalon.getConfigurator().apply(driveConfig, 0.25))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
         updateThread
-            .CTRECheckErrorAndRetry(() -> driveTalon.setPosition(0.0, 0.25));
+            .CTRECheckErrorAndRetry(() -> driveTalon.setPosition(0.0, 0.25))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
 
         // Configure turn motor
         var turnConfig = new TalonFXConfiguration();
@@ -145,7 +157,11 @@ public class ModuleIOTalonFX implements ModuleIO {
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
         updateThread
-            .CTRECheckErrorAndRetry(() -> turnTalon.getConfigurator().apply(turnConfig, 0.25));
+            .CTRECheckErrorAndRetry(() -> turnTalon.getConfigurator().apply(turnConfig, 0.25))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
 
         // Configure CANCoder
         CANcoderConfiguration cancoderConfig = constants.EncoderInitialConfigs;
