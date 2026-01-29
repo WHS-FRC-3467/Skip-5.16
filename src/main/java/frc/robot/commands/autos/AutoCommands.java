@@ -6,18 +6,36 @@ package frc.robot.commands.autos;
 
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
-public class AutoCommands extends SequentialCommandGroup {
+/**
+ * Class containing useful individual commands or small-group command sequences that can be strung
+ * together into larger command units (AutoSegments). Command logic layer.
+ */
+public class AutoCommands {
 
-    public static Command resetOdom(Drive drive, PathPlannerPath path)
+    /**
+     * Resets the robot's odometry to the starting pose of the specified path. Handles alliance
+     * flipping if necessary. ONLY RUNS IN SIMULATION.
+     *
+     * @param drive the drive subsystem
+     * @param path the PathPlanner path containing the starting pose
+     * @return a command that resets the robot's pose to the path's starting position
+     */
+    public static Command resetSimOdom(Drive drive, PathPlannerPath path)
     {
         final RobotState robotState = RobotState.getInstance();
-        return drive.runOnce(
+        if (RobotBase.isSimulation()) {
+            return drive.runOnce(
             () -> {
                 Pose2d pose =
                     path.getStartingHolonomicPose().get();
@@ -27,5 +45,44 @@ public class AutoCommands extends SequentialCommandGroup {
 
                 robotState.resetPose(pose);
             });
+            
+        } else {
+            return Commands.none();
+        }
+    }
+
+    /**
+     * Creates a command sequence to shoot fuel from the robot. Spins up the shooter, pulls fuel
+     * through the indexer when ready, and stops after the duration.
+     *
+     * @param indexer the indexer subsystem
+     * @param shooter the shooter superstructure
+     * @param duration the maximum duration in seconds to run the shooting sequence
+     * @return a command that shoots fuel and then stops the indexer
+     */
+    public static Command shootFuel(Indexer indexer, ShooterSuperstructure shooter, double duration)
+    {
+        return Commands.sequence(
+            new ParallelDeadlineGroup(
+                Commands.waitUntil(shooter.readyToShoot()), // Delay shooting until ready
+                shooter.spinUpShooter()),
+            new ParallelDeadlineGroup(
+                Commands.waitSeconds(duration),
+                shooter.spinUpShooter(), // Keep shooter scheduled
+                indexer.holdStateUntilInterrupted(Indexer.State.PULL)
+                    .onlyWhile(shooter.readyToShoot())),
+            indexer.holdStateUntilInterrupted(Indexer.State.STOP));
+    }
+
+    /**
+     * Creates a command to run the intake mechanism to collect game pieces. The intake will stop
+     * automatically when the command ends.
+     *
+     * @param intake the intake subsystem
+     * @return a command that runs the intake and stops it when finished
+     */
+    public static Command runIntake(Intake intake)
+    {
+        return intake.runIntake(Intake.State.INTAKE).finallyDo(() -> intake.stop());
     }
 }

@@ -4,28 +4,13 @@
 
 package frc.robot.commands.autos;
 
-import java.util.Collections;
-import java.util.List;
-import edu.wpi.first.math.geometry.Pose2d;
-import frc.lib.util.AutoCommand;
+import frc.lib.util.AutoRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
 
-public class WheelCharacterizationAuto extends AutoCommand {
+public class WheelCharacterizationAuto extends AutoRoutine {
     public WheelCharacterizationAuto(Drive drive)
     {
-        addCommands(DriveCommands.wheelRadiusCharacterization(drive));
-    }
-
-    @Override
-    public List<Pose2d> getAllPathPoses()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Pose2d getStartingPose()
-    {
-        return new Pose2d();
+        loadCommands(DriveCommands.wheelRadiusCharacterization(drive));
     }
 }
