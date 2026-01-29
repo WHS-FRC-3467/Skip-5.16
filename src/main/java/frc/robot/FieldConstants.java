@@ -8,7 +8,6 @@ package frc.robot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -32,33 +31,26 @@ import frc.lib.util.FieldUtil;
  * of the blue alliance station
  */
 public class FieldConstants {
-    public static final FieldType fieldType = FieldType.WELDED;
+    public static final FieldType fieldType = FieldType.ANDYMARK;
 
-    public static final AprilTagFieldLayout APRILTAG_LAYOUT =
-        AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
-
-    // AprilTag related constants
-    public static final int aprilTagCount =
-        AprilTagLayoutType.OFFICIAL.getLayout().getTags().size();
-    public static final double aprilTagWidth = Units.inchesToMeters(6.5);
     public static final AprilTagLayoutType defaultAprilTagType = AprilTagLayoutType.OFFICIAL;
 
     // Field dimensions
-    public static final double fieldLength =
+    public static final double FIELD_LENGTH =
         AprilTagLayoutType.OFFICIAL.getLayout().getFieldLength();
-    public static final double fieldWidth = AprilTagLayoutType.OFFICIAL.getLayout().getFieldWidth();
+    public static final double FIELD_WIDTH = AprilTagLayoutType.OFFICIAL.getLayout().getFieldWidth();
 
-    public static final Translation2d FIELD_CENTER = new Translation2d(fieldLength / 2,
-        fieldWidth / 2);
+    public static final Translation2d FIELD_CENTER = new Translation2d(FIELD_LENGTH / 2,
+        FIELD_WIDTH / 2);
 
     public static final Translation3d FIELD_CENTER3D =
-        new Translation3d(fieldLength / 2, fieldWidth / 2, 0.00);
+        new Translation3d(FIELD_LENGTH / 2, FIELD_WIDTH / 2, 0.00);
 
     /**
      * Officially defined and relevant vertical lines found on the field (defined by X-axis offset)
      */
     public static class LinesVertical {
-        public static final double center = fieldLength / 2.0;
+        public static final double center = FIELD_LENGTH / 2.0;
         public static final double starting =
             AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(26).get().getX();
         public static final double allianceZone = starting;
@@ -66,10 +58,6 @@ public class FieldConstants {
             AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(26).get().getX() + Hub.width / 2.0;
         public static final double neutralZoneNear = center - Units.inchesToMeters(120);
         public static final double neutralZoneFar = center + Units.inchesToMeters(120);
-        public static final double oppHubCenter =
-            AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(4).get().getX() + Hub.width / 2.0;
-        public static final double oppAllianceZone =
-            AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(10).get().getX();
     }
 
     /**
@@ -82,7 +70,7 @@ public class FieldConstants {
      */
     public static class LinesHorizontal {
 
-        public static final double center = fieldWidth / 2.0;
+        public static final double center = FIELD_WIDTH / 2.0;
 
         // Right of hub
         public static final double rightBumpStart = Hub.nearRightCorner.getY();
@@ -94,7 +82,7 @@ public class FieldConstants {
         public static final double leftBumpEnd = Hub.nearLeftCorner.getY();
         public static final double leftBumpStart = leftBumpEnd + LeftBump.width;
         public static final double leftTrenchOpenEnd = leftBumpStart + Units.inchesToMeters(12.0);
-        public static final double leftTrenchOpenStart = fieldWidth;
+        public static final double leftTrenchOpenStart = FIELD_WIDTH;
     }
 
     /** Hub related constants */
@@ -114,23 +102,23 @@ public class FieldConstants {
         public static final Translation3d topCenterPoint =
             new Translation3d(
                 AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(26).get().getX() + width / 2.0,
-                fieldWidth / 2.0,
+                FIELD_WIDTH / 2.0,
                 height);
 
         public static final Translation3d innerCenterPoint =
             new Translation3d(
                 AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(26).get().getX() + width / 2.0,
-                fieldWidth / 2.0,
+                FIELD_WIDTH / 2.0,
                 innerHeight);
 
         public static final Translation2d nearLeftCorner =
-            new Translation2d(topCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
+            new Translation2d(topCenterPoint.getX() - width / 2.0, FIELD_WIDTH / 2.0 + width / 2.0);
         public static final Translation2d nearRightCorner =
-            new Translation2d(topCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 - width / 2.0);
+            new Translation2d(topCenterPoint.getX() - width / 2.0, FIELD_WIDTH / 2.0 - width / 2.0);
         public static final Translation2d farLeftCorner =
-            new Translation2d(topCenterPoint.getX() + width / 2.0, fieldWidth / 2.0 + width / 2.0);
+            new Translation2d(topCenterPoint.getX() + width / 2.0, FIELD_WIDTH / 2.0 + width / 2.0);
         public static final Translation2d farRightCorner =
-            new Translation2d(topCenterPoint.getX() + width / 2.0, fieldWidth / 2.0 - width / 2.0);
+            new Translation2d(topCenterPoint.getX() + width / 2.0, FIELD_WIDTH / 2.0 - width / 2.0);
 
         // Hub faces
         public static final Pose2d nearFace =
@@ -193,15 +181,9 @@ public class FieldConstants {
 
         // Relevant reference points on alliance side
         public static final Translation3d openingTopLeft =
-            new Translation3d(LinesVertical.hubCenter, fieldWidth, openingHeight);
+            new Translation3d(LinesVertical.hubCenter, FIELD_WIDTH, openingHeight);
         public static final Translation3d openingTopRight =
-            new Translation3d(LinesVertical.hubCenter, fieldWidth - openingWidth, openingHeight);
-
-        // Relevant reference points on opposing side
-        public static final Translation3d oppOpeningTopLeft =
-            new Translation3d(LinesVertical.oppHubCenter, fieldWidth, openingHeight);
-        public static final Translation3d oppOpeningTopRight =
-            new Translation3d(LinesVertical.oppHubCenter, fieldWidth - openingWidth, openingHeight);
+            new Translation3d(LinesVertical.hubCenter, FIELD_WIDTH - openingWidth, openingHeight);
     }
 
     public static class RightTrench {
@@ -218,12 +200,6 @@ public class FieldConstants {
             new Translation3d(LinesVertical.hubCenter, openingWidth, openingHeight);
         public static final Translation3d openingTopRight =
             new Translation3d(LinesVertical.hubCenter, 0, openingHeight);
-
-        // Relevant reference points on opposing side
-        public static final Translation3d oppOpeningTopLeft =
-            new Translation3d(LinesVertical.oppHubCenter, openingWidth, openingHeight);
-        public static final Translation3d oppOpeningTopRight =
-            new Translation3d(LinesVertical.oppHubCenter, 0, openingHeight);
     }
 
     /** Tower related constants */
@@ -258,24 +234,6 @@ public class FieldConstants {
                 (AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(31).get().getY())
                     - innerOpeningWidth / 2
                     - Units.inchesToMeters(0.75));
-
-        // Relevant reference points on opposing side
-        public static final Translation2d oppCenterPoint =
-            new Translation2d(
-                fieldLength - frontFaceX,
-                AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(15).get().getY());
-        public static final Translation2d oppLeftUpright =
-            new Translation2d(
-                fieldLength - frontFaceX,
-                (AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(15).get().getY())
-                    + innerOpeningWidth / 2
-                    + Units.inchesToMeters(0.75));
-        public static final Translation2d oppRightUpright =
-            new Translation2d(
-                fieldLength - frontFaceX,
-                (AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(15).get().getY())
-                    - innerOpeningWidth / 2
-                    - Units.inchesToMeters(0.75));
     }
 
     public static class Depot {
@@ -287,11 +245,11 @@ public class FieldConstants {
 
         // Relevant reference points on alliance side
         public static final Translation3d depotCenter =
-            new Translation3d(depth, (fieldWidth / 2) + distanceFromCenterY, height);
+            new Translation3d(depth, (FIELD_WIDTH / 2) + distanceFromCenterY, height);
         public static final Translation3d leftCorner =
-            new Translation3d(depth, (fieldWidth / 2) + distanceFromCenterY + (width / 2), height);
+            new Translation3d(depth, (FIELD_WIDTH / 2) + distanceFromCenterY + (width / 2), height);
         public static final Translation3d rightCorner =
-            new Translation3d(depth, (fieldWidth / 2) + distanceFromCenterY - (width / 2), height);
+            new Translation3d(depth, (FIELD_WIDTH / 2) + distanceFromCenterY - (width / 2), height);
     }
 
     public static class Outpost {

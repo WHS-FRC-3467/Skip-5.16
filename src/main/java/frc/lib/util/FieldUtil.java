@@ -64,8 +64,8 @@ public class FieldUtil {
     public static boolean isPoseInField(Translation2d translation, Distance margin)
     {
         return translation.getX() >= margin.in(Meters)
-            && translation.getX() <= FieldConstants.fieldLength - margin.in(Meters)
+            && translation.getX() <= FieldConstants.FIELD_LENGTH - margin.in(Meters)
             && translation.getY() >= margin.in(Meters)
-            && translation.getY() <= FieldConstants.fieldWidth - margin.in(Meters);
+            && translation.getY() <= FieldConstants.FIELD_WIDTH - margin.in(Meters);
     }
 }

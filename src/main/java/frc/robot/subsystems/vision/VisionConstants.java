@@ -38,6 +38,7 @@ import frc.lib.io.vision.VisionIOPhotonVision;
 import frc.lib.io.vision.VisionIOPhotonVisionSim;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
+import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -164,14 +165,14 @@ public class VisionConstants {
     {
         if (visionSim.isEmpty()) {
             visionSim = Optional.of(new VisionSystemSim("main"));
-            visionSim.get().addAprilTags(FieldConstants.APRILTAG_LAYOUT);
+            visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());
         }
 
         return new VisionIOPhotonVisionSim(
             FRONT_LEFT,
             visionSim.get(),
             () -> RobotState.getInstance().getOdometryPose(),
-            FieldConstants.APRILTAG_LAYOUT);
+            AprilTagLayoutType.OFFICIAL.getLayout());
     }
 
     private static VisionIOPhotonVision getFrontRightIOReal()
@@ -184,14 +185,14 @@ public class VisionConstants {
     {
         if (visionSim.isEmpty()) {
             visionSim = Optional.of(new VisionSystemSim("main"));
-            visionSim.get().addAprilTags(FieldConstants.APRILTAG_LAYOUT);
+            visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());
         }
 
         return new VisionIOPhotonVisionSim(
             FRONT_RIGHT,
             visionSim.get(),
             () -> RobotState.getInstance().getOdometryPose(),
-            FieldConstants.APRILTAG_LAYOUT);
+            AprilTagLayoutType.OFFICIAL.getLayout());
     }
 
     public static void create()
