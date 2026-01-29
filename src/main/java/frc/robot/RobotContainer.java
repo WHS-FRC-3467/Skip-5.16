@@ -28,6 +28,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopAlignToObject;
 import frc.robot.commands.autos.ExampleAuto;
 import frc.robot.commands.autos.NoneAuto;
+import frc.robot.commands.autos.PreloadNeutralAuto;
 import frc.robot.commands.autos.WheelCharacterizationAuto;
 import frc.robot.commands.autos.WheelSlipAuto;
 import frc.robot.subsystems.drive.Drive;
@@ -87,6 +88,8 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Preview", autoPreviewField);
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("ExampleAuto", new ExampleAuto(drive));
+        autoChooser.addOption("PreloadNeutralAuto",
+            new PreloadNeutralAuto(drive, intake, indexer, shooter, StartPosition.CENTER));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
