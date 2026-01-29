@@ -21,12 +21,15 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * Standardized interface for ObjectDetection-IO used in FRC. This interface is often implemented
- * through an ML pipeline.
+ * through an ML or HSV Color pipeline. Currently factored for PhotonVision only.
  */
 public interface ObjectDetectionIO {
 
-    /*
-     * Class defining data type for updateInputs method.
+    /**
+     * Class defining data type for Object Detection updateInputs method (i.e. data structure the
+     * camera will place its results into). Fields of this class will be populated downstream by the
+     * implemented IO layer (e.g. ObjectDetectionIOPhotonVision), used in calculations at the device
+     * layer, and used for decisions at the subsystem layer.
      */
     public class ObjectDetectionIOInputs implements LoggableInputs {
         /** Whether the camera is connected. */

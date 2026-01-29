@@ -46,6 +46,11 @@ public class RobotState {
     private static final double LINEAR_ODOMETRY_STD_DEV = 0.01;
     private static final double ANGULAR_ODOMETRY_STD_DEV = 0.01;
 
+    
+    @Setter
+    @AutoLogOutput(key = "Drive/DrivetrainAngled")
+    private boolean drivetrainAngled = false;
+
     @Getter(lazy = true)
     private static final RobotState instance = new RobotState();
 
@@ -78,6 +83,10 @@ public class RobotState {
 
     public void addVisionObservation(VisionPoseObservation observation)
     {
+        // Only add vision observation if robot is not angled (i.e. when going over a bump)
+        if (drivetrainAngled) {
+            return;
+        }
         poseEstimator.addVisionObservation(observation);
     }
 

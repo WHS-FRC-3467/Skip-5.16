@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.superstructure;
+package frc.robot.subsystems.indexer;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -25,15 +25,15 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
 
-class SuperstructureTest implements AutoCloseable {
-    Superstructure superstructure;
+public class IndexerTest {
+    Indexer indexer;
 
     @BeforeEach // this method will run before each test
     void setup()
     {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
-        superstructure = SuperstructureConstants.get();
+        indexer = IndexerConstants.get();
 
         /* enable the robot */
         DriverStationSim.setEnabled(true);
@@ -46,27 +46,41 @@ class SuperstructureTest implements AutoCloseable {
     @AfterEach // this method will run after each test
     void shutdown()
     {
-        close();
-    }
-
-    @Test // marks this method as a test
-    void goToGoal()
-    {
-        TestUtil.runTest(
-            superstructure.setGoalWithWait(Superstructure.Setpoint.STOW),
-            3,
-            superstructure);
         try {
-            // Check position to check if the subsystem is actually in tolerance of STOW setpoint.
-            assertTrue(superstructure.nearSetpoint(Superstructure.Setpoint.STOW));
+            indexer.close();
         } catch (Exception e) {
-            fail("Failed to run Rotary Subsystem to STOW: " + e.getMessage());
+            fail("Failed to close Intake subsystem: " + e.getMessage());
         }
     }
 
-    @Override
-    public void close()
+    @Test // marks this method as a test
+    void index()
     {
-        superstructure.close();
+        TestUtil.runTest(
+            indexer.setStateCommand(Indexer.State.PULL),
+            2,
+            indexer);
+        try {
+            // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
+            assertTrue(indexer.nearSetpoint());
+        } catch (Exception e) {
+            fail("Failed to run Indexer to pull: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void stop()
+    {
+        TestUtil.runTest(
+            indexer.setStateCommand(Indexer.State.STOP),
+            2,
+            indexer);
+        try {
+            // Check velocity to check if the subsystem is actually in tolerance of stopped
+            // velocity.
+            assertTrue(indexer.nearSetpoint());
+        } catch (Exception e) {
+            fail("Failed to stop indexer: " + e.getMessage());
+        }
     }
 }

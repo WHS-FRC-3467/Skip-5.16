@@ -30,91 +30,47 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.commands.DriveToPoseBase;
-import frc.lib.commands.SteppableCommandGroup;
-import frc.lib.commands.AlignToPoseBase.AlignMode;
-import frc.lib.devices.AprilTagCamera;
-import frc.lib.io.vision.VisionIO;
-import frc.lib.io.vision.VisionIOPhotonVision;
-import frc.lib.io.vision.VisionIOPhotonVisionSim;
-import frc.lib.posestimator.PoseEstimator;
 import frc.lib.util.LoggedDashboardChooser;
-import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggedTuneableProfiledPID;
-import frc.lib.util.PointInPolygon;
+import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
-import frc.lib.util.GamePieceVisualizer;
-import frc.robot.Constants.Mode;
 import frc.robot.Constants.PathConstants;
-import frc.robot.commands.AlignToPose;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.DriveToPose;
-import frc.robot.commands.OnTheFlyPathCommand;
-import frc.robot.commands.autos.BranchingAuto;
+import frc.robot.commands.TeleopAlignToObject;
 import frc.robot.commands.autos.ExampleAuto;
 import frc.robot.commands.autos.NoneAuto;
 import frc.robot.commands.autos.WheelCharacterizationAuto;
 import frc.robot.commands.autos.WheelSlipAuto;
-import frc.robot.subsystems.beambreak1.BeamBreak1;
-import frc.robot.subsystems.beambreak1.BeamBreak1Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
+import frc.robot.subsystems.intake.Intake.State;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
-import frc.robot.subsystems.objectdetector.ObjectDetector;
-import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
-import frc.robot.subsystems.servo1.Servo1;
-import frc.robot.subsystems.servo1.Servo1Constants;
-import frc.robot.subsystems.superstructure.Superstructure;
-import frc.robot.subsystems.superstructure.SuperstructureConstants;
-import frc.robot.subsystems.turret.FlywheelConstants;
-import frc.robot.subsystems.turret.TurretSuperstructure;
-import frc.robot.subsystems.turret.TurretConstants;
-import frc.robot.subsystems.turret.TurretSuperstructureConstants;
+import frc.robot.subsystems.turret.ShooterSuperstructure;
+import frc.robot.subsystems.turret.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.util.BallSimulator;
+import frc.robot.util.FuelSim;
 import frc.robot.subsystems.lasercan1.LaserCAN1;
 import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meter;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.FeetPerSecond;
-import static edu.wpi.first.units.Units.Volts;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
-import org.littletonrobotics.junction.Logger;
-import java.util.function.Supplier;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.simulation.VisionSystemSim;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import edu.wpi.first.math.geometry.Translation3d;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and button mappings) should be declared here.
- */
-@SuppressWarnings("unused")
 public class RobotContainer {
     private final RobotState robotState = RobotState.getInstance();
 
@@ -122,21 +78,17 @@ public class RobotContainer {
     public final Drive drive;
     private final LEDs leds;
     private final LaserCAN1 laserCAN1;
-    private final BeamBreak1 beamBreak1;
-    private final Servo1 servo1;
     private final ObjectDetector objectDetector;
-    private final Superstructure superstructure;
-    private final TurretSuperstructure turret;
+    private final ShooterSuperstructure shooter;
+    private final Intake intake;
+    private final Indexer indexer;
 
     // Controller
     private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoCommand> autoChooser;
-    private final LoggedDashboardChooser<Boolean> conditionalChooser;
     public static Field2d autoPreviewField = new Field2d();
-
-    private final Trigger inAllianceRegionTrigger;
 
     /**
      * The container for the robot. Contains subsystems, IO devices, and commands.
@@ -146,25 +98,16 @@ public class RobotContainer {
         drive = DriveConstants.get();
         laserCAN1 = LaserCAN1Constants.get();
         leds = LEDsConstants.get();
-        beamBreak1 = BeamBreak1Constants.get();
-        superstructure = SuperstructureConstants.get();
-        servo1 = Servo1Constants.get();
         objectDetector = ObjectDetectorConstants.get();
-        turret = TurretSuperstructureConstants.get();
+        shooter = ShooterSuperstructureConstants.get();
+        intake = IntakeConstants.get();
+        indexer = IndexerConstants.get();
         VisionConstants.create();
 
-        conditionalChooser = new LoggedDashboardChooser<>("Conditional Choice");
-        conditionalChooser.addOption("True", true);
-        conditionalChooser.addOption("False", false);
-
-        // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
-
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("ExampleAuto", new ExampleAuto(drive));
-        autoChooser.addOption("BranchingAuto",
-            new BranchingAuto(drive, () -> conditionalChooser.get()));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
@@ -174,11 +117,6 @@ public class RobotContainer {
             new WheelCharacterizationAuto(drive));
 
         autoChooser.addOption("Wheel Slip Characterization", new WheelSlipAuto(drive));
-
-        inAllianceRegionTrigger = new Trigger(() -> PointInPolygon.pointInPolygon(
-            robotState.getEstimatedPose().getTranslation(),
-            FieldConstants.ALLIANCE_STATION_POLYGON));
-
         // Configure the button bindings
         configureButtonBindings();
 
@@ -187,7 +125,6 @@ public class RobotContainer {
 
 
     }
-
 
     /**
      * Use this method to define your button->command mappings. Buttons can be created by
@@ -205,18 +142,15 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-        // Lock to 0° when A button is held
-        controller
-            .a()
-            .whileTrue(
-                DriveCommands.joystickDriveAtAngle(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX(),
-                    () -> new Rotation2d()));
+        // Right Trigger: Teleop vision align to largest contour (translation allowed)
+        controller.rightTrigger(0.2)
+            .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
+                () -> -controller.getLeftY(), // forward/back
+                () -> -controller.getLeftX(), // strafe
+                () -> -controller.getRightX())); // fallback rotation
 
-        // Switch to X pattern when X button is pressed
-        // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+        // Left Bumper: Intake while held
+        controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
 
         // Reset gyro to 0° when B button is pressed
         controller
@@ -273,10 +207,7 @@ public class RobotContainer {
             Commands.runOnce(() -> System.out.println("Step 3")));
 
         SmartDashboard.putData("Steppable Command", steppableCommand);
-        robotState.hubChange
-            .onTrue(Commands.runOnce(() -> SmartDashboard.putBoolean("hub warn", true)));
-        robotState.hubChange
-            .onTrue(Commands.runOnce(() -> SmartDashboard.putBoolean("hub warn", false)));
+
         // controller.x()
         // .whileTrue(new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
         // .withTolerance(Inches.of(3), Degrees.of(5)));
@@ -295,14 +226,8 @@ public class RobotContainer {
         inAllianceRegionTrigger.onFalse(
             Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", false))
                 .ignoringDisable(true));
-
     }
 
-    /**
-     * Use this to pass the autonomous command to the main {@link Robot} class.
-     *
-     * @return the command to run in autonomous
-     */
     public Command getAutonomousCommand()
     {
         return autoChooser.get();

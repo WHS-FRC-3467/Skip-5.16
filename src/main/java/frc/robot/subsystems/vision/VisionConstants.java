@@ -15,12 +15,9 @@
 
 package frc.robot.subsystems.vision;
 
-import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
-import java.io.IOException;
 import java.util.Optional;
-import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
@@ -128,45 +125,14 @@ public class VisionConstants {
     public static final Time FRONT_LEFT_LATENCY_STDDEV = Milliseconds.of(5);  
     public static final Time FRONT_RIGHT_LATENCY_STDDEV = Milliseconds.of(5);  
 
-    public static final SimCameraProperties FRONT_LEFT_CONFIG = getCameraProperties(
-        "vision_configs/ttb_cam_0/ttb_cam_0",
-        FRONT_LEFT_RESOLUTION_WIDTH,
-        FRONT_LEFT_RESOLUTION_HEIGHT,
-        "left");
-
-    public static final SimCameraProperties FRONT_RIGHT_CONFIG = getCameraProperties(
-        "vision_configs/ttb_cam_1/ttb_cam_1",
-        FRONT_RIGHT_RESOLUTION_WIDTH,
-        FRONT_RIGHT_RESOLUTION_HEIGHT,
-        "right");
-
-    // Private helper method returning camera intrinsics from JSON calibration path
-   private static SimCameraProperties getCameraProperties(String path, int width, int height, String cameraLocation)  
-    {  
-        SimCameraProperties config;  
-        try {  
-            config = new SimCameraProperties(path, width, height);  
-        } catch (IOException e) {  
-            // Invalid path? Default to reasonable values, assuming left ~ right.  
-            e.printStackTrace();  
-            config = new SimCameraProperties();  
-            if (cameraLocation.equals("right")) {
-                config.setCalibration(width, height, FRONT_RIGHT_MATRIX, FRONT_RIGHT_DIST_COEFFS);  
-            } else {
-                config.setCalibration(width, height, FRONT_LEFT_MATRIX, FRONT_LEFT_DIST_COEFFS);  
-            }
-        }  
-        return config;  
-    }  
-
     public static final CameraProperties FRONT_LEFT =
         new CameraProperties(
             FRONT_LEFT_NAME,
             FRONT_LEFT_TRANSFORM,
-            FRONT_LEFT_CONFIG.getIntrinsics(),
-            FRONT_LEFT_CONFIG.getDistCoeffs(),
-            FRONT_LEFT_CONFIG.getResWidth(),
-            FRONT_LEFT_CONFIG.getResHeight(),
+            FRONT_LEFT_MATRIX,
+            FRONT_LEFT_DIST_COEFFS,
+            FRONT_LEFT_RESOLUTION_WIDTH,
+            FRONT_LEFT_RESOLUTION_HEIGHT,
             FRONT_LEFT_STDDEV_FACTOR,
             FRONT_LEFT_FOV,
             FRONT_LEFT_FPS,
@@ -177,10 +143,10 @@ public class VisionConstants {
         new CameraProperties(
             FRONT_RIGHT_NAME,
             FRONT_RIGHT_TRANSFORM,
-            FRONT_RIGHT_CONFIG.getIntrinsics(),
-            FRONT_RIGHT_CONFIG.getDistCoeffs(),
-            FRONT_RIGHT_CONFIG.getResWidth(),
-            FRONT_RIGHT_CONFIG.getResHeight(),
+            FRONT_RIGHT_MATRIX,
+            FRONT_RIGHT_DIST_COEFFS,
+            FRONT_RIGHT_RESOLUTION_WIDTH,
+            FRONT_RIGHT_RESOLUTION_HEIGHT,
             FRONT_RIGHT_STDDEV_FACTOR,
             FRONT_RIGHT_FOV,
             FRONT_RIGHT_FPS,
