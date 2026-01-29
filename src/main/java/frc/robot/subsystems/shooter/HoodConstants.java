@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.turret;
+package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Foot;
@@ -38,9 +38,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Defines configuration and physical constants for the turret hood mechanism,
- * including motion constraints, geometry, motor model, and control gains used
- * to construct the {@link RotaryMechanism} instance for different robot modes.
+ * Defines configuration and physical constants for the turret hood mechanism, including motion
+ * constraints, geometry, motor model, and control gains used to construct the
+ * {@link RotaryMechanism} instance for different robot modes.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HoodConstants {

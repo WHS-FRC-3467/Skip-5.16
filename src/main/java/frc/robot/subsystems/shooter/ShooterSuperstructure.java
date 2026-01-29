@@ -155,6 +155,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     {
         return setFlywheelSpeed(velocity);
     }
+
     @Override
     public void periodic()
     {

@@ -30,6 +30,7 @@ import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.BallSimulator;
 import frc.robot.util.FuelSim;
 import frc.robot.util.HubState;
+import frc.robot.util.FuelSim;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -245,6 +246,8 @@ public class Robot extends LoggedRobot {
     @Override
     public void simulationPeriodic()
     {
+        FuelSim.getInstance().updateSim();
+
         FuelSim.getInstance().updateSim();
     }
 }

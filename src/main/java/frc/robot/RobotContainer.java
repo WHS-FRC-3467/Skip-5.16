@@ -15,37 +15,16 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
-import frc.lib.util.LoggedTunableNumber;
-import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
-import frc.lib.util.GamePieceVisualizer;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.OnTheFlyPathCommand;
 import frc.robot.commands.TeleopAlignToObject;
 import frc.robot.commands.autos.ExampleAuto;
 import frc.robot.commands.autos.NoneAuto;
@@ -62,20 +41,14 @@ import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
-import frc.robot.subsystems.turret.ShooterSuperstructure;
-import frc.robot.subsystems.turret.ShooterSuperstructureConstants;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.util.BallSimulator;
 import frc.robot.util.FuelSim;
-import frc.robot.subsystems.lasercan1.LaserCAN1;
-import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import java.util.ArrayList;
-import java.util.Arrays;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public class RobotContainer {
@@ -84,7 +57,6 @@ public class RobotContainer {
     // Subsystems
     public final Drive drive;
     private final LEDs leds;
-    private final LaserCAN1 laserCAN1;
     private final ObjectDetector objectDetector;
     private final ShooterSuperstructure shooter;
     private final Intake intake;
@@ -103,7 +75,6 @@ public class RobotContainer {
     public RobotContainer()
     {
         drive = DriveConstants.get();
-        laserCAN1 = LaserCAN1Constants.get();
         leds = LEDsConstants.get();
         objectDetector = ObjectDetectorConstants.get();
         shooter = ShooterSuperstructureConstants.get();
@@ -126,19 +97,10 @@ public class RobotContainer {
         autoChooser.addOption("Wheel Slip Characterization", new WheelSlipAuto(drive));
         // Configure the button bindings
         configureButtonBindings();
-
-        GamePieceVisualizer algae = new GamePieceVisualizer("Algae",
-            new Pose3d(new Translation3d(3, 3, 1), new Rotation3d(0, 0, 0)));
-
-
+        initializeDashboard();
+        configureFuelSim();
     }
 
-    /**
-     * Use this method to define your button->command mappings. Buttons can be created by
-     * instantiating a {@link GenericHID} or one of its subclasses
-     * ({@link edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a
-     * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-     */
     private void configureButtonBindings()
     {
         // Default command, normal field-relative drive
@@ -159,80 +121,58 @@ public class RobotContainer {
         // Left Bumper: Intake while held
         controller.leftBumper().onTrue(intake.runIntake(State.INTAKE)).onFalse(intake.stop());
 
-        // Reset gyro to 0° when B button is pressed
-        controller
-            .b()
-            .onTrue(
-                Commands.runOnce(
-                    () -> robotState.resetPose(
-                        new Pose2d(robotState.getEstimatedPose().getTranslation(),
-                            new Rotation2d())))
-                    .ignoringDisable(true));
+        // Back Button: Eject while held
+        controller.back().onTrue(intake.runIntake(State.EJECT)).onFalse(intake.stop());
 
-        // Pathfind to Pose when the Y button is pressed
-        controller.y().onTrue(
-            DriveCommands.pathFindToPose(() -> robotState.getEstimatedPose(),
-                new Pose2d(1, 4, Rotation2d.kZero),
-                PathConstants.ON_THE_FLY_PATH_CONSTRAINTS, MetersPerSecond.of(0.0),
-                PathConstants.PATHGENERATION_DRIVE_TOLERANCE));
+        controller.rightTrigger().whileTrue(
+            shooter.prepareShot(
+                indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
+    }
 
-        // On-the-fly path with waypoints while the Right Bumper is held
-        controller.rightBumper().whileTrue(
-            new OnTheFlyPathCommand(drive, () -> robotState.getEstimatedPose(),
-                new ArrayList<>(Arrays.asList()), // List
-                // of
-                // waypoints
-                new Pose2d(6, 6, Rotation2d.k180deg), PathConstants.ON_THE_FLY_PATH_CONSTRAINTS,
-                MetersPerSecond.of(0.0), false, PathConstants.PATHGENERATION_DRIVE_TOLERANCE,
-                PathConstants.PATHGENERATION_ROT_TOLERANCE));
-        /*
-         * SmartDashboard.putData("Superstructure: Stow",
-         * superstructure.setGoal(Superstructure.Setpoint.STOW));
-         * SmartDashboard.putData("Superstructure: Raised",
-         * superstructure.setGoal(Superstructure.Setpoint.RAISED));
-         */
-        LoggedTunableNumber ballVel = new LoggedTunableNumber("Ball Sim Velocity (fps)", 15);
-        SmartDashboard.putData("Shoot Ball", Commands
-            .runOnce(() -> BallSimulator.launch(FeetPerSecond.of(ballVel.getAsDouble()))));
 
-        GamePieceVisualizer algaeViz =
-            new GamePieceVisualizer("Algae #1", new Pose3d(1, 1, 1, new Rotation3d()));
-        SmartDashboard.putData("Hide Algae", Commands.runOnce(() -> algaeViz.hide()));
+    // Setup all SmartDashboard commands
+    private void initializeDashboard()
+    {
+        SmartDashboard.putData("Indexer/Expel", indexer.setStateCommand(Indexer.State.EXPEL));
+        SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
+        SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
-        LoggedTuneableProfiledPID linearController =
-            new LoggedTuneableProfiledPID("DriveToPose/LinearController", 3.0, 0, 0.1, 0, 3.0);
+        SmartDashboard.putData("Intake/Eject", intake.runIntake(Intake.State.EJECT));
+        SmartDashboard.putData("Intake/Intake", intake.runIntake(Intake.State.INTAKE));
+        SmartDashboard.putData("Intake/Stop", intake.runIntake(Intake.State.STOP));
+        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
+            Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
 
-        SmartDashboard.putData("DriveToPose Command",
-            new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
-                .withTolerance(Inches.of(3), Degrees.of(5)));
+        SmartDashboard.putData("Shoot ball",
+            Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
+                new Translation3d(robotState.getEstimatedPose().getTranslation()),
+                FuelSim.getInstance().launchVel(FeetPerSecond.of(25), Degrees.of(60)))));
+    }
 
-        Command steppableCommand = new SteppableCommandGroup(
-            controller.x(),
-            controller.y(),
-            Commands.runOnce(() -> System.out.println("Step 1")),
-            Commands.runOnce(() -> System.out.println("Step 2")),
-            Commands.runOnce(() -> System.out.println("Step 3")));
+    private void configureFuelSim()
+    {
+        FuelSim instance = FuelSim.getInstance();
+        instance.spawnStartingFuel();
+        instance.registerRobot(
+            Constants.FULL_ROBOT_WIDTH.in(Meters),
+            Constants.FULL_ROBOT_LENGTH.in(Meters),
+            Constants.BUMPER_HEIGHT.in(Meters),
+            robotState::getEstimatedPose,
+            robotState::getVelocity);
+        instance.registerIntake(
+            -Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
+            Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(10)).in(Meters),
+            -Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
+            Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
+            controller.x());
 
-        SmartDashboard.putData("Steppable Command", steppableCommand);
-
-        // controller.x()
-        // .whileTrue(new DriveToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(90)))
-        // .withTolerance(Inches.of(3), Degrees.of(5)));
-
-        // controller.x()
-        // .whileTrue(new AlignToPose(drive, () -> new Pose2d(5, 5, Rotation2d.fromDegrees(0)),
-        // AlignMode.STRAFE, () -> controller.getRightX()));
-
-        // Right bumper: Shoot on the Move
-        controller.rightBumper().whileTrue(
-            turret.shoot(drive, () -> -controller.getLeftX(), () -> -controller.getLeftY()));
-
-        inAllianceRegionTrigger.onTrue(
-            Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", true))
-                .ignoringDisable(true));
-        inAllianceRegionTrigger.onFalse(
-            Commands.runOnce(() -> Logger.recordOutput("InAllianceRegionTrigger", false))
-                .ignoringDisable(true));
+        instance.start();
+        SmartDashboard.putData(Commands.runOnce(() -> {
+            FuelSim.getInstance().clearFuel();
+            FuelSim.getInstance().spawnStartingFuel();
+        })
+            .withName("Reset Fuel")
+            .ignoringDisable(true));
     }
 
     public Command getAutonomousCommand()
