@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
 // Class containing larger command units consisting of individual commands or small-group command
@@ -43,5 +44,33 @@ public class AutoSegments {
                 AutoBuilder.followPath(path),
                 shooter.spinUpShooter()).withTimeout(2.75),
             AutoCommands.shootFuel(indexer, shooter, 1));
+    }
+
+    // Follow a path and empty the hopper by shooting
+    public static Command makeFullShot(Drive drive, Indexer indexer,
+        ShooterSuperstructure shooter, PathPlannerPath path)
+    {
+
+        // Drive to shooting location while spinning up shooter but not indexing. Once at
+        // position, with the shooter still spinning, bring up the indexer to begin shooting.
+        // Shoot all preload. Bring down indexer to end -- shooter will idle at speed. If path
+        // doesn't complete in 2.75s, attempt a shot anyway.
+        return Commands.sequence(
+            new ParallelDeadlineGroup(
+                AutoBuilder.followPath(path),
+                shooter.spinUpShooter()).withTimeout(3.5),
+            AutoCommands.shootFuel(indexer, shooter, 3));
+    }
+
+
+    // Follow a path and collect FUEL
+    public static Command driveAndIntake(Drive drive, Intake intake, PathPlannerPath drivePath, PathPlannerPath intakingPath) {
+        // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the intaking path is complete, stop the intake.
+        return Commands.sequence(
+            AutoBuilder.followPath(drivePath),
+            new ParallelDeadlineGroup(
+                AutoBuilder.followPath(intakingPath),
+                intake.runIntake(Intake.State.INTAKE)),
+            intake.stop());
     }
 }

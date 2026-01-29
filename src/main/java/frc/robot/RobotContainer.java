@@ -84,6 +84,10 @@ public class RobotContainer {
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("PreloadNeutralAuto",
             new PreloadNeutralAuto(drive, intake, indexer, shooter, StartPosition.CENTER));
+        
+        // Depot Auto - Start at Center
+        autoChooser.addOption("DepotAuto",
+            new DepotAuto(drive, intake, indexer, shooter, StartPosition.CENTER));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
