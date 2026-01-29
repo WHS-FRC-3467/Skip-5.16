@@ -7,7 +7,9 @@ package frc.lib.util;
 import static edu.wpi.first.units.Units.Meters;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.FieldConstants;
@@ -15,6 +17,7 @@ import frc.robot.FieldConstants;
 /** Utility class for field-related methods. */
 public class FieldUtil {
     private static final Translation2d fieldCenter = FieldConstants.FIELD_CENTER;
+    private static final Translation3d fieldCenter3D = FieldConstants.FIELD_CENTER3D;
 
     /**
      * Whether or not a pose needs to be flipped
@@ -44,6 +47,13 @@ public class FieldUtil {
         return shouldFlip() ? blue_rotation.plus(Rotation2d.k180deg) : blue_rotation;
     }
 
+    public static Translation3d handleAllianceFlip(Translation3d blue_translation)
+    {
+        return shouldFlip()
+            ? blue_translation.rotateAround(fieldCenter3D, new Rotation3d(0, 0, 180.00))
+            : blue_translation;
+    }
+
     /**
      * Checks if a given pose is within the field boundaries, with a specified margin.
      * 
@@ -54,8 +64,8 @@ public class FieldUtil {
     public static boolean isPoseInField(Translation2d translation, Distance margin)
     {
         return translation.getX() >= margin.in(Meters)
-            && translation.getX() <= FieldConstants.FIELD_LENGTH.in(Meters) - margin.in(Meters)
+            && translation.getX() <= FieldConstants.FIELD_LENGTH - margin.in(Meters)
             && translation.getY() >= margin.in(Meters)
-            && translation.getY() <= FieldConstants.FIELD_WIDTH.in(Meters) - margin.in(Meters);
+            && translation.getY() <= FieldConstants.FIELD_WIDTH - margin.in(Meters);
     }
 }
