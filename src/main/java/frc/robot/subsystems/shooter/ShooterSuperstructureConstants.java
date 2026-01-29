@@ -14,6 +14,7 @@ public class ShooterSuperstructureConstants {
     {
         return new ShooterSuperstructure(
             HoodConstants.get(),
-            FlywheelConstants.get());
+            FlywheelConstants.getLeft(),
+            FlywheelConstants.getRight());
     }
 }

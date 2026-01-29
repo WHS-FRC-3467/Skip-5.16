@@ -70,26 +70,35 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final RobotState robotState = RobotState.getInstance();
 
     private final RotaryMechanism<?, ?> hoodIO;
-    private final FlywheelMechanism<?> flywheelIO;
+    private final FlywheelMechanism<?> leftFlywheelIO;
+    private final FlywheelMechanism<?> rightFlywheelIO;
 
-    public ShooterSuperstructure(RotaryMechanism<?, ?> hoodIO,
-        FlywheelMechanism<?> flywheelIO)
+    public ShooterSuperstructure(
+        RotaryMechanism<?, ?> hoodIO,
+        FlywheelMechanism<?> leftFlywheelIO,
+        FlywheelMechanism<?> rightFlywheelIO)
     {
         this.hoodIO = hoodIO;
-        this.flywheelIO = flywheelIO;
+        this.leftFlywheelIO = leftFlywheelIO;
+        this.rightFlywheelIO = rightFlywheelIO;
     }
 
     private void spinFlywheel(AngularVelocity velocity)
     {
-        flywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        leftFlywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        rightFlywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
     private boolean isFlywheelAt(AngularVelocity velocity)
     {
         return MathUtil.isNear(
             velocity.in(RotationsPerSecond),
-            flywheelIO.getVelocity().in(RotationsPerSecond),
-            FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
+            leftFlywheelIO.getVelocity().in(RotationsPerSecond),
+            FlywheelConstants.TOLERANCE.in(RotationsPerSecond)) &&
+            MathUtil.isNear(
+                velocity.in(RotationsPerSecond),
+                rightFlywheelIO.getVelocity().in(RotationsPerSecond),
+                FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     // Hood
@@ -159,14 +168,16 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     @Override
     public void periodic()
     {
-        flywheelIO.periodic();
+        leftFlywheelIO.periodic();
+        rightFlywheelIO.periodic();
         hoodIO.periodic();
     }
 
     @Override
     public void close()
     {
-        flywheelIO.close();
+        leftFlywheelIO.close();
+        rightFlywheelIO.close();
         hoodIO.close();
     }
 }
