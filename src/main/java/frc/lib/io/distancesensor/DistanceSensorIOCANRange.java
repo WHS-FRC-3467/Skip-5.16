@@ -15,6 +15,8 @@
 
 package frc.lib.io.distancesensor;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
@@ -29,6 +31,8 @@ import lombok.Getter;
  * A distance sensor implementation that uses a CANRange
  */
 public class DistanceSensorIOCANRange implements DistanceSensorIO {
+    private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
+
     @Getter
     private final String name;
     private final CANrange CANRange;
@@ -52,7 +56,11 @@ public class DistanceSensorIOCANRange implements DistanceSensorIO {
 
         CANRange = new CANrange(id.id(), new CANBus(id.bus()));
 
-        updateThread.CTRECheckErrorAndRetry(() -> CANRange.getConfigurator().apply(config));
+        updateThread.CTRECheckErrorAndRetry(() -> CANRange.getConfigurator().apply(config))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
 
         ambientSignal = CANRange.getAmbientSignal();
         distance = CANRange.getDistance();

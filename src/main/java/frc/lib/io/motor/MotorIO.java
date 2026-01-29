@@ -31,6 +31,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.lib.util.PID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -170,6 +171,15 @@ public interface MotorIO extends AutoCloseable {
      * @param position Desired position to set encoder to
      */
     public default void setEncoderPosition(Angle position)
+    {}
+
+    /**
+     * Updates one PID slot on the motor
+     * 
+     * @param slot The slot to update
+     * @param pid The PID to set
+     */
+    public default void setPID(PIDSlot slot, PID pid)
     {}
 
     @Override

@@ -16,6 +16,8 @@
 package frc.lib.io.beambreak;
 
 import static edu.wpi.first.units.Units.Millimeters;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import au.grapplerobotics.interfaces.LaserCanInterface;
 import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
 import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
@@ -33,6 +35,8 @@ import lombok.Getter;
  * A beam break sensor implementation that uses a LaserCAN
  */
 public class BeamBreakIOLaserCAN implements BeamBreakIO {
+    private static final Logger LOGGER = Logger.getLogger(BeamBreakIOLaserCAN.class.getName());
+
     @Getter
     private final String name;
     private final LaserCANConfigurator laserCAN;
@@ -70,10 +74,24 @@ public class BeamBreakIOLaserCAN implements BeamBreakIO {
 
         laserCAN = new LaserCANConfigurator(id.id());
 
-        updateThread.LaserCANCheckErrorAndRetry(() -> laserCAN.setRangingMode(rangingMode));
+        updateThread.laserCANCheckErrorAndRetry(() -> laserCAN.setRangingMode(rangingMode))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+
         updateThread
-            .LaserCANCheckErrorAndRetry(() -> laserCAN.setRegionOfInterest(regionOfInterest));
-        updateThread.LaserCANCheckErrorAndRetry(() -> laserCAN.setTimingBudget(timingBudget));
+            .laserCANCheckErrorAndRetry(() -> laserCAN.setRegionOfInterest(regionOfInterest))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+
+        updateThread.laserCANCheckErrorAndRetry(() -> laserCAN.setTimingBudget(timingBudget))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
     }
 
     @Override
