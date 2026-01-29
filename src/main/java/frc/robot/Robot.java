@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.BallSimulator;
 import frc.robot.util.FuelSim;
-import frc.robot.util.HubState;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;

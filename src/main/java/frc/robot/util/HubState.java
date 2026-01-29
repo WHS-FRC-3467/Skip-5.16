@@ -25,7 +25,7 @@ import lombok.AccessLevel;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HubState {
 
-    private static double[] HUB_CHANGE_TIMES = { 
+    private static final double[] HUB_CHANGE_TIMES = {
             130.0,
             105.0,
             80.0,
@@ -33,26 +33,31 @@ public class HubState {
             30.0,
     };
 
-    private static double SECONDS_BEFORE = 5.0; // const for the seconds before the hubChange trigger activates
+    private static final double SECONDS_BEFORE = 5.0; // const for the seconds before the hubChange
+    // trigger activates
 
     @Getter(lazy = true)
     private static final HubState instance = new HubState();
 
-    public Trigger hubChange = new Trigger(this::isHubCloseToActive); // activates x seconds before the next hub change
-    public Trigger hubActive = new Trigger(this::isAllianceHubActive); // tells the robot if the hub is active
+    public Trigger hubChange = new Trigger(this::isHubCloseToActive); // activates x seconds before
+                                                                      // the next hub change
+    public Trigger hubActive = new Trigger(this::isAllianceHubActive); // tells the robot if the hub
+                                                                       // is active
 
     public DriverStation.Alliance getActiveAlliance = Alliance.Red;
 
 
     public void checkActiveAlliance()
     {
-        if (DriverStation.getMatchTime() >= 130) { // init which only gets the data from the DS in the first 5 seconds of auto
+        if (DriverStation.getMatchTime() >= 130) { // init which only gets the data from the DS in
+                                                   // the first 5 seconds of auto
             getActiveAlliance = switch (DriverStation.getGameSpecificMessage().charAt(0)) {
                 case 'R' -> Alliance.Red;
                 case 'B' -> Alliance.Blue;
                 default -> Alliance.Blue;
             };
-        } else if (getActiveAlliance == Alliance.Blue) { // simple switcher which alternates between R & B every time the fn is called
+        } else if (getActiveAlliance == Alliance.Blue) { // simple switcher which alternates between
+                                                         // R & B every time the fn is called
             getActiveAlliance = Alliance.Red;
         } else if (getActiveAlliance == Alliance.Red) {
             getActiveAlliance = Alliance.Blue;
@@ -74,16 +79,11 @@ public class HubState {
 
     public boolean isHubCloseToActive()
     {
-        if (DriverStation.getMatchTime() - findClosestTime() <= SECONDS_BEFORE) {
-
-            return true;
-        } else {
-            return false;
-        }
+        return DriverStation.getMatchTime() - findClosestTime() <= SECONDS_BEFORE;
     }
 
 
-    private boolean toggle = true; // toggle turns off when the match time is 0.1 seconds away fro
+    private boolean toggle = true; // toggle turns off when the match time is 0.1 seconds away from
     // the closest hub change times
 
     public boolean isAllianceHubActive()
@@ -100,7 +100,7 @@ public class HubState {
                 toggle = true;
             }
         }
-        return getActiveAlliance == DriverStation.getAlliance().get() ? true : false;
+        return getActiveAlliance == DriverStation.getAlliance().orElse(Alliance.Blue);
 
     }
 
