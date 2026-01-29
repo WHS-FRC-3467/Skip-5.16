@@ -242,6 +242,36 @@ public class RobotState {
     private boolean timeout = false;
     private static double secondsBefore = 5.0;
     public Trigger hubChange = new Trigger(() -> isHubCloseToActive());
+    public Trigger hubActive = new Trigger(this::isHubActive2);
+
+    public DriverStation.Alliance getActiveAlliance;
+
+    public void checkActiveAlliance()
+    {
+        if (findClosestTime() >= 130.0) {
+            getActiveAlliance = switch (DriverStation.getGameSpecificMessage().charAt(0)) {
+                case 'R' -> Alliance.Red;
+                case 'B' -> Alliance.Blue;
+                default -> Alliance.Blue;
+            };
+        } else if (getActiveAlliance == Alliance.Blue) {
+            getActiveAlliance = Alliance.Red;
+        } else if (getActiveAlliance == Alliance.Red) {
+            getActiveAlliance = Alliance.Blue;
+        }
+
+    }
+
+    boolean isHubActive2()
+    {
+
+        checkActiveAlliance();
+        if (getActiveAlliance == DriverStation.getAlliance().get()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * @return a trigger that briefly reports true when remaining match time is first within x
@@ -285,6 +315,7 @@ public class RobotState {
             return false;
         }
     }
+
 
     private double findClosestTime()
     {

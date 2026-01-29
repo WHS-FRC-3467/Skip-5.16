@@ -22,8 +22,10 @@ import au.grapplerobotics.CanBridge;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.BallSimulator;
 import frc.robot.util.FuelSim;
@@ -157,7 +159,7 @@ public class Robot extends LoggedRobot {
 
         BallSimulator.update();
         RobotState.getInstance().publishMechanismPoses();
-
+        SmartDashboard.putNumber("time", DriverStation.getMatchTime());
     }
 
     /** This function is called once when the robot is disabled. */
@@ -210,8 +212,13 @@ public class Robot extends LoggedRobot {
     @Override
     public void teleopPeriodic()
     {
-
+        robotState.hubChange.onChange(Commands.runOnce(
+            () -> SmartDashboard.putBoolean("hub change", robotState.hubChange.getAsBoolean())));
+        robotState.hubActive.onChange(Commands.runOnce(
+            () -> SmartDashboard.putBoolean("hub active", robotState.hubActive.getAsBoolean())));
+        SmartDashboard.putString("active allience", robotState.getActiveAlliance.name());
     }
+
 
     /** This function is called once when test mode is enabled. */
     @Override
