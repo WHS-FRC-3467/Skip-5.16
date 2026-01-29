@@ -43,13 +43,15 @@ import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
-import frc.robot.subsystems.turret.ShooterSuperstructure;
-import frc.robot.subsystems.turret.ShooterSuperstructureConstants;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.lasercan1.LaserCAN1;
-import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
+import frc.robot.util.FuelSim;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import edu.wpi.first.math.geometry.Translation3d;
 
 public class RobotContainer {
     private final RobotState robotState = RobotState.getInstance();
@@ -57,7 +59,6 @@ public class RobotContainer {
     // Subsystems
     public final Drive drive;
     private final LEDs leds;
-    private final LaserCAN1 laserCAN1;
     private final ObjectDetector objectDetector;
     private final ShooterSuperstructure shooter;
     private final IntakeRoller intakeRoller;
@@ -77,7 +78,6 @@ public class RobotContainer {
     public RobotContainer()
     {
         drive = DriveConstants.get();
-        laserCAN1 = LaserCAN1Constants.get();
         leds = LEDsConstants.get();
         objectDetector = ObjectDetectorConstants.get();
         shooter = ShooterSuperstructureConstants.get();
@@ -102,6 +102,7 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
+        configureFuelSim();
     }
 
     private void configureButtonBindings()
@@ -122,7 +123,8 @@ public class RobotContainer {
                 () -> -controller.getRightX())); // fallback rotation
 
         // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intakeRoller.runIntake(State.INTAKE)).onFalse(intakeRoller.stop());
+        controller.leftBumper().onTrue(intakeRoller.runIntake(State.INTAKE))
+            .onFalse(intakeRoller.stop());
 
         // Back Button: Eject while held
         controller.back().onTrue(intakeRoller.runIntake(State.EJECT)).onFalse(intakeRoller.stop());
@@ -140,13 +142,60 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
-        SmartDashboard.putData("Intake Roller/Eject", intakeRoller.runIntake(IntakeRoller.State.EJECT));
-        SmartDashboard.putData("Intake Roller/Intake", intakeRoller.runIntake(IntakeRoller.State.INTAKE));
-        SmartDashboard.putData("Intake Roller/Stop", intakeRoller.runIntake(IntakeRoller.State.STOP));
+        SmartDashboard.putData("Intake Roller/Eject",
+            intakeRoller.runIntake(IntakeRoller.State.EJECT));
+        SmartDashboard.putData("Intake Roller/Intake",
+            intakeRoller.runIntake(IntakeRoller.State.INTAKE));
+        SmartDashboard.putData("Intake Roller/Stop",
+            intakeRoller.runIntake(IntakeRoller.State.STOP));
         SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
         SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
         SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
-        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase", Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
+
+        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
+            Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
+
+        SmartDashboard.putData("Shoot ball",
+            Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
+                new Translation3d(robotState.getEstimatedPose().getTranslation()),
+                FuelSim.getInstance().launchVel(FeetPerSecond.of(25), Degrees.of(60)))));
+    }
+
+    private void configureFuelSim()
+    {
+        FuelSim instance = FuelSim.getInstance();
+        instance.spawnStartingFuel();
+        instance.registerRobot(
+            Constants.FULL_ROBOT_WIDTH.in(Meters),
+            Constants.FULL_ROBOT_LENGTH.in(Meters),
+            Constants.BUMPER_HEIGHT.in(Meters),
+            robotState::getEstimatedPose,
+            robotState::getVelocity);
+        instance.registerIntake(
+            -Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
+            Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(10)).in(Meters),
+            -Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
+            Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
+            controller.x());
+
+        instance.start();
+        SmartDashboard.putData(Commands.runOnce(() -> {
+            FuelSim.getInstance().clearFuel();
+            FuelSim.getInstance().spawnStartingFuel();
+        })
+            .withName("Reset Fuel")
+            .ignoringDisable(true));
+        SmartDashboard.putData("Intake Roller/Eject",
+            intakeRoller.runIntake(IntakeRoller.State.EJECT));
+        SmartDashboard.putData("Intake Roller/Intake",
+            intakeRoller.runIntake(IntakeRoller.State.INTAKE));
+        SmartDashboard.putData("Intake Roller/Stop",
+            intakeRoller.runIntake(IntakeRoller.State.STOP));
+        SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
+        SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
+        SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
+        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
+            Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
     }
 
     public Command getAutonomousCommand()
