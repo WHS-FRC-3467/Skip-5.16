@@ -30,14 +30,13 @@ This codebase uses a **hardware abstraction layer** to make robot code portable 
 3. **Subsystems**: High-level robot logic extends WPILib's `SubsystemBase`
    - Accept an `IO` interface in the constructor (dependency injection)
    - Contain robot behavior and state machines
-   - Call `Logger.processInputs()` to log sensor data
+   - Call `io.periodic()` to update io interface inputs
 
 ### Best Practices
 
 - **Keep subsystems hardware-agnostic**: They should only use the IO interface, never vendor classes directly
 - **Log everything**: Use AdvantageKit's `@AutoLog` for all sensor inputs
 - **One IO implementation per hardware type**: Separate real vs. simulation, different motor controllers, etc.
-- **Throw from default interface methods**: Default methods in IO interfaces should throw `NotImplementedException` to ensure they are explicitly implemented where needed.
 - **Commands for actions**: Use WPILib's command-based framework for robot behaviors
 - **Constants in separate classes**: Keep tunable values organized and easy to find
 
