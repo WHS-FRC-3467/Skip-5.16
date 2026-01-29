@@ -37,12 +37,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
+import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
+import frc.lib.util.GamePieceVisualizer;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.OnTheFlyPathCommand;
 import frc.robot.commands.TeleopAlignToObject;
 import frc.robot.commands.autos.ExampleAuto;
 import frc.robot.commands.autos.NoneAuto;
@@ -62,6 +65,7 @@ import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import frc.robot.subsystems.turret.ShooterSuperstructure;
 import frc.robot.subsystems.turret.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.BallSimulator;
 import frc.robot.util.FuelSim;
 import frc.robot.subsystems.lasercan1.LaserCAN1;
 import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
@@ -69,6 +73,9 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import java.util.ArrayList;
+import java.util.Arrays;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public class RobotContainer {
@@ -178,12 +185,12 @@ public class RobotContainer {
                 new Pose2d(6, 6, Rotation2d.k180deg), PathConstants.ON_THE_FLY_PATH_CONSTRAINTS,
                 MetersPerSecond.of(0.0), false, PathConstants.PATHGENERATION_DRIVE_TOLERANCE,
                 PathConstants.PATHGENERATION_ROT_TOLERANCE));
-
-        SmartDashboard.putData("Superstructure: Stow",
-            superstructure.setGoal(Superstructure.Setpoint.STOW));
-        SmartDashboard.putData("Superstructure: Raised",
-            superstructure.setGoal(Superstructure.Setpoint.RAISED));
-
+        /*
+         * SmartDashboard.putData("Superstructure: Stow",
+         * superstructure.setGoal(Superstructure.Setpoint.STOW));
+         * SmartDashboard.putData("Superstructure: Raised",
+         * superstructure.setGoal(Superstructure.Setpoint.RAISED));
+         */
         LoggedTunableNumber ballVel = new LoggedTunableNumber("Ball Sim Velocity (fps)", 15);
         SmartDashboard.putData("Shoot Ball", Commands
             .runOnce(() -> BallSimulator.launch(FeetPerSecond.of(ballVel.getAsDouble()))));

@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.BallSimulator;
 import frc.robot.util.FuelSim;
+import frc.robot.util.HubState;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -48,6 +49,8 @@ public class Robot extends LoggedRobot {
 
     private Command autonomousCommand;
     private RobotContainer robotContainer;
+
+    private final HubState hubState = HubState.getInstance();
 
     public Robot()
     {
@@ -212,11 +215,11 @@ public class Robot extends LoggedRobot {
     @Override
     public void teleopPeriodic()
     {
-        robotState.hubChange.onChange(Commands.runOnce(
-            () -> SmartDashboard.putBoolean("hub change", robotState.hubChange.getAsBoolean())));
-        robotState.hubActive.onChange(Commands.runOnce(
-            () -> SmartDashboard.putBoolean("hub active", robotState.hubActive.getAsBoolean())));
-        SmartDashboard.putString("active allience", robotState.getActiveAlliance.name());
+        hubState.hubChange.onChange(Commands.runOnce(
+            () -> SmartDashboard.putBoolean("hub change", hubState.hubChange.getAsBoolean())));
+        hubState.hubActive.onChange(Commands.runOnce(
+            () -> SmartDashboard.putBoolean("hub active", hubState.hubActive.getAsBoolean())));
+        SmartDashboard.putString("active allience", hubState.getActiveAlliance.name());
     }
 
 
