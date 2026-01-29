@@ -54,7 +54,7 @@ public class Intake extends SubsystemBase {
   
   @Override
   public void periodic() {
-    io.perodic();
+    io.periodic();
   }
 }
 ```
