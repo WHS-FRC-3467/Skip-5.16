@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
+import frc.robot.subsystems.tower.Tower;
+import frc.robot.subsystems.tower.Tower.State;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intakeLinear.IntakeLinear;
@@ -54,15 +56,17 @@ public class AutoCommands {
 
     /**
      * Creates a command sequence to shoot fuel from the robot. Spins up the shooter, only pulls
-     * fuel through the indexer when ready, and then stops indexer afterwards (shooter remains spun
-     * up).
+     * fuel through the indexer when ready, and then stops tower & indexer afterwards (shooter
+     * remains spun up).
      *
      * @param indexer the indexer subsystem
+     * @param tower the tower subsystem
      * @param shooter the shooter superstructure
      * @param duration the maximum duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer
      */
-    public static Command shootFuel(Indexer indexer, ShooterSuperstructure shooter, double duration)
+    public static Command shootFuel(Tower tower, Indexer indexer, ShooterSuperstructure shooter,
+        double duration)
     {
         return Commands.sequence(
             new ParallelDeadlineGroup(
@@ -71,8 +75,9 @@ public class AutoCommands {
             new ParallelDeadlineGroup(
                 Commands.waitSeconds(duration),
                 shooter.spinUpShooter(), // Keep shooter scheduled
+                tower.holdStateUntilInterrupted(State.SHOOT), // Transport game pieces
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)
-                    .onlyWhile(shooter.readyToShoot())),
+                    .onlyWhile(shooter.readyToShoot())), // Shoot pieces while ready
             indexer.holdStateUntilInterrupted(Indexer.State.STOP));
     }
 
@@ -90,7 +95,8 @@ public class AutoCommands {
 
     /**
      * Creates a command to deploy the intake linearly such that the rotary intake can begin to
-     * collect game pieces. The intake will remain extended at the conclusion of this command.
+     * collect game pieces. This command is blocking (2s max) until the deployment is complete. The
+     * intake will remain extended at the conclusion of this command.
      * 
      * @param intake the linear intake subsystem
      * @return a command that deploys the intake and keeps it deployed when finished
@@ -99,13 +105,13 @@ public class AutoCommands {
     {
         return Commands.sequence(
             intake.extend(),
-            Commands.waitUntil(intake.linearStopped)); // Wait until extend is slammed
-
+            Commands.waitUntil(intake.linearStopped).withTimeout(2.0)); // Wait until slam or max
     }
 
     /**
      * Creates a command to retract the intake linearly such that the robot can reduce its swept
-     * volume. The intake will remain retracted at the conclusion of this command.
+     * volume. This command is blocking (2s max) until the retraction is complete. The intake will
+     * remain retracted at the conclusion of this command.
      * 
      * @param intake the linear intake subsystem
      * @return a command that retracts the intake and keeps it retracted when finished
@@ -114,6 +120,6 @@ public class AutoCommands {
     {
         return Commands.sequence(
             intake.retract(),
-            Commands.waitUntil(intake.linearStopped)); // Wait until retract is slammed
+            Commands.waitUntil(intake.linearStopped).withTimeout(2.0)); // Wait until slam or max
     }
 }
