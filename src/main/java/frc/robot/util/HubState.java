@@ -38,13 +38,13 @@ public class HubState {
 
     @Getter(lazy = true)
     private static final HubState instance = new HubState();
-
+    @Getter
     public Trigger hubChange = new Trigger(this::isHubCloseToActive); // activates x seconds before
                                                                       // the next hub change
     public Trigger hubActive = new Trigger(this::isAllianceHubActive); // tells the robot if the hub
                                                                        // is active
 
-    public DriverStation.Alliance getActiveAlliance = Alliance.Red;
+    public DriverStation.Alliance getActiveAlliance = Alliance.Blue;
 
 
     public void checkActiveAlliance()
