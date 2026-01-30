@@ -71,11 +71,14 @@ public class HubState {
     {
         if (DriverStation.getMatchTime() >= 130) { // init which only gets the data from the DS in
                                                    // the first 5 seconds of auto
-            getActiveAlliance = switch (DriverStation.getGameSpecificMessage().charAt(0)) {
-                case 'R' -> Alliance.Red;
-                case 'B' -> Alliance.Blue;
-                default -> Alliance.Blue;
-            };
+            String gameSpecificMessage = DriverStation.getGameSpecificMessage();
+            if (gameSpecificMessage != null && !gameSpecificMessage.isEmpty()) {
+                getActiveAlliance = switch (gameSpecificMessage.charAt(0)) {
+                    case 'R' -> Alliance.Red;
+                    case 'B' -> Alliance.Blue;
+                    default -> Alliance.Blue;
+                };
+            }
         } else if (getActiveAlliance == Alliance.Blue) { // simple switcher which alternates between
                                                          // R & B every time the fn is called
             getActiveAlliance = Alliance.Red;
