@@ -22,8 +22,8 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
-// Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect pieces from
-// the neutral zone, and then shoot them. Strategy layer.
+/** Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect pieces from
+ * the neutral zone, and then shoot them. Strategy layer. */
 public class PreloadNeutralAuto extends AutoRoutine {
 
     public PreloadNeutralAuto(Drive drive, IntakeRoller intake, Indexer indexer,

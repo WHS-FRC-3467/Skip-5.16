@@ -17,28 +17,32 @@ package frc.robot.commands.autos;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intakeLinear.IntakeLinear;
+import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
-// Class containing larger command units consisting of individual commands or small-group command
-// sequences (AutoCommands) strung together for use in creating full Autos. Command integration
-// layer.
+/** Class containing larger command units consisting of individual commands or small-group command
+ * sequences (AutoCommands) strung together for use in creating full Autos. Command integration
+ * layer.
+ */
 public class AutoSegments {
 
-    // Follow a path and shoot preload
+    /**
+     * Follow a PathPlannerPath path and then shoot preload
+     * Drive to shooting location while spinning up shooter but not indexing. Once at
+     * position, with the shooter still spinning, bring up the indexer to begin shooting.
+     * Shoot all preload. Bring down indexer to end -- shooter will idle at speed. If path
+     * doesn't complete in 2.75s, attempt a shot anyway.
+     */
     public static Command makePreloadShot(Drive drive, Indexer indexer,
         ShooterSuperstructure shooter, PathPlannerPath path)
     {
-
-        // Drive to shooting location while spinning up shooter but not indexing. Once at
-        // position, with the shooter still spinning, bring up the indexer to begin shooting.
-        // Shoot all preload. Bring down indexer to end -- shooter will idle at speed. If path
-        // doesn't complete in 2.75s, attempt a shot anyway.
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
@@ -46,15 +50,19 @@ public class AutoSegments {
             AutoCommands.shootFuel(indexer, shooter, 1));
     }
 
-    // Follow a path and empty the hopper by shooting
+    /** 
+     * Follow a path to shooting location while spinning up shooter but not indexing. Once at
+     * position, with the shooter still spinning, bring up the indexer to begin shooting.
+     * Shoot all FUEL for up to 3s. Bring down indexer to end -- shooter will idle at speed. If path
+     * doesn't complete in 3.5s, attempt a shot anyway.
+     * @param drive The Drive subsystem
+     * @param indexer The Indexer subsystem
+     * @param shooter The ShooterSuperstructure subsystem
+     * @param path The path to drive to the shooting location, the robot will shoot from the path's end pose
+     */
     public static Command makeFullShot(Drive drive, Indexer indexer,
         ShooterSuperstructure shooter, PathPlannerPath path)
     {
-
-        // Drive to shooting location while spinning up shooter but not indexing. Once at
-        // position, with the shooter still spinning, bring up the indexer to begin shooting.
-        // Shoot all preload. Bring down indexer to end -- shooter will idle at speed. If path
-        // doesn't complete in 2.75s, attempt a shot anyway.
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
@@ -63,14 +71,27 @@ public class AutoSegments {
     }
 
 
-    // Follow a path and collect FUEL
-    public static Command driveAndIntake(Drive drive, Intake intake, PathPlannerPath drivePath, PathPlannerPath intakingPath) {
+    /** 
+     * @return a Command to Follow a path and collect FUEL in AUTO
+     * @param drive The Drive subsystem
+     * @param intakeLinear The IntakeLinear subsystem
+     * @param intake The IntakeRoller subsystem
+     * @param drivePath The path to drive to the intaking location
+     * @param intakingPath The path to drive while intaking FUEL
+     * @param afterPathWait The time to wait after the intaking path is complete before stopping the intake
+     */
+    public static Command driveAndIntake(Drive drive, IntakeLinear intakeLinear, IntakeRoller intakeRoller, PathPlannerPath drivePath, PathPlannerPath intakingPath, Time afterPathWait) {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the intaking path is complete, stop the intake.
         return Commands.sequence(
             AutoBuilder.followPath(drivePath),
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(intakingPath),
-                intake.runIntake(Intake.State.INTAKE)),
-            intake.stop());
+                intakeLinear.extend(),
+                intakeRoller.runIntake(IntakeRoller.State.INTAKE)),
+            // TODO: Tune after-path wait time to ensure all FUEL is intaken
+            Commands.waitTime(afterPathWait),
+            // End intaking
+            intakeLinear.retract(),
+            intakeRoller.stop());
     }
 }

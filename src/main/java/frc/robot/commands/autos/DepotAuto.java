@@ -16,28 +16,26 @@
 
 package frc.robot.commands.autos;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intakeLinear.IntakeLinear;
+import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import static edu.wpi.first.units.Units.Seconds;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.pathplanner.lib.path.PathPlannerPath;
 
+/** Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect FUEL from
+ *  the DEPOT, and then shoot them. Strategy layer. */
 public class DepotAuto extends AutoRoutine {
 
     PathPlannerPath path1 = null;
     PathPlannerPath path2 = null;
     PathPlannerPath path3 = null;
 
-    public DepotAuto(Drive drive, Intake intake, Indexer indexer,
+    public DepotAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake, Indexer indexer,
         ShooterSuperstructure shooter, StartPosition start)
     {
         // Choose path names based on start position
@@ -57,25 +55,9 @@ public class DepotAuto extends AutoRoutine {
                 // Take preload shot
                 AutoSegments.makePreloadShot(drive, indexer, shooter, pathPlannerPaths.get(0)),
                 // Go to the DEPOT and intake FUEL
-                AutoSegments.driveAndIntake(drive, intake, pathPlannerPaths.get(1), pathPlannerPaths.get(2)),
-                // Wait for last FUEL to enter intake
-                Commands.waitTime(Seconds.of(0.5)),
+                AutoSegments.driveAndIntake(drive, intakeLinear, intake, pathPlannerPaths.get(1), pathPlannerPaths.get(2), Seconds.of(0.3)),
                 // Drive to shooting location and shoot all FUEL
                 AutoSegments.makeFullShot(drive, indexer, shooter, pathPlannerPaths.get(3)));
         }
-    }
-
-    @Override
-    public List<Pose2d> getAllPathPoses()
-    {
-        return Stream.of(path1.getPathPoses(), path2.getPathPoses())
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public Pose2d getStartingPose()
-    {
-        return path1.getStartingHolonomicPose().get();
     }
 }
