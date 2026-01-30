@@ -139,64 +139,63 @@ public class RobotState {
 
     @AllArgsConstructor
     public enum Target {
-        // NAME(BLUE, RED, HEIGHT)
-        ONE(new Pose2d(Meters.of(0), Meters.of(0), Rotation2d.kZero),
-            new Pose2d(FieldConstants.FIELD_LENGTH, FieldConstants.FIELD_WIDTH,
-                Rotation2d.k180deg),
-            Meters.of(2.64)),
-        TWO(new Pose2d(), new Pose2d(), Meters.of(0.0));
+        // NAME(Pose, Height)
+        HUB(new Pose2d(FieldConstants.Hub.INNER_CENTER_POINT.getX(),
+            FieldConstants.Hub.INNER_CENTER_POINT.getY(), Rotation2d.kZero),
+            Meters.of(FieldConstants.Hub.HEIGHT)),
+
+        FEED_DEPOT(new Pose2d(FieldConstants.Depot.rightCorner.getX(),
+            FieldConstants.Depot.rightCorner.getY(), Rotation2d.kZero),
+            Meters.of(0)),
+
+        FEED_OUTPOST(new Pose2d(FieldConstants.Outpost.CENTER_POINT.getX(),
+            FieldConstants.Outpost.CENTER_POINT.getY(), Rotation2d.kZero),
+            Meters.of(0));
 
         @Getter
-        private final Pose2d bluePose;
-
-        @Getter
-        private final Pose2d redPose;
+        private final Pose2d pose;
 
         @Getter
         private final Distance height;
 
     }
 
+
     /** Keeps track of current target to aim for */
     @AutoLogOutput(key = "Robot/CurrentTarget")
     @Setter
-    public static Target target = Target.ONE;
+    public static Target target = Target.HUB;
 
     /** Returns 2d distance from robot to target in meters */
     public Distance getDistanceToTarget(Pose2d robotPose)
     {
         Translation2d robotTranslation = robotPose.getTranslation();
-        Translation2d targetTranslation =
-            (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                ? target.bluePose.getTranslation()
-                : target.redPose.getTranslation());
+        Translation2d targetTranslation = target.pose.getTranslation();
         return Meters.of(robotTranslation.getDistance(targetTranslation));
     }
 
     /** Returns 2d distance from robot to target in meters */
     public static Distance getDistanceToTarget(Translation2d robotPose)
     {
-        Translation2d targetTranslation =
-            (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                ? target.bluePose.getTranslation()
-                : target.redPose.getTranslation());
+        Translation2d targetTranslation = target.pose.getTranslation();
         return Meters.of(robotPose.getDistance(targetTranslation));
     }
 
     /** Returns angle from robot to target */
     public static Rotation2d getAngleToTarget(Translation2d robotPose)
     {
-        return (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-            ? target.bluePose.getTranslation()
-            : target.redPose.getTranslation()).minus(robotPose).getAngle();
+        return target.pose.getTranslation().minus(robotPose).getAngle();
     }
 
-    /** Returns target pose based on alliance color */
+    /**
+     * Get the pose of the input target
+     * 
+     * @param target The target to get the pose from
+     * @return The pose from the target
+     */
     public static Pose2d getTargetPose(Target target)
     {
-        return (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-            ? target.getBluePose()
-            : target.getRedPose());
+        return target.pose;
     }
 
     /**
