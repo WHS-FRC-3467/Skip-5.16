@@ -28,7 +28,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.BallSimulator;
 import frc.robot.util.FuelSim;
-import frc.robot.util.HubState;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -45,7 +44,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  */
 public class Robot extends LoggedRobot {
     private final RobotState robotState = RobotState.getInstance();
-    private final HubState hubState = HubState.getInstance();
 
     private Command autonomousCommand;
     private RobotContainer robotContainer;
@@ -212,12 +210,7 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic()
-    {
-        SmartDashboard.putBoolean("hub change", hubState.hubChange.getAsBoolean());
-        SmartDashboard.putBoolean("hub active", hubState.hubActive.getAsBoolean());
-        SmartDashboard.putString("alliance", DriverStation.getAlliance().get().name());
-        SmartDashboard.putString("active alliance", hubState.getActiveAlliance.name());
-    }
+    {}
 
 
     /** This function is called once when test mode is enabled. */

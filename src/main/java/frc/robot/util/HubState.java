@@ -60,20 +60,22 @@ public class HubState {
     @Getter(lazy = true)
     private static final HubState instance = new HubState();
     @Getter
-    public Trigger hubChange = new Trigger(this::isHubCloseToActive); // activates x seconds before
-                                                                      // the next hub change
-    public Trigger hubActive = new Trigger(this::isAllianceHubActive); // tells the robot if the hub
-                                                                       // is active
+    private Trigger hubChange = new Trigger(this::isHubCloseToActive); // activates x seconds before
+                                                                       // the next hub change
+    @Getter
+    private Trigger hubActive = new Trigger(this::isAllianceHubActive); // tells the robot if the
+                                                                        // hub
+                                                                        // is active
 
-    public DriverStation.Alliance getActiveAlliance = Alliance.Blue;
+    private DriverStation.Alliance getActiveAlliance = Alliance.Blue;
 
 
-    public void checkActiveAlliance()
+    private void checkActiveAlliance()
     {
         getActiveAlliance = getActiveAlliance == Alliance.Blue ? Alliance.Red : Alliance.Blue;
     }
 
-    public void initActiveAlliance()
+    private void initActiveAlliance()
     {
         String gameSpecificMessage = DriverStation.getGameSpecificMessage();
         if (gameSpecificMessage != null && !gameSpecificMessage.isEmpty()) {
@@ -81,7 +83,7 @@ public class HubState {
         }
     }
 
-    public double findClosestTime(double matchTime)
+    private double findClosestTime(double matchTime)
     {
 
 
@@ -93,7 +95,7 @@ public class HubState {
         return 0.0;
     }
 
-    public boolean isHubCloseToActive()
+    private boolean isHubCloseToActive()
     {
         double matchTime = DriverStation.getMatchTime();
         return matchTime - findClosestTime(matchTime) <= SECONDS_BEFORE;
@@ -103,7 +105,7 @@ public class HubState {
     private boolean toggle = true; // toggle turns off when the match time is 0.1 seconds away from
     // the closest hub change times
 
-    public boolean isAllianceHubActive()
+    private boolean isAllianceHubActive()
     {
         double matchTime = DriverStation.getMatchTime();
 
