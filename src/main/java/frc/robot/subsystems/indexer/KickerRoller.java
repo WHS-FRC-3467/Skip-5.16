@@ -18,6 +18,7 @@ package frc.robot.subsystems.indexer;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -39,7 +40,7 @@ public class KickerRoller extends SubsystemBase {
         STOP(
             () -> RotationsPerSecond.zero()),
         IDLE(
-            () -> RotationsPerSecond.of(1.0)),
+            () -> RotationsPerSecond.of(-0.1)),
         SHOOT(
             () -> KickerRollerConstants.MAX_VELOCITY);
 
@@ -78,5 +79,38 @@ public class KickerRoller extends SubsystemBase {
     {
         return this.runOnce(() -> setState(state))
             .withName(state.name());
+    }
+
+    /**
+     * Holds a state until the command is interrupted. Once the command is interrupted, its state
+     * will automatically be set to {@link State#STOP}
+     * 
+     * In a sequence, this command is blocking and requires this subsystem
+     * 
+     * @param state The state to hold
+     * @return The command sequence
+     */
+    public Command holdStateUntilInterrupted(State state)
+    {
+        return this.startEnd(() -> setState(state), () -> setState(State.STOP))
+            .withName(state.name() + " Until Interrupted");
+    }
+
+    public boolean nearSetpoint()
+    {
+        return MathUtil.isNear(
+            state.stateVelocity.get().in(RotationsPerSecond),
+            io.getVelocity().in(RotationsPerSecond),
+            IndexerConstants.TOLERANCE.in(RotationsPerSecond));
+    }
+
+    public void close()
+    {
+        io.close();
+    }
+
+    public double getSpeed()
+    {
+        return io.getVelocity().in(RotationsPerSecond);
     }
 }

@@ -37,6 +37,8 @@ import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.intake.Intake.State;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerConstants;
+import frc.robot.subsystems.indexer.KickerRoller;
+import frc.robot.subsystems.indexer.KickerRollerConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
@@ -61,6 +63,7 @@ public class RobotContainer {
     private final ShooterSuperstructure shooter;
     private final Intake intake;
     private final Indexer indexer;
+    private final KickerRoller kickerRoller;
 
     // Controller
     private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
@@ -80,8 +83,8 @@ public class RobotContainer {
         shooter = ShooterSuperstructureConstants.get();
         intake = IntakeConstants.get();
         indexer = IndexerConstants.get();
+        kickerRoller = KickerRollerConstants.get();
         VisionConstants.create();
-
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
         autoChooser.addDefaultOption("None", new NoneAuto());
