@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 /** Add your docs here. */
 public class Indexer extends SubsystemBase {
-    private final FlywheelMechanism io;
+    private final FlywheelMechanism<?> io;
 
     private State state = State.STOP;
 
@@ -36,7 +36,7 @@ public class Indexer extends SubsystemBase {
         private final AngularVelocity stateVelocity;
     }
 
-    public Indexer(FlywheelMechanism io)
+    public Indexer(FlywheelMechanism<?> io)
     {
         this.io = io;
     }
@@ -96,5 +96,10 @@ public class Indexer extends SubsystemBase {
     public void close()
     {
         io.close();
+    }
+
+    public double getSpeed()
+    {
+        return io.getVelocity().in(RotationsPerSecond);
     }
 }

@@ -13,22 +13,12 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.lib.mechanisms.flywheel;
+package frc.robot.commands.autos;
 
-import edu.wpi.first.units.measure.Current;
-import frc.lib.io.motor.MotorIO;
-import frc.lib.mechanisms.Mechanism;
-
-public abstract class FlywheelMechanism<T extends MotorIO> extends Mechanism<T> {
-
-    public FlywheelMechanism(String name, T io)
-    {
-        super(name, io);
-    }
-
-    @Override
-    public Current getTorqueCurrent()
-    {
-        return inputs.torqueCurrent;
-    }
+// Enum defining start position for autos; relative to blue alliance. Automatically mirrored for red
+// alliance.
+public enum StartPosition {
+    LEFT,
+    CENTER,
+    RIGHT
 }

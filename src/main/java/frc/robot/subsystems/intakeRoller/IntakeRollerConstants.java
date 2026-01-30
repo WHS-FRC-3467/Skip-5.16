@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.intake;
+package frc.robot.subsystems.intakeRoller;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -26,15 +26,17 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import frc.lib.io.motor.MotorIO;
+import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
+import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
@@ -43,27 +45,22 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class IntakeConstants {
+public class IntakeRollerConstants {
 
-    public static final String NAME = "Intake";
+    public static final String NAME = "Intake Roller";
 
-    public static final AngularVelocity MAX_VELOCITY =
-        Units.RadiansPerSecond.of(2 * Math.PI);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(10.0);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
 
     private static final double GEARING = (2.0 / 1.0);
 
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.1);
+    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.5);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
-    private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
-        .withKP(80.0)
-        .withKI(0.0)
-        .withKD(0.0)
-        .withKV(10.0);
+    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
 
     public static TalonFXConfiguration getFXConfig()
     {
@@ -91,7 +88,7 @@ public class IntakeConstants {
 
         config.Feedback.SensorToMechanismRatio = GEARING;
 
-        config.Slot0 = SLOT0CONFIG;
+        config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
         config.MotionMagic.MotionMagicCruiseVelocity = MAX_VELOCITY.in(RotationsPerSecond);
         config.MotionMagic.MotionMagicAcceleration =
             MAX_ACCELERATION.in(RotationsPerSecondPerSecond);
@@ -99,25 +96,31 @@ public class IntakeConstants {
         return config;
     }
 
-    public static FlywheelMechanism getMechanism()
+    public static FlywheelMechanism<?> getMechanism()
     {
+        FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                return new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intake));
+                mechanism = new FlywheelMechanismReal(NAME,
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeRoller));
+                break;
             case SIM:
-                return new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intake),
+                mechanism = new FlywheelMechanismSim(NAME,
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeRoller),
                     DCMOTOR, MOI, TOLERANCE);
+                break;
             case REPLAY:
-                return new FlywheelMechanism() {};
+                mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}) {};
+                break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
+        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        return mechanism;
     }
 
-    public static Intake get()
+    public static IntakeRoller get()
     {
-        return new Intake(getMechanism());
+        return new IntakeRoller(getMechanism());
     }
 }

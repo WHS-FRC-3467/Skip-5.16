@@ -4,18 +4,22 @@
 
 package frc.lib.mechanisms.rotary;
 
+import frc.lib.io.absoluteencoder.AbsoluteEncoderIO;
+import frc.lib.io.absoluteencoder.AbsoluteEncoderInputsAutoLogged;
 import frc.lib.io.motor.MotorIO.ControlType;
-import frc.lib.io.motor.MotorInputsAutoLogged;
 import frc.lib.mechanisms.Mechanism;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import frc.lib.io.motor.MotorIO;
 
-public abstract class RotaryMechanism implements Mechanism {
+public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncoderIO>
+    extends Mechanism<T> {
 
     public enum RotaryAxis {
         PITCH,
@@ -31,14 +35,17 @@ public abstract class RotaryMechanism implements Mechanism {
         RotaryAxis axis) {
     }
 
-    protected final String name;
-    protected final MotorInputsAutoLogged inputs = new MotorInputsAutoLogged();
+    protected final AbsoluteEncoderInputsAutoLogged absoluteEncoderInputs =
+        new AbsoluteEncoderInputsAutoLogged();
+    protected final Optional<E> absoluteEncoder;
 
     private final RotaryVisualizer visualizer;
 
-    public RotaryMechanism(String name, RotaryMechCharacteristics characteristics)
+    public RotaryMechanism(String name, RotaryMechCharacteristics characteristics, T io,
+        Optional<E> absoluteEncoder)
     {
-        this.name = name;
+        super(name, io);
+        this.absoluteEncoder = absoluteEncoder;
         visualizer = new RotaryVisualizer(name, characteristics);
     }
 
@@ -72,9 +79,26 @@ public abstract class RotaryMechanism implements Mechanism {
     @Override
     public void periodic()
     {
+        // First, refresh motor inputs from hardware in the base class.
+        super.periodic();
+
+        // Then, use the up-to-date inputs to update the visualizer.
         visualizer.setCurrentAngle(inputs.position);
         visualizer.setTrajectoryAngle(getTrajectoryAngle());
         visualizer.setGoalAngle(getGoalAngle());
+
+        // Finally, update and log absolute encoder inputs if present.
+        absoluteEncoder.ifPresent(encoder -> {
+            encoder.updateInputs(absoluteEncoderInputs);
+            Logger.processInputs(encoder.getName(), absoluteEncoderInputs);
+        });
+    }
+
+    @Override
+    public void close()
+    {
+        super.close();
+        absoluteEncoder.ifPresent(AbsoluteEncoderIO::close);
     }
 
     @Override

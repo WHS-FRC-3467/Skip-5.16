@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.intake;
+package frc.robot.subsystems.intakeRoller;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -29,14 +29,14 @@ import frc.lib.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-public class Intake extends SubsystemBase implements AutoCloseable {
+public class IntakeRoller extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber INTAKE_SETPOINT =
-        new LoggedTunableNumber("Intake/IntakeRPS", 10.0);
+        new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 10.0);
     private static final LoggedTunableNumber EJECT_SETPOINT =
-        new LoggedTunableNumber("Intake/EjectRPS", -10.0);
+        new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);
 
-    private final FlywheelMechanism io;
+    private final FlywheelMechanism<?> io;
     private String stateName;
 
     @RequiredArgsConstructor
@@ -52,7 +52,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     }
 
     /** Constructor for the Intake subsystem - accepts a FlywheelMechanism. */
-    public Intake(FlywheelMechanism intakeIO)
+    public IntakeRoller(FlywheelMechanism<?> intakeIO)
     {
         this.io = intakeIO;
     }
@@ -65,7 +65,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     public Command runIntake(State state)
     {
         return this.runOnce(() -> io.runVelocity(state.angularVelocity.get(),
-            IntakeConstants.MAX_ACCELERATION, PIDSlot.SLOT_0))
+            IntakeRollerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0))
             .andThen(this.runOnce(() -> this.stateName = state.name()))
             .withName(state.name());
     }
@@ -82,13 +82,13 @@ public class Intake extends SubsystemBase implements AutoCloseable {
         return MathUtil.isNear(
             state.angularVelocity.get().in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
-            IntakeConstants.TOLERANCE.in(RotationsPerSecond));
+            IntakeRollerConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     @Override
     public void periodic()
     {
-        Logger.recordOutput("Intake/State", this.stateName);
+        Logger.recordOutput(IntakeRollerConstants.NAME + "/State", this.stateName);
         io.periodic();
     }
 

@@ -1,0 +1,47 @@
+/*
+ * Copyright (C) 2026 Windham Windup
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
+ */
+
+package frc.robot.commands.autos;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
+
+// Class containing larger command units consisting of individual commands or small-group command
+// sequences (AutoCommands) strung together for use in creating full Autos. Command integration
+// layer.
+public class AutoSegments {
+
+    // Follow a path and shoot preload
+    public static Command makePreloadShot(Drive drive, Indexer indexer,
+        ShooterSuperstructure shooter, PathPlannerPath path)
+    {
+
+        // Drive to shooting location while spinning up shooter but not indexing. Once at
+        // position, with the shooter still spinning, bring up the indexer to begin shooting.
+        // Shoot all preload. Bring down indexer to end -- shooter will idle at speed. If path
+        // doesn't complete in 2.75s, attempt a shot anyway.
+        return Commands.sequence(
+            new ParallelDeadlineGroup(
+                AutoBuilder.followPath(path),
+                shooter.spinUpShooter()).withTimeout(2.75),
+            AutoCommands.shootFuel(indexer, shooter, 1));
+    }
+}
