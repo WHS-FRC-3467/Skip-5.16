@@ -141,16 +141,16 @@ public class RobotState {
     @AllArgsConstructor
     public enum Target {
         // NAME(Pose, Height)
-        HUB(new Pose2d(FieldConstants.Hub.innerCenterPoint.getX(),
-            FieldConstants.Hub.innerCenterPoint.getY(), Rotation2d.kZero),
-            Meters.of(FieldConstants.Hub.height)),
+        HUB(new Pose2d(FieldConstants.Hub.INNER_CENTER_POINT.getX(),
+            FieldConstants.Hub.INNER_CENTER_POINT.getY(), Rotation2d.kZero),
+            Meters.of(FieldConstants.Hub.HEIGHT)),
 
         FEED_DEPOT(new Pose2d(FieldConstants.Depot.rightCorner.getX(),
             FieldConstants.Depot.rightCorner.getY(), Rotation2d.kZero),
             Meters.of(0)),
 
-        FEED_OUTPOST(new Pose2d(FieldConstants.Outpost.centerPoint.getX(),
-            FieldConstants.Outpost.centerPoint.getY(), Rotation2d.kZero),
+        FEED_OUTPOST(new Pose2d(FieldConstants.Outpost.CENTER_POINT.getX(),
+            FieldConstants.Outpost.CENTER_POINT.getY(), Rotation2d.kZero),
             Meters.of(0));
 
         @Getter

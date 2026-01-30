@@ -103,26 +103,42 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final RobotState robotState = RobotState.getInstance();
 
     private final RotaryMechanism<?, ?> hoodIO;
-    private final FlywheelMechanism<?> flywheelIO;
+    private final FlywheelMechanism<?> leftFlywheelIO;
+    private final FlywheelMechanism<?> rightFlywheelIO;
 
-    public ShooterSuperstructure(RotaryMechanism<?, ?> hoodIO,
-        FlywheelMechanism<?> flywheelIO)
+    private final Trigger readyToShoot = new Trigger(() -> {
+        double dist =
+            SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm();
+        return isFlywheelAt(RadiansPerSecond.of(flywheelMap.get(dist)))
+            && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+    });
+
+    public ShooterSuperstructure(
+        RotaryMechanism<?, ?> hoodIO,
+        FlywheelMechanism<?> leftFlywheelIO,
+        FlywheelMechanism<?> rightFlywheelIO)
     {
         this.hoodIO = hoodIO;
-        this.flywheelIO = flywheelIO;
+        this.leftFlywheelIO = leftFlywheelIO;
+        this.rightFlywheelIO = rightFlywheelIO;
     }
 
     private void spinFlywheel(AngularVelocity velocity)
     {
-        flywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        leftFlywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        rightFlywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
     private boolean isFlywheelAt(AngularVelocity velocity)
     {
         return MathUtil.isNear(
             velocity.in(RotationsPerSecond),
-            flywheelIO.getVelocity().in(RotationsPerSecond),
-            FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
+            leftFlywheelIO.getVelocity().in(RotationsPerSecond),
+            FlywheelConstants.TOLERANCE.in(RotationsPerSecond)) &&
+            MathUtil.isNear(
+                velocity.in(RotationsPerSecond),
+                rightFlywheelIO.getVelocity().in(RotationsPerSecond),
+                FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     // Hood
@@ -135,6 +151,37 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private boolean isHoodAt(Angle angle)
     {
         return hoodIO.nearGoal(angle, HoodConstants.TOLERANCE);
+    }
+
+    /**
+     * Spins the flywheel and actuates the hood to the proper values given field-relative robot
+     * pose. Perpetual command -- never spins down. Therefore, to end, this should be interrupted by
+     * a parent command group or timed-out. Primarily for use in autos.
+     * 
+     * @return Shooter spin-up command.
+     */
+    public Command spinUpShooter()
+    {
+        Supplier<AngularVelocity> desiredFlywheelVelocitySupplier =
+            () -> RadiansPerSecond.of(flywheelMap
+                .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+        Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
+            .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+
+        return Commands.run(() -> {
+            spinFlywheel(desiredFlywheelVelocitySupplier.get());
+            setHoodPosition(desiredHoodPositionSupplier.get());
+        }, this).withName("Spin-Up Shooter");
+    }
+
+    /**
+     * Returns whether shooter is ready to shoot (flywheel at speed & hood at position).
+     * 
+     * @return readyToShoot trigger.
+     */
+    public Trigger readyToShoot()
+    {
+        return readyToShoot;
     }
 
     /**
@@ -203,14 +250,16 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     @Override
     public void periodic()
     {
-        flywheelIO.periodic();
+        leftFlywheelIO.periodic();
+        rightFlywheelIO.periodic();
         hoodIO.periodic();
     }
 
     @Override
     public void close()
     {
-        flywheelIO.close();
+        leftFlywheelIO.close();
+        rightFlywheelIO.close();
         hoodIO.close();
     }
 }

@@ -13,16 +13,12 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-// https://github.com/3015RangerRobotics/2024Public/blob/main/RobotCode2024/src/main/java/frc/robot/commands/auto/AutoCommand.java
+package frc.robot.commands.autos;
 
-package frc.lib.util;
-
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.math.geometry.Pose2d;
-import java.util.List;
-
-public abstract class AutoCommand extends SequentialCommandGroup {
-    public abstract List<Pose2d> getAllPathPoses();
-
-    public abstract Pose2d getStartingPose();
+// Enum defining start position for autos; relative to blue alliance. Automatically mirrored for red
+// alliance.
+public enum StartPosition {
+    LEFT,
+    CENTER,
+    RIGHT
 }

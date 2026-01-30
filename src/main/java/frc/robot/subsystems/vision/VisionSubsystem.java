@@ -15,7 +15,6 @@
 
 package frc.robot.subsystems.vision;
 
-import static edu.wpi.first.units.Units.Meters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.robot.FieldConstants;
+import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
 
 /**
@@ -65,10 +65,10 @@ public class VisionSubsystem extends SubsystemBase {
     public static final double MAX_AMBIGUITY = 0.2;
 
     /** Width of the field in meters. */
-    public static final double FIELD_WIDTH = FieldConstants.fieldWidth;
+    public static final double FIELD_WIDTH = FieldConstants.FIELD_WIDTH;
 
     /** Length of the field in meters. */
-    public static final double FIELD_LENGTH = FieldConstants.fieldLength;
+    public static final double FIELD_LENGTH = FieldConstants.FIELD_LENGTH;
 
     public static final record VisionPoseRecord(
         Pose3d pose,
@@ -138,7 +138,7 @@ public class VisionSubsystem extends SubsystemBase {
         this.poseEstimators = new PhotonPoseEstimator[cameras.length];
         for (int i = 0; i < cameras.length; i++) {
             this.poseEstimators[i] = new PhotonPoseEstimator(
-                FieldConstants.APRILTAG_LAYOUT,
+                AprilTagLayoutType.OFFICIAL.getLayout(),
                 cameras[i].getProperties().robotToCamera());
         }
     }

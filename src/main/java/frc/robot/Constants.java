@@ -48,11 +48,6 @@ public final class Constants {
 
     public static boolean disableHAL = false;
 
-    public static void disableHAL()
-    {
-        disableHAL = true;
-    }
-
     public static class RobotConstants {
         public static String serial;
         public static boolean isComp;
