@@ -17,7 +17,8 @@ package frc.lib.io.motor;
 
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
@@ -36,6 +37,7 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.util.Device;
+import frc.lib.util.PID;
 import frc.lib.util.CANUpdateThread;
 
 /**
@@ -43,6 +45,7 @@ import frc.lib.util.CANUpdateThread;
  * setup, control modes, telemetry polling, and error handling.
  */
 public class MotorIOTalonFX implements MotorIO {
+    private static final Logger LOGGER = Logger.getLogger(MotorIOTalonFX.class.getName());
 
     public record TalonFXFollower(Device.CAN id, boolean opposesMain) {
     }
@@ -72,10 +75,10 @@ public class MotorIOTalonFX implements MotorIO {
     protected final VelocityTorqueCurrentFOC velocityControl = new VelocityTorqueCurrentFOC(0);
 
     private final CANUpdateThread updateThread = new CANUpdateThread();
-
     private final Alert[] followerOnWrongBusAlert;
 
-    protected Angle goalPosition = Rotations.of(0.0);
+    private volatile TalonFXConfiguration currentConfig;
+    protected volatile Angle goalPosition = Rotations.of(0.0);
 
     /**
      * Constructs and initializes a TalonFX motor.
@@ -88,9 +91,14 @@ public class MotorIOTalonFX implements MotorIO {
     public MotorIOTalonFX(String name, TalonFXConfiguration config, Device.CAN main,
         TalonFXFollower... followerData)
     {
+        currentConfig = config;
 
         motor = new TalonFX(main.id(), new CANBus(main.bus()));
-        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config));
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
 
         // Initialize lists
         followerOnWrongBusAlert = new Alert[followerData.length];
@@ -109,7 +117,11 @@ public class MotorIOTalonFX implements MotorIO {
             followers[i] = new TalonFX(id.id(), new CANBus(id.bus()));
 
             TalonFX follower = followers[i];
-            updateThread.CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config));
+            updateThread.CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config))
+                .exceptionally(ex -> {
+                    LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                    return null;
+                });
             follower.setControl(
                 new Follower(main.id(), followerData[i].opposesMain() ? MotorAlignmentValue.Opposed
                     : MotorAlignmentValue.Aligned));
@@ -129,16 +141,24 @@ public class MotorIOTalonFX implements MotorIO {
             100,
             position,
             velocity,
-            supplyCurrent,
+            supplyVoltage,
             supplyCurrent,
             torqueCurrent,
-            temperature));
+            temperature))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
 
         updateThread.CTRECheckErrorAndRetry(() -> BaseStatusSignal.setUpdateFrequencyForAll(
             200,
             closedLoopError,
             closedLoopReference,
-            closedLoopReferenceSlope));
+            closedLoopReferenceSlope))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
 
         motor.optimizeBusUtilization(0, 1.0);
     }
@@ -212,6 +232,7 @@ public class MotorIOTalonFX implements MotorIO {
 
         return ControlType.COAST;
     }
+
 
     /**
      * Updates the passed-in MotorInputs structure with the latest sensor readings.
@@ -377,6 +398,70 @@ public class MotorIOTalonFX implements MotorIO {
         motor.setPosition(position);
     }
 
+    private void setPIDSlot0(PID pid)
+    {
+        currentConfig.Slot0
+            .withKP(pid.P())
+            .withKI(pid.I())
+            .withKD(pid.D())
+            .withKA(pid.A())
+            .withKV(pid.V())
+            .withKG(pid.G())
+            .withKS(pid.S());
+
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+    }
+
+    private void setPIDSlot1(PID pid)
+    {
+        currentConfig.Slot1
+            .withKP(pid.P())
+            .withKI(pid.I())
+            .withKD(pid.D())
+            .withKA(pid.A())
+            .withKV(pid.V())
+            .withKG(pid.G())
+            .withKS(pid.S());
+
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+    }
+
+    private void setPIDSlot2(PID pid)
+    {
+        currentConfig.Slot2
+            .withKP(pid.P())
+            .withKI(pid.I())
+            .withKD(pid.D())
+            .withKA(pid.A())
+            .withKV(pid.V())
+            .withKG(pid.G())
+            .withKS(pid.S());
+
+        updateThread.CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
+            .exceptionally(ex -> {
+                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                return null;
+            });
+    }
+
+    @Override
+    public void setPID(PIDSlot slot, PID pid)
+    {
+        switch (slot) {
+            case SLOT_0 -> setPIDSlot0(pid);
+            case SLOT_1 -> setPIDSlot1(pid);
+            case SLOT_2 -> setPIDSlot2(pid);
+        }
+    }
+
     @Override
     public void close()
     {
@@ -384,6 +469,7 @@ public class MotorIOTalonFX implements MotorIO {
         for (TalonFX follower : followers) {
             follower.close();
         }
+
         updateThread.close();
     }
 }

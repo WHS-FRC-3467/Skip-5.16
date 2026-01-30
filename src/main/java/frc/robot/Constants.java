@@ -100,4 +100,8 @@ public final class Constants {
             Units.degreesToRadians(540),
             Units.degreesToRadians(720));
     }
+
+    public static final Distance FULL_ROBOT_WIDTH = Inches.of(27.0 + 3.25);
+    public static final Distance FULL_ROBOT_LENGTH = Inches.of(27.0 + 3.25);
+    public static final Distance BUMPER_HEIGHT = Inches.of(4.0);
 }

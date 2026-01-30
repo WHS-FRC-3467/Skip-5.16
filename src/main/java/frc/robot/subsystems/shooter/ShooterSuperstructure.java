@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.Shooter;
+package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -102,11 +102,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private final RobotState robotState = RobotState.getInstance();
 
-    private final RotaryMechanism hoodIO;
-    private final FlywheelMechanism flywheelIO;
+    private final RotaryMechanism<?, ?> hoodIO;
+    private final FlywheelMechanism<?> flywheelIO;
 
-    public ShooterSuperstructure(RotaryMechanism hoodIO,
-        FlywheelMechanism flywheelIO)
+    public ShooterSuperstructure(RotaryMechanism<?, ?> hoodIO,
+        FlywheelMechanism<?> flywheelIO)
     {
         this.hoodIO = hoodIO;
         this.flywheelIO = flywheelIO;

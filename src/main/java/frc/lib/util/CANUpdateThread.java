@@ -16,52 +16,71 @@
 package frc.lib.util;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+
 import com.ctre.phoenix6.StatusCode;
-import frc.lib.util.LaserCANConfigurator.ConfigurationStatus;
+import au.grapplerobotics.ConfigurationFailedException;
 
 public class CANUpdateThread implements AutoCloseable {
-    // Executor for retrying config operations asynchronously
-    private BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
-    private ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(1, 1, 5,
-        java.util.concurrent.TimeUnit.MILLISECONDS, queue);
+
+    private static final int MAX_RETRIES = 5;
+
+    private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
+    private final ThreadPoolExecutor executor =
+        new ThreadPoolExecutor(1, 1, 5, TimeUnit.MILLISECONDS, queue);
 
     /**
-     * Attempts a CTRE action up to 5 times until it succeeds.
-     *
-     * @param action The status-returning operation to retry.
+     * Attempts a CTRE status-returning action up to MAX_RETRIES times.
      */
-    @SuppressWarnings("FutureReturnValueIgnored")
-    public void CTRECheckErrorAndRetry(Supplier<StatusCode> action)
+    public CompletableFuture<Void> CTRECheckErrorAndRetry(
+        Supplier<StatusCode> action)
     {
-        threadPoolExecutor.submit(() -> {
-            for (int i = 0; i < 5; i++) {
-                StatusCode result = action.get();
-                if (result.isOK()) {
-                    break;
+        return CompletableFuture.runAsync(() -> {
+            StatusCode lastStatus = StatusCode.OK;
+
+            for (int i = 0; i < MAX_RETRIES; i++) {
+                lastStatus = action.get();
+                if (lastStatus.isOK()) {
+                    return;
                 }
             }
-        });
+
+            throw new RuntimeException("CTRE config failed: " + lastStatus);
+        }, executor);
     }
 
-    @SuppressWarnings("FutureReturnValueIgnored")
-    public void LaserCANCheckErrorAndRetry(Supplier<ConfigurationStatus> action)
+    /**
+     * Attempts a LaserCAN configuration action up to MAX_RETRIES times.
+     */
+    public CompletableFuture<Void> laserCANCheckErrorAndRetry(
+        ThrowingRunnable<ConfigurationFailedException> action)
     {
-        threadPoolExecutor.submit(() -> {
-            for (int i = 0; i < 5; i++) {
-                ConfigurationStatus result = action.get();
-                if (result == ConfigurationStatus.SUCCESS) {
-                    break;
+        return CompletableFuture.runAsync(() -> {
+            ConfigurationFailedException lastException = null;
+
+            for (int i = 0; i < MAX_RETRIES; i++) {
+                try {
+                    action.run();
+                    return; // success
+                } catch (ConfigurationFailedException e) {
+                    lastException = e;
+                } catch (Exception e) {
+                    throw new CompletionException(e);
                 }
             }
-        });
+
+            throw new CompletionException(lastException);
+        }, executor);
     }
 
     @Override
     public void close()
     {
-        threadPoolExecutor.shutdownNow();
+        executor.shutdownNow();
     }
 }

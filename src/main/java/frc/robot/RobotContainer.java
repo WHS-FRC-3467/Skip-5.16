@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
-import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoCommand;
 import frc.lib.util.CommandXboxControllerExtended;
@@ -42,13 +41,15 @@ import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
-import frc.robot.subsystems.Shooter.ShooterSuperstructure;
-import frc.robot.subsystems.Shooter.ShooterSuperstructureConstants;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.lasercan1.LaserCAN1;
-import frc.robot.subsystems.lasercan1.LaserCAN1Constants;
+import frc.robot.util.FuelSim;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import edu.wpi.first.math.geometry.Translation3d;
 
 public class RobotContainer {
     private final RobotState robotState = RobotState.getInstance();
@@ -56,7 +57,6 @@ public class RobotContainer {
     // Subsystems
     public final Drive drive;
     private final LEDs leds;
-    private final LaserCAN1 laserCAN1;
     private final ObjectDetector objectDetector;
     private final ShooterSuperstructure shooter;
     private final Intake intake;
@@ -75,7 +75,6 @@ public class RobotContainer {
     public RobotContainer()
     {
         drive = DriveConstants.get();
-        laserCAN1 = LaserCAN1Constants.get();
         leds = LEDsConstants.get();
         objectDetector = ObjectDetectorConstants.get();
         shooter = ShooterSuperstructureConstants.get();
@@ -99,6 +98,7 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
+        configureFuelSim();
     }
 
     private void configureButtonBindings()
@@ -142,6 +142,37 @@ public class RobotContainer {
         SmartDashboard.putData("Intake/Stop", intake.runIntake(Intake.State.STOP));
         SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
             Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
+
+        SmartDashboard.putData("Shoot ball",
+            Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
+                new Translation3d(robotState.getEstimatedPose().getTranslation()),
+                FuelSim.getInstance().launchVel(FeetPerSecond.of(25), Degrees.of(60)))));
+    }
+
+    private void configureFuelSim()
+    {
+        FuelSim instance = FuelSim.getInstance();
+        instance.spawnStartingFuel();
+        instance.registerRobot(
+            Constants.FULL_ROBOT_WIDTH.in(Meters),
+            Constants.FULL_ROBOT_LENGTH.in(Meters),
+            Constants.BUMPER_HEIGHT.in(Meters),
+            robotState::getEstimatedPose,
+            robotState::getVelocity);
+        instance.registerIntake(
+            -Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
+            Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(10)).in(Meters),
+            -Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
+            Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
+            controller.x());
+
+        instance.start();
+        SmartDashboard.putData(Commands.runOnce(() -> {
+            FuelSim.getInstance().clearFuel();
+            FuelSim.getInstance().spawnStartingFuel();
+        })
+            .withName("Reset Fuel")
+            .ignoringDisable(true));
     }
 
     public Command getAutonomousCommand()
