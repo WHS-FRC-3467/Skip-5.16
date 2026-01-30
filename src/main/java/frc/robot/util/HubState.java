@@ -53,22 +53,21 @@ public class HubState {
             30.0,
     };
 
-    private static final double SECONDS_BEFORE = 5.0; // const_for_the_seconds_before_the_hubChange_trigger_activates
+    private static final double SECONDS_BEFORE = 5.0; // const for the seconds before the hub change
+                                                      // activates
 
     private static final double BUFFER = 0.1; // time offset so you dont overflow
 
     @Getter(lazy = true)
     private static final HubState instance = new HubState();
     @Getter
-    private Trigger hubChange = new Trigger(this::isHubCloseToActive); // activates x seconds before
-                                                                       // the next hub change
+    private Trigger hubChange = new Trigger(this::isHubCloseToActive);
+    // activates x seconds before the next hub change
     @Getter
-    private Trigger hubActive = new Trigger(this::isAllianceHubActive); // tells the robot if the
-                                                                        // hub
-                                                                        // is active
+    private Trigger hubActive = new Trigger(this::isAllianceHubActive);
+    // tells the robot if the hub is active
 
     private DriverStation.Alliance getActiveAlliance = Alliance.Blue;
-
 
     private void checkActiveAlliance()
     {
@@ -85,8 +84,6 @@ public class HubState {
 
     private double findClosestTime(double matchTime)
     {
-
-
         for (int i = 0; i < HUB_CHANGE_TIMES.length; i++) {
             if (matchTime > HUB_CHANGE_TIMES[i]) {
                 return HUB_CHANGE_TIMES[i];
@@ -111,8 +108,8 @@ public class HubState {
 
         if (toggle) {
             if (matchTime - findClosestTime(matchTime) <= BUFFER) {
-                if (matchTime >= HUB_CHANGE_TIMES[0]) { // if match time is before the first
-                                                        // transition time
+                if (matchTime >= HUB_CHANGE_TIMES[0]) {
+                    // if match time is before the first transition time
                     initActiveAlliance();
                 } else {
                     checkActiveAlliance();
@@ -125,14 +122,13 @@ public class HubState {
                 toggle = true;
             }
         }
+
         if (matchTime < HUB_CHANGE_TIMES[4] + BUFFER | matchTime > HUB_CHANGE_TIMES[0]) {
-            // if is endgame or is transition return true ^
+            // if is endgame or is transition return true
             return true;
         }
 
-
         return getActiveAlliance != DriverStation.getAlliance().orElse(Alliance.Red);
-
     }
 
 
