@@ -171,15 +171,16 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation()
                         .getNorm()) // Shooting into the hub
                 : flywheelMap // Feeding to our Alliance Zone
-                    .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation()
-                        .getNorm()));
+                    .get(RobotState.getTargetPose(RobotState.target)
+                        .minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
 
         Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(
             RobotState.target == Target.HUB // This logic will decide whether our target is going to
                 ? hoodAngleMap.get(
                     SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm())
                 : hoodAngleMap.get(
-                    SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+                    RobotState.getTargetPose(RobotState.target)
+                        .minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
 
         Trigger ready = new Trigger(() -> isFlywheelAt(desiredFlywheelVelocitySupplier.get())
             && isHoodAt(desiredHoodPositionSupplier.get()));
