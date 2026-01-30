@@ -41,7 +41,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * /** Defines configuration and physical constants for the turret hood mechanism, including motion
+ * Defines configuration and physical constants for the turret hood mechanism, including motion
  * constraints, geometry, motor model, and control gains used to construct the
  * {@link RotaryMechanism} instance for different robot modes.
  */
