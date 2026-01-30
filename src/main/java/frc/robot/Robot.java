@@ -22,11 +22,13 @@ import au.grapplerobotics.CanBridge;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.BallSimulator;
 import frc.robot.util.FuelSim;
+import frc.robot.util.HubState;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -43,6 +45,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  */
 public class Robot extends LoggedRobot {
     private final RobotState robotState = RobotState.getInstance();
+    private final HubState hubState = HubState.getInstance();
 
     private Command autonomousCommand;
     private RobotContainer robotContainer;
@@ -157,6 +160,7 @@ public class Robot extends LoggedRobot {
 
         BallSimulator.update();
         RobotState.getInstance().publishMechanismPoses();
+        SmartDashboard.putNumber("time", DriverStation.getMatchTime());
     }
 
     /** This function is called once when the robot is disabled. */
@@ -208,7 +212,10 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic()
-    {}
+    {
+        SmartDashboard.putBoolean("hub change", hubState.hubChange.getAsBoolean());
+        SmartDashboard.putBoolean("hub active", hubState.hubActive.getAsBoolean());
+    }
 
 
     /** This function is called once when test mode is enabled. */

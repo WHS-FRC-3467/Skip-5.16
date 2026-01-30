@@ -25,18 +25,18 @@ import lombok.AccessLevel;
 /**
  * Utility singleton that models the state of the game "hub" over the course of a match.
  * <p>
- * {@code HubState} uses {@link edu.wpi.first.wpilibj.DriverStation#getMatchTime()} together with
- * a fixed schedule of {@link #HUB_CHANGE_TIMES} to determine when the active hub changes between
+ * {@code HubState} uses {@link edu.wpi.first.wpilibj.DriverStation#getMatchTime()} together with a
+ * fixed schedule of {@link #HUB_CHANGE_TIMES} to determine when the active hub changes between
  * alliances. It maintains an internal {@link DriverStation.Alliance} value that is updated via
  * {@link #checkActiveAlliance()} as the match time crosses each hub change boundary.
  * </p>
  * <p>
  * The class exposes two {@link edu.wpi.first.wpilibj2.command.button.Trigger} instances:
  * <ul>
- *   <li>{@link #hubChange} – becomes active shortly before the next scheduled hub change, so
- *       subsystems or commands can prepare for the transition.</li>
- *   <li>{@link #hubActive} – indicates when the alliance hub tracked by this class is currently
- *       the same as the robot's {@link DriverStation#getAlliance()}.</li>
+ * <li>{@link #hubChange} – becomes active shortly before the next scheduled hub change, so
+ * subsystems or commands can prepare for the transition.</li>
+ * <li>{@link #hubActive} – indicates when the alliance hub tracked by this class is currently the
+ * same as the robot's {@link DriverStation#getAlliance()}.</li>
  * </ul>
  * Typical usage is to obtain the singleton via {@code HubState.getInstance()} (generated from the
  * {@link #instance} field) and bind the triggers to commands that should run when the hub is about
@@ -53,8 +53,9 @@ public class HubState {
             30.0,
     };
 
-    private static final double SECONDS_BEFORE = 5.0; // const for the seconds before the hubChange
-    // trigger activates
+    private static final double SECONDS_BEFORE = 5.0; // const_for_the_seconds_before_the_hubChange_trigger_activates
+
+    private static final double BUFFER = 0.1; // time offset so you dont overflow
 
     @Getter(lazy = true)
     private static final HubState instance = new HubState();
@@ -69,31 +70,23 @@ public class HubState {
 
     public void checkActiveAlliance()
     {
-        if (DriverStation.getMatchTime() >= 130) { // init which only gets the data from the DS in
-                                                   // the first 5 seconds of auto
-            String gameSpecificMessage = DriverStation.getGameSpecificMessage();
-            if (gameSpecificMessage != null && !gameSpecificMessage.isEmpty()) {
-                getActiveAlliance = switch (gameSpecificMessage.charAt(0)) {
-                    case 'R' -> Alliance.Red;
-                    case 'B' -> Alliance.Blue;
-                    default -> Alliance.Blue;
-                };
-            }
-        } else if (getActiveAlliance == Alliance.Blue) { // simple switcher which alternates between
-                                                         // R & B every time the fn is called
-            getActiveAlliance = Alliance.Red;
-        } else if (getActiveAlliance == Alliance.Red) {
-            getActiveAlliance = Alliance.Blue;
-        }
-
+        getActiveAlliance = getActiveAlliance == Alliance.Blue ? Alliance.Red : Alliance.Blue;
     }
 
-    public double findClosestTime()
+    public void initActiveAlliance()
     {
-        double getTime = DriverStation.getMatchTime();
+        String gameSpecificMessage = DriverStation.getGameSpecificMessage();
+        if (gameSpecificMessage != null && !gameSpecificMessage.isEmpty()) {
+            getActiveAlliance = gameSpecificMessage.charAt(0) == 'B' ? Alliance.Blue : Alliance.Red;
+        }
+    }
+
+    public double findClosestTime(double matchTime)
+    {
+
 
         for (int i = 0; i < HUB_CHANGE_TIMES.length; i++) {
-            if (getTime > HUB_CHANGE_TIMES[i]) {
+            if (matchTime > HUB_CHANGE_TIMES[i]) {
                 return HUB_CHANGE_TIMES[i];
             }
         }
@@ -102,7 +95,8 @@ public class HubState {
 
     public boolean isHubCloseToActive()
     {
-        return DriverStation.getMatchTime() - findClosestTime() <= SECONDS_BEFORE;
+        double matchTime = DriverStation.getMatchTime();
+        return matchTime - findClosestTime(matchTime) <= SECONDS_BEFORE;
     }
 
 
@@ -111,19 +105,29 @@ public class HubState {
 
     public boolean isAllianceHubActive()
     {
-
+        double matchTime = DriverStation.getMatchTime();
+        if (matchTime < HUB_CHANGE_TIMES[4] + BUFFER | matchTime > HUB_CHANGE_TIMES[0]) {
+            // if is endgame or is transition return true ^
+            return true;
+        }
         if (toggle) {
-            if (DriverStation.getMatchTime() - findClosestTime() <= 0.1) {
-                checkActiveAlliance();
+            if (matchTime - findClosestTime(matchTime) <= BUFFER) {
+                if (matchTime >= HUB_CHANGE_TIMES[0]) { // if match time is before the first
+                                                        // transition time
+                    initActiveAlliance();
+                } else {
+                    checkActiveAlliance();
+                }
                 toggle = false;
             }
 
         } else {
-            if (DriverStation.getMatchTime() - findClosestTime() >= 0.1) {
+            if (matchTime - findClosestTime(matchTime) >= BUFFER) {
                 toggle = true;
             }
         }
-        return getActiveAlliance == DriverStation.getAlliance().orElse(Alliance.Blue);
+        return getActiveAlliance != DriverStation.getAlliance().orElse(Alliance.Red);
+        // TODO! return what is not at start
 
     }
 
