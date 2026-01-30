@@ -14,6 +14,7 @@ import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
@@ -36,24 +37,25 @@ public class AutoCommands {
         final RobotState robotState = RobotState.getInstance();
         if (RobotBase.isSimulation()) {
             return drive.runOnce(
-            () -> {
-                Pose2d pose =
-                    path.getStartingHolonomicPose().get();
-                if (FieldUtil.shouldFlip()) {
-                    pose = FieldUtil.handleAllianceFlip(pose);
-                }
+                () -> {
+                    Pose2d pose =
+                        path.getStartingHolonomicPose().get();
+                    if (FieldUtil.shouldFlip()) {
+                        pose = FieldUtil.handleAllianceFlip(pose);
+                    }
 
-                robotState.resetPose(pose);
-            });
-            
+                    robotState.resetPose(pose);
+                });
+
         } else {
             return Commands.none();
         }
     }
 
     /**
-     * Creates a command sequence to shoot fuel from the robot. Spins up the shooter, pulls fuel
-     * through the indexer when ready, and stops after the duration.
+     * Creates a command sequence to shoot fuel from the robot. Spins up the shooter, only pulls
+     * fuel through the indexer when ready, and then stops indexer afterwards (shooter remains spun
+     * up).
      *
      * @param indexer the indexer subsystem
      * @param shooter the shooter superstructure
@@ -78,11 +80,40 @@ public class AutoCommands {
      * Creates a command to run the intake mechanism to collect game pieces. The intake will stop
      * automatically when the command ends.
      *
-     * @param intake the intake subsystem
+     * @param intake the rotary intake subsystem
      * @return a command that runs the intake and stops it when finished
      */
     public static Command runIntake(IntakeRoller intake)
     {
         return intake.runIntake(IntakeRoller.State.INTAKE).finallyDo(() -> intake.stop());
+    }
+
+    /**
+     * Creates a command to deploy the intake linearly such that the rotary intake can begin to
+     * collect game pieces. The intake will remain extended at the conclusion of this command.
+     * 
+     * @param intake the linear intake subsystem
+     * @return a command that deploys the intake and keeps it deployed when finished
+     */
+    public static Command deployIntake(IntakeLinear intake)
+    {
+        return Commands.sequence(
+            intake.extend(),
+            Commands.waitUntil(intake.linearStopped)); // Wait until extend is slammed
+
+    }
+
+    /**
+     * Creates a command to retract the intake linearly such that the robot can reduce its swept
+     * volume. The intake will remain retracted at the conclusion of this command.
+     * 
+     * @param intake the linear intake subsystem
+     * @return a command that retracts the intake and keeps it retracted when finished
+     */
+    public Command retractIntake(IntakeLinear intake)
+    {
+        return Commands.sequence(
+            intake.retract(),
+            Commands.waitUntil(intake.linearStopped)); // Wait until retract is slammed
     }
 }
