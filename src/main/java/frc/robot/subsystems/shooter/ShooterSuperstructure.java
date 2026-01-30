@@ -66,38 +66,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         flywheelMap.put(6.08, 8.00); // Highest
     }
 
-    /** Distance from goal in meters -> hood angle in degrees */
-    private static final InterpolatingDoubleTreeMap hoodAngleFeedMap =
-        new InterpolatingDoubleTreeMap();
-    static {
-        hoodAngleFeedMap.put(0.00, 0.00); // Lowest
-        hoodAngleFeedMap.put(0.50, 10.00);
-        hoodAngleFeedMap.put(1.00, 20.00);
-        hoodAngleFeedMap.put(1.50, 30.00);
-        hoodAngleFeedMap.put(2.00, 40.00);
-        hoodAngleFeedMap.put(2.50, 50.00);
-        hoodAngleFeedMap.put(3.00, 60.50);
-        hoodAngleFeedMap.put(3.50, 70.00);
-        hoodAngleFeedMap.put(4.00, 80.00);
-        hoodAngleFeedMap.put(4.50, 90.00); // Highest
-    }
-
-    /** Distance from goal in meters -> flywheel speed in radians per second */
-    private static final InterpolatingDoubleTreeMap flywheelFeedMap =
-        new InterpolatingDoubleTreeMap();
-    static {
-        flywheelFeedMap.put(1.01, 43.00); // Lowest
-        flywheelFeedMap.put(2.15, 27.00);
-        flywheelFeedMap.put(2.56, 23.00);
-        flywheelFeedMap.put(3.0, 21.00);
-        flywheelFeedMap.put(3.5, 17.00);
-        flywheelFeedMap.put(4.02, 15.00);
-        flywheelFeedMap.put(4.6, 11.50);
-        flywheelFeedMap.put(4.95, 10.00);
-        flywheelFeedMap.put(5.5, 9.00);
-        flywheelFeedMap.put(6.08, 8.00); // Highest
-    }
-
     private static final Pose2d SHOOT_GOAL = Pose2d.kZero;
 
     private final RobotState robotState = RobotState.getInstance();
@@ -202,7 +170,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 ? flywheelMap.get(
                     SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation()
                         .getNorm()) // Shooting into the hub
-                : flywheelFeedMap // Feeding to our Alliance Zone
+                : flywheelMap // Feeding to our Alliance Zone
                     .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation()
                         .getNorm()));
 
@@ -210,7 +178,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             RobotState.target == Target.HUB // This logic will decide whether our target is going to
                 ? hoodAngleMap.get(
                     SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm())
-                : hoodAngleFeedMap.get(
+                : hoodAngleMap.get(
                     SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
 
         Trigger ready = new Trigger(() -> isFlywheelAt(desiredFlywheelVelocitySupplier.get())
