@@ -16,6 +16,8 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.function.Supplier;
@@ -24,6 +26,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -53,16 +56,16 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     /** Distance from goal in meters -> flywheel speed in radians per second */
     private static final InterpolatingDoubleTreeMap flywheelMap = new InterpolatingDoubleTreeMap();
     static {
-        flywheelMap.put(1.01, 43.00); // Lowest
-        flywheelMap.put(2.15, 27.00);
-        flywheelMap.put(2.56, 23.00);
-        flywheelMap.put(3.0, 21.00);
-        flywheelMap.put(3.5, 17.00);
-        flywheelMap.put(4.02, 15.00);
-        flywheelMap.put(4.6, 11.50);
-        flywheelMap.put(4.95, 10.00);
-        flywheelMap.put(5.5, 9.00);
-        flywheelMap.put(6.08, 8.00); // Highest
+        flywheelMap.put(1.01, 100.00); // Lowest
+        flywheelMap.put(2.15, 90.00);
+        flywheelMap.put(2.56, 80.00);
+        flywheelMap.put(3.0, 70.00);
+        flywheelMap.put(3.5, 60.00);
+        flywheelMap.put(4.02, 50.00);
+        flywheelMap.put(4.6, 40.00);
+        flywheelMap.put(4.95, 40.00);
+        flywheelMap.put(5.5, 40.00);
+        flywheelMap.put(6.08, 40.00); // Highest
     }
 
     private static final Pose2d SHOOT_GOAL = Pose2d.kZero;
@@ -120,6 +123,21 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return hoodIO.nearGoal(angle, HoodConstants.TOLERANCE);
     }
 
+    public Angle getHoodAngle()
+    {
+        return hoodIO.getPosition();
+    }
+
+    public AngularVelocity getAverageFlywheelVelocity()
+    {
+        return RotationsPerSecond.of(
+            (leftFlywheelIO.getVelocity().in(RotationsPerSecond) +
+                rightFlywheelIO.getVelocity().in(RotationsPerSecond)) / 2.0);
+    }
+
+    public LinearVelocity getAvgerageLinearVelocity() {
+        return MetersPerSecond.of(getAverageFlywheelVelocity().in(RadiansPerSecond) * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
+    }
     /**
      * Spins the flywheel and actuates the hood to the proper values given field-relative robot
      * pose. Perpetual command -- never spins down. Therefore, to end, this should be interrupted by

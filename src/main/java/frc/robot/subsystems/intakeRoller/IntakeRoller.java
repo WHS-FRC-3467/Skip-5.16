@@ -85,6 +85,11 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
             IntakeRollerConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
+    public AngularVelocity getVelocity()
+    {
+        return io.getVelocity();
+    }
+
     @Override
     public void periodic()
     {

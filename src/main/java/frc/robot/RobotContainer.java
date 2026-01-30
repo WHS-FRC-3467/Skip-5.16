@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoRoutine;
@@ -45,13 +46,15 @@ import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.FuelSim;
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public class RobotContainer {
     private final RobotState robotState = RobotState.getInstance();
+    private Trigger shootSimFuel;
+    private Trigger intakeSimFuel;
 
     // Subsystems
     public final Drive drive;
@@ -156,12 +159,35 @@ public class RobotContainer {
 
         SmartDashboard.putData("Shoot ball",
             Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
-                new Translation3d(robotState.getEstimatedPose().getTranslation()),
-                FuelSim.getInstance().launchVel(FeetPerSecond.of(25), Degrees.of(60)))));
+                new Translation3d(robotState.getEstimatedPose().getTranslation())
+                    .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
+                FuelSim.getInstance().launchVel(shooter.getAvgerageLinearVelocity(),
+                    shooter.getHoodAngle()))));
+
+        SmartDashboard.putData("Set flywheel to 30",
+            shooter.setFlyWheelSpeed(RotationsPerSecond.of(30)));
+
+        SmartDashboard.putData("Set hood to 45 deg", shooter.setHoodAngle(Degrees.of(45)));
     }
 
     private void configureFuelSim()
     {
+        shootSimFuel = new Trigger(() -> shooter.readyToShoot().getAsBoolean()
+            && (indexer.getSpeed() > 0.1) && (FuelSim.getInstance().hopperFuel > 0));
+
+        shootSimFuel.whileTrue(
+            Commands.repeatingSequence(
+                Commands.waitSeconds(.1),
+                Commands.runOnce(() -> FuelSim.getInstance().hopperFuel--),
+                Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
+                    new Translation3d(robotState.getEstimatedPose().getTranslation())
+                        .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
+                    FuelSim.getInstance().launchVel(shooter.getAvgerageLinearVelocity(),
+                        shooter.getHoodAngle())))));
+
+        intakeSimFuel = new Trigger(() -> (intakeRoller.getVelocity().in(RotationsPerSecond) > 1.0)
+            && intakeLinear.isExtended.getAsBoolean());
+
         FuelSim instance = FuelSim.getInstance();
         instance.spawnStartingFuel();
         instance.registerRobot(
@@ -175,7 +201,7 @@ public class RobotContainer {
             Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(10)).in(Meters),
             -Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
             Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
-            controller.x());
+            intakeSimFuel);
 
         instance.start();
         SmartDashboard.putData(Commands.runOnce(() -> {
@@ -195,6 +221,11 @@ public class RobotContainer {
         SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
         SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
             Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
+        SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
+        SmartDashboard.putData("Run Indexer", indexer.setStateCommand(Indexer.State.PULL));
+
+
+
     }
 
     public Command getAutonomousCommand()

@@ -32,6 +32,8 @@ public class FuelSim {
     private static final double FRICTION = 0.1; // proportion of horizontal velocity to lose per
                                                 // second while on ground
 
+    public int hopperFuel = 8;
+
     private static FuelSim instance = null;
 
     private static final Translation3d[] FIELD_XZ_LINE_STARTS = {
@@ -439,6 +441,7 @@ public class FuelSim {
                 if (intake.shouldIntake(fuels.get(i), robot)) {
                     fuels.remove(i);
                     i--;
+                    hopperFuel++;
                 }
             }
         }
