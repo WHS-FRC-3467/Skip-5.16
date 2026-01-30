@@ -13,16 +13,19 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.indexer;
+package frc.robot.subsystems.intakeRoller;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
+
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -38,24 +41,26 @@ import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
 
-public class KickerRollerConstants {
-    public static String NAME = "KickerRoller";
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-    public static final AngularVelocity MAX_VELOCITY =
-        Units.RadiansPerSecond.of(2 * Math.PI);
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class IntakeRollerConstants {
+
+    public static final String NAME = "Intake Roller";
+
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(10.0);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
-
 
     private static final double GEARING = (2.0 / 1.0);
 
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.2);
+    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.5);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0)
-        .withV(10.0);
+    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
 
     public static TalonFXConfiguration getFXConfig()
     {
@@ -84,22 +89,25 @@ public class KickerRollerConstants {
         config.Feedback.SensorToMechanismRatio = GEARING;
 
         config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
+        config.MotionMagic.MotionMagicCruiseVelocity = MAX_VELOCITY.in(RotationsPerSecond);
+        config.MotionMagic.MotionMagicAcceleration =
+            MAX_ACCELERATION.in(RotationsPerSecondPerSecond);
 
         return config;
     }
 
-    public static KickerRoller get()
+    public static FlywheelMechanism<?> getMechanism()
     {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.kickerRoller));
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeRoller));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.kickerRoller), DCMOTOR, MOI,
-                    TOLERANCE);
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeRoller),
+                    DCMOTOR, MOI, TOLERANCE);
                 break;
             case REPLAY:
                 mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}) {};
@@ -108,6 +116,11 @@ public class KickerRollerConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return new KickerRoller(mechanism);
+        return mechanism;
+    }
+
+    public static IntakeRoller get()
+    {
+        return new IntakeRoller(getMechanism());
     }
 }
