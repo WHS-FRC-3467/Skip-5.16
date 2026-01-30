@@ -184,7 +184,7 @@ public class RobotState {
     /** Returns angle from robot to target */
     public static Rotation2d getAngleToTarget(Translation2d robotPose)
     {
-        return target.pose.getRotation();
+        return target.pose.getTranslation().minus(robotPose).getAngle();
     }
 
     /** Returns target pose based on alliance color */
