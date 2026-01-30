@@ -106,10 +106,7 @@ public class HubState {
     public boolean isAllianceHubActive()
     {
         double matchTime = DriverStation.getMatchTime();
-        if (matchTime < HUB_CHANGE_TIMES[4] + BUFFER | matchTime > HUB_CHANGE_TIMES[0]) {
-            // if is endgame or is transition return true ^
-            return true;
-        }
+
         if (toggle) {
             if (matchTime - findClosestTime(matchTime) <= BUFFER) {
                 if (matchTime >= HUB_CHANGE_TIMES[0]) { // if match time is before the first
@@ -126,8 +123,13 @@ public class HubState {
                 toggle = true;
             }
         }
+        if (matchTime < HUB_CHANGE_TIMES[4] + BUFFER | matchTime > HUB_CHANGE_TIMES[0]) {
+            // if is endgame or is transition return true ^
+            return true;
+        }
+
+
         return getActiveAlliance != DriverStation.getAlliance().orElse(Alliance.Red);
-        // TODO! return what is not at start
 
     }
 
