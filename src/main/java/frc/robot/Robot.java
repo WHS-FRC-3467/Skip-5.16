@@ -234,7 +234,5 @@ public class Robot extends LoggedRobot {
     public void simulationPeriodic()
     {
         FuelSim.getInstance().updateSim();
-
-        FuelSim.getInstance().updateSim();
     }
 }

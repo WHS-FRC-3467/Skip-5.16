@@ -22,6 +22,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 
+/**
+ * Utility singleton that models the state of the game "hub" over the course of a match.
+ * <p>
+ * {@code HubState} uses {@link edu.wpi.first.wpilibj.DriverStation#getMatchTime()} together with
+ * a fixed schedule of {@link #HUB_CHANGE_TIMES} to determine when the active hub changes between
+ * alliances. It maintains an internal {@link DriverStation.Alliance} value that is updated via
+ * {@link #checkActiveAlliance()} as the match time crosses each hub change boundary.
+ * </p>
+ * <p>
+ * The class exposes two {@link edu.wpi.first.wpilibj2.command.button.Trigger} instances:
+ * <ul>
+ *   <li>{@link #hubChange} – becomes active shortly before the next scheduled hub change, so
+ *       subsystems or commands can prepare for the transition.</li>
+ *   <li>{@link #hubActive} – indicates when the alliance hub tracked by this class is currently
+ *       the same as the robot's {@link DriverStation#getAlliance()}.</li>
+ * </ul>
+ * Typical usage is to obtain the singleton via {@code HubState.getInstance()} (generated from the
+ * {@link #instance} field) and bind the triggers to commands that should run when the hub is about
+ * to change or is active for the robot's alliance.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HubState {
 
@@ -51,11 +71,14 @@ public class HubState {
     {
         if (DriverStation.getMatchTime() >= 130) { // init which only gets the data from the DS in
                                                    // the first 5 seconds of auto
-            getActiveAlliance = switch (DriverStation.getGameSpecificMessage().charAt(0)) {
-                case 'R' -> Alliance.Red;
-                case 'B' -> Alliance.Blue;
-                default -> Alliance.Blue;
-            };
+            String gameSpecificMessage = DriverStation.getGameSpecificMessage();
+            if (gameSpecificMessage != null && !gameSpecificMessage.isEmpty()) {
+                getActiveAlliance = switch (gameSpecificMessage.charAt(0)) {
+                    case 'R' -> Alliance.Red;
+                    case 'B' -> Alliance.Blue;
+                    default -> Alliance.Blue;
+                };
+            }
         } else if (getActiveAlliance == Alliance.Blue) { // simple switcher which alternates between
                                                          // R & B every time the fn is called
             getActiveAlliance = Alliance.Red;
