@@ -94,11 +94,11 @@ public class KickerRollerConstants {
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer));
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.KickerRoller));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer), DCMOTOR, MOI,
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.KickerRoller), DCMOTOR, MOI,
                     TOLERANCE);
                 break;
             case REPLAY:

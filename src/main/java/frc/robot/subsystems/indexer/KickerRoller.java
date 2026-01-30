@@ -101,7 +101,7 @@ public class KickerRoller extends SubsystemBase {
         return MathUtil.isNear(
             state.stateVelocity.get().in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
-            IndexerConstants.TOLERANCE.in(RotationsPerSecond));
+            KickerRollerConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     public void close()
