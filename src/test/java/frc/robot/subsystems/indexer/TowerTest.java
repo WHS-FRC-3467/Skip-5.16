@@ -24,16 +24,18 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
+import frc.robot.subsystems.tower.Tower;
+import frc.robot.subsystems.tower.TowerConstants;
 
-public class KickerRollerTest {
-    KickerRoller kickerRoller;
+public class TowerTest {
+    Tower tower;
 
     @BeforeEach // this method will run before each test
     void setup()
     {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
-        kickerRoller = KickerRollerConstants.get();
+        tower = TowerConstants.get();
 
         /* enable the robot */
         DriverStationSim.setEnabled(true);
@@ -47,7 +49,7 @@ public class KickerRollerTest {
     void shutdown()
     {
         try {
-            kickerRoller.close();
+            tower.close();
         } catch (Exception e) {
             fail("Failed to close KickerRoller subsystem: " + e.getMessage());
         }
@@ -57,12 +59,12 @@ public class KickerRollerTest {
     void shoot()
     {
         TestUtil.runTest(
-            kickerRoller.setStateCommand(KickerRoller.State.SHOOT),
+            tower.setStateCommand(Tower.State.SHOOT),
             2,
-            kickerRoller);
+            tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
-            assertTrue(kickerRoller.nearSetpoint());
+            assertTrue(tower.nearSetpoint());
         } catch (Exception e) {
             fail("Failed to run KickerRoller to shoot: " + e.getMessage());
         }
@@ -72,12 +74,12 @@ public class KickerRollerTest {
     void idle()
     {
         TestUtil.runTest(
-            kickerRoller.setStateCommand(KickerRoller.State.IDLE),
+            tower.setStateCommand(Tower.State.IDLE),
             2,
-            kickerRoller);
+            tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
-            assertTrue(kickerRoller.nearSetpoint());
+            assertTrue(tower.nearSetpoint());
         } catch (Exception e) {
             fail("Failed to run KickerRoller to idle: " + e.getMessage());
         }
@@ -87,13 +89,13 @@ public class KickerRollerTest {
     void stop()
     {
         TestUtil.runTest(
-            kickerRoller.setStateCommand(KickerRoller.State.STOP),
+            tower.setStateCommand(Tower.State.STOP),
             2,
-            kickerRoller);
+            tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
-            assertTrue(kickerRoller.nearSetpoint());
+            assertTrue(tower.nearSetpoint());
         } catch (Exception e) {
             fail("Failed to stop indexer: " + e.getMessage());
         }

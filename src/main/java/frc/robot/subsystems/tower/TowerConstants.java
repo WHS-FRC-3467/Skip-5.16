@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.indexer;
+package frc.robot.subsystems.tower;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Second;
@@ -38,8 +38,8 @@ import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
 
-public class KickerRollerConstants {
-    public static String NAME = "KickerRoller";
+public class TowerConstants {
+    public static String NAME = "Tower";
 
     public static final AngularVelocity MAX_VELOCITY =
         Units.RadiansPerSecond.of(2 * Math.PI);
@@ -88,17 +88,17 @@ public class KickerRollerConstants {
         return config;
     }
 
-    public static KickerRoller get()
+    public static Tower get()
     {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.kickerRoller));
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.tower));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.kickerRoller), DCMOTOR, MOI,
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.tower), DCMOTOR, MOI,
                     TOLERANCE);
                 break;
             case REPLAY:
@@ -108,6 +108,6 @@ public class KickerRollerConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return new KickerRoller(mechanism);
+        return new Tower(mechanism);
     }
 }

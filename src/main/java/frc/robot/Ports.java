@@ -44,5 +44,5 @@ public class Ports {
     public static final Device.CAN indexerLaserCAN = new CAN(19, "rio");
     public static final Device.CAN intakeRoller = new CAN(21, "rio");
     public static final Device.CAN intakeLinear = new CAN(22, "rio");
-    public static final Device.CAN kickerRoller = new CAN(17, "rio");
+    public static final Device.CAN tower = new CAN(17, "rio");
 }

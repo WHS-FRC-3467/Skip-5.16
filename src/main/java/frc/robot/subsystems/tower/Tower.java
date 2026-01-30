@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.indexer;
+package frc.robot.subsystems.tower;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.function.Supplier;
@@ -29,7 +29,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 
-public class KickerRoller extends SubsystemBase {
+public class Tower extends SubsystemBase {
     private final FlywheelMechanism<?> io;
     private State state = State.STOP;
 
@@ -42,12 +42,12 @@ public class KickerRoller extends SubsystemBase {
         IDLE(
             () -> RotationsPerSecond.of(-0.1)),
         SHOOT(
-            () -> KickerRollerConstants.MAX_VELOCITY);
+            () -> TowerConstants.MAX_VELOCITY);
 
         private final Supplier<AngularVelocity> stateVelocity;
     }
 
-    public KickerRoller(FlywheelMechanism<?> io)
+    public Tower(FlywheelMechanism<?> io)
     {
         this.io = io;
     }
@@ -55,7 +55,7 @@ public class KickerRoller extends SubsystemBase {
     @Override
     public void periodic()
     {
-        Logger.recordOutput("KickerRoller/State", this.state.name());
+        Logger.recordOutput(TowerConstants.NAME + "/State", this.state.name());
         io.periodic();
     }
 
@@ -63,7 +63,7 @@ public class KickerRoller extends SubsystemBase {
     {
         this.state = state;
         io.runVelocity(state.stateVelocity.get(),
-            KickerRollerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+            TowerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
     /**
@@ -101,7 +101,7 @@ public class KickerRoller extends SubsystemBase {
         return MathUtil.isNear(
             state.stateVelocity.get().in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
-            KickerRollerConstants.TOLERANCE.in(RotationsPerSecond));
+            TowerConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     public void close()
