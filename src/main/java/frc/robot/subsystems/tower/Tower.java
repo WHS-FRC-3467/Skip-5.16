@@ -31,11 +31,11 @@ import lombok.RequiredArgsConstructor;
 
 
 public class Tower extends SubsystemBase {
-    private static final LoggedTunableNumber stopRPS =
+    private static final LoggedTunableNumber STOP_RPS =
         new LoggedTunableNumber(TowerConstants.NAME + "/StopRPS", 0.0);
-    private static final LoggedTunableNumber idleRPS =
+    private static final LoggedTunableNumber IDLE_RPS =
         new LoggedTunableNumber(TowerConstants.NAME + "/IdleRPS", -0.1);
-    private static final LoggedTunableNumber shootRPS =
+    private static final LoggedTunableNumber SHOOT_RPS =
         new LoggedTunableNumber(TowerConstants.NAME + "/IdleRPS",
             TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
@@ -46,11 +46,11 @@ public class Tower extends SubsystemBase {
     @SuppressWarnings("Immutable")
     @Getter
     public enum State {
-        STOP(() -> RotationsPerSecond.of(stopRPS.get())),
+        STOP(() -> RotationsPerSecond.of(STOP_RPS.get())),
         IDLE(
-            () -> RotationsPerSecond.of(idleRPS.get())),
+            () -> RotationsPerSecond.of(IDLE_RPS.get())),
         SHOOT(
-            () -> RotationsPerSecond.of(shootRPS.get()));
+            () -> RotationsPerSecond.of(SHOOT_RPS.get()));
 
         private final Supplier<AngularVelocity> stateVelocity;
     }
