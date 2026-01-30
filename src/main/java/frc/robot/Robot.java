@@ -215,6 +215,8 @@ public class Robot extends LoggedRobot {
     {
         SmartDashboard.putBoolean("hub change", hubState.hubChange.getAsBoolean());
         SmartDashboard.putBoolean("hub active", hubState.hubActive.getAsBoolean());
+        SmartDashboard.putString("alliance", DriverStation.getAlliance().get().name());
+        SmartDashboard.putString("active alliance", hubState.getActiveAlliance.name());
     }
 
 
