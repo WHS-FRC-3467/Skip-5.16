@@ -25,11 +25,20 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 
 public class Tower extends SubsystemBase {
+    private static final LoggedTunableNumber stopRPS =
+        new LoggedTunableNumber(TowerConstants.NAME + "/StopRPS", 0.0);
+    private static final LoggedTunableNumber idleRPS =
+        new LoggedTunableNumber(TowerConstants.NAME + "/IdleRPS", -0.1);
+    private static final LoggedTunableNumber shootRPS =
+        new LoggedTunableNumber(TowerConstants.NAME + "/IdleRPS",
+            TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
+
     private final FlywheelMechanism<?> io;
     private State state = State.STOP;
 
@@ -37,12 +46,11 @@ public class Tower extends SubsystemBase {
     @SuppressWarnings("Immutable")
     @Getter
     public enum State {
-        STOP(
-            () -> RotationsPerSecond.zero()),
+        STOP(() -> RotationsPerSecond.of(stopRPS.get())),
         IDLE(
-            () -> RotationsPerSecond.of(-0.1)),
+            () -> RotationsPerSecond.of(idleRPS.get())),
         SHOOT(
-            () -> TowerConstants.MAX_VELOCITY);
+            () -> RotationsPerSecond.of(shootRPS.get()));
 
         private final Supplier<AngularVelocity> stateVelocity;
     }
