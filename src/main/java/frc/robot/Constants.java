@@ -46,6 +46,8 @@ public final class Constants {
         REPLAY
     }
 
+    public static boolean disableHAL = false;
+
     public static class RobotConstants {
         public static String serial;
         public static boolean isComp;

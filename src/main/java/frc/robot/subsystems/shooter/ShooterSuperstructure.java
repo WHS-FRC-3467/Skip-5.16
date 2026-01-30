@@ -32,6 +32,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.robot.RobotState;
+import frc.robot.RobotState.Target;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
 
@@ -72,6 +73,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final RotaryMechanism<?, ?> hoodIO;
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
+
+    private final Trigger readyToShoot = new Trigger(() -> {
+        double dist =
+            SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm();
+        return isFlywheelAt(RadiansPerSecond.of(flywheelMap.get(dist)))
+            && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+    });
 
     public ShooterSuperstructure(
         RotaryMechanism<?, ?> hoodIO,
@@ -114,6 +122,37 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
+     * Spins the flywheel and actuates the hood to the proper values given field-relative robot
+     * pose. Perpetual command -- never spins down. Therefore, to end, this should be interrupted by
+     * a parent command group or timed-out. Primarily for use in autos.
+     * 
+     * @return Shooter spin-up command.
+     */
+    public Command spinUpShooter()
+    {
+        Supplier<AngularVelocity> desiredFlywheelVelocitySupplier =
+            () -> RadiansPerSecond.of(flywheelMap
+                .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+        Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
+            .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+
+        return Commands.run(() -> {
+            spinFlywheel(desiredFlywheelVelocitySupplier.get());
+            setHoodPosition(desiredHoodPositionSupplier.get());
+        }, this).withName("Spin-Up Shooter");
+    }
+
+    /**
+     * Returns whether shooter is ready to shoot (flywheel at speed & hood at position).
+     * 
+     * @return readyToShoot trigger.
+     */
+    public Trigger readyToShoot()
+    {
+        return readyToShoot;
+    }
+
+    /**
      * Prepares the subsystem to shoot, and runs a command while it is ready
      * 
      * @param whileAtPosition A command that runs while the shooter is ready to shoot. If the
@@ -126,10 +165,22 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public Command prepareShot(Command whileAtPosition)
     {
         Supplier<AngularVelocity> desiredFlywheelVelocitySupplier = () -> RadiansPerSecond.of(
-            flywheelMap
-                .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
-        Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
-            .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+            RobotState.target == Target.HUB // This logic will decide whether our target is going to
+
+                ? flywheelMap.get(
+                    SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation()
+                        .getNorm()) // Shooting into the hub
+                : flywheelMap // Feeding to our Alliance Zone
+                    .get(RobotState.getTargetPose(RobotState.target)
+                        .minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+
+        Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(
+            RobotState.target == Target.HUB // This logic will decide whether our target is going to
+                ? hoodAngleMap.get(
+                    SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm())
+                : hoodAngleMap.get(
+                    RobotState.getTargetPose(RobotState.target)
+                        .minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
 
         Trigger ready = new Trigger(() -> isFlywheelAt(desiredFlywheelVelocitySupplier.get())
             && isHoodAt(desiredHoodPositionSupplier.get()));
