@@ -35,6 +35,8 @@ import frc.lib.io.motor.MotorIOSim;
  * rotation) determines the angle from horizontal, affecting gravity simulation.
  */
 public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
+    private static final double POSITION_TOLERANCE = 1e-6; // Tolerance for floating point comparison at limits
+    
     private final ElevatorSim sim;
     private final LinearMechCharacteristics characteristics;
 
@@ -101,10 +103,9 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
         // This fixes the issue where velocity rapidly switches between 0 and some value at hardstops
         double minMeters = characteristics.minDistance().in(Meters);
         double maxMeters = characteristics.maxDistance().in(Meters);
-        double tolerance = 1e-6; // Small tolerance for floating point comparison
         
-        if ((Math.abs(positionMeters - minMeters) < tolerance && velocityMetersPerSecond < 0) ||
-            (Math.abs(positionMeters - maxMeters) < tolerance && velocityMetersPerSecond > 0)) {
+        if ((Math.abs(positionMeters - minMeters) < POSITION_TOLERANCE && velocityMetersPerSecond < 0) ||
+            (Math.abs(positionMeters - maxMeters) < POSITION_TOLERANCE && velocityMetersPerSecond > 0)) {
             velocityMetersPerSecond = 0.0;
         }
 

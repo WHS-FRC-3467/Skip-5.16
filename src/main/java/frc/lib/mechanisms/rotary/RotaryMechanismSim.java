@@ -28,6 +28,8 @@ import frc.lib.io.motor.MotorIOSim;
  * simulate the behavior of a rotary mechanism.
  */
 public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEncoderIOSim> {
+    private static final double POSITION_TOLERANCE = 1e-6; // Tolerance for floating point comparison at limits
+    
     private final SingleJointedArmSim sim;
     private final RotaryMechCharacteristics characteristics;
 
@@ -76,10 +78,9 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
         // This fixes the issue where velocity rapidly switches between 0 and some value at hardstops
         double minRads = characteristics.minAngle().in(Radians);
         double maxRads = characteristics.maxAngle().in(Radians);
-        double tolerance = 1e-6; // Small tolerance for floating point comparison
         
-        if ((Math.abs(angleRads - minRads) < tolerance && velocityRadPerSec < 0) ||
-            (Math.abs(angleRads - maxRads) < tolerance && velocityRadPerSec > 0)) {
+        if ((Math.abs(angleRads - minRads) < POSITION_TOLERANCE && velocityRadPerSec < 0) ||
+            (Math.abs(angleRads - maxRads) < POSITION_TOLERANCE && velocityRadPerSec > 0)) {
             velocityRadPerSec = 0.0;
         }
 
