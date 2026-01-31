@@ -55,6 +55,11 @@ public class Tower extends SubsystemBase {
         private final Supplier<AngularVelocity> stateVelocity;
     }
 
+    /**
+     * Constructs a new Tower subsystem with the specified flywheel mechanism.
+     * 
+     * @param io the flywheel mechanism IO implementation for the tower
+     */
     public Tower(FlywheelMechanism<?> io)
     {
         this.io = io;
@@ -104,6 +109,11 @@ public class Tower extends SubsystemBase {
             .withName(state.name() + " Until Interrupted");
     }
 
+    /**
+     * Checks if the tower is near its current velocity setpoint.
+     * 
+     * @return true if the tower velocity is within tolerance of the setpoint
+     */
     public boolean nearSetpoint()
     {
         return MathUtil.isNear(
@@ -112,11 +122,19 @@ public class Tower extends SubsystemBase {
             TowerConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
+    /**
+     * Closes the underlying flywheel mechanism and releases resources.
+     */
     public void close()
     {
         io.close();
     }
 
+    /**
+     * Gets the current speed of the tower in rotations per second.
+     * 
+     * @return the tower's current velocity in rotations per second
+     */
     public double getSpeed()
     {
         return io.getVelocity().in(RotationsPerSecond);

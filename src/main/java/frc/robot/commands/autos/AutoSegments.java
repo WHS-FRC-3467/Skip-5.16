@@ -31,8 +31,9 @@ import frc.robot.subsystems.tower.Tower;
 
 /**
  * Class containing larger command units consisting of individual commands or small-group command
- * sequences (AutoCommands) strung together for use in creating full Autos. Command integration
- * layer.
+ * /** Class containing larger command units consisting of individual commands or small-group
+ * command sequences (AutoCommands) strung together for use in creating full Autos. Command
+ * integration layer.
  */
 public class AutoSegments {
 
@@ -50,6 +51,8 @@ public class AutoSegments {
      * @param shooter The ShooterSuperstructure subsystem
      * @param path The path to drive to the shooting location, the robot will shoot from the path's
      *        end pose
+     * @param path The path to drive to the shooting location, the robot will shoot from the path's
+     *        end pose
      */
     public static Command makePreloadShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer,
         Tower tower,
@@ -59,9 +62,10 @@ public class AutoSegments {
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
                 shooter.spinUpShooter()).withTimeout(2.75),
-            AutoCommands.shootFuel(intakeLinear, indexer, tower, shooter, 1));
+            AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 2));
     }
 
+    /**
     /**
      * Follow a path to shooting location while spinning up shooter but not indexing. Once at
      * position, with the shooter still spinning, bring up the indexer & tower to begin shooting.
@@ -69,13 +73,17 @@ public class AutoSegments {
      * If path doesn't complete in 3.5s, attempt a shot anyway.
      * 
      * @param drive The Drive subsystem
-     * @param intakeLinear The IntakeLinear subsystem
      * @param indexer The Indexer subsystem
      * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
      * @param path The path to drive to the shooting location, the robot will shoot from the path's
      *        end pose
+     * @param path The path to drive to the shooting location, the robot will shoot from the path's
+     *        end pose
      */
+    public static Command makeFullShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer,
+        Tower tower,
+
     public static Command makeFullShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer,
         Tower tower,
         ShooterSuperstructure shooter, PathPlannerPath path)
@@ -84,11 +92,13 @@ public class AutoSegments {
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
                 shooter.spinUpShooter()).withTimeout(3.5),
-            AutoCommands.shootFuel(intakeLinear, indexer, tower, shooter, 3));
+            AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 3));
     }
 
     /**
+    /**
      * Returns a Command to Follow a path and collect FUEL in AUTO
+     * 
      * 
      * @param drive The Drive subsystem
      * @param intakeLinear The IntakeLinear subsystem
@@ -97,7 +107,16 @@ public class AutoSegments {
      * @param intakingPath The path to drive while intaking FUEL
      * @param afterPathWait The time to wait after the intaking path is complete before stopping the
      *        intake
+     * @param afterPathWait The time to wait after the intaking path is complete before stopping the
+     *        intake
      */
+    public static Command driveAndIntake(Drive drive, IntakeLinear intakeLinear,
+        IntakeRoller intakeRoller, PathPlannerPath drivePath, PathPlannerPath intakingPath,
+        Time afterPathWait)
+    {
+
+    // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
+    // intaking path is complete, stop the intake.
     public static Command driveAndIntake(Drive drive, IntakeLinear intakeLinear,
         IntakeRoller intakeRoller, PathPlannerPath drivePath, PathPlannerPath intakingPath,
         Time afterPathWait)
@@ -109,7 +128,7 @@ public class AutoSegments {
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(intakingPath),
                 intakeLinear.extend(),
-                intakeRoller.runIntake(IntakeRoller.State.INTAKE)),
+                intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.INTAKE)),
             // TODO: Tune after-path wait time to ensure all FUEL is intaken
             Commands.waitSeconds(afterPathWait.in(Seconds)),
             // End intaking

@@ -28,7 +28,9 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import frc.robot.Ports;
 import java.util.Queue;
 
-/** IO implementation for Pigeon 2. */
+/**
+ * IO implementation for Pigeon 2.
+ */
 public class GyroIOPigeon2 implements GyroIO {
     private final Pigeon2 pigeon = new Pigeon2(
         DriveConstants.drivetrainConstants.Pigeon2Id,
@@ -42,6 +44,9 @@ public class GyroIOPigeon2 implements GyroIO {
     private final StatusSignal<Angle> pitch = pigeon.getPitch();
     private final StatusSignal<Angle> roll = pigeon.getRoll();
 
+    /**
+     * Constructs a new GyroIOPigeon2 instance and configures the Pigeon 2 gyro.
+     */
     public GyroIOPigeon2()
     {
         pigeon.getConfigurator().apply(new Pigeon2Configuration());

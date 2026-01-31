@@ -81,6 +81,11 @@ public class MechanismUtil {
                 .make();
         }
 
+        /**
+         * Gets the radius used for distance/angle conversions.
+         *
+         * @return The drum radius
+         */
         public Distance getDrumRadius()
         {
             return radius;

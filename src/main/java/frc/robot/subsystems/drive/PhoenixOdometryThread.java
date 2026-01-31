@@ -51,6 +51,11 @@ public class PhoenixOdometryThread extends Thread {
         new CANBus(DriveConstants.drivetrainConstants.CANBusName).isNetworkFD();
     private static PhoenixOdometryThread instance = null;
 
+    /**
+     * Returns the singleton instance of PhoenixOdometryThread.
+     *
+     * @return The PhoenixOdometryThread instance
+     */
     public static PhoenixOdometryThread getInstance()
     {
         if (instance == null) {
@@ -73,7 +78,12 @@ public class PhoenixOdometryThread extends Thread {
         }
     }
 
-    /** Registers a Phoenix signal to be read from the thread. */
+    /**
+     * Registers a Phoenix signal to be read from the thread.
+     *
+     * @param signal Phoenix status signal to register
+     * @return Queue that will receive sampled values from the signal
+     */
     public Queue<Double> registerSignal(StatusSignal<Angle> signal)
     {
         Queue<Double> queue = new ArrayBlockingQueue<>(20);
@@ -92,7 +102,12 @@ public class PhoenixOdometryThread extends Thread {
         return queue;
     }
 
-    /** Registers a generic signal to be read from the thread. */
+    /**
+     * Registers a generic signal to be read from the thread.
+     *
+     * @param signal DoubleSupplier providing signal values
+     * @return Queue that will receive sampled values from the signal
+     */
     public Queue<Double> registerSignal(DoubleSupplier signal)
     {
         Queue<Double> queue = new ArrayBlockingQueue<>(20);
@@ -108,7 +123,11 @@ public class PhoenixOdometryThread extends Thread {
         return queue;
     }
 
-    /** Returns a new queue that returns timestamp values for each sample. */
+    /**
+     * Returns a new queue that returns timestamp values for each sample.
+     *
+     * @return Queue that will receive timestamp values in seconds
+     */
     public Queue<Double> makeTimestampQueue()
     {
         Queue<Double> queue = new ArrayBlockingQueue<>(20);

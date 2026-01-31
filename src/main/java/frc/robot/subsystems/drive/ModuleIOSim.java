@@ -55,6 +55,11 @@ public class ModuleIOSim implements ModuleIO {
     private double driveAppliedVolts = 0.0;
     private double turnAppliedVolts = 0.0;
 
+    /**
+     * Constructs a new ModuleIOSim instance.
+     *
+     * @param constants Module-specific constants for configuring the simulation
+     */
     public ModuleIOSim(
         SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants)
     {

@@ -16,12 +16,33 @@ public class LoggedTuneableProfiledPID extends ProfiledPIDController {
     private LoggedTunableNumber maxVelocity;
     private LoggedTunableNumber maxAcceleration;
 
+    /**
+     * Constructs a tunable profiled PID controller with default period.
+     *
+     * @param name The logging key prefix for tunable values
+     * @param kP Proportional gain
+     * @param kI Integral gain
+     * @param kD Derivative gain
+     * @param maxV Maximum velocity
+     * @param maxA Maximum acceleration
+     */
     public LoggedTuneableProfiledPID(String name, double kP, double kI,
         double kD, double maxV, double maxA)
     {
         this(name, kP, kI, kD, maxV, maxA, .02);
     }
 
+    /**
+     * Constructs a tunable profiled PID controller with specified period.
+     *
+     * @param name The logging key prefix for tunable values
+     * @param p Proportional gain
+     * @param i Integral gain
+     * @param d Derivative gain
+     * @param maxVelocity Maximum velocity
+     * @param maxAcceleration Maximum acceleration
+     * @param period Loop period in seconds
+     */
     public LoggedTuneableProfiledPID(String name, double p, double i,
         double d, double maxVelocity, double maxAcceleration, double period)
     {
@@ -36,6 +57,9 @@ public class LoggedTuneableProfiledPID extends ProfiledPIDController {
         this.maxAcceleration = new LoggedTunableNumber(name + "/maxAcceleration", maxAcceleration);
     }
 
+    /**
+     * Updates PID and motion profile constraints from tunable values if changed.
+     */
     public void updatePID()
     {
         // If changed, update controller constants from Tuneable Numbers

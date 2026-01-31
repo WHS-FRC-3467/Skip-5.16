@@ -132,7 +132,12 @@ public class ObjectDetectorConstants {
                     new TargetModel(OBJECT0_HEIGHT_METERS)),
         };
 
-    // Robot runtime mode for use in roboRIO & AKit
+    /**
+     * Creates and configures an ObjectDetector subsystem based on the current robot mode.
+     * Selects the appropriate IO implementation (real hardware, simulation, or replay).
+     * 
+     * @return a configured ObjectDetector instance
+     */
     public static ObjectDetector get()
     {
         RobotState robotState = RobotState.getInstance();

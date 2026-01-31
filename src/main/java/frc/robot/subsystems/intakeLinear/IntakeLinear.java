@@ -30,24 +30,48 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
         new LoggedTunableNumber(IntakeLinearConstants.NAME + "/IntakeCurrent", 10.0);
 
     public final Trigger linearStopped;
+    public final Trigger isExtended;
+    public final Trigger isRetracted;
 
     private final LinearMechanism<?> io;
 
+    /**
+     * Constructs an IntakeLinear subsystem.
+     * 
+     * @param intakeLinearIO The linear mechanism for controlling the intake extension
+     */
     public IntakeLinear(LinearMechanism<?> intakeLinearIO)
     {
         this.io = intakeLinearIO;
         this.linearStopped = new Trigger(() -> isLinearStopped());
+        this.isExtended = new Trigger(() -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8).and(linearStopped);
+        this.isRetracted = new Trigger(() -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8).and(linearStopped);
     }
 
+    /**
+     * Creates a command to extend the intake.
+     * 
+     * @return A command that extends the intake
+     */
     public Command extend() {
         return this.runOnce(() -> io.runCurrent(Amps.of(INTAKE_CURRENT.get())));
     }
 
+    /**
+     * Creates a command to retract the intake.
+     * 
+     * @return A command that retracts the intake
+     */
     public Command retract() {
         return this.runOnce(() -> io.runCurrent(Amps.of(-INTAKE_CURRENT.get())));
     }
 
-    // Repeating sequence to extend, wait until stopped, then retract
+    /**
+     * Creates a command that repeatedly cycles the intake between extended and retracted positions.
+     * Each cycle extends the intake, waits until stopped, retracts, then waits until stopped again.
+     * 
+     * @return A repeating command that cycles the intake
+     */
     public Command cycle() {
         return Commands.repeatingSequence(
             this.extend(),
@@ -57,6 +81,11 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
         );
     }
 
+    /**
+     * Creates a command to stop the intake linear mechanism.
+     * 
+     * @return A command that stops the linear motion
+     */
     public Command stop()
     {
         return this.runOnce(() -> io.runBrake());

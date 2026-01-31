@@ -27,11 +27,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
+import frc.lib.util.FieldUtil;
 import frc.robot.subsystems.drive.Drive;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -63,23 +62,44 @@ public class RobotState {
     @Setter
     private ChassisSpeeds velocity = new ChassisSpeeds();
 
+    /**
+     * Returns the robot's odometry-only pose (without vision corrections).
+     * 
+     * @return the odometry-only pose
+     */
     @AutoLogOutput(key = "Odometry/OdometryPose")
     public Pose2d getOdometryPose()
     {
         return poseEstimator.odometryPose();
     }
 
+    /**
+     * Returns the robot's estimated pose with vision corrections applied.
+     * 
+     * @return the estimated pose
+     */
     @AutoLogOutput(key = "Odometry/EstimatedPose")
     public Pose2d getEstimatedPose()
     {
         return poseEstimator.estimatedPose();
     }
 
+    /**
+     * Adds a new odometry observation to the pose estimator.
+     * 
+     * @param observation the odometry observation to add
+     */
     public void addOdometryObservation(OdometryObservation observation)
     {
         poseEstimator.addOdometryObservation(observation);
     }
 
+    /**
+     * Adds a new vision observation to the pose estimator.
+     * Vision observations are ignored when the drivetrain is tilted (e.g., going over a bump).
+     * 
+     * @param observation the vision observation to add
+     */
     public void addVisionObservation(VisionPoseObservation observation)
     {
         // Only add vision observation if robot is not angled (i.e. when going over a bump)
@@ -89,6 +109,12 @@ public class RobotState {
         poseEstimator.addVisionObservation(observation);
     }
 
+    /**
+     * Returns the robot's estimated pose at a specific timestamp.
+     * 
+     * @param timestampSeconds the timestamp in seconds
+     * @return the estimated pose at the given timestamp, or empty if unavailable
+     */
     public Optional<Pose2d> getPoseAtTime(double timestampSeconds)
     {
         return poseEstimator.getPoseAtTime(timestampSeconds);
@@ -100,6 +126,11 @@ public class RobotState {
         return getEstimatedPose().getRotation();
     }
 
+    /**
+     * Returns the robot's field-relative velocity.
+     * 
+     * @return the field-relative chassis speeds
+     */
     public ChassisSpeeds getFieldRelativeVelocity()
     {
         return ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -132,16 +163,22 @@ public class RobotState {
             getRotaryPose().getRotation()));
     }
 
+    /**
+     * Resets the robot's pose to the specified position.
+     * 
+     * @param pose the new pose to set
+     */
     public void resetPose(Pose2d pose)
     {
         poseEstimator.resetPose(pose);
     }
 
     @AllArgsConstructor
+    @SuppressWarnings("ImmutableEnumChecker")
     public enum Target {
-        // NAME(Pose, Height)
-        HUB(new Pose2d(FieldConstants.Hub.INNER_CENTER_POINT.getX(),
-            FieldConstants.Hub.INNER_CENTER_POINT.getY(), Rotation2d.kZero),
+        HUB(new Pose2d(
+            FieldConstants.Hub.TOP_CENTER_POINT.getX(),
+            FieldConstants.Hub.TOP_CENTER_POINT.getY(), Rotation2d.kZero),
             Meters.of(FieldConstants.Hub.HEIGHT)),
 
         FEED_DEPOT(new Pose2d(FieldConstants.Depot.rightCorner.getX(),
@@ -152,11 +189,20 @@ public class RobotState {
             FieldConstants.Outpost.CENTER_POINT.getY(), Rotation2d.kZero),
             Meters.of(0));
 
-        @Getter
-        private final Pose2d pose;
+        private final Pose2d bluePose;
 
         @Getter
         private final Distance height;
+
+        /**
+         * Returns the target pose with alliance flip applied.
+         * 
+         * @return the target pose adjusted for the current alliance
+         */
+        public Pose2d getAlliancePose()
+        {
+            return FieldUtil.apply(bluePose);
+        }
 
     }
 
@@ -166,25 +212,40 @@ public class RobotState {
     @Setter
     public static Target target = Target.HUB;
 
-    /** Returns 2d distance from robot to target in meters */
+    /**
+     * Returns 2D distance from robot to target.
+     * 
+     * @param robotPose the robot's current pose
+     * @return the distance to the target
+     */
     public Distance getDistanceToTarget(Pose2d robotPose)
     {
         Translation2d robotTranslation = robotPose.getTranslation();
-        Translation2d targetTranslation = target.pose.getTranslation();
+        Translation2d targetTranslation = target.getAlliancePose().getTranslation();
         return Meters.of(robotTranslation.getDistance(targetTranslation));
     }
 
-    /** Returns 2d distance from robot to target in meters */
-    public static Distance getDistanceToTarget(Translation2d robotPose)
+    /**
+     * Returns 2D distance from a given translation to the current target.
+     * 
+     * @param robotTranslation the robot's current translation
+     * @return the distance to the target
+     */
+    public static Distance getDistanceToTarget(Translation2d robotTranslation)
     {
-        Translation2d targetTranslation = target.pose.getTranslation();
-        return Meters.of(robotPose.getDistance(targetTranslation));
+        Translation2d targetTranslation = target.getAlliancePose().getTranslation();
+        return Meters.of(robotTranslation.getDistance(targetTranslation));
     }
 
-    /** Returns angle from robot to target */
-    public static Rotation2d getAngleToTarget(Translation2d robotPose)
+    /**
+     * Returns the angle from the robot to the current target.
+     * 
+     * @return the angle to the target
+     */
+    public Rotation2d getAngleToTarget()
     {
-        return target.pose.getTranslation().minus(robotPose).getAngle();
+        return target.getAlliancePose().getTranslation().minus(getEstimatedPose().getTranslation())
+            .getAngle();
     }
 
     /**
@@ -195,7 +256,7 @@ public class RobotState {
      */
     public static Pose2d getTargetPose(Target target)
     {
-        return target.pose;
+        return target.getAlliancePose();
     }
 
     /**

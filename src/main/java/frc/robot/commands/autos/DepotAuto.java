@@ -1,17 +1,16 @@
-/* Copyright (C) 2026 Windham Windup
+/*
+ * Copyright (C) 2026 Windham Windup
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
  */
 
 package frc.robot.commands.autos;
@@ -26,18 +25,36 @@ import frc.robot.subsystems.tower.Tower;
 import static edu.wpi.first.units.Units.Seconds;
 import java.util.List;
 
-/** Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect FUEL from
- *  the DEPOT, and then shoot them. Strategy layer. */
+/**
+ * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect FUEL from
+ * the DEPOT, and then shoot them. Strategy layer.
+ */
 public class DepotAuto extends AutoRoutine {
-    public DepotAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake, Indexer indexer, Tower tower,
+    /**
+     * Constructs a DepotAuto routine that shoots preload, collects from depot, and shoots collected fuel.
+     * Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
+     *
+     * @param drive the drive subsystem
+     * @param intakeLinear the intake linear subsystem for deploying/retracting intake
+     * @param intake the intake roller subsystem for collecting fuel
+     * @param indexer the indexer subsystem for managing fuel flow
+     * @param tower the tower subsystem for moving fuel to shooter
+     * @param shooter the shooter superstructure for launching fuel
+     * @param start the starting position on the field
+     */
+    public DepotAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake, Indexer indexer,
+        Tower tower,
         ShooterSuperstructure shooter, StartPosition start)
     {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
-            case LEFT -> expectedPaths = List.of("PreloadShoot-Left", "Left-Near-Depot", "Through-Depot", "Depot-Shoot");
-            case CENTER -> expectedPaths = List.of("PreloadShoot-Center", "Center-Near-Depot", "Through-Depot", "Depot-Shoot");
-            case RIGHT -> expectedPaths = List.of("PreloadShoot-Right", "Right-Near-Depot", "Through-Depot", "Depot-Shoot");
+            case LEFT -> expectedPaths =
+                List.of("PreloadShoot-Left", "Left-Near-Depot", "Through-Depot", "Depot-Shoot");
+            case CENTER -> expectedPaths =
+                List.of("PreloadShoot-Center", "Center-Near-Depot", "Through-Depot", "Depot-Shoot");
+            case RIGHT -> expectedPaths =
+                List.of("PreloadShoot-Right", "Right-Near-Depot", "Through-Depot", "Depot-Shoot");
             default -> expectedPaths = List.of();
         }
 
@@ -50,12 +67,14 @@ public class DepotAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, intakeLinear, indexer, tower, shooter, pathPlannerPaths.get(0)),
+                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                    pathPlannerPaths.get(0)),
                 // Go to the DEPOT and intake FUEL
-                AutoSegments.driveAndIntake(drive, intakeLinear, intake, pathPlannerPaths.get(1), pathPlannerPaths.get(2), Seconds.of(0.3)),
+                AutoSegments.driveAndIntake(drive, intakeLinear, intake, pathPlannerPaths.get(1),
+                    pathPlannerPaths.get(2), Seconds.of(0.3)),
                 // Drive to shooting location and shoot all FUEL
-                AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter, pathPlannerPaths.get(3))
-            );
+                AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
+                    pathPlannerPaths.get(3)));
         }
     }
 }

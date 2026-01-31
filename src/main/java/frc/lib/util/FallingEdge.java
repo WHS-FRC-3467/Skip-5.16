@@ -22,11 +22,22 @@ public class FallingEdge implements BooleanSupplier {
 
     private boolean previousState = true;
 
+    /**
+     * Constructs a FallingEdge detector.
+     *
+     * @param source The boolean supplier to detect falling edges from
+     */
     public FallingEdge(BooleanSupplier source)
     {
         this.source = source;
     }
 
+    /**
+     * Creates a FallingEdge detector from a boolean supplier.
+     *
+     * @param source The boolean supplier to detect falling edges from
+     * @return A new FallingEdge instance
+     */
     public static FallingEdge of(BooleanSupplier source)
     {
         return new FallingEdge(source);
