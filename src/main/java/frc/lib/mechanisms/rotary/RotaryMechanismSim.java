@@ -29,6 +29,7 @@ import frc.lib.io.motor.MotorIOSim;
  */
 public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEncoderIOSim> {
     private final SingleJointedArmSim sim;
+    private final RotaryMechCharacteristics characteristics;
 
     private Time lastTime = Seconds.zero();
 
@@ -38,6 +39,7 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
         Optional<AbsoluteEncoderIOSim> absoluteEncoder)
     {
         super(name, characteristics, io, absoluteEncoder);
+        this.characteristics = characteristics;
 
         if (momentOfInertia.isEquivalent(KilogramSquareMeters.zero()))
             throw new IllegalArgumentException(
@@ -67,17 +69,31 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
 
         lastTime = currentTime;
 
-        io.setPosition(Radians.of(sim.getAngleRads()));
-        io.setRotorVelocity(RadiansPerSecond.of(sim.getVelocityRadPerSec())
+        double angleRads = sim.getAngleRads();
+        double velocityRadPerSec = sim.getVelocityRadPerSec();
+        
+        // Clamp velocity to zero when at position limits to prevent oscillation
+        // This fixes the issue where velocity rapidly switches between 0 and some value at hardstops
+        double minRads = characteristics.minAngle().in(Radians);
+        double maxRads = characteristics.maxAngle().in(Radians);
+        double tolerance = 1e-6; // Small tolerance for floating point comparison
+        
+        if ((Math.abs(angleRads - minRads) < tolerance && velocityRadPerSec < 0) ||
+            (Math.abs(angleRads - maxRads) < tolerance && velocityRadPerSec > 0)) {
+            velocityRadPerSec = 0.0;
+        }
+
+        io.setPosition(Radians.of(angleRads));
+        io.setRotorVelocity(RadiansPerSecond.of(velocityRadPerSec)
             .times(io.getRotorToSensorRatio() * io.getSensorToMechanismRatio()));
 
-        Logger.recordOutput(name + " Sim Angle", sim.getAngleRads());
+        Logger.recordOutput(name + " Sim Angle", angleRads);
 
         absoluteEncoder.ifPresent(encoderSim -> {
             encoderSim
-                .setAngle(Radians.of(sim.getAngleRads()).times(io.getSensorToMechanismRatio()));
+                .setAngle(Radians.of(angleRads).times(io.getSensorToMechanismRatio()));
             encoderSim
-                .setAngularVelocity(RadiansPerSecond.of(sim.getVelocityRadPerSec())
+                .setAngularVelocity(RadiansPerSecond.of(velocityRadPerSec)
                     .times(io.getSensorToMechanismRatio()));
         });
 
