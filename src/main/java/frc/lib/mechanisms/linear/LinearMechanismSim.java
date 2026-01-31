@@ -35,7 +35,8 @@ import frc.lib.io.motor.MotorIOSim;
  * rotation) determines the angle from horizontal, affecting gravity simulation.
  */
 public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
-    private static final double POSITION_TOLERANCE = 1e-6; // Tolerance for floating point comparison at limits
+    /** Tolerance in meters for detecting when mechanism is at position limits */
+    private static final double POSITION_TOLERANCE = 1e-6;
     
     private final ElevatorSim sim;
     private final LinearMechCharacteristics characteristics;

@@ -28,7 +28,8 @@ import frc.lib.io.motor.MotorIOSim;
  * simulate the behavior of a rotary mechanism.
  */
 public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEncoderIOSim> {
-    private static final double POSITION_TOLERANCE = 1e-6; // Tolerance for floating point comparison at limits
+    /** Tolerance in radians for detecting when mechanism is at angle limits */
+    private static final double POSITION_TOLERANCE = 1e-6;
     
     private final SingleJointedArmSim sim;
     private final RotaryMechCharacteristics characteristics;
