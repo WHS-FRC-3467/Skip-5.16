@@ -126,6 +126,11 @@ public class LocalADStarAK implements Pathfinder {
         private boolean isNewPathAvailable = false;
         private List<PathPoint> currentPathPoints = Collections.emptyList();
 
+        /**
+         * Serializes the pathfinding state to a log table for AdvantageKit logging
+         * 
+         * @param table Log table to write state data to
+         */
         @Override
         public void toLog(LogTable table)
         {
@@ -142,6 +147,11 @@ public class LocalADStarAK implements Pathfinder {
             table.put("CurrentPathPoints", pointsLogged);
         }
 
+        /**
+         * Deserializes the pathfinding state from a log table for AdvantageKit replay
+         * 
+         * @param table Log table to read state data from
+         */
         @Override
         public void fromLog(LogTable table)
         {

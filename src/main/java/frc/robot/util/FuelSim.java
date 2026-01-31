@@ -335,6 +335,8 @@ public class FuelSim {
 
     /**
      * Returns a singleton instance of FuelSim
+     * 
+     * @return The singleton FuelSim instance
      */
     public static FuelSim getInstance()
     {
@@ -749,7 +751,7 @@ public class FuelSim {
         /**
          * Get the current count of fuel scored in this hub
          * 
-         * @return
+         * @return Number of fuel pieces scored in this hub
          */
         public int getScore()
         {
@@ -863,6 +865,13 @@ public class FuelSim {
         }
     }
 
+    /**
+     * Calculates the launch velocity vector for fuel based on shooter parameters and robot state
+     * 
+     * @param vel Linear velocity of the shooter
+     * @param angle Launch angle of the shooter
+     * @return 3D velocity vector in field coordinates
+     */
     public Translation3d launchVel(LinearVelocity vel, Angle angle)
     {
         Pose3d robot = new Pose3d(RobotState.getInstance().getEstimatedPose());
