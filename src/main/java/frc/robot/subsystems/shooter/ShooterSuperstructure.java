@@ -35,6 +35,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.robot.RobotState;
+import frc.robot.RobotState.Target;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
 
@@ -182,10 +183,22 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public Command prepareShot(Command whileAtPosition)
     {
         Supplier<AngularVelocity> desiredFlywheelVelocitySupplier = () -> RadiansPerSecond.of(
-            flywheelMap
-                .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
-        Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
-            .get(SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+            RobotState.target == Target.HUB // This logic will decide whether our target is going to
+
+                ? flywheelMap.get(
+                    SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation()
+                        .getNorm()) // Shooting into the hub
+                : flywheelMap // Feeding to our Alliance Zone
+                    .get(RobotState.getTargetPose(RobotState.target)
+                        .minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
+
+        Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(
+            RobotState.target == Target.HUB // This logic will decide whether our target is going to
+                ? hoodAngleMap.get(
+                    SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm())
+                : hoodAngleMap.get(
+                    RobotState.getTargetPose(RobotState.target)
+                        .minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
 
         Trigger ready = new Trigger(() -> isFlywheelAt(desiredFlywheelVelocitySupplier.get())
             && isHoodAt(desiredHoodPositionSupplier.get()));
