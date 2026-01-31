@@ -93,11 +93,13 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Preview", autoPreviewField);
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("PreloadNeutralAuto",
-            new PreloadNeutralAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter, StartPosition.CENTER));
-        
+            new PreloadNeutralAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.CENTER));
+
         // Depot Auto - Start at Center
         autoChooser.addOption("DepotAuto",
-            new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter, StartPosition.CENTER));
+            new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.CENTER));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
@@ -179,13 +181,15 @@ public class RobotContainer {
 
     private void configureFuelSim()
     {
-        shootSimFuel = new Trigger(() -> shooter.readyToShoot().getAsBoolean()
-            && (indexer.getSpeed() > 0.1) && (FuelSim.getInstance().hopperFuel > 0));
+        FuelSim instance = FuelSim.getInstance();
+
+        shootSimFuel = new Trigger(() -> (shooter.readyToShoot().getAsBoolean()
+            && (indexer.getSpeed() > 0.1) && (instance.getHeldFuel() > 0)));
 
         shootSimFuel.whileTrue(
             Commands.repeatingSequence(
                 Commands.waitSeconds(.1),
-                Commands.runOnce(() -> FuelSim.getInstance().hopperFuel--),
+                Commands.runOnce(() -> instance.setHeldFuel(instance.getHeldFuel() - 1)),
                 Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
                     new Translation3d(robotState.getEstimatedPose().getTranslation())
                         .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
@@ -195,7 +199,6 @@ public class RobotContainer {
         intakeSimFuel = new Trigger(() -> (intakeRoller.getVelocity().in(RotationsPerSecond) > 1.0)
             && intakeLinear.isExtended.getAsBoolean());
 
-        FuelSim instance = FuelSim.getInstance();
         instance.spawnStartingFuel();
         instance.registerRobot(
             Constants.FULL_ROBOT_WIDTH.in(Meters),
