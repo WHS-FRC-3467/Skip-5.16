@@ -5,6 +5,7 @@
 package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -12,9 +13,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.FieldUtil;
+import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
+import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
@@ -23,6 +27,8 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
  * together into larger command units (AutoSegments). Command logic layer.
  */
 public class AutoCommands {
+    private static final LoggedTunableNumber SHOOT_TOLERANCE_DEGREES =
+        new LoggedTunableNumber("Auto/ShootToleranceDegrees", 6.7);
 
     /**
      * Resets the robot's odometry to the starting pose of the specified path. Handles alliance
@@ -61,7 +67,8 @@ public class AutoCommands {
      * @param duration the maximum duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer
      */
-    public static Command shootFuel(Indexer indexer, ShooterSuperstructure shooter, double duration)
+    public static Command shootFuel(Indexer indexer, ShooterSuperstructure shooter,
+        BooleanSupplier canShoot, double duration)
     {
         return Commands.sequence(
             Commands.parallel(
@@ -69,7 +76,8 @@ public class AutoCommands {
                 shooter.spinUpShooter(),
                 // Run the indexer while the shooter is at position
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)
-                    .onlyWhile(shooter.readyToShoot) // Stop running if not at position
+                    // Stop running if not at position
+                    .onlyWhile(shooter.readyToShoot.and(canShoot))
                     .repeatedly()) // Try again
                 .withTimeout(duration), // Stop after duration
             // Reset subsystems to usual states
@@ -78,16 +86,33 @@ public class AutoCommands {
                 indexer.setStateCommand(Indexer.State.STOP)));
     }
 
+    public static Command alignAndShoot(Drive drive, Indexer indexer, ShooterSuperstructure shooter,
+        double duration)
+    {
+        final var robotState = RobotState.getInstance();
+        return Commands.deadline(
+            shootFuel(indexer, shooter,
+                () -> Math.abs(robotState.getAngleToTarget()
+                    .minus(robotState.getEstimatedPose().getRotation())
+                    .getDegrees()) < SHOOT_TOLERANCE_DEGREES.get(),
+                duration),
+            DriveCommands.joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0,
+                robotState::getAngleToTarget));
+    }
+
     /**
-     * Creates a command to run the intake mechanism to collect game pieces. The intake will stop
-     * automatically when the command ends.
+     * Creates a command to deploy and run the intake mechanism to collect game pieces. The intake
+     * will stop and retract automatically when the command ends.
      *
      * @param intake the intake subsystem
+     * @param linear the intake linear subsystem
      * @return a command that runs the intake and stops it when finished
      */
-    public static Command runIntake(IntakeRoller intake)
+    public static Command deployIntake(IntakeRoller intake, IntakeLinear linear)
     {
-        return intake.holdStateUntilInterrupted(IntakeRoller.State.INTAKE)
-            .finallyDo(() -> CommandScheduler.getInstance().schedule(intake.stop()));
+        return Commands.sequence(
+            linear.extend(),
+            intake.holdStateUntilInterrupted(IntakeRoller.State.INTAKE))
+            .finallyDo(() -> CommandScheduler.getInstance().schedule(linear.retract()));
     }
 }
