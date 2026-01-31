@@ -87,6 +87,6 @@ public class AutoCommands {
      */
     public static Command runIntake(IntakeRoller intake)
     {
-        return intake.runIntake(IntakeRoller.State.INTAKE).finallyDo(() -> intake.stop());
+        return intake.setStateCommand(IntakeRoller.State.INTAKE).finallyDo(() -> intake.stop());
     }
 }
