@@ -151,21 +151,6 @@ public class RobotContainer {
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
                 () -> (FieldUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)));
-
-        // controller
-        //     .x()
-        //     .whileTrue(
-        //         new AlignToPose(drive,
-        //             () -> new Pose2d(
-        //                 0.0, // no need for x-coordinate, driver will be controlling approach across the trench
-        //                 ((robotState.getEstimatedPose().getY() > FieldConstants.FIELD_WIDTH.div(2).in(Meters)) 
-        //                 ? FieldConstants.TRENCH_CENTER_Y_COORDINATES.get(0).in(Meters) 
-        //                 : FieldConstants.TRENCH_CENTER_Y_COORDINATES.get(1).in(Meters)),
-        //             (Math.abs(robotState.getEstimatedPose().getRotation().getDegrees())
-        //                 - 90.0 < 0) ? Rotation2d.kZero : Rotation2d.k180deg),
-        //             AlignToPoseBase.AlignMode.APPROACH,
-        //             () -> -controller.getLeftY()));
-
     }
 
 
