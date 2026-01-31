@@ -42,6 +42,8 @@ import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
+import frc.robot.subsystems.tower.Tower;
+import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.FuelSim;
 import static edu.wpi.first.units.Units.Degrees;
@@ -61,6 +63,7 @@ public class RobotContainer {
     private final IntakeRoller intakeRoller;
     private final IntakeLinear intakeLinear;
     private final Indexer indexer;
+    private final Tower tower;
 
     // Controller
     private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
@@ -81,8 +84,8 @@ public class RobotContainer {
         intakeRoller = IntakeRollerConstants.get();
         intakeLinear = IntakeLinearConstants.get();
         indexer = IndexerConstants.get();
+        tower = TowerConstants.get();
         VisionConstants.create();
-
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
         autoChooser.addDefaultOption("None", new NoneAuto());
