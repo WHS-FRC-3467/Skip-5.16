@@ -59,7 +59,7 @@ public class IntakeTest {
     void intake()
     {
         TestUtil.runTest(
-            intake.runIntake(IntakeRoller.State.INTAKE),
+            intake.setStateCommand(IntakeRoller.State.INTAKE),
             2,
             intake);
         try {
@@ -78,11 +78,12 @@ public class IntakeTest {
             2,
             intake);
         try {
-            // Check velocity to check if the subsystem is actually in tolerance of stopped velocity.
+            // Check velocity to check if the subsystem is actually in tolerance of stopped
+            // velocity.
             assertTrue(intake.nearSetpoint(IntakeRoller.State.STOP));
         } catch (Exception e) {
             fail("Failed to stop intake: " + e.getMessage());
         }
     }
-    
+
 }
