@@ -19,6 +19,7 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.tower.Tower;
 
 /**
  * Class containing useful individual commands or small-group command sequences that can be strung
@@ -59,14 +60,15 @@ public class AutoCommands {
      * fuel through the indexer when ready, and then stops tower & indexer afterwards (shooter
      * remains spun up).
      *
+     * @param intakeLinear the intake linear subsystem
      * @param indexer the indexer subsystem
      * @param tower the tower subsystem
      * @param shooter the shooter superstructure
      * @param duration the maximum duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer
      */
-    public static Command shootFuel(Tower tower, Indexer indexer, ShooterSuperstructure shooter,
-        double duration)
+    public static Command shootFuel(IntakeLinear intakeLinear, Indexer indexer, Tower tower,
+        ShooterSuperstructure shooter, double duration)
     {
         return Commands.sequence(
             new ParallelDeadlineGroup(
@@ -75,14 +77,13 @@ public class AutoCommands {
             new ParallelDeadlineGroup(
                 Commands.waitSeconds(duration),
                 shooter.spinUpShooter(), // Keep shooter scheduled
-                tower.holdStateUntilInterrupted(State.SHOOT), // Transport game pieces
-                indexer.holdStateUntilInterrupted(Indexer.State.PULL)
-                    .onlyWhile(shooter.readyToShoot())), // Shoot pieces while ready
+                tower.holdStateUntilInterrupted(Tower.State.SHOOT))
+                    .onlyWhile(shooter.readyToShoot()),
+            intakeLinear.retract(), // Return intake to stowed position after completing the cycle
             indexer.holdStateUntilInterrupted(Indexer.State.STOP));
     }
 
     /**
-     * Creates a command to run the intake mechanism to collect game pieces. The intake will stop
      * automatically when the command ends.
      *
      * @param intake the rotary intake subsystem
