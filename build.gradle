@@ -153,8 +153,17 @@ tasks.withType(JavaCompile).configureEach {
     options.errorprone.disable("Unused")
 }
 
+// Generate Mermaid diagram
+task(generateMermaidDiagram, type: Exec) {
+    description = 'Generates Mermaid diagram of robot structure in README.md'
+    group = 'documentation'
+    workingDir projectDir
+    commandLine 'python3', 'generate_mermaid.py'
+}
+
 // Create version file
 project.compileJava.dependsOn(createVersionFile)
+project.compileJava.dependsOn(generateMermaidDiagram)
 gversion {
     srcDir       = "src/main/java/"
     classPackage = "frc.robot"
