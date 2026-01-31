@@ -203,12 +203,20 @@ public class RobotContainer {
         SmartDashboard.putData("Run Indexer", indexer.setStateCommand(Indexer.State.PULL));
     }
 
+    /**
+     * Gets the selected autonomous command from the dashboard chooser.
+     * 
+     * @return the autonomous command to run
+     */
     public Command getAutonomousCommand()
     {
         return autoChooser.get();
     }
 
-    /** This function is called periodically by Robot.java when disabled. */
+    /**
+     * Checks and displays the robot's starting pose accuracy relative to the selected autonomous path.
+     * This function is called periodically by Robot.java when disabled.
+     */
     public void checkStartPose()
     {
 

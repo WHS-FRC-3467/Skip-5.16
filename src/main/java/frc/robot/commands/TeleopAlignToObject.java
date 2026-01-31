@@ -38,6 +38,17 @@ public class TeleopAlignToObject extends Command {
     private final DoubleSupplier rotSupplier;
     private final AlignToObjectBase strategy;
 
+    /**
+     * Creates a command to align the robot to a detected object while allowing driver control.
+     * 
+     * @param drive The Drive subsystem to control robot movement.
+     * @param objectDetector The ObjectDetector subsystem to detect and track objects.
+     * @param mode The contour selection mode for choosing which detected object to align to.
+     * @param xSupplier A DoubleSupplier providing driver input for forward/backward movement.
+     * @param ySupplier A DoubleSupplier providing driver input for left/right movement.
+     * @param rotSupplier A DoubleSupplier providing fallback driver input for rotation if no object
+     *        is detected.
+     */
     public TeleopAlignToObject(Drive drive, ObjectDetector objectDetector,
         ContourSelectionMode mode, DoubleSupplier xSupplier,
         DoubleSupplier ySupplier, DoubleSupplier rotSupplier)
@@ -52,6 +63,9 @@ public class TeleopAlignToObject extends Command {
         addRequirements(drive);
     }
 
+    /**
+     * Initializes the command by resetting the angular controller to ensure a clean start.
+     */
     @Override
     public void initialize()
     {
@@ -59,6 +73,11 @@ public class TeleopAlignToObject extends Command {
         strategy.getAngularController().reset(0.0);
     }
 
+    /**
+     * Executes the alignment strategy by combining driver translational input with automated
+     * rotational control to align to the detected object. Falls back to driver rotation input if no
+     * object is detected.
+     */
     @Override
     public void execute()
     {
@@ -95,6 +114,11 @@ public class TeleopAlignToObject extends Command {
                     : drive.robotState.getEstimatedPose().getRotation()));
     }
 
+    /**
+     * Checks if the command is finished.
+     * 
+     * @return always false, as this is a continuous teleop command that runs until interrupted.
+     */
     @Override
     public boolean isFinished()
     {
