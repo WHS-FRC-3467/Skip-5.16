@@ -24,6 +24,11 @@ import frc.lib.util.LoggerHelper;
 public class LEDs extends SubsystemBase {
     private final Lights lights;
 
+    /**
+     * Constructs an LEDs subsystem.
+     * 
+     * @param io The lights IO interface for controlling the LED hardware
+     */
     public LEDs(LightsIO io)
     {
         lights = new Lights(io);
@@ -35,6 +40,12 @@ public class LEDs extends SubsystemBase {
         LoggerHelper.recordCurrentCommand(LEDsConstants.NAME, this);
     }
 
+    /**
+     * Creates a command to run the disabled animation on the LEDs.
+     * Turns off the LEDs when the command ends.
+     * 
+     * @return A command that runs the disabled animation
+     */
     public Command runDisabledAnimation()
     {
         return this.startEnd(
@@ -43,6 +54,12 @@ public class LEDs extends SubsystemBase {
             .withName("Disabled Animation");
     }
 
+    /**
+     * Creates a command to run the autonomous animation on the LEDs.
+     * Turns off the LEDs when the command ends.
+     * 
+     * @return A command that runs the autonomous animation
+     */
     public Command runAutoAnimation()
     {
         return this.startEnd(
