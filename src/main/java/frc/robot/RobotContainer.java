@@ -90,11 +90,13 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Preview", autoPreviewField);
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("PreloadNeutralAuto",
-            new PreloadNeutralAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter, StartPosition.CENTER));
-        
+            new PreloadNeutralAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.CENTER));
+
         // Depot Auto - Start at Center
         autoChooser.addOption("DepotAuto",
-            new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter, StartPosition.CENTER));
+            new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.CENTER));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
@@ -122,11 +124,18 @@ public class RobotContainer {
                 () -> -controller.getRightX()));
 
         // Right Trigger: Teleop vision align to largest contour (translation allowed)
-        controller.rightTrigger(0.2)
-            .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
-                () -> -controller.getLeftY(), // forward/back
-                () -> -controller.getLeftX(), // strafe
-                () -> -controller.getRightX())); // fallback rotation
+        // controller.rightTrigger(0.2)
+        // .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
+        // () -> -controller.getLeftY(), // forward/back
+        // () -> -controller.getLeftX(), // strafe
+        // () -> -controller.getRightX())); // fallback rotation
+
+        controller.button(1).whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> robotState.getAngleToTarget()));
 
         // Left Bumper: Intake while held
         controller.leftBumper().onTrue(intakeRoller.setStateCommand(State.INTAKE))

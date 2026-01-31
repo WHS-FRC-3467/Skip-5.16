@@ -54,9 +54,14 @@ public class AutoCommands {
                     robotState.resetPose(pose);
                 });
 
-        } else {
-            return Commands.none();
-        }
+                    robotState.resetPose(pose);
+                });
+
+        }else
+
+    {
+        return Commands.none();
+    }
     }
 
     /**

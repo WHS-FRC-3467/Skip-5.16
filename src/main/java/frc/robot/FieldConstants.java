@@ -136,12 +136,6 @@ public class FieldConstants {
             AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(18).get().toPose2d();
         public static final Pose2d LEFT_FACE =
             AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(21).get().toPose2d();
-
-        // Final Positions:
-        public static final Translation3d HUB_UPPER_LIMIT =
-            FieldUtil.handleAllianceFlip(TOP_CENTER_POINT); // Lowest Opening to score in
-        public static final Translation3d HUB_LOWER_LIMIT =
-            FieldUtil.handleAllianceFlip(INNER_CENTER_POINT); // Highest opening to score in
     }
 
     /** Left Bump related constants */
