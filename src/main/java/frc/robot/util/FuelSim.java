@@ -16,7 +16,6 @@ import static edu.wpi.first.units.Units.Radians;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import javax.annotation.processing.Generated;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
