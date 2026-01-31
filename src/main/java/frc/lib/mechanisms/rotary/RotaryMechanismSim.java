@@ -29,7 +29,7 @@ import frc.lib.io.motor.MotorIOSim;
  */
 public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEncoderIOSim> {
     /** Tolerance in radians for detecting when mechanism is at angle limits */
-    private static final double POSITION_TOLERANCE = 1e-6;
+    private static final double ANGLE_TOLERANCE = 1e-6;
     
     private final SingleJointedArmSim sim;
     private final RotaryMechCharacteristics characteristics;
@@ -80,8 +80,8 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
         double minRads = characteristics.minAngle().in(Radians);
         double maxRads = characteristics.maxAngle().in(Radians);
         
-        if ((Math.abs(angleRads - minRads) < POSITION_TOLERANCE && velocityRadPerSec < 0) ||
-            (Math.abs(angleRads - maxRads) < POSITION_TOLERANCE && velocityRadPerSec > 0)) {
+        if ((Math.abs(angleRads - minRads) < ANGLE_TOLERANCE && velocityRadPerSec < 0) ||
+            (Math.abs(angleRads - maxRads) < ANGLE_TOLERANCE && velocityRadPerSec > 0)) {
             velocityRadPerSec = 0.0;
         }
 

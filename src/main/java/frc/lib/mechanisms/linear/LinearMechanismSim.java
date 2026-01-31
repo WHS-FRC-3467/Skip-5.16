@@ -50,14 +50,14 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
      * @param io The motor IO simulation
      * @param dcMotor The DC motor characteristics
      * @param mass The mass of the carriage
-     * @param constraints The mechanism characteristics including orientation
+     * @param characteristics The mechanism characteristics including orientation
      * @param useGravity Whether to simulate gravity effects (applies when orientation is vertical)
      */
     public LinearMechanismSim(String name, MotorIOSim io, DCMotor dcMotor, Mass mass,
-        LinearMechCharacteristics constraints, Boolean useGravity)
+        LinearMechCharacteristics characteristics, Boolean useGravity)
     {
-        super(name, constraints, io);
-        this.characteristics = constraints;
+        super(name, characteristics, io);
+        this.characteristics = characteristics;
 
         // ElevatorSim is used as the underlying physics simulation.
         // Note: ElevatorSim assumes vertical orientation for gravity simulation.
@@ -69,11 +69,11 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
             dcMotor,
             io.getRotorToSensorRatio() * io.getSensorToMechanismRatio(),
             mass.in(Kilograms),
-            constraints.converter().getDrumRadius().in(Meters),
-            constraints.minDistance().in(Meters),
-            constraints.maxDistance().in(Meters),
+            characteristics.converter().getDrumRadius().in(Meters),
+            characteristics.minDistance().in(Meters),
+            characteristics.maxDistance().in(Meters),
             useGravity,
-            constraints.startingDistance().in(Meters));
+            characteristics.startingDistance().in(Meters));
     }
 
     @Override
