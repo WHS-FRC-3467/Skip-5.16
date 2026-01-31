@@ -154,7 +154,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 // Generate Mermaid diagram
-task(generateMermaidDiagram, type: Exec) {
+tasks.register('generateMermaidDiagram', Exec) {
     description = 'Generates Mermaid diagram of robot structure in README.md'
     group = 'documentation'
     workingDir projectDir

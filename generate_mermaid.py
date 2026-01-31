@@ -41,8 +41,9 @@ class JavaClass:
 class JavaParser:
     """Parser for Java files to extract class information"""
 
-    def __init__(self, robot_path: Path):
+    def __init__(self, robot_path: Path, repo_root: Path):
         self.robot_path = robot_path
+        self.repo_root = repo_root
         self.classes: Dict[str, JavaClass] = {}
 
     def parse_files(self):
@@ -73,11 +74,11 @@ class JavaParser:
             implements_str = class_match.group(4)
             implements = [i.strip() for i in implements_str.split(',')] if implements_str else []
 
-            # Create JavaClass object
+            # Create JavaClass object - calculate path relative to repo root
             java_class = JavaClass(
                 name=class_name,
                 package=package,
-                full_path=str(file_path.relative_to(self.robot_path.parent.parent.parent.parent)),
+                full_path=str(file_path.relative_to(self.repo_root)),
                 extends=extends,
                 implements=implements
             )
@@ -190,8 +191,10 @@ class MermaidGenerator:
         if auto_commands:
             lines.append("    class AutoCommands {")
             lines.append("        <<namespace>>")
+            # List auto command classes (not as methods, so no parentheses)
             for auto in sorted(auto_commands, key=lambda x: x.name):
-                lines.append(f"        +{auto.name}")
+                # Don't add parentheses - these are class names, not method calls
+                lines.append(f"        {auto.name}")
             lines.append("    }")
         
         return lines
@@ -283,7 +286,7 @@ def main():
 
     # Parse Java files
     print(f"Parsing Java files in {robot_path}...")
-    parser = JavaParser(robot_path)
+    parser = JavaParser(robot_path, repo_root)
     parser.parse_files()
     print(f"Found {len(parser.classes)} classes")
 

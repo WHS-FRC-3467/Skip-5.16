@@ -210,14 +210,14 @@ classDiagram
     }
     class AutoCommands {
         <<namespace>>
-        +AutoCommands
-        +AutoSegments
-        +DepotAuto
-        +NoneAuto
-        +PreloadNeutralAuto
-        +StartPosition
-        +WheelCharacterizationAuto
-        +WheelSlipAuto
+        AutoCommands
+        AutoSegments
+        DepotAuto
+        NoneAuto
+        PreloadNeutralAuto
+        StartPosition
+        WheelCharacterizationAuto
+        WheelSlipAuto
     }
     Robot --> RobotContainer : uses
     RobotContainer --> ObjectDetector : contains
