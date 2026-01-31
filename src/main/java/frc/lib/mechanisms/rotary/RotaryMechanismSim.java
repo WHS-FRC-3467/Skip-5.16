@@ -80,13 +80,16 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
         double minRads = characteristics.minAngle().in(Radians);
         double maxRads = characteristics.maxAngle().in(Radians);
         
+        final double clampedVelocityRadPerSec;
         if ((Math.abs(angleRads - minRads) < ANGLE_TOLERANCE && velocityRadPerSec < 0) ||
             (Math.abs(angleRads - maxRads) < ANGLE_TOLERANCE && velocityRadPerSec > 0)) {
-            velocityRadPerSec = 0.0;
+            clampedVelocityRadPerSec = 0.0;
+        } else {
+            clampedVelocityRadPerSec = velocityRadPerSec;
         }
 
         io.setPosition(Radians.of(angleRads));
-        io.setRotorVelocity(RadiansPerSecond.of(velocityRadPerSec)
+        io.setRotorVelocity(RadiansPerSecond.of(clampedVelocityRadPerSec)
             .times(io.getRotorToSensorRatio() * io.getSensorToMechanismRatio()));
 
         Logger.recordOutput(name + " Sim Angle", angleRads);
@@ -95,7 +98,7 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
             encoderSim
                 .setAngle(Radians.of(angleRads).times(io.getSensorToMechanismRatio()));
             encoderSim
-                .setAngularVelocity(RadiansPerSecond.of(velocityRadPerSec)
+                .setAngularVelocity(RadiansPerSecond.of(clampedVelocityRadPerSec)
                     .times(io.getSensorToMechanismRatio()));
         });
 
