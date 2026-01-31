@@ -79,7 +79,10 @@ public class HubState {
     public void setFirstActiveAlliance()
     {
         String gameSpecificMessage = DriverStation.getGameSpecificMessage();
-        // The game-specific message indicates which alliance's hub is INACTIVE during the first alliacne shift.
+        // The game-specific message indicates which alliance's hub is INACTIVE during the first
+        // alliance shift. We therefore set firstActiveAlliance to the *other* alliance:
+        //   - If the first character is 'B', the Blue hub is inactive, so the Red hub is active.
+        //   - If the first character is 'R', the Red hub is inactive, so the Blue hub is active.
         if (gameSpecificMessage != null && !gameSpecificMessage.isEmpty()) {
             firstActiveAlliance = gameSpecificMessage.charAt(0) == 'B' ? Alliance.Red : Alliance.Blue;
         } else {
