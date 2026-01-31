@@ -30,10 +30,10 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
+import frc.lib.util.LoggedTrigger;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
 
@@ -77,7 +77,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
 
-    public final Trigger readyToShoot = new Trigger(() -> {
+    public final LoggedTrigger readyToShoot = new LoggedTrigger(this.getName() + "/readyToShoot", () -> {
         double dist =
             SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm();
         return isFlywheelAt(RadiansPerSecond.of(flywheelMap.get(dist)))
@@ -194,7 +194,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     RobotState.getTargetPose(RobotState.target)
                         .minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
 
-        Trigger ready = new Trigger(() -> isFlywheelAt(desiredFlywheelVelocitySupplier.get())
+        LoggedTrigger ready = new LoggedTrigger(this.getName() + "/prepareShot() Ready", () -> isFlywheelAt(desiredFlywheelVelocitySupplier.get())
             && isHoodAt(desiredHoodPositionSupplier.get()));
 
         return Commands.sequence(
