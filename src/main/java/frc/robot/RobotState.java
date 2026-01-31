@@ -228,13 +228,13 @@ public class RobotState {
     /**
      * Returns 2D distance from a given translation to the current target.
      * 
-     * @param robotPose the robot's current translation
+     * @param robotTranslation the robot's current translation
      * @return the distance to the target
      */
-    public static Distance getDistanceToTarget(Translation2d robotPose)
+    public static Distance getDistanceToTarget(Translation2d robotTranslation)
     {
         Translation2d targetTranslation = target.getAlliancePose().getTranslation();
-        return Meters.of(robotPose.getDistance(targetTranslation));
+        return Meters.of(robotTranslation.getDistance(targetTranslation));
     }
 
     /**

@@ -193,7 +193,8 @@ public class DriveCommands {
 
     /**
      * Measures the velocity feedforward constants for the drive motors.
-     * This command should only be used in voltage control mode.
+     * 
+     * <p>This command should only be used in voltage control mode.
      * 
      * @param drive the drive subsystem
      * @return the feedforward characterization command
