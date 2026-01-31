@@ -39,7 +39,7 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
         new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);
 
     private final FlywheelMechanism<?> io;
-    private State state;
+    private State state = State.STOP;
 
     @RequiredArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
