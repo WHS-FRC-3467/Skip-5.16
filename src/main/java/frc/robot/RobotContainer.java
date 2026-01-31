@@ -170,7 +170,7 @@ public class RobotContainer {
             Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
                 new Translation3d(robotState.getEstimatedPose().getTranslation())
                     .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
-                FuelSim.getInstance().launchVel(shooter.getAvgerageLinearVelocity(),
+                FuelSim.getInstance().launchVel(shooter.getAverageLinearVelocity(),
                     shooter.getHoodAngle()))));
 
         SmartDashboard.putData("Set flywheel to 30",
@@ -193,7 +193,7 @@ public class RobotContainer {
                 Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
                     new Translation3d(robotState.getEstimatedPose().getTranslation())
                         .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
-                    FuelSim.getInstance().launchVel(shooter.getAvgerageLinearVelocity(),
+                    FuelSim.getInstance().launchVel(shooter.getAverageLinearVelocity(),
                         shooter.getHoodAngle())))));
 
         intakeSimFuel = new Trigger(() -> (intakeRoller.getVelocity().in(RotationsPerSecond) > 1.0)
