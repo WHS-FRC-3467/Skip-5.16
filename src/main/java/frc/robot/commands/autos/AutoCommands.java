@@ -14,8 +14,10 @@ import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.tower.Tower;
 
 /**
  * Class containing useful individual commands or small-group command sequences that can be strung
@@ -55,12 +57,14 @@ public class AutoCommands {
      * Creates a command sequence to shoot fuel from the robot. Spins up the shooter, pulls fuel
      * through the indexer when ready, and stops after the duration.
      *
+     * @param intakeLinear the intake linear subsystem
      * @param indexer the indexer subsystem
+     * @param tower the tower subsystem
      * @param shooter the shooter superstructure
      * @param duration the maximum duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer
      */
-    public static Command shootFuel(Indexer indexer, ShooterSuperstructure shooter, double duration)
+    public static Command shootFuel(IntakeLinear intakeLinear, Indexer indexer, Tower tower, ShooterSuperstructure shooter, double duration)
     {
         return Commands.sequence(
             new ParallelDeadlineGroup(
@@ -69,8 +73,13 @@ public class AutoCommands {
             new ParallelDeadlineGroup(
                 Commands.waitSeconds(duration),
                 shooter.spinUpShooter(), // Keep shooter scheduled
-                indexer.holdStateUntilInterrupted(Indexer.State.PULL)
-                    .onlyWhile(shooter.readyToShoot())),
+                Commands.parallel(
+                    indexer.holdStateUntilInterrupted(Indexer.State.PULL),
+                    // Cycle the intake linear to get balls moving through the indexer
+                    intakeLinear.cycle(),
+                    tower.holdStateUntilInterrupted(Tower.State.SHOOT)
+                )).onlyWhile(shooter.readyToShoot()),
+            intakeLinear.retract(), // Return intake to stowed position after completing the cycle
             indexer.holdStateUntilInterrupted(Indexer.State.STOP));
     }
 

@@ -27,6 +27,7 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.tower.Tower;
 
 /** Class containing larger command units consisting of individual commands or small-group command
  * sequences (AutoCommands) strung together for use in creating full Autos. Command integration
@@ -35,20 +36,27 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 public class AutoSegments {
 
     /**
-     * Follow a PathPlannerPath path and then shoot preload
+     * Follow a PathPlannerPath path and then shoot preload of 8 FUEL.
      * Drive to shooting location while spinning up shooter but not indexing. Once at
      * position, with the shooter still spinning, bring up the indexer to begin shooting.
      * Shoot all preload. Bring down indexer to end -- shooter will idle at speed. If path
      * doesn't complete in 2.75s, attempt a shot anyway.
+     * 
+     * @param drive The Drive subsystem
+     * @param intakeLinear The IntakeLinear subsystem
+     * @param indexer The Indexer subsystem
+     * @param tower The Tower subsystem
+     * @param shooter The ShooterSuperstructure subsystem
+     * @param path The path to drive to the shooting location, the robot will shoot from the path's end pose
      */
-    public static Command makePreloadShot(Drive drive, Indexer indexer,
+    public static Command makePreloadShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer, Tower tower,
         ShooterSuperstructure shooter, PathPlannerPath path)
     {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
                 shooter.spinUpShooter()).withTimeout(2.75),
-            AutoCommands.shootFuel(indexer, shooter, 1));
+            AutoCommands.shootFuel(intakeLinear, indexer, tower, shooter, 1));
     }
 
     /** 
@@ -57,23 +65,25 @@ public class AutoSegments {
      * Shoot all FUEL for up to 3s. Bring down indexer to end -- shooter will idle at speed. If path
      * doesn't complete in 3.5s, attempt a shot anyway.
      * @param drive The Drive subsystem
+     * @param intakeLinear The IntakeLinear subsystem
      * @param indexer The Indexer subsystem
+     * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
      * @param path The path to drive to the shooting location, the robot will shoot from the path's end pose
      */
-    public static Command makeFullShot(Drive drive, Indexer indexer,
+    public static Command makeFullShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer, Tower tower,
         ShooterSuperstructure shooter, PathPlannerPath path)
     {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
                 shooter.spinUpShooter()).withTimeout(3.5),
-            AutoCommands.shootFuel(indexer, shooter, 3));
+            AutoCommands.shootFuel(intakeLinear, indexer, tower, shooter, 3));
     }
 
 
     /** 
-     * @return a Command to Follow a path and collect FUEL in AUTO
+     * Returns a Command to Follow a path and collect FUEL in AUTO
      * @param drive The Drive subsystem
      * @param intakeLinear The IntakeLinear subsystem
      * @param intakeRoller The IntakeRoller subsystem

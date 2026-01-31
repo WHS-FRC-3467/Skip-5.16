@@ -22,13 +22,14 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.tower.Tower;
 import static edu.wpi.first.units.Units.Seconds;
 import java.util.List;
 
 /** Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect FUEL from
  *  the DEPOT, and then shoot them. Strategy layer. */
 public class DepotAuto extends AutoRoutine {
-    public DepotAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake, Indexer indexer,
+    public DepotAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake, Indexer indexer, Tower tower,
         ShooterSuperstructure shooter, StartPosition start)
     {
         // Choose path names based on start position
@@ -49,11 +50,11 @@ public class DepotAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, indexer, shooter, pathPlannerPaths.get(0)),
+                AutoSegments.makePreloadShot(drive, intakeLinear, indexer, tower, shooter, pathPlannerPaths.get(0)),
                 // Go to the DEPOT and intake FUEL
                 AutoSegments.driveAndIntake(drive, intakeLinear, intake, pathPlannerPaths.get(1), pathPlannerPaths.get(2), Seconds.of(0.3)),
                 // Drive to shooting location and shoot all FUEL
-                AutoSegments.makeFullShot(drive, indexer, shooter, pathPlannerPaths.get(3))
+                AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter, pathPlannerPaths.get(3))
             );
         }
     }
