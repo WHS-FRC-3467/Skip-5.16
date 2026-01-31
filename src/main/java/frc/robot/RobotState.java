@@ -30,6 +30,7 @@ import edu.wpi.first.units.measure.Distance;
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
+import frc.lib.util.FieldUtil;
 import frc.robot.subsystems.drive.Drive;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -136,10 +137,11 @@ public class RobotState {
     }
 
     @AllArgsConstructor
+    @SuppressWarnings("ImmutableEnumChecker")
     public enum Target {
-        // NAME(Pose, Height)
-        HUB(new Pose2d(FieldConstants.Hub.INNER_CENTER_POINT.getX(),
-            FieldConstants.Hub.INNER_CENTER_POINT.getY(), Rotation2d.kZero),
+        HUB(new Pose2d(
+            FieldConstants.Hub.TOP_CENTER_POINT.getX(),
+            FieldConstants.Hub.TOP_CENTER_POINT.getY(), Rotation2d.kZero),
             Meters.of(FieldConstants.Hub.HEIGHT)),
 
         FEED_DEPOT(new Pose2d(FieldConstants.Depot.rightCorner.getX(),
@@ -150,11 +152,16 @@ public class RobotState {
             FieldConstants.Outpost.CENTER_POINT.getY(), Rotation2d.kZero),
             Meters.of(0));
 
-        @Getter
-        private final Pose2d pose;
+        private final Pose2d bluePose;
 
         @Getter
         private final Distance height;
+
+        /** Returns the pose with alliance flip applied */
+        public Pose2d getAlliancePose()
+        {
+            return FieldUtil.apply(bluePose);
+        }
 
     }
 
@@ -168,21 +175,22 @@ public class RobotState {
     public Distance getDistanceToTarget(Pose2d robotPose)
     {
         Translation2d robotTranslation = robotPose.getTranslation();
-        Translation2d targetTranslation = target.pose.getTranslation();
+        Translation2d targetTranslation = target.getAlliancePose().getTranslation();
         return Meters.of(robotTranslation.getDistance(targetTranslation));
     }
 
     /** Returns 2d distance from robot to target in meters */
     public static Distance getDistanceToTarget(Translation2d robotPose)
     {
-        Translation2d targetTranslation = target.pose.getTranslation();
+        Translation2d targetTranslation = target.getAlliancePose().getTranslation();
         return Meters.of(robotPose.getDistance(targetTranslation));
     }
 
     /** Returns angle from robot to target */
     public Rotation2d getAngleToTarget()
     {
-        return target.pose.getTranslation().minus(getEstimatedPose().getTranslation()).getAngle();
+        return target.getAlliancePose().getTranslation().minus(getEstimatedPose().getTranslation())
+            .getAngle();
     }
 
     /**
@@ -193,7 +201,7 @@ public class RobotState {
      */
     public static Pose2d getTargetPose(Target target)
     {
-        return target.pose;
+        return target.getAlliancePose();
     }
 
     /**

@@ -48,13 +48,14 @@ public class AutoCommands {
                     Pose2d pose =
                         path.getStartingHolonomicPose().get();
                     if (FieldUtil.shouldFlip()) {
-                        pose = FieldUtil.handleAllianceFlip(pose);
+                        pose = FieldUtil.apply(pose);
                     }
 
                     robotState.resetPose(pose);
                 });
+        } else
 
-        } else {
+        {
             return Commands.none();
         }
     }
