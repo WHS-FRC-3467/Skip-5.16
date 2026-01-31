@@ -318,6 +318,11 @@ public class DriveConstants {
         }
     }
 
+    /**
+     * Creates and returns a Drive subsystem configured for the current robot mode.
+     *
+     * @return Drive subsystem instance with appropriate IO implementations
+     */
     public static Drive get()
     {
         switch (Constants.currentMode) {
