@@ -36,7 +36,7 @@ import frc.lib.io.motor.MotorIOSim;
  */
 public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
     private final ElevatorSim sim;
-    private final LinearMechCharacteristics constraints;
+    private final LinearMechCharacteristics characteristics;
 
     private Time lastTime = Seconds.zero();
 
@@ -54,7 +54,7 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
         LinearMechCharacteristics constraints, Boolean useGravity)
     {
         super(name, constraints, io);
-        this.constraints = constraints;
+        this.characteristics = constraints;
 
         // ElevatorSim is used as the underlying physics simulation.
         // Note: ElevatorSim assumes vertical orientation for gravity simulation.
@@ -99,8 +99,8 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
         
         // Clamp velocity to zero when at position limits to prevent oscillation
         // This fixes the issue where velocity rapidly switches between 0 and some value at hardstops
-        double minMeters = constraints.minDistance().in(Meters);
-        double maxMeters = constraints.maxDistance().in(Meters);
+        double minMeters = characteristics.minDistance().in(Meters);
+        double maxMeters = characteristics.maxDistance().in(Meters);
         double tolerance = 1e-6; // Small tolerance for floating point comparison
         
         if ((Math.abs(positionMeters - minMeters) < tolerance && velocityMetersPerSecond < 0) ||
