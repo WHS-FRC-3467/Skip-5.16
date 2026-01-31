@@ -25,9 +25,11 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.FieldConstants.Hub;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.BallSimulator;
 import frc.robot.util.FuelSim;
+import frc.robot.util.HubState;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -47,6 +49,7 @@ public class Robot extends LoggedRobot {
 
     private Command autonomousCommand;
     private RobotContainer robotContainer;
+    private boolean checkedHubGameData = false; // whether we've checked for hub game data at the start of the first alliance phase
 
     public Robot()
     {
@@ -158,7 +161,10 @@ public class Robot extends LoggedRobot {
 
         BallSimulator.update();
         RobotState.getInstance().publishMechanismPoses();
-        SmartDashboard.putNumber("time", DriverStation.getMatchTime());
+
+        // Provide Elastic Dashboard updates on Hub state
+        SmartDashboard.putBoolean("Hub Active", frc.robot.util.HubState.getInstance().getHubActive().getAsBoolean());
+        SmartDashboard.putBoolean("Hub Changing Soon", frc.robot.util.HubState.getInstance().getHubChange().getAsBoolean());
     }
 
     /** This function is called once when the robot is disabled. */
@@ -210,7 +216,15 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic()
-    {}
+    {
+        // Hub State management
+        if (!checkedHubGameData && DriverStation.getMatchTime() <= HubState.HUB_CHANGE_TIMES[0]) {
+            // At the beginning of the first alliance phase, check for hub game data
+            HubState.getInstance().setFirstActiveAlliance();
+            checkedHubGameData = true;
+        }
+        HubState.getInstance().periodic();
+    }
 
 
     /** This function is called once when test mode is enabled. */

@@ -45,7 +45,7 @@ import lombok.AccessLevel;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HubState {
 
-    private static final double[] HUB_CHANGE_TIMES = {
+    public static final double[] HUB_CHANGE_TIMES = {
             130.0,
             105.0,
             80.0,
@@ -53,36 +53,51 @@ public class HubState {
             30.0,
     };
 
-    private static final double SECONDS_BEFORE = 5.0; // const for the seconds before the hub change
-                                                      // activates
-
-    private static final double BUFFER = 0.1; // time offset so you dont overflow
-
-    @Getter(lazy = true)
+    @Getter
     private static final HubState instance = new HubState();
+
     @Getter
-    private Trigger hubChange = new Trigger(this::isHubCloseToActive);
-    // activates x seconds before the next hub change
-    @Getter
-    private Trigger hubActive = new Trigger(this::isAllianceHubActive);
+    private Trigger hubActive = new Trigger(() -> isOurHubActive());
     // tells the robot if the hub is active
 
-    private DriverStation.Alliance getActiveAlliance = Alliance.Blue;
+    /** activates {@link #SECONDS_BEFORE} seconds before the next hub change */
+    @Getter
+    private Trigger hubChange = new Trigger(() -> isCloseToSwitching());
+    // Time (in seconds) before a hub change that the hubChange trigger activates
+    private static final double SECONDS_BEFORE = 5.0;
 
-    private void checkActiveAlliance()
-    {
-        getActiveAlliance = getActiveAlliance == Alliance.Blue ? Alliance.Red : Alliance.Blue;
-    }
+    // Stores the alliance whose hub is currently active - default to our alliance during Auto - set to Blue as a backup
+    private Alliance activeAlliance = DriverStation.getAlliance().orElse(Alliance.Blue);
 
-    private void initActiveAlliance()
+    // Stores the alliance whose hub is active in the 1st shift
+    private Alliance firstActiveAlliance = Alliance.Blue;
+
+    /**
+     * Checks the active alliance based on the game-specific message from the DriverStation.
+     * Meant to only be called at the first possible change time.
+     */
+    public void setFirstActiveAlliance()
     {
         String gameSpecificMessage = DriverStation.getGameSpecificMessage();
+        // The game-specific message indicates which alliance's hub is INACTIVE during the first alliane shift.
         if (gameSpecificMessage != null && !gameSpecificMessage.isEmpty()) {
-            getActiveAlliance = gameSpecificMessage.charAt(0) == 'B' ? Alliance.Blue : Alliance.Red;
+            firstActiveAlliance = gameSpecificMessage.charAt(0) == 'B' ? Alliance.Red : Alliance.Blue;
+        } else {
+            // Fall back to the default alliance (Blue) and report the missing game-specific
+            // message.
+            DriverStation.reportError(
+                "HubState: game specific message is null or empty; defaulting active hub alliance to BLUE.",
+                false);
+            firstActiveAlliance = Alliance.Blue;
         }
     }
 
-    private double findClosestTime(double matchTime)
+    /**
+     * Fine the next time that the hub will change based on the current match time
+     * @param matchTime
+     * @return the next hub change time, or 0.0 if no hub changes are scheduled
+     */
+    private double nextSwitchTime(double matchTime)
     {
         for (int i = 0; i < HUB_CHANGE_TIMES.length; i++) {
             if (matchTime > HUB_CHANGE_TIMES[i]) {
@@ -92,44 +107,51 @@ public class HubState {
         return 0.0;
     }
 
-    private boolean isHubCloseToActive()
+    /**
+     * Determines if the hub is close to changing. Uses {@link #SECONDS_BEFORE} as the threshold.
+     */
+    private boolean isCloseToSwitching()
     {
         double matchTime = DriverStation.getMatchTime();
-        return matchTime - findClosestTime(matchTime) <= SECONDS_BEFORE;
-    }
-
-
-    private boolean toggle = true; // toggle turns off when the match time is 0.1 seconds away from
-    // the closest hub change times
-
-    private boolean isAllianceHubActive()
-    {
-        double matchTime = DriverStation.getMatchTime();
-
-        if (toggle) {
-            if (matchTime - findClosestTime(matchTime) <= BUFFER) {
-                if (matchTime >= HUB_CHANGE_TIMES[0]) {
-                    // if match time is before the first transition time
-                    initActiveAlliance();
-                } else {
-                    checkActiveAlliance();
-                }
-                toggle = false;
-            }
-
+        if (matchTime > HUB_CHANGE_TIMES[4]) {
+            return matchTime - nextSwitchTime(matchTime) <= SECONDS_BEFORE;
         } else {
-            if (matchTime - findClosestTime(matchTime) >= BUFFER) {
-                toggle = true;
-            }
+            // We know the hub won't change again in the last 30 seconds of the match
+            return false;
         }
-
-        if (matchTime < HUB_CHANGE_TIMES[4] + BUFFER | matchTime > HUB_CHANGE_TIMES[0]) {
-            // if is endgame or is transition return true
-            return true;
-        }
-
-        return getActiveAlliance != DriverStation.getAlliance().orElse(Alliance.Red);
     }
 
+    /**
+     * Meant to be called regularly. Checks which hub is active and stores
+     * it in {@link #activeAlliance}
+     */
+    public void periodic()
+    {
+        double matchTime = DriverStation.getMatchTime();
+        if (matchTime <= HUB_CHANGE_TIMES[4] || matchTime > HUB_CHANGE_TIMES[0]) {
+            // If the game is in the transition phase at the start of teleop (t>130), auto (t<=20),
+            // or endgame (t<30), then our alliance hub is active, so set that
+            activeAlliance = DriverStation.getAlliance().orElse(Alliance.Red);
+        } else if ((matchTime > HUB_CHANGE_TIMES[1]) && (matchTime <= HUB_CHANGE_TIMES[0])) {
+            // First Shift
+            activeAlliance = firstActiveAlliance;
+        } else if (matchTime > HUB_CHANGE_TIMES[2] && matchTime <= HUB_CHANGE_TIMES[1]) {
+            // Second Shift - switch from first shift
+            activeAlliance = (firstActiveAlliance == Alliance.Blue) ? Alliance.Red : Alliance.Blue;          
+        } else if (matchTime > HUB_CHANGE_TIMES[3] && matchTime <= HUB_CHANGE_TIMES[2]) {
+            // Third Shift - same as first shift
+            activeAlliance = firstActiveAlliance;
+        } else {
+            // Fourth Shift - switch from third shift
+            activeAlliance = (firstActiveAlliance == Alliance.Blue) ? Alliance.Red : Alliance.Blue;  
+        }
+    }
 
+    /**
+     * Returns whether our alliance hub is currently active
+     */
+    private boolean isOurHubActive()
+    {
+        return activeAlliance == DriverStation.getAlliance().orElse(Alliance.Red);
+    }
 }
