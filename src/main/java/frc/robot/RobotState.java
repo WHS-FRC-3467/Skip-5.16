@@ -180,9 +180,9 @@ public class RobotState {
     }
 
     /** Returns angle from robot to target */
-    public static Rotation2d getAngleToTarget(Translation2d robotPose)
+    public Rotation2d getAngleToTarget()
     {
-        return target.pose.getTranslation().minus(robotPose).getAngle();
+        return target.pose.getTranslation().minus(getEstimatedPose().getTranslation()).getAngle();
     }
 
     /**
