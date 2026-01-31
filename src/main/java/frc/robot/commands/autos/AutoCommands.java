@@ -66,6 +66,8 @@ public class AutoCommands {
      * @param indexer the indexer subsystem
      * @param tower the tower subsystem
      * @param shooter the shooter superstructure
+     * @param canShoot an extra checkl for whether or not balls can be shot, besides the shooter
+     *        superstructure being at the correct state
      * @param duration the maximum duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer
      */
@@ -99,11 +101,10 @@ public class AutoCommands {
      * @param drive the drive subsystem used to rotate and align the robot to the target
      * @param indexer the indexer subsystem used to feed game pieces into the shooter
      * @param tower the tower subsystem used to move game pieces toward the shooter
-     * @param shooter the shooter superstructure responsible for spinning up and controlling
-     *        the shooter
+     * @param shooter the shooter superstructure responsible for spinning up and controlling the
+     *        shooter
      * @param duration the maximum duration in seconds to run the align-and-shoot sequence
-     * @return a command that aligns the robot to the target and shoots for up to the given
-     *         duration
+     * @return a command that aligns the robot to the target and shoots for up to the given duration
      */
     public static Command alignAndShoot(Drive drive, Indexer indexer, Tower tower,
         ShooterSuperstructure shooter,
