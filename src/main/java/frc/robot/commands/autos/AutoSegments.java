@@ -59,7 +59,7 @@ public class AutoSegments {
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
                 shooter.spinUpShooter()).withTimeout(2.75),
-            AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 1));
+            AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 2));
     }
 
     /**
