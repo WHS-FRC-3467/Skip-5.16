@@ -2,6 +2,18 @@
 """
 Script to generate a Mermaid diagram showing the structure of the frc/robot package.
 This includes subsystems, commands, and their relationships.
+
+This script is automatically run during the build process (via the generateMermaidDiagram
+Gradle task) to keep the README.md diagram up to date with the latest code structure.
+
+The diagram shows:
+- Main robot classes (Robot, RobotContainer, etc.)
+- Subsystems with their key public methods
+- Commands (both regular and autonomous)
+- Relationships between components
+
+The diagram is inserted into README.md between the markers:
+<!-- MERMAID_DIAGRAM_START --> and <!-- MERMAID_DIAGRAM_END -->
 """
 
 import os
@@ -228,8 +240,21 @@ def update_readme(diagram: str, readme_path: Path):
     start_marker = "<!-- MERMAID_DIAGRAM_START -->"
     end_marker = "<!-- MERMAID_DIAGRAM_END -->"
 
-    # Create the diagram section
-    diagram_section = f"{start_marker}\n## Robot Structure\n\n{diagram}\n\n{end_marker}"
+    # Create the diagram section with description
+    description = """## Robot Structure
+
+This diagram is automatically generated from the code in `src/main/java/frc/robot/` and updated during the build process.
+It shows the relationships between subsystems, commands, and core robot classes.
+
+**Legend:**
+- `<<subsystem>>` - Robot subsystems that control hardware
+- `<<command>>` - Commands that define robot behaviors
+- `<<namespace>>` - Grouping of autonomous commands
+
+To manually regenerate the diagram, run: `./gradlew generateMermaidDiagram`
+
+"""
+    diagram_section = f"{start_marker}\n{description}{diagram}\n\n{end_marker}"
 
     # Check if markers exist
     if start_marker in content and end_marker in content:

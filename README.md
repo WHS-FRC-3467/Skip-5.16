@@ -5,6 +5,16 @@ Codebase for the 2026 season REBUILT
 <!-- MERMAID_DIAGRAM_START -->
 ## Robot Structure
 
+This diagram is automatically generated from the code in `src/main/java/frc/robot/` and updated during the build process.
+It shows the relationships between subsystems, commands, and core robot classes.
+
+**Legend:**
+- `<<subsystem>>` - Robot subsystems that control hardware
+- `<<command>>` - Commands that define robot behaviors
+- `<<namespace>>` - Grouping of autonomous commands
+
+To manually regenerate the diagram, run: `./gradlew generateMermaidDiagram`
+
 ```mermaid
 classDiagram
     class Robot {
