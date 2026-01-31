@@ -162,6 +162,11 @@ public class LinearMechanismVisualizer {
         Logger.recordOutput(name + "Pose3d", currentPose);
     }
 
+    /**
+     * Sets the measured distance of the linear mechanism.
+     *
+     * @param distance The measured distance to display
+     */
     public void setMeasuredDistance(Distance distance)
     {
         measured.setLength(distance.in(Meters));
@@ -169,6 +174,11 @@ public class LinearMechanismVisualizer {
         update();
     }
 
+    /**
+     * Sets the trajectory distance setpoint for the linear mechanism.
+     *
+     * @param distance Optional trajectory distance, empty to hide
+     */
     public void setTrajectoryDistance(Optional<Distance> distance)
     {
         if (distance.isEmpty()) {
@@ -183,6 +193,11 @@ public class LinearMechanismVisualizer {
         update();
     }
 
+    /**
+     * Sets the goal distance for the linear mechanism.
+     *
+     * @param distance Optional goal distance, empty to hide
+     */
     public void setGoalDistance(Optional<Distance> distance)
     {
         if (distance.isEmpty()) {
@@ -220,6 +235,11 @@ public class LinearMechanismVisualizer {
         return orientation;
     }
 
+    /**
+     * Gets a supplier for the 3D pose of the linear mechanism.
+     *
+     * @return Supplier that provides the current 3D pose
+     */
     public Supplier<Pose3d> getPoseSupplier()
     {
         return () -> currentPose;

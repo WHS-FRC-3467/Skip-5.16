@@ -25,26 +25,54 @@ import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
 public class LaserCANConfigurator implements AutoCloseable {
     private final LaserCan laserCAN;
 
+    /**
+     * Constructs a LaserCAN configurator.
+     *
+     * @param can_id CAN ID of the LaserCAN device
+     */
     public LaserCANConfigurator(int can_id)
     {
         laserCAN = new LaserCan(can_id);
     }
 
+    /**
+     * Gets the latest measurement from the sensor.
+     *
+     * @return The most recent measurement
+     */
     public Measurement getMeasurement()
     {
         return laserCAN.getMeasurement();
     }
 
+    /**
+     * Sets the ranging mode of the sensor.
+     *
+     * @param mode The ranging mode to use
+     * @throws ConfigurationFailedException if configuration fails
+     */
     public void setRangingMode(RangingMode mode) throws ConfigurationFailedException
     {
         laserCAN.setRangingMode(mode);
     }
 
+    /**
+     * Sets the timing budget of the sensor.
+     *
+     * @param budget The timing budget to use
+     * @throws ConfigurationFailedException if configuration fails
+     */
     public void setTimingBudget(TimingBudget budget) throws ConfigurationFailedException
     {
         laserCAN.setTimingBudget(budget);
     }
 
+    /**
+     * Sets the region of interest for the sensor.
+     *
+     * @param roi The region of interest to use
+     * @throws ConfigurationFailedException if configuration fails
+     */
     public void setRegionOfInterest(RegionOfInterest roi) throws ConfigurationFailedException
     {
         laserCAN.setRegionOfInterest(roi);

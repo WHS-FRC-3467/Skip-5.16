@@ -126,6 +126,11 @@ public class RotaryVisualizer {
         Logger.recordOutput(name + "Pose3d", currentPose);
     }
 
+    /**
+     * Sets the current measured angle of the rotary mechanism.
+     *
+     * @param angle The measured angle to display
+     */
     public void setCurrentAngle(Angle angle)
     {
         measured.setAngle(Rotation2d.fromRadians(angle.in(Radians)));
@@ -133,6 +138,11 @@ public class RotaryVisualizer {
         update();
     }
 
+    /**
+     * Sets the trajectory angle setpoint for the rotary mechanism.
+     *
+     * @param angle Optional trajectory angle, empty to hide
+     */
     public void setTrajectoryAngle(Optional<Angle> angle)
     {
         if (angle.isEmpty()) {
@@ -147,6 +157,11 @@ public class RotaryVisualizer {
         update();
     }
 
+    /**
+     * Sets the goal angle for the rotary mechanism.
+     *
+     * @param angle Optional goal angle, empty to hide
+     */
     public void setGoalAngle(Optional<Angle> angle)
     {
         if (angle.isEmpty()) {
@@ -161,6 +176,11 @@ public class RotaryVisualizer {
         update();
     }
 
+    /**
+     * Gets a supplier for the 3D pose of the rotary mechanism.
+     *
+     * @return Supplier that provides the current 3D pose
+     */
     public Supplier<Pose3d> getPoseSupplier()
     {
         return () -> currentPose;

@@ -22,11 +22,22 @@ public class RisingEdge implements BooleanSupplier {
 
     private boolean previousState = false;
 
+    /**
+     * Constructs a RisingEdge detector.
+     *
+     * @param source The boolean supplier to detect rising edges from
+     */
     public RisingEdge(BooleanSupplier source)
     {
         this.source = source;
     }
 
+    /**
+     * Creates a RisingEdge detector from a boolean supplier.
+     *
+     * @param source The boolean supplier to detect rising edges from
+     * @return A new RisingEdge instance
+     */
     public static RisingEdge of(BooleanSupplier source)
     {
         return new RisingEdge(source);

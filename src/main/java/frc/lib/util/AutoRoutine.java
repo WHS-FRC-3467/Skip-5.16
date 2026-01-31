@@ -28,6 +28,11 @@ import com.pathplanner.lib.path.PathPlannerPath;
 public abstract class AutoRoutine extends SequentialCommandGroup {
     protected final List<PathPlannerPath> pathPlannerPaths = new ArrayList<>();
 
+    /**
+     * Loads all PathPlanner paths from the given path names.
+     *
+     * @param pathNames List of path file names to load
+     */
     public void loadAllPaths(List<String> pathNames)
     {
         pathPlannerPaths.addAll(pathNames.stream()
@@ -49,6 +54,11 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
         return path;
     }
 
+    /**
+     * Adds commands to the sequential command group if all paths loaded successfully.
+     *
+     * @param commands Commands to add to the auto routine
+     */
     public void loadCommands(Command... commands)
     {
         if (!pathPlannerPaths.contains(null)) {
@@ -59,6 +69,11 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
         }
     }
 
+    /**
+     * Gets all poses from all loaded paths.
+     *
+     * @return List of all path poses, or empty list if any paths failed to load
+     */
     public List<Pose2d> getAllPathPoses()
     {
         if (pathPlannerPaths.contains(null)) {
@@ -68,6 +83,11 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
         }
     }
 
+    /**
+     * Gets the starting pose of the first path.
+     *
+     * @return Starting pose of the first path, or zero pose if paths failed to load
+     */
     public Pose2d getStartingPose()
     {
         if (pathPlannerPaths.contains(null)) {

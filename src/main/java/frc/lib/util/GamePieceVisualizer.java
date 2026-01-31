@@ -32,12 +32,20 @@ public class GamePieceVisualizer {
 
     }
 
+    /**
+     * Sets the pose of the game piece and updates the visualization.
+     *
+     * @param pose The new 3D pose of the game piece
+     */
     public void setPose(Pose3d pose)
     {
         this.gamePiecePose = pose;
         Logger.recordOutput(name + " Visualizer", this.gamePiecePose);
     }
 
+    /**
+     * Hides the game piece by setting its pose to the origin.
+     */
     public void hide()
     {
         this.gamePiecePose = new Pose3d();
