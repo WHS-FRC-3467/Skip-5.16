@@ -4,6 +4,7 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -36,16 +37,16 @@ public class AutoCommands {
         final RobotState robotState = RobotState.getInstance();
         if (RobotBase.isSimulation()) {
             return drive.runOnce(
-            () -> {
-                Pose2d pose =
-                    path.getStartingHolonomicPose().get();
-                if (FieldUtil.shouldFlip()) {
-                    pose = FieldUtil.handleAllianceFlip(pose);
-                }
+                () -> {
+                    Pose2d pose =
+                        path.getStartingHolonomicPose().get();
+                    if (FieldUtil.shouldFlip()) {
+                        pose = FieldUtil.handleAllianceFlip(pose);
+                    }
 
-                robotState.resetPose(pose);
-            });
-            
+                    robotState.resetPose(pose);
+                });
+
         } else {
             return Commands.none();
         }
@@ -63,15 +64,18 @@ public class AutoCommands {
     public static Command shootFuel(Indexer indexer, ShooterSuperstructure shooter, double duration)
     {
         return Commands.sequence(
-            new ParallelDeadlineGroup(
-                Commands.waitUntil(shooter.readyToShoot()), // Delay shooting until ready
-                shooter.spinUpShooter()),
-            new ParallelDeadlineGroup(
-                Commands.waitSeconds(duration),
-                shooter.spinUpShooter(), // Keep shooter scheduled
+            Commands.parallel(
+                // Continuously update flywheel speed and hood position
+                shooter.spinUpShooter(),
+                // Run the indexer while the shooter is at position
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)
-                    .onlyWhile(shooter.readyToShoot())),
-            indexer.holdStateUntilInterrupted(Indexer.State.STOP));
+                    .onlyWhile(shooter.readyToShoot) // Stop running if not at position
+                    .repeatedly()) // Try again
+                .withTimeout(duration), // Stop after duration
+            // Reset subsystems to usual states
+            Commands.parallel(
+                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                indexer.setStateCommand(Indexer.State.STOP)));
     }
 
     /**
