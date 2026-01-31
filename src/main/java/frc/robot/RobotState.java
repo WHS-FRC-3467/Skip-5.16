@@ -137,6 +137,7 @@ public class RobotState {
     }
 
     @AllArgsConstructor
+    @SuppressWarnings("ImmutableEnumChecker")
     public enum Target {
         HUB(new Pose2d(
             FieldConstants.Hub.TOP_CENTER_POINT.getX(),

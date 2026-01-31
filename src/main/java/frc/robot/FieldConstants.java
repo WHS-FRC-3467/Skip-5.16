@@ -277,6 +277,7 @@ public class FieldConstants {
         private final String jsonFolder;
     }
 
+    @SuppressWarnings("ImmutableEnumChecker")
     public enum AprilTagLayoutType {
         OFFICIAL("2026-official"),
         NONE("2026-none");
