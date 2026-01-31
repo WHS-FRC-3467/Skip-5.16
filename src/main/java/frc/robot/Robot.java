@@ -26,8 +26,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.util.FuelSim;
 import frc.robot.util.HubState;
+import frc.robot.util.RobotSim;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -47,7 +47,8 @@ public class Robot extends LoggedRobot {
 
     private Command autonomousCommand;
     private RobotContainer robotContainer;
-    private boolean checkedHubGameData = false; // whether we've checked for hub game data at the start of the first alliance phase
+    private boolean checkedHubGameData = false; // whether we've checked for hub game data at the
+                                                // start of the first alliance phase
 
     public Robot()
     {
@@ -160,9 +161,12 @@ public class Robot extends LoggedRobot {
         RobotState.getInstance().publishMechanismPoses();
 
         // Provide SmartDashboard (Elastic Dashboard) updates on Hub state
-        SmartDashboard.putBoolean("Hub Active", frc.robot.util.HubState.getInstance().getHubActive().getAsBoolean());
-        SmartDashboard.putBoolean("Hub Active", HubState.getInstance().getHubActive().getAsBoolean());
-        SmartDashboard.putBoolean("Hub Changing Soon", HubState.getInstance().getHubChange().getAsBoolean());
+        SmartDashboard.putBoolean("Hub Active",
+            frc.robot.util.HubState.getInstance().getHubActive().getAsBoolean());
+        SmartDashboard.putBoolean("Hub Active",
+            HubState.getInstance().getHubActive().getAsBoolean());
+        SmartDashboard.putBoolean("Hub Changing Soon",
+            HubState.getInstance().getHubChange().getAsBoolean());
     }
 
     /** This function is called once when the robot is disabled. */
@@ -219,7 +223,8 @@ public class Robot extends LoggedRobot {
     public void teleopPeriodic()
     {
         // Hub State management
-        if (!checkedHubGameData && DriverStation.getMatchTime() <= HubState.HUB_CHANGE_TIMES[0] && DriverStation.getMatchTime() > HubState.HUB_CHANGE_TIMES[0] - 1.0) {
+        if (!checkedHubGameData && DriverStation.getMatchTime() <= HubState.HUB_CHANGE_TIMES[0]
+            && DriverStation.getMatchTime() > HubState.HUB_CHANGE_TIMES[0] - 1.0) {
             // At the beginning of the first alliance phase, check for hub game data
             HubState.getInstance().setFirstActiveAlliance();
             checkedHubGameData = true;
@@ -250,6 +255,6 @@ public class Robot extends LoggedRobot {
     @Override
     public void simulationPeriodic()
     {
-        FuelSim.getInstance().updateSim();
+        RobotSim.getInstance().updateSim();
     }
 }
