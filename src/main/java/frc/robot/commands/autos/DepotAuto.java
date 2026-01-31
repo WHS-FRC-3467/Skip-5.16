@@ -30,6 +30,18 @@ import java.util.List;
  * the DEPOT, and then shoot them. Strategy layer.
  */
 public class DepotAuto extends AutoRoutine {
+    /**
+     * Constructs a DepotAuto routine that shoots preload, collects from depot, and shoots collected fuel.
+     * Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
+     *
+     * @param drive the drive subsystem
+     * @param intakeLinear the intake linear subsystem for deploying/retracting intake
+     * @param intake the intake roller subsystem for collecting fuel
+     * @param indexer the indexer subsystem for managing fuel flow
+     * @param tower the tower subsystem for moving fuel to shooter
+     * @param shooter the shooter superstructure for launching fuel
+     * @param start the starting position on the field
+     */
     public DepotAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake, Indexer indexer,
         Tower tower,
         ShooterSuperstructure shooter, StartPosition start)
