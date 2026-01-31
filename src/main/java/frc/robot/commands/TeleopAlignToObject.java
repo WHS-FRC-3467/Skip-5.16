@@ -41,13 +41,13 @@ public class TeleopAlignToObject extends Command {
     /**
      * Creates a command to align the robot to a detected object while allowing driver control.
      * 
-     * @param drive The Drive subsystem to control robot movement.
-     * @param objectDetector The ObjectDetector subsystem to detect and track objects.
-     * @param mode The contour selection mode for choosing which detected object to align to.
-     * @param xSupplier A DoubleSupplier providing driver input for forward/backward movement.
-     * @param ySupplier A DoubleSupplier providing driver input for left/right movement.
-     * @param rotSupplier A DoubleSupplier providing fallback driver input for rotation if no object
-     *        is detected.
+     * @param drive the Drive subsystem to control robot movement
+     * @param objectDetector the ObjectDetector subsystem to detect and track objects
+     * @param mode the contour selection mode for choosing which detected object to align to
+     * @param xSupplier a DoubleSupplier providing driver input for forward/backward movement
+     * @param ySupplier a DoubleSupplier providing driver input for left/right movement
+     * @param rotSupplier a DoubleSupplier providing fallback driver input for rotation if no object
+     *        is detected
      */
     public TeleopAlignToObject(Drive drive, ObjectDetector objectDetector,
         ContourSelectionMode mode, DoubleSupplier xSupplier,
@@ -117,7 +117,7 @@ public class TeleopAlignToObject extends Command {
     /**
      * Checks if the command is finished.
      * 
-     * @return always false, as this is a continuous teleop command that runs until interrupted.
+     * @return false; this is a continuous teleop command that runs until interrupted.
      */
     @Override
     public boolean isFinished()

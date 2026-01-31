@@ -26,8 +26,8 @@ public class DriveToPose extends DriveToPoseBase {
     /**
      * Creates a command to autonomously drive the robot to a target pose.
      * 
-     * @param drive The Drive subsystem to control robot movement.
-     * @param targetPose A Supplier that provides the target pose to drive to.
+     * @param drive the Drive subsystem to control robot movement
+     * @param targetPose a Supplier that provides the target pose to drive to
      */
     public DriveToPose(
         Drive drive,
