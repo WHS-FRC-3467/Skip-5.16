@@ -74,7 +74,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
 
-    private final Trigger readyToShoot = new Trigger(() -> {
+    public final Trigger readyToShoot = new Trigger(() -> {
         double dist =
             SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm();
         return isFlywheelAt(RadiansPerSecond.of(flywheelMap.get(dist)))
@@ -140,16 +140,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             spinFlywheel(desiredFlywheelVelocitySupplier.get());
             setHoodPosition(desiredHoodPositionSupplier.get());
         }, this).withName("Spin-Up Shooter");
-    }
-
-    /**
-     * Returns whether shooter is ready to shoot (flywheel at speed & hood at position).
-     * 
-     * @return readyToShoot trigger.
-     */
-    public Trigger readyToShoot()
-    {
-        return readyToShoot;
     }
 
     /**

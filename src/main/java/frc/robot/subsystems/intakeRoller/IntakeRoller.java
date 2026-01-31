@@ -22,10 +22,12 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableNumber;
+import frc.robot.subsystems.indexer.IndexerConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -37,7 +39,7 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
         new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);
 
     private final FlywheelMechanism<?> io;
-    private String stateName;
+    private State state;
 
     @RequiredArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
@@ -57,23 +59,47 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
         this.io = intakeIO;
     }
 
-    /**
-     * Run the intake. Static speed torque control.
-     * 
-     * @param state The desired intake state.
-     */
-    public Command runIntake(State state)
+    private void setState(State state)
     {
-        return this.runOnce(() -> io.runVelocity(state.angularVelocity.get(),
-            IntakeRollerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0))
-            .andThen(this.runOnce(() -> this.stateName = state.name()))
+        this.state = state;
+        io.runVelocity(state.angularVelocity.get(),
+            IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+    }
+
+    /**
+     * Sets the subsystem's state
+     * 
+     * In a sequence, this command is non-blocking (finishes instantly), but still requires the
+     * subsystem (you cannot set the subsystem's state twice in a {@link ParallelCommandGroup}))
+     * 
+     * @param state The state to hold
+     * @return The command sequence
+     */
+    public Command setStateCommand(State state)
+    {
+        return this.runOnce(() -> setState(state))
             .withName(state.name());
+    }
+
+    /**
+     * Holds a state until the command is interrupted. Once the command is interrupted, its state
+     * will automatically be set to {@link State#STOP}
+     * 
+     * In a sequence, this command is blocking and requires this subsystem
+     * 
+     * @param state The state to hold
+     * @return The command sequence
+     */
+    public Command holdStateUntilInterrupted(State state)
+    {
+        return this.startEnd(() -> setState(state), () -> setState(State.STOP))
+            .withName(state.name() + " Until Interrupted");
     }
 
     public Command stop()
     {
         return this.runOnce(() -> io.runBrake())
-            .andThen(this.runOnce(() -> this.stateName = "STOP")).withName("STOP");
+            .andThen(this.runOnce(() -> this.state = State.STOP)).withName("STOP");
     }
 
     /* Checks to see if the intake is near the setpoint */
@@ -88,7 +114,7 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
     @Override
     public void periodic()
     {
-        Logger.recordOutput(IntakeRollerConstants.NAME + "/State", this.stateName);
+        Logger.recordOutput(IntakeRollerConstants.NAME + "/State", state.name());
         io.periodic();
     }
 

@@ -129,11 +129,12 @@ public class RobotContainer {
                 () -> -controller.getRightX())); // fallback rotation
 
         // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intakeRoller.runIntake(State.INTAKE))
+        controller.leftBumper().onTrue(intakeRoller.setStateCommand(State.INTAKE))
             .onFalse(intakeRoller.stop());
 
         // Back Button: Eject while held
-        controller.back().onTrue(intakeRoller.runIntake(State.EJECT)).onFalse(intakeRoller.stop());
+        controller.back().onTrue(intakeRoller.setStateCommand(State.EJECT))
+            .onFalse(intakeRoller.stop());
 
         controller.rightTrigger().whileTrue(
             shooter.prepareShot(
@@ -149,11 +150,11 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
         SmartDashboard.putData("Intake Roller/Eject",
-            intakeRoller.runIntake(IntakeRoller.State.EJECT));
+            intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
         SmartDashboard.putData("Intake Roller/Intake",
-            intakeRoller.runIntake(IntakeRoller.State.INTAKE));
+            intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
         SmartDashboard.putData("Intake Roller/Stop",
-            intakeRoller.runIntake(IntakeRoller.State.STOP));
+            intakeRoller.setStateCommand(IntakeRoller.State.STOP));
         SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
         SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
         SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
@@ -192,11 +193,11 @@ public class RobotContainer {
             .withName("Reset Fuel")
             .ignoringDisable(true));
         SmartDashboard.putData("Intake Roller/Eject",
-            intakeRoller.runIntake(IntakeRoller.State.EJECT));
+            intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
         SmartDashboard.putData("Intake Roller/Intake",
-            intakeRoller.runIntake(IntakeRoller.State.INTAKE));
+            intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
         SmartDashboard.putData("Intake Roller/Stop",
-            intakeRoller.runIntake(IntakeRoller.State.STOP));
+            intakeRoller.setStateCommand(IntakeRoller.State.STOP));
         SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
         SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
         SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
