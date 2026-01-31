@@ -90,6 +90,21 @@ public class AutoCommands {
                 indexer.setStateCommand(Indexer.State.STOP)));
     }
 
+    /**
+     * Creates a command that automatically aligns the robot to the target while executing the
+     * shooting sequence. The drive will aim toward the target based on robot state, and shooting
+     * will only occur when the robot is within a configured angular tolerance. The command ends
+     * when the shooting sequence times out or is otherwise interrupted.
+     *
+     * @param drive the drive subsystem used to rotate and align the robot to the target
+     * @param indexer the indexer subsystem used to feed game pieces into the shooter
+     * @param tower the tower subsystem used to move game pieces toward the shooter
+     * @param shooter the shooter superstructure responsible for spinning up and controlling
+     *        the shooter
+     * @param duration the maximum duration in seconds to run the align-and-shoot sequence
+     * @return a command that aligns the robot to the target and shoots for up to the given
+     *         duration
+     */
     public static Command alignAndShoot(Drive drive, Indexer indexer, Tower tower,
         ShooterSuperstructure shooter,
         double duration)
