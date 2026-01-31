@@ -15,6 +15,7 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.Seconds;
 import java.util.List;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
@@ -30,24 +31,38 @@ import frc.robot.subsystems.tower.Tower;
  */
 public class PreloadNeutralAuto extends AutoRoutine {
 
-    public PreloadNeutralAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake,
+    public PreloadNeutralAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intakeRoller,
         Indexer indexer, Tower tower,
         ShooterSuperstructure shooter, StartPosition start)
     {
         // Choose path names based on start position
+        List<String> expectedPaths;
         switch (start) {
-            case LEFT -> this.loadAllPaths(List.of("PreloadShoot-Left", "placeholder"));
-            case CENTER -> this
-                .loadAllPaths(List.of("PreloadShoot-Center", "1SweepNeutral-Bump-Center"));
-            case RIGHT -> this.loadAllPaths(List.of("PreloadShoot-Right", "placeholder"));
+            case LEFT -> expectedPaths =
+                List.of("PreloadShoot-Left", "UnderTrench-Run-Left", "SweepNeutral-Trench-Left",
+                    "UnderTrench-Shoot-Left");
+            case CENTER -> expectedPaths =
+                List.of("PreloadShoot-Center", "UnderTrench-Run-Center",
+                    "SweepNeutral-Trench-Left", "UnderTrench-Shoot-Left");
+            case RIGHT -> expectedPaths = List.of("PreloadShoot-Right", "placeholder");
+            default -> expectedPaths = List.of();
         };
 
-        // Load commands defensively
-        if (!pathPlannerPaths.isEmpty() && pathPlannerPaths.get(0) != null) {
+        // Load the named paths
+        this.loadAllPaths(expectedPaths);
+
+        // Defensive check: ensure we loaded exactly the expected number of paths and none are null
+        if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null))
             loadCommands(
+                // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                // Take preload shot
                 AutoSegments.makePreloadShot(drive, intakeLinear, indexer, tower, shooter,
-                    pathPlannerPaths.get(0)));
-        }
+                    pathPlannerPaths.get(0)),
+                // Make a run for the neutral zone
+                AutoSegments.driveAndIntake(drive, intakeLinear, intakeRoller,
+                    pathPlannerPaths.get(1),
+                    pathPlannerPaths.get(2), Seconds.of(0.3)));
+        //
     }
 }

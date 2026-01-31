@@ -39,9 +39,9 @@ public class AutoSegments {
     /**
      * Follow a path and then shoot the preload for a fixed duration. Drive to shooting location
      * while spinning up shooter but not indexing. Once at position, with the shooter still
-     * spinning, bring up the indexer to begin shooting. Shoot the preload for a short, fixed period
-     * of time. Bring down indexer to end -- shooter will idle at speed. If path doesn't complete in
-     * 2.75s, attempt a shot anyway.
+     * spinning, bring up the indexer & tower to begin shooting. Shoot the preload for a short,
+     * fixed period of time. Bring down indexer & tower to end -- shooter will idle at speed. If
+     * path doesn't complete in 2.75s, attempt a shot anyway.
      * 
      * @param drive The Drive subsystem
      * @param intakeLinear The IntakeLinear subsystem
@@ -62,13 +62,11 @@ public class AutoSegments {
             AutoCommands.shootFuel(intakeLinear, indexer, tower, shooter, 1));
     }
 
-
-
     /**
      * Follow a path to shooting location while spinning up shooter but not indexing. Once at
-     * position, with the shooter still spinning, bring up the indexer to begin shooting. Shoot all
-     * FUEL for up to 3s. Bring down indexer to end -- shooter will idle at speed. If path doesn't
-     * complete in 3.5s, attempt a shot anyway.
+     * position, with the shooter still spinning, bring up the indexer & tower to begin shooting.
+     * Shoot all FUEL for up to 3s. Bring down indexer & tower to end -- shooter will idle at speed.
+     * If path doesn't complete in 3.5s, attempt a shot anyway.
      * 
      * @param drive The Drive subsystem
      * @param intakeLinear The IntakeLinear subsystem
@@ -88,7 +86,6 @@ public class AutoSegments {
                 shooter.spinUpShooter()).withTimeout(3.5),
             AutoCommands.shootFuel(intakeLinear, indexer, tower, shooter, 3));
     }
-
 
     /**
      * Returns a Command to Follow a path and collect FUEL in AUTO
