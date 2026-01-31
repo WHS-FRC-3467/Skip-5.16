@@ -71,8 +71,6 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
         io.setRotorVelocity(RadiansPerSecond.of(sim.getVelocityRadPerSec())
             .times(io.getRotorToSensorRatio() * io.getSensorToMechanismRatio()));
 
-        Logger.recordOutput(name + " Sim Angle", sim.getAngleRads());
-
         absoluteEncoder.ifPresent(encoderSim -> {
             encoderSim
                 .setAngle(Radians.of(sim.getAngleRads()).times(io.getSensorToMechanismRatio()));

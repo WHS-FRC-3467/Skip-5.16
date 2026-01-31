@@ -44,7 +44,6 @@ public class FuelSim {
 
     @Getter
     @Setter
-    @AutoLogOutput(key = "Fuel Simulation/Held Fuel")
     private int heldFuel = 8;
 
     private static final Translation3d[] FIELD_XZ_LINE_STARTS = {
@@ -127,6 +126,7 @@ public class FuelSim {
                 // pos = new Translation3d(pos.getX(), pos.getY(), FUEL_RADIUS);
             }
             handleFieldCollisions();
+            Logger.recordOutput("Fuel Simulation/Held Fuel", heldFuel);
         }
 
         private void handleXZLineCollision(Translation3d lineStart, Translation3d lineEnd)
