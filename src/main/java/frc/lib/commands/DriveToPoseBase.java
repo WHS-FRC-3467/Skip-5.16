@@ -186,11 +186,21 @@ public abstract class DriveToPoseBase extends Command {
             : (withinDistanceTolerance || withinAngularTolerance);
     }
 
+    /**
+     * Gets the current distance error to the target pose.
+     *
+     * @return The distance error in meters
+     */
     public Distance getDistanceError()
     {
         return Meters.of(linearController.getPositionError());
     }
 
+    /**
+     * Gets the current angular error to the target pose.
+     *
+     * @return The angular error in radians
+     */
     public Angle getAngularError()
     {
         return Radians.of(angularController.getPositionError());

@@ -224,6 +224,11 @@ public abstract class Mechanism<T extends MotorIO> {
         io.setEncoderPosition(position);
     }
 
+    /**
+     * Gets the supply current draw of the mechanism.
+     *
+     * @return The supply current
+     */
     public Current getSupplyCurrent()
     {
         return inputs.supplyCurrent;
@@ -239,16 +244,29 @@ public abstract class Mechanism<T extends MotorIO> {
         return inputs.position;
     }
 
+    /**
+     * Gets the torque-producing current of the mechanism.
+     *
+     * @return The torque current
+     */
     public Current getTorqueCurrent()
     {
         return inputs.torqueCurrent;
     }
 
+    /**
+     * Gets the velocity of the mechanism.
+     *
+     * @return The angular velocity
+     */
     public AngularVelocity getVelocity()
     {
         return inputs.velocity;
     }
 
+    /**
+     * Closes the mechanism and releases resources.
+     */
     public void close()
     {
         io.close();

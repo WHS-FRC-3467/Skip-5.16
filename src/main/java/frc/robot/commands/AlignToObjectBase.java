@@ -43,6 +43,14 @@ public abstract class AlignToObjectBase {
     private double contourYaw;
     private boolean hasTarget;
 
+    /**
+     * Constructs an AlignToObjectBase with the given parameters.
+     * 
+     * @param objectDetector the object detector subsystem
+     * @param mode the contour selection mode (LARGEST or LOWEST)
+     * @param maxAngularSpeed the maximum angular speed in rad/s
+     * @param maxAngularAcceleration the maximum angular acceleration in rad/s^2
+     */
     public AlignToObjectBase(ObjectDetector objectDetector, ContourSelectionMode mode,
         double maxAngularSpeed, double maxAngularAcceleration)
     {
@@ -117,6 +125,12 @@ public abstract class AlignToObjectBase {
         Logger.recordOutput("VisionAlign/" + "HasTarget", hasTarget);
     }
 
+    /**
+     * Checks if the robot is aligned within the specified tolerance.
+     * 
+     * @param tolRad the tolerance in radians
+     * @return true if aligned within tolerance, false otherwise
+     */
     protected Boolean isAligned(double tolRad)
     {
         return (hasTarget && Math.abs(contourYaw) < tolRad);

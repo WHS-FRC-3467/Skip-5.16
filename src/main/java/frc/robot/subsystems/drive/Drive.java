@@ -99,6 +99,15 @@ public class Drive extends SubsystemBase {
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
 
+    /**
+     * Constructs a new Drive subsystem.
+     *
+     * @param gyroIO IO interface for the gyro
+     * @param flModuleIO IO interface for the front left module
+     * @param frModuleIO IO interface for the front right module
+     * @param blModuleIO IO interface for the back left module
+     * @param brModuleIO IO interface for the back right module
+     */
     public Drive(
         GyroIO gyroIO,
         ModuleIO flModuleIO,
@@ -234,7 +243,11 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
     }
 
-    /** Runs the drive in a straight line with the specified drive output. */
+    /**
+     * Runs the drive in a straight line with the specified drive output.
+     *
+     * @param output Drive output voltage (-12 to 12)
+     */
     public void runCharacterization(double output)
     {
         for (int i = 0; i < 4; i++) {
@@ -262,7 +275,12 @@ public class Drive extends SubsystemBase {
         stop();
     }
 
-    /** Returns a command to run a quasistatic test in the specified direction. */
+    /**
+     * Returns a command to run a quasistatic test in the specified direction.
+     *
+     * @param direction Direction to run the test (forward or reverse)
+     * @return Command that runs the quasistatic test
+     */
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction)
     {
         return run(() -> runCharacterization(0.0))
@@ -271,7 +289,12 @@ public class Drive extends SubsystemBase {
             .withName("SysId Quasistatic " + direction.toString());
     }
 
-    /** Returns a command to run a dynamic test in the specified direction. */
+    /**
+     * Returns a command to run a dynamic test in the specified direction.
+     *
+     * @param direction Direction to run the test (forward or reverse)
+     * @return Command that runs the dynamic test
+     */
     public Command sysIdDynamic(SysIdRoutine.Direction direction)
     {
         return run(() -> runCharacterization(0.0)).withTimeout(1.0)
@@ -294,6 +317,8 @@ public class Drive extends SubsystemBase {
 
     /**
      * Returns the module positions (turn angles and drive positions) for all of the modules.
+     *
+     * @return Array of module positions for all four modules
      */
     protected SwerveModulePosition[] getModulePositions()
     {
@@ -304,14 +329,22 @@ public class Drive extends SubsystemBase {
         return states;
     }
 
-    /** Returns the measured chassis speeds of the robot. */
+    /**
+     * Returns the measured chassis speeds of the robot.
+     *
+     * @return Current chassis speeds in meters per second and radians per second
+     */
     @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
     public ChassisSpeeds getChassisSpeeds()
     {
         return kinematics.toChassisSpeeds(getModuleStates());
     }
 
-    /** Returns the position of each module in radians. */
+    /**
+     * Returns the position of each module in radians.
+     *
+     * @return Array of drive positions in radians for all four modules
+     */
     public double[] getWheelRadiusCharacterizationPositions()
     {
         double[] values = new double[4];
@@ -323,6 +356,8 @@ public class Drive extends SubsystemBase {
 
     /**
      * Returns the average velocity of the modules in rotations/sec (Phoenix native units).
+     *
+     * @return Average drive velocity in rotations per second
      */
     public double getFFCharacterizationVelocity()
     {
@@ -333,19 +368,31 @@ public class Drive extends SubsystemBase {
         return output;
     }
 
-    /** Returns the maximum linear speed in meters per sec. */
+    /**
+     * Returns the maximum linear speed in meters per sec.
+     *
+     * @return Maximum linear speed in meters per second
+     */
     public double getMaxLinearSpeedMetersPerSec()
     {
         return DriveConstants.kSpeedAt12Volts.in(MetersPerSecond);
     }
 
-    /** Returns the maximum angular speed in radians per sec. */
+    /**
+     * Returns the maximum angular speed in radians per sec.
+     *
+     * @return Maximum angular speed in radians per second
+     */
     public double getMaxAngularSpeedRadPerSec()
     {
         return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
     }
 
-    /** Returns an array of module translations. */
+    /**
+     * Returns an array of module translations.
+     *
+     * @return Array of Translation2d objects representing module positions relative to robot center
+     */
     public static Translation2d[] getModuleTranslations()
     {
         return new Translation2d[] {
@@ -360,13 +407,21 @@ public class Drive extends SubsystemBase {
         };
     }
 
-    /** Returns the acceleration of the gyro in the X direction. */
+    /**
+     * Returns the acceleration of the gyro in the X direction.
+     *
+     * @return Acceleration in the X direction in G's
+     */
     public double getAccelerationX()
     {
         return gyroIO.getAccelerationX();
     }
 
-    /** Returns the acceleration of the gyro in the Y direction. */
+    /**
+     * Returns the acceleration of the gyro in the Y direction.
+     *
+     * @return Acceleration in the Y direction in G's
+     */
     public double getAccelerationY()
     {
         return gyroIO.getAccelerationY();

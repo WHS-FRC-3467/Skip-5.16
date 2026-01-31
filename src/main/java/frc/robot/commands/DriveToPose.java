@@ -23,7 +23,12 @@ public class DriveToPose extends DriveToPoseBase {
     private final static LoggedTunableNumber maxAngularVel =
         new LoggedTunableNumber("DriveToPose/MaxAngularVelocity (rad s)", 9.0);
 
-
+    /**
+     * Creates a command to autonomously drive the robot to a target pose.
+     * 
+     * @param drive the Drive subsystem to control robot movement
+     * @param targetPose a Supplier that provides the target pose to drive to
+     */
     public DriveToPose(
         Drive drive,
         Supplier<Pose2d> targetPose)

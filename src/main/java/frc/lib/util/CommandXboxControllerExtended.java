@@ -29,6 +29,11 @@ public class CommandXboxControllerExtended extends CommandXboxController {
     private double deadband = 0.0;
     private boolean applyCurve = false;
 
+    /**
+     * Constructs an extended Xbox controller with additional functionality.
+     *
+     * @param port The port the controller is plugged into
+     */
     public CommandXboxControllerExtended(int port)
     {
         super(port);

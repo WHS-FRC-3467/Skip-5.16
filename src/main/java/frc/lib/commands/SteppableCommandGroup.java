@@ -24,6 +24,13 @@ public class SteppableCommandGroup extends Command {
     private boolean runsWhenDisabled = true;
     private InterruptionBehavior interruptionBehavior = InterruptionBehavior.kCancelIncoming;
 
+    /**
+     * Constructs a SteppableCommandGroup.
+     *
+     * @param forwardTrigger Trigger to step forward through commands
+     * @param reverseTrigger Trigger to step backward through commands
+     * @param commands Commands to step through
+     */
     public SteppableCommandGroup(
         Trigger forwardTrigger, Trigger reverseTrigger, Command... commands)
     {
@@ -118,6 +125,11 @@ public class SteppableCommandGroup extends Command {
         return interruptionBehavior;
     }
 
+    /**
+     * Gets the index of the currently executing command.
+     *
+     * @return OptionalInt containing the current command index, or empty if not running
+     */
     public OptionalInt getCurrentCommandIndex()
     {
         if (currentCommandIndex == -1) {

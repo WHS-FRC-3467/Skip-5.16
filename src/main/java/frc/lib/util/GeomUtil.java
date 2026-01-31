@@ -63,6 +63,12 @@ public class GeomUtil {
         return new Transform2d(pose.getTranslation(), pose.getRotation());
     }
 
+    /**
+     * Computes the inverse of a pose.
+     *
+     * @param pose The pose to invert
+     * @return The inverted pose
+     */
     public static Pose2d inverse(Pose2d pose)
     {
         Rotation2d rotationInverse = pose.getRotation().unaryMinus();

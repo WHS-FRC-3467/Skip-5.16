@@ -26,6 +26,15 @@ public class RobotSim {
     private final Trigger shootSimFuel;
     private final Trigger intakeSimFuel;
 
+    /**
+     * Constructs a RobotSim instance to simulate fuel interactions with robot subsystems
+     * 
+     * @param drive Drive subsystem for robot pose tracking
+     * @param shooter Shooter superstructure for shooting fuel simulation
+     * @param indexer Indexer subsystem for detecting when to shoot
+     * @param intakeRoller Intake roller subsystem for intake velocity detection
+     * @param intakeLinear Linear intake subsystem for intake position detection
+     */
     public RobotSim(
         Drive drive,
         ShooterSuperstructure shooter,

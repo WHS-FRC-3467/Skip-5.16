@@ -149,6 +149,11 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
         lastSelected = selectedValue;
     }
 
+    /**
+     * Registers a listener to be called when the selected option changes.
+     *
+     * @param listener Consumer to be called with the new value when selection changes
+     */
     public void onChange(Consumer<V> listener)
     {
         this.listener = listener;

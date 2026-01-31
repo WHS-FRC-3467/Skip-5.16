@@ -30,6 +30,18 @@ import frc.robot.subsystems.tower.Tower;
  */
 public class PreloadNeutralAuto extends AutoRoutine {
 
+    /**
+     * Constructs a PreloadNeutralAuto routine that shoots preload and collects from neutral zone.
+     * Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
+     *
+     * @param drive the drive subsystem
+     * @param intakeLinear the intake linear subsystem for deploying/retracting intake
+     * @param intake the intake roller subsystem for collecting fuel
+     * @param indexer the indexer subsystem for managing fuel flow
+     * @param tower the tower subsystem for moving fuel to shooter
+     * @param shooter the shooter superstructure for launching fuel
+     * @param start the starting position on the field
+     */
     public PreloadNeutralAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake,
         Indexer indexer, Tower tower,
         ShooterSuperstructure shooter, StartPosition start)

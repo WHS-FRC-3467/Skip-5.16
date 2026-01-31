@@ -76,14 +76,16 @@ public class ObjectDetection {
      * Interface as a data type allows ObjectDetection to accept various implementations of
      * ObjectDetectionIO (e.g. ObjectDetectionIOPhotonVision or ObjectDetectionIOLimelight).
      * Currently factored for PhotonVision only.
+     *
+     * @param io The ObjectDetectionIO implementation to use
      */
     public ObjectDetection(ObjectDetectionIO io)
     {
         this.io = io;
     }
 
-    /*
-     * Periodically retrive most recent ObjectDetection pipeline results and populate into inputs.
+    /**
+     * Periodically retrieve most recent ObjectDetection pipeline results and populate into inputs.
      */
     public void periodic()
     {
@@ -91,10 +93,10 @@ public class ObjectDetection {
         Logger.processInputs(io.getCamera(), inputs);
     }
 
-    /*
-     * Returns the latestPhotonTrackedTarget field (array of PhotonTrackedTargets) of inputs. Result
-     * is an array of object information (e.g. skew, yaw, objID, etc.) from latest pipeline result.
-     * Each index contains information for a single detected object.
+    /**
+     * Returns the latest PhotonTrackedTarget array from inputs.
+     *
+     * @return Array of object information from latest pipeline result
      */
     public PhotonTrackedTarget[] getTargets()
     {
@@ -509,8 +511,10 @@ public class ObjectDetection {
         return lowestTarget;
     }
 
-    /*
-     * Return whether the camera is connected.
+    /**
+     * Returns whether the camera is connected.
+     *
+     * @return True if the camera is connected, false otherwise
      */
     public boolean isConnected()
     {

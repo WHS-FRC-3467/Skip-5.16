@@ -96,13 +96,23 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
             .withName(state.name() + " Until Interrupted");
     }
 
+    /**
+     * Creates a command to stop the intake roller and set the state to STOP.
+     * 
+     * @return A command that stops the roller
+     */
     public Command stop()
     {
         return this.runOnce(() -> io.runBrake())
             .andThen(this.runOnce(() -> this.state = State.STOP)).withName("STOP");
     }
 
-    /* Checks to see if the intake is near the setpoint */
+    /**
+     * Checks if the intake roller velocity is near the specified state's setpoint.
+     * 
+     * @param state The state whose setpoint to check against
+     * @return true if the roller is within tolerance of the state's setpoint, false otherwise
+     */
     public boolean nearSetpoint(State state)
     {
         return MathUtil.isNear(
@@ -111,6 +121,11 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
             IntakeRollerConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
+    /**
+     * Gets the current velocity of the intake roller motor.
+     * 
+     * @return The current angular velocity
+     */
     public AngularVelocity getVelocity()
     {
         return io.getVelocity();
