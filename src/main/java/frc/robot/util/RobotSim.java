@@ -33,7 +33,7 @@ public class RobotSim {
         IntakeRoller intakeRoller,
         IntakeLinear intakeLinear)
     {
-        shootSimFuel = new Trigger(() -> (shooter.readyToShoot().getAsBoolean()
+        shootSimFuel = new Trigger(() -> (shooter.readyToShoot.getAsBoolean()
             && (indexer.getSpeed() > 0.1) && (instance.getHeldFuel() > 0)));
 
         shootSimFuel.whileTrue(
