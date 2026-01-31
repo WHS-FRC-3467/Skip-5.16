@@ -23,6 +23,7 @@ import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
+import frc.lib.util.FieldUtil;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.TeleopAlignToObject;
@@ -50,6 +51,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public class RobotContainer {
@@ -134,6 +136,36 @@ public class RobotContainer {
         controller.rightTrigger().whileTrue(
             shooter.prepareShot(
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
+        
+        // TODO: change button bindings as necessary
+        // X button: Align rotation parallel to trench while held - Going towards CENTER
+        controller.x().whileTrue(
+            DriveCommands.joystickDriveAtAngle(drive, 
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> (FieldUtil.shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero)));
+
+        // Y button: Align rotation parallel to trench while held - Returning from CENTER
+        controller.y().whileTrue(
+            DriveCommands.joystickDriveAtAngle(drive, 
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> (FieldUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)));
+
+        // controller
+        //     .x()
+        //     .whileTrue(
+        //         new AlignToPose(drive,
+        //             () -> new Pose2d(
+        //                 0.0, // no need for x-coordinate, driver will be controlling approach across the trench
+        //                 ((robotState.getEstimatedPose().getY() > FieldConstants.FIELD_WIDTH.div(2).in(Meters)) 
+        //                 ? FieldConstants.TRENCH_CENTER_Y_COORDINATES.get(0).in(Meters) 
+        //                 : FieldConstants.TRENCH_CENTER_Y_COORDINATES.get(1).in(Meters)),
+        //             (Math.abs(robotState.getEstimatedPose().getRotation().getDegrees())
+        //                 - 90.0 < 0) ? Rotation2d.kZero : Rotation2d.k180deg),
+        //             AlignToPoseBase.AlignMode.APPROACH,
+        //             () -> -controller.getLeftY()));
+
     }
 
 
