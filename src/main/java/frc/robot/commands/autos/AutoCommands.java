@@ -4,6 +4,7 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -85,8 +86,10 @@ public class AutoCommands {
                         agitateHopper(intakeLinear, tower, indexer, HopperAgitation.INTAKE_CYCLE),
                         tower.holdStateUntilInterrupted(Tower.State.SHOOT))
                         .until(shooter.readyToShoot().negate()))),
-            indexer.holdStateUntilInterrupted(Indexer.State.STOP),
-            tower.holdStateUntilInterrupted(Tower.State.STOP));
+            // Reset subsystems to usual states
+            Commands.parallel(
+                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                indexer.setStateCommand(Indexer.State.STOP)));
     }
 
     /**
