@@ -143,6 +143,10 @@ public class VisionSubsystem extends SubsystemBase {
         }
     }
 
+    /**
+     * Periodically processes vision results from all cameras.
+     * Filters, validates, and adds pose observations to RobotState for localization.
+     */
     @Override
     public void periodic()
     {
