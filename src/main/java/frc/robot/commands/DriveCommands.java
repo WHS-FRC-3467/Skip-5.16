@@ -252,10 +252,10 @@ public class DriveCommands {
                         double kV = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
 
                         NumberFormat formatter = new DecimalFormat("#0.00000");
-                        System.out
-                            .println("********** Drive FF Characterization Results **********");
-                        System.out.println("\tkS: " + formatter.format(kS));
-                        System.out.println("\tkV: " + formatter.format(kV));
+                        String results = "Drive FF Characterization Results - "
+                            + "kS: " + formatter.format(kS)
+                            + ", kV: " + formatter.format(kV);
+                        DriverStation.reportWarning(results, false);
                     }))
             .withName("Feedforward Characterization");
     }
@@ -323,18 +323,12 @@ public class DriveCommands {
                                 / wheelDelta;
 
                             NumberFormat formatter = new DecimalFormat("#0.000");
-                            System.out.println(
-                                "********** Wheel Radius Characterization Results **********");
-                            System.out.println(
-                                "\tWheel Delta: " + formatter.format(wheelDelta) + " radians");
-                            System.out.println(
-                                "\tGyro Delta: " + formatter.format(state.gyroDelta) + " radians");
-                            System.out.println(
-                                "\tWheel Radius: "
-                                    + formatter.format(wheelRadius)
-                                    + " meters, "
-                                    + formatter.format(Units.metersToInches(wheelRadius))
-                                    + " inches");
+                            String results = "Wheel Radius Characterization Results - "
+                                + "Wheel Delta: " + formatter.format(wheelDelta) + " radians, "
+                                + "Gyro Delta: " + formatter.format(state.gyroDelta) + " radians, "
+                                + "Wheel Radius: " + formatter.format(wheelRadius) + " meters ("
+                                + formatter.format(Units.metersToInches(wheelRadius)) + " inches)";
+                            DriverStation.reportWarning(results, false);
                         })))
             .withName("Wheel Radius Characterization");
     }
