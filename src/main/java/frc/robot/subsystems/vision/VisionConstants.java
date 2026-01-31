@@ -37,7 +37,6 @@ import frc.lib.io.vision.VisionIO;
 import frc.lib.io.vision.VisionIOPhotonVision;
 import frc.lib.io.vision.VisionIOPhotonVisionSim;
 import frc.robot.Constants;
-import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
 import lombok.AccessLevel;
@@ -109,22 +108,22 @@ public class VisionConstants {
     public static final int FRONT_RIGHT_RESOLUTION_WIDTH = 1600;
     public static final int FRONT_RIGHT_RESOLUTION_HEIGHT = 1304;
 
-    public static final Angle FRONT_LEFT_FOV = Degrees.of(55); // from Thrifty docs  
-    public static final Angle FRONT_RIGHT_FOV = Degrees.of(55);  
+    public static final Angle FRONT_LEFT_FOV = Degrees.of(55); // from Thrifty docs
+    public static final Angle FRONT_RIGHT_FOV = Degrees.of(55);
 
-    // Performance  
-    public static final double FRONT_LEFT_FPS = 22;  
-    public static final double FRONT_RIGHT_FPS = 22;  
-    
-    public static final double FRONT_LEFT_STDDEV_FACTOR = 1.0;  
-    public static final double FRONT_RIGHT_STDDEV_FACTOR = 1.0;  
+    // Performance
+    public static final double FRONT_LEFT_FPS = 22;
+    public static final double FRONT_RIGHT_FPS = 22;
 
-    // Exposure 5 ms, USB 5 ms, detection 15 ms, scheduling 5 ms  
-    public static final Time FRONT_LEFT_LATENCY = Milliseconds.of(30); 
-    public static final Time FRONT_RIGHT_LATENCY = Milliseconds.of(30);  
+    public static final double FRONT_LEFT_STDDEV_FACTOR = 1.0;
+    public static final double FRONT_RIGHT_STDDEV_FACTOR = 1.0;
 
-    public static final Time FRONT_LEFT_LATENCY_STDDEV = Milliseconds.of(5);  
-    public static final Time FRONT_RIGHT_LATENCY_STDDEV = Milliseconds.of(5);  
+    // Exposure 5 ms, USB 5 ms, detection 15 ms, scheduling 5 ms
+    public static final Time FRONT_LEFT_LATENCY = Milliseconds.of(30);
+    public static final Time FRONT_RIGHT_LATENCY = Milliseconds.of(30);
+
+    public static final Time FRONT_LEFT_LATENCY_STDDEV = Milliseconds.of(5);
+    public static final Time FRONT_RIGHT_LATENCY_STDDEV = Milliseconds.of(5);
 
     public static final CameraProperties FRONT_LEFT =
         new CameraProperties(
