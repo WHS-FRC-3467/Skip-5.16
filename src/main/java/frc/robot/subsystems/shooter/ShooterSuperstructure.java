@@ -138,8 +138,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     public LinearVelocity getAverageLinearVelocity()
     {
-        return MetersPerSecond.of(getAverageFlywheelVelocity().in(RadiansPerSecond)
-            * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
+        return MetersPerSecond.of(
+            getAverageFlywheelVelocity().in(RotationsPerSecond) * 2.0 * Math.PI
+                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
     }
 
     /**
