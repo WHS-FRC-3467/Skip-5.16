@@ -109,7 +109,7 @@ public class AutoSegments {
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(intakingPath),
                 intakeLinear.extend(),
-                intakeRoller.setStateCommand(IntakeRoller.State.INTAKE)),
+                intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.INTAKE)),
             // TODO: Tune after-path wait time to ensure all FUEL is intaken
             Commands.waitSeconds(afterPathWait.in(Seconds)),
             // End intaking
