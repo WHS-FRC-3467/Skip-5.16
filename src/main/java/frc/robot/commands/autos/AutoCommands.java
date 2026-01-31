@@ -73,12 +73,14 @@ public class AutoCommands {
             new ParallelDeadlineGroup(
                 Commands.waitSeconds(duration),
                 shooter.spinUpShooter(), // Keep shooter scheduled
-                Commands.parallel(
-                    indexer.holdStateUntilInterrupted(Indexer.State.PULL),
-                    // Cycle the intake linear to get balls moving through the indexer
-                    intakeLinear.cycle(),
-                    tower.holdStateUntilInterrupted(Tower.State.SHOOT)
-                )).onlyWhile(shooter.readyToShoot()),
+                Commands.repeatingSequence( // WHILE shooter is ready to shoot, push fuel through indexer
+                    Commands.parallel(
+                        indexer.holdStateUntilInterrupted(Indexer.State.PULL),
+                        // Cycle the intake linear to get balls moving through the indexer
+                        intakeLinear.cycle(),
+                        tower.holdStateUntilInterrupted(Tower.State.SHOOT)
+                    ).onlyWhile(shooter.readyToShoot())
+            )),
             intakeLinear.retract(), // Return intake to stowed position after completing the cycle
             indexer.holdStateUntilInterrupted(Indexer.State.STOP));
     }

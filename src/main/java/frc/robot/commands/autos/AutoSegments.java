@@ -36,11 +36,12 @@ import frc.robot.subsystems.tower.Tower;
 public class AutoSegments {
 
     /**
-     * Follow a PathPlannerPath path and then shoot preload of 8 FUEL.
+     * Follow a PathPlannerPath path and then shoot the preload for a fixed duration.
      * Drive to shooting location while spinning up shooter but not indexing. Once at
      * position, with the shooter still spinning, bring up the indexer to begin shooting.
-     * Shoot all preload. Bring down indexer to end -- shooter will idle at speed. If path
-     * doesn't complete in 2.75s, attempt a shot anyway.
+     * Shoot the preload for a short, fixed period of time.
+     * Bring down indexer to end -- shooter will idle at speed. If path doesn't complete in 2.75s,
+     * attempt a shot anyway.
      * 
      * @param drive The Drive subsystem
      * @param intakeLinear The IntakeLinear subsystem
