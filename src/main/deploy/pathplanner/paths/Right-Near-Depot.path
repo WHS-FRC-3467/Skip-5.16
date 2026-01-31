@@ -9,7 +9,7 @@
       "prevControl": null,
       "nextControl": {
         "x": 1.4184595679922132,
-        "y": 0.7800000000000002
+        "y": 0.7800000000000004
       },
       "isLocked": false,
       "linkedName": null
@@ -31,14 +31,7 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": null
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
