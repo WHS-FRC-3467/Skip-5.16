@@ -163,6 +163,7 @@ public class Robot extends LoggedRobot {
         SmartDashboard.putBoolean("Hub Active", frc.robot.util.HubState.getInstance().getHubActive().getAsBoolean());
         SmartDashboard.putBoolean("Hub Active", HubState.getInstance().getHubActive().getAsBoolean());
         SmartDashboard.putBoolean("Hub Changing Soon", HubState.getInstance().getHubChange().getAsBoolean());
+    }
 
     /** This function is called once when the robot is disabled. */
     @Override
