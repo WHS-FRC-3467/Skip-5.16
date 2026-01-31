@@ -21,6 +21,7 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.tower.Tower;
 
 /**
  * Class containing useful individual commands or small-group command sequences that can be strung
@@ -63,11 +64,12 @@ public class AutoCommands {
      * through the indexer when ready, and stops after the duration.
      *
      * @param indexer the indexer subsystem
+     * @param tower the tower subsystem
      * @param shooter the shooter superstructure
      * @param duration the maximum duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer
      */
-    public static Command shootFuel(Indexer indexer, ShooterSuperstructure shooter,
+    public static Command shootFuel(Indexer indexer, Tower tower, ShooterSuperstructure shooter,
         BooleanSupplier canShoot, double duration)
     {
         return Commands.sequence(
@@ -75,7 +77,9 @@ public class AutoCommands {
                 // Continuously update flywheel speed and hood position
                 shooter.spinUpShooter(),
                 // Run the indexer while the shooter is at position
-                indexer.holdStateUntilInterrupted(Indexer.State.PULL)
+                Commands.parallel(
+                    indexer.holdStateUntilInterrupted(Indexer.State.PULL),
+                    tower.holdStateUntilInterrupted(Tower.State.SHOOT))
                     // Stop running if not at position
                     .onlyWhile(shooter.readyToShoot.and(canShoot))
                     .repeatedly()) // Try again
@@ -86,12 +90,13 @@ public class AutoCommands {
                 indexer.setStateCommand(Indexer.State.STOP)));
     }
 
-    public static Command alignAndShoot(Drive drive, Indexer indexer, ShooterSuperstructure shooter,
+    public static Command alignAndShoot(Drive drive, Indexer indexer, Tower tower,
+        ShooterSuperstructure shooter,
         double duration)
     {
         final var robotState = RobotState.getInstance();
         return Commands.deadline(
-            shootFuel(indexer, shooter,
+            shootFuel(indexer, tower, shooter,
                 () -> Math.abs(robotState.getAngleToTarget()
                     .minus(robotState.getEstimatedPose().getRotation())
                     .getDegrees()) < SHOOT_TOLERANCE_DEGREES.get(),
