@@ -30,6 +30,8 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
         new LoggedTunableNumber(IntakeLinearConstants.NAME + "/IntakeCurrent", 10.0);
 
     public final Trigger linearStopped;
+    public final Trigger isExtended;
+    public final Trigger isRetracted;
 
     private final LinearMechanism<?> io;
 
@@ -37,6 +39,8 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
     {
         this.io = intakeLinearIO;
         this.linearStopped = new Trigger(() -> isLinearStopped());
+        this.isExtended = new Trigger(() -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8).and(linearStopped);
+        this.isRetracted = new Trigger(() -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8).and(linearStopped);
     }
 
     public Command extend() {
