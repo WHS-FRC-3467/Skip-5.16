@@ -1,5 +1,16 @@
 name: Generate and Publish Javadoc
 
+# This workflow generates Javadoc and publishes to GitHub Pages
+# 
+# Triggers:
+# - Automatically on pushes to 'dev' branch
+# - Manually via workflow_dispatch
+#
+# To manually trigger:
+# 1. Go to Actions tab → "Generate and Publish Javadoc"
+# 2. Click "Run workflow" → Select branch → Click "Run workflow"
+# 3. Or use: gh workflow run javadoc.yml --ref <branch-name>
+
 on:
   push:
     branches:
