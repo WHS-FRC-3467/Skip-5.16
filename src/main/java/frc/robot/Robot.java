@@ -160,7 +160,7 @@ public class Robot extends LoggedRobot {
 
         RobotState.getInstance().publishMechanismPoses();
 
-        // Provide Elastic Dashboard updates on Hub state
+        // Provide SmartDashboard (Elastic Dashboard) updates on Hub state
         SmartDashboard.putBoolean("Hub Active", frc.robot.util.HubState.getInstance().getHubActive().getAsBoolean());
         SmartDashboard.putBoolean("Hub Changing Soon", frc.robot.util.HubState.getInstance().getHubChange().getAsBoolean());
     }
@@ -168,7 +168,10 @@ public class Robot extends LoggedRobot {
     /** This function is called once when the robot is disabled. */
     @Override
     public void disabledInit()
-    {}
+    {
+        // Reset hub game data check before starting the next match
+        checkedHubGameData = false;
+    }
 
     /** This function is called periodically when disabled. */
     @Override
