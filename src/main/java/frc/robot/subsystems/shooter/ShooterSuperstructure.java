@@ -16,6 +16,8 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.function.Supplier;
@@ -24,6 +26,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -54,16 +57,16 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     /** Distance from goal in meters -> flywheel speed in radians per second */
     private static final InterpolatingDoubleTreeMap flywheelMap = new InterpolatingDoubleTreeMap();
     static {
-        flywheelMap.put(1.01, 43.00); // Lowest
-        flywheelMap.put(2.15, 27.00);
-        flywheelMap.put(2.56, 23.00);
-        flywheelMap.put(3.0, 21.00);
-        flywheelMap.put(3.5, 17.00);
-        flywheelMap.put(4.02, 15.00);
-        flywheelMap.put(4.6, 11.50);
-        flywheelMap.put(4.95, 10.00);
-        flywheelMap.put(5.5, 9.00);
-        flywheelMap.put(6.08, 8.00); // Highest
+        flywheelMap.put(1.01, 200.00); // Lowest
+        flywheelMap.put(2.15, 180.00);
+        flywheelMap.put(2.56, 170.00);
+        flywheelMap.put(3.0, 160.00);
+        flywheelMap.put(3.5, 150.00);
+        flywheelMap.put(4.02, 140.00);
+        flywheelMap.put(4.6, 140.00);
+        flywheelMap.put(4.95, 140.00);
+        flywheelMap.put(5.5, 140.00);
+        flywheelMap.put(6.08, 140.00); // Highest
     }
 
     private static final Pose2d SHOOT_GOAL = Pose2d.kZero;
@@ -74,7 +77,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
 
-    private final Trigger readyToShoot = new Trigger(() -> {
+    public final Trigger readyToShoot = new Trigger(() -> {
         double dist =
             SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm();
         return isFlywheelAt(RadiansPerSecond.of(flywheelMap.get(dist)))
@@ -121,6 +124,25 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return hoodIO.nearGoal(angle, HoodConstants.TOLERANCE);
     }
 
+    public Angle getHoodAngle()
+    {
+        return hoodIO.getPosition();
+    }
+
+    public AngularVelocity getAverageFlywheelVelocity()
+    {
+        return RotationsPerSecond.of(
+            (leftFlywheelIO.getVelocity().in(RotationsPerSecond) +
+                rightFlywheelIO.getVelocity().in(RotationsPerSecond)) / 2.0);
+    }
+
+    public LinearVelocity getAverageLinearVelocity()
+    {
+        return MetersPerSecond.of(
+            getAverageFlywheelVelocity().in(RotationsPerSecond) * 2.0 * Math.PI
+                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
+    }
+
     /**
      * Spins the flywheel and actuates the hood to the proper values given field-relative robot
      * pose. Perpetual command -- never spins down. Therefore, to end, this should be interrupted by
@@ -140,16 +162,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             spinFlywheel(desiredFlywheelVelocitySupplier.get());
             setHoodPosition(desiredHoodPositionSupplier.get());
         }, this).withName("Spin-Up Shooter");
-    }
-
-    /**
-     * Returns whether shooter is ready to shoot (flywheel at speed & hood at position).
-     * 
-     * @return readyToShoot trigger.
-     */
-    public Trigger readyToShoot()
-    {
-        return readyToShoot;
     }
 
     /**

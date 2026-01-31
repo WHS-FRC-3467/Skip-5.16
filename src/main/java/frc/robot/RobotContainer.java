@@ -15,6 +15,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -47,10 +48,10 @@ import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.FuelSim;
+import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 
@@ -88,11 +89,22 @@ public class RobotContainer {
         indexer = IndexerConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
+
+        if (RobotBase.isSimulation()) {
+            new RobotSim(drive, shooter, indexer, intakeRoller, intakeLinear);
+        }
+
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
         autoChooser.addDefaultOption("None", new NoneAuto());
         autoChooser.addOption("PreloadNeutralAuto",
-            new PreloadNeutralAuto(drive, intakeRoller, indexer, shooter, StartPosition.CENTER));
+            new PreloadNeutralAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.CENTER));
+
+        // Depot Auto - Start at Center
+        autoChooser.addOption("DepotAuto",
+            new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.CENTER));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
@@ -106,7 +118,6 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
-        configureFuelSim();
     }
 
     private void configureButtonBindings()
@@ -120,18 +131,26 @@ public class RobotContainer {
                 () -> -controller.getRightX()));
 
         // Right Trigger: Teleop vision align to largest contour (translation allowed)
-        controller.rightTrigger(0.2)
-            .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
-                () -> -controller.getLeftY(), // forward/back
-                () -> -controller.getLeftX(), // strafe
-                () -> -controller.getRightX())); // fallback rotation
+        // controller.rightTrigger(0.2)
+        // .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
+        // () -> -controller.getLeftY(), // forward/back
+        // () -> -controller.getLeftX(), // strafe
+        // () -> -controller.getRightX())); // fallback rotation
+
+        controller.button(1).whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> robotState.getAngleToTarget()));
 
         // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intakeRoller.runIntake(State.INTAKE))
+        controller.leftBumper().onTrue(intakeRoller.setStateCommand(State.INTAKE))
             .onFalse(intakeRoller.stop());
 
         // Back Button: Eject while held
-        controller.back().onTrue(intakeRoller.runIntake(State.EJECT)).onFalse(intakeRoller.stop());
+        controller.back().onTrue(intakeRoller.setStateCommand(State.EJECT))
+            .onFalse(intakeRoller.stop());
 
         controller.rightTrigger().whileTrue(
             shooter.prepareShot(
@@ -162,11 +181,11 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
         SmartDashboard.putData("Intake Roller/Eject",
-            intakeRoller.runIntake(IntakeRoller.State.EJECT));
+            intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
         SmartDashboard.putData("Intake Roller/Intake",
-            intakeRoller.runIntake(IntakeRoller.State.INTAKE));
+            intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
         SmartDashboard.putData("Intake Roller/Stop",
-            intakeRoller.runIntake(IntakeRoller.State.STOP));
+            intakeRoller.setStateCommand(IntakeRoller.State.STOP));
         SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
         SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
         SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
@@ -176,45 +195,29 @@ public class RobotContainer {
 
         SmartDashboard.putData("Shoot ball",
             Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
-                new Translation3d(robotState.getEstimatedPose().getTranslation()),
-                FuelSim.getInstance().launchVel(FeetPerSecond.of(25), Degrees.of(60)))));
-    }
+                new Translation3d(robotState.getEstimatedPose().getTranslation())
+                    .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
+                FuelSim.getInstance().launchVel(shooter.getAverageLinearVelocity(),
+                    shooter.getHoodAngle()))));
 
-    private void configureFuelSim()
-    {
-        FuelSim instance = FuelSim.getInstance();
-        instance.spawnStartingFuel();
-        instance.registerRobot(
-            Constants.FULL_ROBOT_WIDTH.in(Meters),
-            Constants.FULL_ROBOT_LENGTH.in(Meters),
-            Constants.BUMPER_HEIGHT.in(Meters),
-            robotState::getEstimatedPose,
-            robotState::getVelocity);
-        instance.registerIntake(
-            -Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
-            Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(10)).in(Meters),
-            -Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
-            Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
-            controller.x());
+        SmartDashboard.putData("Set flywheel to 30",
+            shooter.setFlyWheelSpeed(RotationsPerSecond.of(30)));
 
-        instance.start();
-        SmartDashboard.putData(Commands.runOnce(() -> {
-            FuelSim.getInstance().clearFuel();
-            FuelSim.getInstance().spawnStartingFuel();
-        })
-            .withName("Reset Fuel")
-            .ignoringDisable(true));
+        SmartDashboard.putData("Set hood to 45 deg", shooter.setHoodAngle(Degrees.of(45)));
+
         SmartDashboard.putData("Intake Roller/Eject",
-            intakeRoller.runIntake(IntakeRoller.State.EJECT));
+            intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
         SmartDashboard.putData("Intake Roller/Intake",
-            intakeRoller.runIntake(IntakeRoller.State.INTAKE));
+            intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
         SmartDashboard.putData("Intake Roller/Stop",
-            intakeRoller.runIntake(IntakeRoller.State.STOP));
+            intakeRoller.setStateCommand(IntakeRoller.State.STOP));
         SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
         SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
         SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
         SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
             Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
+        SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
+        SmartDashboard.putData("Run Indexer", indexer.setStateCommand(Indexer.State.PULL));
     }
 
     public Command getAutonomousCommand()
