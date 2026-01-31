@@ -15,6 +15,7 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.Seconds;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.units.measure.Time;
@@ -75,7 +76,7 @@ public class AutoSegments {
      * @return a Command to Follow a path and collect FUEL in AUTO
      * @param drive The Drive subsystem
      * @param intakeLinear The IntakeLinear subsystem
-     * @param intake The IntakeRoller subsystem
+     * @param intakeRoller The IntakeRoller subsystem
      * @param drivePath The path to drive to the intaking location
      * @param intakingPath The path to drive while intaking FUEL
      * @param afterPathWait The time to wait after the intaking path is complete before stopping the intake
@@ -89,7 +90,7 @@ public class AutoSegments {
                 intakeLinear.extend(),
                 intakeRoller.runIntake(IntakeRoller.State.INTAKE)),
             // TODO: Tune after-path wait time to ensure all FUEL is intaken
-            Commands.waitTime(afterPathWait),
+            Commands.waitSeconds(afterPathWait.in(Seconds)),
             // End intaking
             intakeLinear.retract(),
             intakeRoller.stop());

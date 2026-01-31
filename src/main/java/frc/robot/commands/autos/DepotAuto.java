@@ -25,30 +25,26 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import static edu.wpi.first.units.Units.Seconds;
 import java.util.List;
 
-import com.pathplanner.lib.path.PathPlannerPath;
-
 /** Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect FUEL from
  *  the DEPOT, and then shoot them. Strategy layer. */
 public class DepotAuto extends AutoRoutine {
-
-    PathPlannerPath path1 = null;
-    PathPlannerPath path2 = null;
-    PathPlannerPath path3 = null;
-
     public DepotAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake, Indexer indexer,
         ShooterSuperstructure shooter, StartPosition start)
     {
         // Choose path names based on start position
+        List<String> expectedPaths;
         switch (start) {
-            case LEFT -> this.loadAllPaths(List.of("PreloadShoot-Left", "Left-Near-Depot", "Through-Depot", "Depot-Shoot"));
-            case CENTER -> this
-                .loadAllPaths(List.of("PreloadShoot-Center", "Center-Near-Depot", "Through-Depot", "Depot-Shoot"));
-            // We may get rid of right case as that location is far away from the depot
-            case RIGHT -> this.loadAllPaths(List.of("PreloadShoot-Right", "Right-Near-Depot", "Through-Depot", "Depot-Shoot"));
-        };
+            case LEFT -> expectedPaths = List.of("PreloadShoot-Left", "Left-Near-Depot", "Through-Depot", "Depot-Shoot");
+            case CENTER -> expectedPaths = List.of("PreloadShoot-Center", "Center-Near-Depot", "Through-Depot", "Depot-Shoot");
+            case RIGHT -> expectedPaths = List.of("PreloadShoot-Right", "Right-Near-Depot", "Through-Depot", "Depot-Shoot");
+            default -> expectedPaths = List.of();
+        }
 
-        // Load commands defensively
-        if (!pathPlannerPaths.isEmpty() && pathPlannerPaths.get(0) != null) {
+        // Load the named paths
+        this.loadAllPaths(expectedPaths);
+
+        // Defensive check: ensure we loaded exactly the expected number of paths and none are null
+        if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null)) {
             loadCommands(
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
@@ -57,7 +53,8 @@ public class DepotAuto extends AutoRoutine {
                 // Go to the DEPOT and intake FUEL
                 AutoSegments.driveAndIntake(drive, intakeLinear, intake, pathPlannerPaths.get(1), pathPlannerPaths.get(2), Seconds.of(0.3)),
                 // Drive to shooting location and shoot all FUEL
-                AutoSegments.makeFullShot(drive, indexer, shooter, pathPlannerPaths.get(3)));
+                AutoSegments.makeFullShot(drive, indexer, shooter, pathPlannerPaths.get(3))
+            );
         }
     }
 }
