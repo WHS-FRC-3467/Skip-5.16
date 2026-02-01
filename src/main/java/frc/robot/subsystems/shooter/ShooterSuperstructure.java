@@ -85,7 +85,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     });
 
     /**
-     * Constructs a new ShooterSuperstructure subsystem with the specified hood and flywheel mechanisms.
+     * Constructs a new ShooterSuperstructure subsystem with the specified hood and flywheel
+     * mechanisms.
      * 
      * @param hoodIO the hood mechanism for adjusting shot angle
      * @param leftFlywheelIO the left flywheel mechanism for spinning up shots
@@ -154,8 +155,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Gets the average linear velocity at the edge of both flywheels.
-     * Converts angular velocity to linear velocity using the flywheel radius.
+     * Gets the average linear velocity at the edge of both flywheels. Converts angular velocity to
+     * linear velocity using the flywheel radius.
      * 
      * @return the average linear velocity at the flywheel edge in meters per second
      */

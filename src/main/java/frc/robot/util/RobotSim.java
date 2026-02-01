@@ -30,16 +30,9 @@ public class RobotSim {
     private final RobotState robotState = RobotState.getInstance();
     private final FuelSim fuelSim = new FuelSim();
 
-    /**
-     * Adds mechanism data to the fuel sim
-     * 
-     * @param drive Drive subsystem for robot pose tracking
-     * @param shooter Shooter superstructure for shooting fuel simulation
-     * @param indexer Indexer subsystem for detecting when to shoot
-     * @param intakeRoller Intake roller subsystem for intake velocity detection
-     * @param intakeLinear Linear intake subsystem for intake position detection
-     */
-    public void addMechanismData(
+    private MechanismPosePublisher posePublisher = null;
+
+    private void registerFuelSimMechanisms(
         Drive drive,
         ShooterSuperstructure shooter,
         Indexer indexer,
@@ -84,6 +77,26 @@ public class RobotSim {
         }).withName("Reset Fuel").ignoringDisable(true));
     }
 
+    /**
+     * Adds mechanism data to the sim
+     * 
+     * @param drive Drive subsystem for robot pose tracking
+     * @param shooter Shooter superstructure
+     * @param indexer Indexer subsystem
+     * @param intakeRoller Intake roller subsystem
+     * @param intakeLinear Linear intake subsystem
+     */
+    public void addMechanismData(
+        Drive drive,
+        ShooterSuperstructure shooter,
+        Indexer indexer,
+        IntakeRoller intakeRoller,
+        IntakeLinear intakeLinear)
+    {
+        registerFuelSimMechanisms(drive, shooter, indexer, intakeRoller, intakeLinear);
+        posePublisher = new MechanismPosePublisher(intakeLinear, shooter);
+    }
+
     public FuelSim getFuelSim()
     {
         return fuelSim;
@@ -93,5 +106,6 @@ public class RobotSim {
     public void updateSim()
     {
         fuelSim.updateSim();
+        posePublisher.update();
     }
 }

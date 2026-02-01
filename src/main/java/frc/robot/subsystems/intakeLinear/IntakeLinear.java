@@ -17,6 +17,7 @@ package frc.robot.subsystems.intakeLinear;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -44,8 +45,12 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
     {
         this.io = intakeLinearIO;
         this.linearStopped = new Trigger(() -> isLinearStopped());
-        this.isExtended = new Trigger(() -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8).and(linearStopped);
-        this.isRetracted = new Trigger(() -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8).and(linearStopped);
+        this.isExtended =
+            new Trigger(() -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8)
+                .and(linearStopped);
+        this.isRetracted =
+            new Trigger(() -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8)
+                .and(linearStopped);
     }
 
     /**
@@ -53,7 +58,8 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
      * 
      * @return A command that extends the intake
      */
-    public Command extend() {
+    public Command extend()
+    {
         return this.runOnce(() -> io.runCurrent(Amps.of(INTAKE_CURRENT.get())));
     }
 
@@ -62,7 +68,8 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
      * 
      * @return A command that retracts the intake
      */
-    public Command retract() {
+    public Command retract()
+    {
         return this.runOnce(() -> io.runCurrent(Amps.of(-INTAKE_CURRENT.get())));
     }
 
@@ -72,13 +79,13 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
      * 
      * @return A repeating command that cycles the intake
      */
-    public Command cycle() {
+    public Command cycle()
+    {
         return Commands.repeatingSequence(
             this.extend(),
             Commands.deadline(Commands.waitSeconds(1), Commands.waitUntil(linearStopped)),
             this.retract(),
-            Commands.deadline(Commands.waitSeconds(1), Commands.waitUntil(linearStopped))
-        );
+            Commands.deadline(Commands.waitSeconds(1), Commands.waitUntil(linearStopped)));
     }
 
     /**
@@ -91,10 +98,20 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
         return this.runOnce(() -> io.runBrake());
     }
 
-    private boolean isLinearStopped() {
+    private boolean isLinearStopped()
+    {
         return Math.abs(io.getVelocity().in(RotationsPerSecond)) < 1;
     }
 
+    /**
+     * Gets the linear extension of the subsystem by converting the motor's rotation
+     * 
+     * @return The estimated linear extension of the subsystem
+     */
+    public Distance getExtension()
+    {
+        return IntakeLinearConstants.CONVERTER.toDistance(io.getPosition());
+    }
 
     @Override
     public void periodic()
