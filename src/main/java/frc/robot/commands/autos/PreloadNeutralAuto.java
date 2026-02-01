@@ -70,6 +70,5 @@ public class PreloadNeutralAuto extends AutoRoutine {
                 // Run back under the trench and shoot
                 AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
                     pathPlannerPaths.get(3)));
-        //
     }
 }

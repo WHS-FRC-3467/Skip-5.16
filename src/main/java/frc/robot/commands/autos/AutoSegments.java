@@ -41,8 +41,8 @@ public class AutoSegments {
      * Drive to shooting location while spinning up shooter but not feeding game pieces. Once at
      * target position, with the shooter still spinning, verify subsystem process variables. Upon
      * confirmation of shooter-ready PVs, bring up the tower and indexer to begin shooting. Shoot
-     * the preload for a short, fixed period of time. Bring down shooter, tower, and indexer to
-     * finish. If path doesn't complete in 2.75s, attempt a shot anyway.
+     * the PRELOADED FUEL for 2s. Bring down shooter, tower, and indexer to finish. If path doesn't
+     * complete in 2.75s, attempt a shot anyway.
      * 
      * @param drive The Drive subsystem
      * @param intakeLinear The IntakeLinear subsystem

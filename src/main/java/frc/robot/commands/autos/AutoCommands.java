@@ -5,7 +5,6 @@
 package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -96,11 +95,13 @@ public class AutoCommands {
                         indexer.holdStateUntilInterrupted(Indexer.State.PULL),
                         agitateHopper(intakeLinear, tower, indexer, HopperAgitation.INTAKE_CYCLE),
                         tower.holdStateUntilInterrupted(Tower.State.SHOOT))
-                        .until(shooter.readyToShoot.and(canShoot).negate()))),
-            // Spin everything down
-            shooter.setFlyWheelSpeed(RadiansPerSecond.zero()),
-            indexer.holdStateUntilInterrupted(Indexer.State.STOP),
-            tower.holdStateUntilInterrupted(Tower.State.STOP));
+                        .until(shooter.readyToShoot.and(canShoot).negate()))))
+            .finallyDo(() -> {
+                // Spin everything down, non-blocking
+                shooter.setFlyWheelSpeed(RadiansPerSecond.zero());
+                indexer.holdStateUntilInterrupted(Indexer.State.STOP);
+                tower.holdStateUntilInterrupted(Tower.State.STOP);
+            });
     }
 
     /**
