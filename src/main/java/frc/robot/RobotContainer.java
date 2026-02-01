@@ -21,12 +21,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
-import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.TeleopAlignToObject;
 import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -54,13 +52,13 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Translation3d;
 
 /**
- * Container class for the robot that holds all subsystems, controllers, and command bindings.
- * This class is responsible for:
+ * Container class for the robot that holds all subsystems, controllers, and command bindings. This
+ * class is responsible for:
  * <ul>
- *   <li>Instantiating all subsystems</li>
- *   <li>Configuring controller button bindings</li>
- *   <li>Providing autonomous command selection</li>
- *   <li>Setting up dashboard controls and telemetry</li>
+ * <li>Instantiating all subsystems</li>
+ * <li>Configuring controller button bindings</li>
+ * <li>Providing autonomous command selection</li>
+ * <li>Setting up dashboard controls and telemetry</li>
  * </ul>
  */
 public class RobotContainer {
@@ -129,8 +127,8 @@ public class RobotContainer {
     }
 
     /**
-     * Configures button bindings for the Xbox controller.
-     * Maps controller inputs to robot commands for teleop control.
+     * Configures button bindings for the Xbox controller. Maps controller inputs to robot commands
+     * for teleop control.
      */
     private void configureButtonBindings()
     {
@@ -170,8 +168,8 @@ public class RobotContainer {
     }
 
     /**
-     * Initializes SmartDashboard with test commands and controls for subsystems.
-     * Adds commands to the dashboard for manual testing and debugging.
+     * Initializes SmartDashboard with test commands and controls for subsystems. Adds commands to
+     * the dashboard for manual testing and debugging.
      */
     private void initializeDashboard()
     {
@@ -230,8 +228,8 @@ public class RobotContainer {
     }
 
     /**
-     * Checks and displays the robot's starting pose accuracy relative to the selected autonomous path.
-     * This function is called periodically by Robot.java when disabled.
+     * Checks and displays the robot's starting pose accuracy relative to the selected autonomous
+     * path. This function is called periodically by Robot.java when disabled.
      */
     public void checkStartPose()
     {
