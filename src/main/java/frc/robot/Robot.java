@@ -228,7 +228,8 @@ public class Robot extends LoggedRobot {
     public void teleopPeriodic()
     {
         // Hub State management
-        if (!checkedHubGameData && DriverStation.getMatchTime() <= HubState.HUB_CHANGE_TIMES[0] && DriverStation.getMatchTime() > HubState.HUB_CHANGE_TIMES[0] - 1.0) {
+        double firstHubChangeTime = HubState.getHubChangeTimes()[0];
+        if (!checkedHubGameData && DriverStation.getMatchTime() <= firstHubChangeTime && DriverStation.getMatchTime() > firstHubChangeTime - 1.0) {
             // At the beginning of the first alliance phase, check for hub game data
             HubState.getInstance().setFirstActiveAlliance();
             checkedHubGameData = true;
