@@ -56,7 +56,7 @@ public class HubState {
 
     /**
      * Returns a copy of the hub change times array.
-     * 
+     *
      * @return a defensive copy of the hub change times
      */
     public static double[] getHubChangeTimes() {
