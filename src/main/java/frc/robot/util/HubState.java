@@ -27,8 +27,8 @@ import lombok.AccessLevel;
  * <p>
  * {@code HubState} uses {@link edu.wpi.first.wpilibj.DriverStation#getMatchTime()} together with a
  * fixed schedule of {@link #HUB_CHANGE_TIMES} to determine when the active hub changes between
- * alliances. It maintains an internal {@link DriverStation.Alliance} value that is updated via
- * {@link #checkActiveAlliance()} as the match time crosses each hub change boundary.
+ * alliances. It maintains an internal {@link DriverStation.Alliance} value that is updated
+ * as the match time crosses each hub change boundary.
  * </p>
  * <p>
  * The class exposes two {@link edu.wpi.first.wpilibj2.command.button.Trigger} instances:
