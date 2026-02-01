@@ -43,6 +43,9 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
+      - name: Compile Java code
+        run: ./gradlew compileJava
+
       - name: Generate Javadoc
         run: ./gradlew javadoc
 
