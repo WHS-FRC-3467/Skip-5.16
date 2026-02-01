@@ -17,6 +17,10 @@ package frc.lib.util;
 
 import java.util.function.BooleanSupplier;
 
+/**
+ * Detects falling edges (transitions from true to false) in a boolean signal.
+ * Useful for triggering one-time actions when a condition becomes false.
+ */
 public class FallingEdge implements BooleanSupplier {
     private final BooleanSupplier source;
 
