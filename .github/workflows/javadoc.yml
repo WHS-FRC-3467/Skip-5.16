@@ -1,0 +1,82 @@
+name: Generate and Publish Javadoc
+
+# This workflow generates Javadoc and publishes to GitHub Pages
+# 
+# Triggers:
+# - Automatically on pushes to 'dev' branch
+# - Manually via workflow_dispatch
+#
+# To manually trigger:
+# 1. Go to Actions tab → "Generate and Publish Javadoc"
+# 2. Click "Run workflow" → Select branch → Click "Run workflow"
+# 3. Or use: gh workflow run javadoc.yml --ref <branch-name>
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-javadoc:
+    name: Generate Javadoc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Compile Java code
+        run: ./gradlew compileJava
+
+      - name: Generate Javadoc
+        run: ./gradlew javadoc
+
+      - name: Upload Javadoc artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: javadoc
+          path: build/docs/javadoc/
+
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    needs: build-javadoc
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download Javadoc artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: javadoc
+          path: ./javadoc
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./javadoc
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
