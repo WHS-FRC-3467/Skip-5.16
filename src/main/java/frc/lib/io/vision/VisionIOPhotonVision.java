@@ -19,9 +19,21 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 
+/**
+ * Real hardware implementation of VisionIO using PhotonVision.
+ * 
+ * <p>
+ * Connects to a PhotonVision coprocessor running an AprilTag detection pipeline
+ * and reads vision results over NetworkTables. Used for real robot operation.
+ */
 public class VisionIOPhotonVision implements VisionIO {
     protected final PhotonCamera photonCamera;
 
+    /**
+     * Constructs a PhotonVision camera interface.
+     *
+     * @param cameraProperties Camera configuration including name and calibration
+     */
     public VisionIOPhotonVision(CameraProperties cameraProperties)
     {
         this.photonCamera = new PhotonCamera(cameraProperties.name());
