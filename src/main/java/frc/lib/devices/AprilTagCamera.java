@@ -43,7 +43,7 @@ import lombok.Getter;
 public class AprilTagCamera {
 
     /**
-     * Intrinsic & observed properties describing the camera.
+     * Intrinsic &amp; observed properties describing the camera.
      * 
      * @param name Unique name for the camera
      * @param robotToCamera Transform from the robot frame to the camera frame

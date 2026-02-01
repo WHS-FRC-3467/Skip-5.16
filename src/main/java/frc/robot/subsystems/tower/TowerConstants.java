@@ -57,6 +57,12 @@ public class TowerConstants {
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0)
         .withV(10.0);
 
+    /**
+     * Creates a TalonFX motor controller configuration for the tower mechanism.
+     * Configures current limits, voltage limits, neutral mode, gearing ratios, and PID gains.
+     * 
+     * @return configured TalonFXConfiguration for the tower motor
+     */
     public static TalonFXConfiguration getFXConfig()
     {
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -88,6 +94,12 @@ public class TowerConstants {
         return config;
     }
 
+    /**
+     * Creates and configures a Tower subsystem based on the current robot mode.
+     * Selects the appropriate flywheel mechanism implementation (real, sim, or replay).
+     * 
+     * @return configured Tower instance
+     */
     public static Tower get()
     {
         FlywheelMechanism<?> mechanism;

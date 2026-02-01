@@ -12,7 +12,6 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import java.util.Optional;
-import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;

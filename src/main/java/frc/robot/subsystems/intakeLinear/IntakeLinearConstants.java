@@ -76,6 +76,11 @@ public class IntakeLinearConstants {
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
 
 
+    /**
+     * Creates and configures a TalonFX motor controller configuration for the intake linear mechanism.
+     * 
+     * @return The configured TalonFX configuration
+     */
     public static TalonFXConfiguration getFXConfig()
     {
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -107,6 +112,12 @@ public class IntakeLinearConstants {
         return config;
     }
 
+    /**
+     * Factory method to create a LinearMechanism instance for the intake linear subsystem.
+     * Creates the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
+     * 
+     * @return A configured LinearMechanism instance
+     */
     public static LinearMechanism<?> getMechanism()
     {
         LinearMechanism<?> mechanism;
@@ -130,6 +141,11 @@ public class IntakeLinearConstants {
         return mechanism;
     }
 
+    /**
+     * Factory method to create an IntakeLinear subsystem instance.
+     * 
+     * @return A fully configured IntakeLinear subsystem
+     */
     public static IntakeLinear get()
     {
         return new IntakeLinear(getMechanism());

@@ -7,9 +7,18 @@ package frc.robot.subsystems.shooter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-/** Add your docs here. */
+/**
+ * Constants class for creating the ShooterSuperstructure subsystem.
+ * Provides factory method to construct the complete shooter with hood and flywheel mechanisms.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ShooterSuperstructureConstants {
+    /**
+     * Creates and configures a complete ShooterSuperstructure subsystem.
+     * Combines hood and both flywheel mechanisms into a unified shooter system.
+     * 
+     * @return configured ShooterSuperstructure instance
+     */
     public static ShooterSuperstructure get()
     {
         return new ShooterSuperstructure(

@@ -7,6 +7,28 @@ package frc.lib.util;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
+/**
+ * A ProfiledPIDController with tunable gains that can be adjusted from the dashboard.
+ * 
+ * <p>
+ * This controller extends WPILib's ProfiledPIDController to add runtime tunability.
+ * PID gains (kP, kI, kD) and motion profile constraints (max velocity and acceleration)
+ * can be adjusted through NetworkTables when tuning mode is enabled.
+ * 
+ * <p>
+ * Call {@link #updatePID()} periodically to check for and apply updated values from the dashboard.
+ * 
+ * <p>
+ * Example usage:
+ * <pre>{@code
+ * LoggedTuneableProfiledPID controller = 
+ *     new LoggedTuneableProfiledPID("Arm/PID", 2.0, 0.0, 0.1, 2.0, 5.0);
+ * 
+ * // In periodic():
+ * controller.updatePID();  // Apply any changes from dashboard
+ * double output = controller.calculate(position, setpoint);
+ * }</pre>
+ */
 public class LoggedTuneableProfiledPID extends ProfiledPIDController {
 
     // Tunable numbers
@@ -16,12 +38,33 @@ public class LoggedTuneableProfiledPID extends ProfiledPIDController {
     private LoggedTunableNumber maxVelocity;
     private LoggedTunableNumber maxAcceleration;
 
+    /**
+     * Constructs a tunable profiled PID controller with default period.
+     *
+     * @param name The logging key prefix for tunable values
+     * @param kP Proportional gain
+     * @param kI Integral gain
+     * @param kD Derivative gain
+     * @param maxV Maximum velocity
+     * @param maxA Maximum acceleration
+     */
     public LoggedTuneableProfiledPID(String name, double kP, double kI,
         double kD, double maxV, double maxA)
     {
         this(name, kP, kI, kD, maxV, maxA, .02);
     }
 
+    /**
+     * Constructs a tunable profiled PID controller with specified period.
+     *
+     * @param name The logging key prefix for tunable values
+     * @param p Proportional gain
+     * @param i Integral gain
+     * @param d Derivative gain
+     * @param maxVelocity Maximum velocity
+     * @param maxAcceleration Maximum acceleration
+     * @param period Loop period in seconds
+     */
     public LoggedTuneableProfiledPID(String name, double p, double i,
         double d, double maxVelocity, double maxAcceleration, double period)
     {
@@ -36,6 +79,9 @@ public class LoggedTuneableProfiledPID extends ProfiledPIDController {
         this.maxAcceleration = new LoggedTunableNumber(name + "/maxAcceleration", maxAcceleration);
     }
 
+    /**
+     * Updates PID and motion profile constraints from tunable values if changed.
+     */
     public void updatePID()
     {
         // If changed, update controller constants from Tuneable Numbers

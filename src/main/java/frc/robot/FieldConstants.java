@@ -21,7 +21,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Pounds;
-import frc.lib.util.FieldUtil;
 
 /**
  * Contains information for location of field element and other useful reference points.
@@ -227,13 +226,13 @@ public class FieldConstants {
         public static final Translation2d LEFT_UPRIGHT =
             new Translation2d(
                 FRONT_FACE_X,
-                (AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(31).get().getY())
+                AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(31).get().getY()
                     + INNDER_OPENING_WIDTH / 2
                     + Units.inchesToMeters(0.75));
         public static final Translation2d RIGHT_UPRIGHT =
             new Translation2d(
                 FRONT_FACE_X,
-                (AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(31).get().getY())
+                AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(31).get().getY()
                     - INNDER_OPENING_WIDTH / 2
                     - Units.inchesToMeters(0.75));
     }

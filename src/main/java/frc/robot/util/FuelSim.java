@@ -15,9 +15,9 @@ import lombok.Setter;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class FuelSim {
@@ -267,7 +267,7 @@ public class FuelSim {
             distance = 1;
         }
         normal = normal.div(distance);
-        double impulse = 0.5 * (1 + FUEL_COR) * (b.vel.minus(a.vel).dot(normal));
+        double impulse = 0.5 * (1 + FUEL_COR) * b.vel.minus(a.vel).dot(normal);
         double intersection = FUEL_RADIUS * 2 - distance;
         a.pos = a.pos.plus(normal.times(intersection / 2));
         b.pos = b.pos.minus(normal.times(intersection / 2));
@@ -282,7 +282,7 @@ public class FuelSim {
     @SuppressWarnings("unchecked")
     private final ArrayList<Fuel>[][] grid = new ArrayList[GRID_COLS][GRID_ROWS];
 
-    private void handleFuelCollisions(ArrayList<Fuel> fuels)
+    private void handleFuelCollisions(List<Fuel> fuels)
     {
         // Clear grid
         for (int i = 0; i < GRID_COLS; i++) {
@@ -335,6 +335,8 @@ public class FuelSim {
 
     /**
      * Returns a singleton instance of FuelSim
+     * 
+     * @return The singleton FuelSim instance
      */
     public static FuelSim getInstance()
     {
@@ -429,7 +431,7 @@ public class FuelSim {
     /**
      * Sets the number of physics iterations per loop (0.02s)
      * 
-     * @param subticks
+     * @param subticks the number of physics iterations per loop
      */
     public void setSubticks(int subticks)
     {
@@ -441,8 +443,8 @@ public class FuelSim {
      * 
      * @param width from left to right (y-axis)
      * @param length from front to back (x-axis)
-     * @param bumperHeight
-     * @param poseSupplier
+     * @param bumperHeight the height of the robot bumper, in meters
+     * @param poseSupplier a supplier that provides the current robot pose
      * @param fieldSpeedsSupplier field-relative `ChassisSpeeds` supplier
      */
     public void registerRobot(
@@ -548,7 +550,7 @@ public class FuelSim {
             fuel.addImpulse(new Translation3d(normal.times(robotVel.dot(normal))));
     }
 
-    private void handleRobotCollisions(ArrayList<Fuel> fuels)
+    private void handleRobotCollisions(List<Fuel> fuels)
     {
         Pose2d robot = robotSupplier.get();
         ChassisSpeeds speeds = robotSpeedsSupplier.get();
@@ -560,7 +562,7 @@ public class FuelSim {
         }
     }
 
-    private void handleIntakes(ArrayList<Fuel> fuels)
+    private void handleIntakes(List<Fuel> fuels)
     {
         Pose2d robot = robotSupplier.get();
         for (SimIntake intake : intakes) {
@@ -749,7 +751,7 @@ public class FuelSim {
         /**
          * Get the current count of fuel scored in this hub
          * 
-         * @return
+         * @return Number of fuel pieces scored in this hub
          */
         public int getScore()
         {
@@ -863,6 +865,13 @@ public class FuelSim {
         }
     }
 
+    /**
+     * Calculates the launch velocity vector for fuel based on shooter parameters and robot state
+     * 
+     * @param vel Linear velocity of the shooter
+     * @param angle Launch angle of the shooter
+     * @return 3D velocity vector in field coordinates
+     */
     public Translation3d launchVel(LinearVelocity vel, Angle angle)
     {
         Pose3d robot = new Pose3d(RobotState.getInstance().getEstimatedPose());

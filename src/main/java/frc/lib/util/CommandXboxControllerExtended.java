@@ -24,11 +24,35 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+/**
+ * Extended Xbox controller with additional functionality for FRC use.
+ * 
+ * <p>
+ * This class extends WPILib's CommandXboxController to add configurable deadbands,
+ * input curves, and rumble commands. These features help improve driver control
+ * precision and provide tactile feedback during matches.
+ * 
+ * <p>
+ * Example usage:
+ * <pre>{@code
+ * CommandXboxControllerExtended driver = new CommandXboxControllerExtended(0)
+ *     .withDeadband(0.1)  // Add 10% deadband to all sticks
+ *     .applyCurve(true);  // Square inputs for finer control at low speeds
+ * 
+ * // Use rumble for feedback
+ * Command scoreSignal = driver.rumbleForTime(RumbleType.kBothRumble, 0.5, Seconds.of(0.3));
+ * }</pre>
+ */
 public class CommandXboxControllerExtended extends CommandXboxController {
     private GenericHID hid;
     private double deadband = 0.0;
     private boolean applyCurve = false;
 
+    /**
+     * Constructs an extended Xbox controller with additional functionality.
+     *
+     * @param port The port the controller is plugged into
+     */
     public CommandXboxControllerExtended(int port)
     {
         super(port);
