@@ -30,10 +30,10 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
+import frc.lib.util.LoggedTrigger;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
 
@@ -77,13 +77,20 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
 
-    public final Trigger readyToShoot = new Trigger(() -> {
+    public final LoggedTrigger readyToShoot = new LoggedTrigger(this.getName() + "/readyToShoot", () -> {
         double dist =
             SHOOT_GOAL.minus(robotState.getEstimatedPose()).getTranslation().getNorm();
         return isFlywheelAt(RadiansPerSecond.of(flywheelMap.get(dist)))
             && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
     });
 
+    /**
+     * Constructs a new ShooterSuperstructure subsystem with the specified hood and flywheel mechanisms.
+     * 
+     * @param hoodIO the hood mechanism for adjusting shot angle
+     * @param leftFlywheelIO the left flywheel mechanism for spinning up shots
+     * @param rightFlywheelIO the right flywheel mechanism for spinning up shots
+     */
     public ShooterSuperstructure(
         RotaryMechanism<?, ?> hoodIO,
         FlywheelMechanism<?> leftFlywheelIO,
@@ -124,11 +131,21 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return hoodIO.nearGoal(angle, HoodConstants.TOLERANCE);
     }
 
+    /**
+     * Gets the current angle of the hood.
+     * 
+     * @return the hood's current position angle
+     */
     public Angle getHoodAngle()
     {
         return hoodIO.getPosition();
     }
 
+    /**
+     * Gets the average angular velocity of both flywheels.
+     * 
+     * @return the average velocity of left and right flywheels
+     */
     public AngularVelocity getAverageFlywheelVelocity()
     {
         return RotationsPerSecond.of(
@@ -136,6 +153,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 rightFlywheelIO.getVelocity().in(RotationsPerSecond)) / 2.0);
     }
 
+    /**
+     * Gets the average linear velocity at the edge of both flywheels.
+     * Converts angular velocity to linear velocity using the flywheel radius.
+     * 
+     * @return the average linear velocity at the flywheel edge in meters per second
+     */
     public LinearVelocity getAverageLinearVelocity()
     {
         return MetersPerSecond.of(
@@ -194,7 +217,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     RobotState.getTargetPose(RobotState.target)
                         .minus(robotState.getEstimatedPose()).getTranslation().getNorm()));
 
-        Trigger ready = new Trigger(() -> isFlywheelAt(desiredFlywheelVelocitySupplier.get())
+        LoggedTrigger ready = new LoggedTrigger(this.getName() + "/prepareShot() Ready", () -> isFlywheelAt(desiredFlywheelVelocitySupplier.get())
             && isHoodAt(desiredHoodPositionSupplier.get()));
 
         return Commands.sequence(
@@ -210,19 +233,34 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             this.runOnce(() -> spinFlywheel(RotationsPerSecond.zero())));
     }
 
-    // Create commands for simple shooter tasks.
-    // Set Hood Position
+    /**
+     * Creates a command to set the hood to a specific angle.
+     * 
+     * @param angle the target angle for the hood
+     * @return command that sets the hood angle
+     */
     public Command setHoodAngle(Angle angle)
     {
         return Commands.runOnce(() -> setHoodPosition(angle));
     }
 
-    // Set Shooter Speed
+    /**
+     * Creates a command to set the flywheel velocity.
+     * 
+     * @param velocity the target angular velocity for both flywheels
+     * @return command that sets the flywheel speed
+     */
     public Command setFlywheelSpeed(AngularVelocity velocity)
     {
         return Commands.runOnce(() -> spinFlywheel(velocity));
     }
 
+    /**
+     * Creates a command to set the flywheel velocity (alternate spelling).
+     * 
+     * @param velocity the target angular velocity for both flywheels
+     * @return command that sets the flywheel speed
+     */
     public Command setFlyWheelSpeed(AngularVelocity velocity)
     {
         return setFlywheelSpeed(velocity);
@@ -236,6 +274,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         hoodIO.periodic();
     }
 
+    /**
+     * Closes all underlying mechanisms and releases resources.
+     */
     @Override
     public void close()
     {

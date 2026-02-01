@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
@@ -12,7 +13,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -40,24 +40,25 @@ public class FlywheelConstants {
     public static final AngularAcceleration MAX_ACCELERATION =
         RotationsPerSecondPerSecond.of(300.0);
 
-    private static final double GEARING = (2.0 / 1.0);
+    private static final double GEARING = (1.0 / 4.0);
 
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.1);
+    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.2);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.1);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
-    public static final Distance FLYWHEEL_RADIUS = Units.Meters.of(0.0508); // 2 inches
+    public static final Distance FLYWHEEL_RADIUS = Inches.of(2); // 2 inches
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(1000.0, 0.0, 0.0);
-    public static final PID SLOT1_PID = new PID(0.0, 0.0, 0.0);
-    public static final PID SLOT2_PID = new PID(0.0, 0.0, 0.0);
-    private static Slot0Configs SLOT0CONFIG = new Slot0Configs()
-        .withKP(SLOT0_PID.P())
-        .withKI(SLOT0_PID.I())
-        .withKD(SLOT0_PID.D());
+    public static final PID SLOT0_PID = new PID(50.0, 0.0, 0.0);
 
+    /**
+     * Creates a TalonFX motor controller configuration for the flywheel mechanism.
+     * Configures current limits, voltage limits, neutral mode, gearing ratios, and PID gains.
+     * 
+     * @param invert whether to invert the motor direction
+     * @return configured TalonFXConfiguration for the flywheel motor
+     */
     public static TalonFXConfiguration getFXConfig(boolean invert)
     {
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -85,7 +86,7 @@ public class FlywheelConstants {
 
         config.Feedback.SensorToMechanismRatio = GEARING;
 
-        config.Slot0 = SLOT0CONFIG;
+        config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
         config.MotionMagic.MotionMagicCruiseVelocity = MAX_VELOCITY.in(RotationsPerSecond);
         config.MotionMagic.MotionMagicAcceleration =
             MAX_ACCELERATION.in(RotationsPerSecondPerSecond);
@@ -94,6 +95,12 @@ public class FlywheelConstants {
     }
 
 
+    /**
+     * Creates and configures the left flywheel mechanism based on the current robot mode.
+     * Selects the appropriate implementation (real, sim, or replay) and enables tunable PID.
+     * 
+     * @return configured left flywheel mechanism
+     */
     public static FlywheelMechanism<?> getLeft()
     {
         FlywheelMechanism<?> mechanism;
@@ -117,11 +124,15 @@ public class FlywheelConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
-        mechanism.enableTunablePID(PIDSlot.SLOT_2, SLOT2_PID);
         return mechanism;
     }
 
+    /**
+     * Creates and configures the right flywheel mechanism based on the current robot mode.
+     * Selects the appropriate implementation (real, sim, or replay) and enables tunable PID.
+     * 
+     * @return configured right flywheel mechanism
+     */
     public static FlywheelMechanism<?> getRight()
     {
         FlywheelMechanism<?> mechanism;
@@ -145,8 +156,6 @@ public class FlywheelConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
-        mechanism.enableTunablePID(PIDSlot.SLOT_2, SLOT2_PID);
         return mechanism;
     }
 }

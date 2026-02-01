@@ -68,16 +68,20 @@ public interface ObjectDetectionIO {
     }
 
     /*
-     * Name of the camera capturing optical data.
+     * Returns the name of the camera capturing optical data.
+     * 
+     * @return The camera name for logging purposes
      */
     public default String getCamera()
     {
         return "";
     }
 
-    /*
-     * Updates the provided ObjectDetectionIOInputs object using the latest camera readings. If the
-     * camera is not connected, the ObjectDetectionIOInput fields remain empty.
+    /**
+     * Updates the provided ObjectDetectionIOInputs with the latest camera readings.
+     * If the camera is not connected, the ObjectDetectionIOInput fields remain empty.
+     * 
+     * @param inputs The structure to populate with updated target detection data
      */
     public default void updateInputs(ObjectDetectionIOInputs inputs)
     {}

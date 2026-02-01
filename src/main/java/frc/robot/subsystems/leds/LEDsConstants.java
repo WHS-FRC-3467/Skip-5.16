@@ -55,21 +55,43 @@ public class LEDsConstants {
             .withStripType(StripTypeValue.RGB)
             .withLossOfSignalBehavior(LossOfSignalBehaviorValue.DisableLEDs));
 
+    /**
+     * Creates a real hardware lights IO implementation for CANdle.
+     * 
+     * @return A LightsIOCandle instance for real robot hardware
+     */
     public static final LightsIOCandle getLightsIOReal()
     {
         return new LightsIOCandle(NAME, Ports.lights, CANDLE_CONFIG);
     }
 
+    /**
+     * Creates a simulated lights IO implementation.
+     * 
+     * @return A LightsIOSim instance for simulation
+     */
     public static final LightsIOSim getLightsIOSim()
     {
         return new LightsIOSim(NAME);
     }
 
+    /**
+     * Creates a replay lights IO implementation that does nothing.
+     * Used when replaying logs without hardware.
+     * 
+     * @return An empty LightsIO implementation for replay mode
+     */
     public static final LightsIO getLightsIOReplay()
     {
         return new LightsIO() {};
     }
 
+    /**
+     * Factory method to create an LEDs subsystem instance.
+     * Creates the appropriate lights IO based on the current robot mode (REAL, SIM, or REPLAY).
+     * 
+     * @return A fully configured LEDs subsystem
+     */
     public static LEDs get()
     {
         switch (Constants.currentMode) {

@@ -101,6 +101,11 @@ public class ModuleIOTalonFX implements ModuleIO {
     // Configuration Thread
     CANUpdateThread updateThread = new CANUpdateThread();
 
+    /**
+     * Constructs a new ModuleIOTalonFX instance.
+     *
+     * @param constants Module-specific constants for configuring hardware devices
+     */
     public ModuleIOTalonFX(
         SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants)
     {

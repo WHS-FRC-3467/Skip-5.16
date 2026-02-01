@@ -62,23 +62,44 @@ public class RobotState {
     @Setter
     private ChassisSpeeds velocity = new ChassisSpeeds();
 
+    /**
+     * Returns the robot's odometry-only pose (without vision corrections).
+     * 
+     * @return the odometry-only pose
+     */
     @AutoLogOutput(key = "Odometry/OdometryPose")
     public Pose2d getOdometryPose()
     {
         return poseEstimator.odometryPose();
     }
 
+    /**
+     * Returns the robot's estimated pose with vision corrections applied.
+     * 
+     * @return the estimated pose
+     */
     @AutoLogOutput(key = "Odometry/EstimatedPose")
     public Pose2d getEstimatedPose()
     {
         return poseEstimator.estimatedPose();
     }
 
+    /**
+     * Adds a new odometry observation to the pose estimator.
+     * 
+     * @param observation the odometry observation to add
+     */
     public void addOdometryObservation(OdometryObservation observation)
     {
         poseEstimator.addOdometryObservation(observation);
     }
 
+    /**
+     * Adds a new vision observation to the pose estimator.
+     * Vision observations are ignored when the drivetrain is tilted (e.g., going over a bump).
+     * 
+     * @param observation the vision observation to add
+     */
     public void addVisionObservation(VisionPoseObservation observation)
     {
         // Only add vision observation if robot is not angled (i.e. when going over a bump)
@@ -88,6 +109,12 @@ public class RobotState {
         poseEstimator.addVisionObservation(observation);
     }
 
+    /**
+     * Returns the robot's estimated pose at a specific timestamp.
+     * 
+     * @param timestampSeconds the timestamp in seconds
+     * @return the estimated pose at the given timestamp, or empty if unavailable
+     */
     public Optional<Pose2d> getPoseAtTime(double timestampSeconds)
     {
         return poseEstimator.getPoseAtTime(timestampSeconds);
@@ -99,6 +126,11 @@ public class RobotState {
         return getEstimatedPose().getRotation();
     }
 
+    /**
+     * Returns the robot's field-relative velocity.
+     * 
+     * @return the field-relative chassis speeds
+     */
     public ChassisSpeeds getFieldRelativeVelocity()
     {
         return ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -131,6 +163,11 @@ public class RobotState {
             getRotaryPose().getRotation()));
     }
 
+    /**
+     * Resets the robot's pose to the specified position.
+     * 
+     * @param pose the new pose to set
+     */
     public void resetPose(Pose2d pose)
     {
         poseEstimator.resetPose(pose);
@@ -157,7 +194,11 @@ public class RobotState {
         @Getter
         private final Distance height;
 
-        /** Returns the pose with alliance flip applied */
+        /**
+         * Returns the target pose with alliance flip applied.
+         * 
+         * @return the target pose adjusted for the current alliance
+         */
         public Pose2d getAlliancePose()
         {
             return FieldUtil.apply(bluePose);
@@ -171,7 +212,12 @@ public class RobotState {
     @Setter
     public static Target target = Target.HUB;
 
-    /** Returns 2d distance from robot to target in meters */
+    /**
+     * Returns 2D distance from robot to target.
+     * 
+     * @param robotPose the robot's current pose
+     * @return the distance to the target
+     */
     public Distance getDistanceToTarget(Pose2d robotPose)
     {
         Translation2d robotTranslation = robotPose.getTranslation();
@@ -179,14 +225,23 @@ public class RobotState {
         return Meters.of(robotTranslation.getDistance(targetTranslation));
     }
 
-    /** Returns 2d distance from robot to target in meters */
-    public static Distance getDistanceToTarget(Translation2d robotPose)
+    /**
+     * Returns 2D distance from a given translation to the current target.
+     * 
+     * @param robotTranslation the robot's current translation
+     * @return the distance to the target
+     */
+    public static Distance getDistanceToTarget(Translation2d robotTranslation)
     {
         Translation2d targetTranslation = target.getAlliancePose().getTranslation();
-        return Meters.of(robotPose.getDistance(targetTranslation));
+        return Meters.of(robotTranslation.getDistance(targetTranslation));
     }
 
-    /** Returns angle from robot to target */
+    /**
+     * Returns the angle from the robot to the current target.
+     * 
+     * @return the angle to the target
+     */
     public Rotation2d getAngleToTarget()
     {
         return target.getAlliancePose().getTranslation().minus(getEstimatedPose().getTranslation())
@@ -217,6 +272,7 @@ public class RobotState {
     }
 
     /**
+     * Returns height difference from mechanism to target, in meters.
      * 
      * @param mechanismHeight height of the mechanism from which the projectile is launched
      * @return height difference from mechanism to target, in meters

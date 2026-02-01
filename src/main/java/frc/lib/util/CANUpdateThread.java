@@ -26,6 +26,11 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.StatusCode;
 import au.grapplerobotics.ConfigurationFailedException;
 
+/**
+ * Thread pool for executing CAN device configuration operations asynchronously.
+ * Automatically retries failed configuration attempts up to a maximum number of times.
+ * Prevents blocking the main robot loop during device initialization.
+ */
 public class CANUpdateThread implements AutoCloseable {
 
     private static final int MAX_RETRIES = 5;
@@ -36,6 +41,9 @@ public class CANUpdateThread implements AutoCloseable {
 
     /**
      * Attempts a CTRE status-returning action up to MAX_RETRIES times.
+     *
+     * @param action Supplier that returns a StatusCode from a CTRE configuration call
+     * @return CompletableFuture that completes when successful or throws on persistent failure
      */
     public CompletableFuture<Void> CTRECheckErrorAndRetry(
         Supplier<StatusCode> action)
@@ -56,6 +64,9 @@ public class CANUpdateThread implements AutoCloseable {
 
     /**
      * Attempts a LaserCAN configuration action up to MAX_RETRIES times.
+     *
+     * @param action Runnable that may throw ConfigurationFailedException
+     * @return CompletableFuture that completes when successful or throws on persistent failure
      */
     public CompletableFuture<Void> laserCANCheckErrorAndRetry(
         ThrowingRunnable<ConfigurationFailedException> action)
