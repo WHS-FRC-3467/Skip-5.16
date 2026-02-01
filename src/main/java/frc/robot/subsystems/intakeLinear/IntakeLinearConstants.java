@@ -52,7 +52,7 @@ public class IntakeLinearConstants {
     private static final double GEARING = (2.0 / 1.0);
 
     private static final Distance MIN_DISTANCE = Inches.of(0.0);
-    private static final Distance MAX_DISTANCE = Inches.of(36.0);
+    private static final Distance MAX_DISTANCE = Inches.of(11.4);
     private static final Distance STARTING_DISTANCE = Inches.of(0.0);
 
     private static final Distance DRUM_RADIUS = Inches.of(1.0);
@@ -77,7 +77,8 @@ public class IntakeLinearConstants {
 
 
     /**
-     * Creates and configures a TalonFX motor controller configuration for the intake linear mechanism.
+     * Creates and configures a TalonFX motor controller configuration for the intake linear
+     * mechanism.
      * 
      * @return The configured TalonFX configuration
      */
@@ -97,7 +98,7 @@ public class IntakeLinearConstants {
         config.Voltage.PeakReverseVoltage = -12.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
 
@@ -113,8 +114,8 @@ public class IntakeLinearConstants {
     }
 
     /**
-     * Factory method to create a LinearMechanism instance for the intake linear subsystem.
-     * Creates the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
+     * Factory method to create a LinearMechanism instance for the intake linear subsystem. Creates
+     * the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
      * 
      * @return A configured LinearMechanism instance
      */
@@ -125,19 +126,19 @@ public class IntakeLinearConstants {
             case REAL:
                 mechanism = new LinearMechanismReal(NAME,
                     new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeLinear), CHARACTERISTICS);
-                    break;
+                break;
             case SIM:
-                mechanism =  new LinearMechanismSim(NAME,
+                mechanism = new LinearMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeLinear),
                     DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
-                    break;
+                break;
             case REPLAY:
-                mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS,new MotorIO() {}) {};
-                    break;
+                mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}) {};
+                break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
-                mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
     }
 

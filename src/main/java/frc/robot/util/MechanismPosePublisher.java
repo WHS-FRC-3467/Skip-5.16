@@ -15,11 +15,13 @@
 
 package frc.robot.util;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
@@ -27,10 +29,24 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 public record MechanismPosePublisher(IntakeLinear intake, ShooterSuperstructure shooter) {
     public void update()
     {
-        Logger.recordOutput("MechanismPoses/Intake (1)",
-            new Pose3d(intake.getExtension(), Meters.zero(), Meters.zero(), Rotation3d.kZero));
-        Logger.recordOutput("MechanismPoses/Hood (2)",
-            new Pose3d(Translation3d.kZero,
+        Logger.recordOutput("MechanismPoses/Hood (1)",
+            new Pose3d(
+                new Translation3d(
+                    0,
+                    0.107,
+                    0.485),
                 new Rotation3d(shooter.getHoodAngle(), Rotations.zero(), Rotations.zero())));
+
+
+        var directionRot = new Rotation3d(Degrees.of(8.3), Degrees.zero(), Degrees.zero());
+
+        // Start with +Y, scale by extension, then rotate that vector by 8.3 degrees.
+        var offset =
+            new Translation3d(Meters.zero(), intake.getExtension(), Meters.zero())
+                .rotateBy(directionRot);
+
+        // Apply ONLY a translation (identity rotation), so pose orientation does not change.
+        Logger.recordOutput("MechanismPoses/Intake (2)",
+            Pose3d.kZero.transformBy(new Transform3d(offset, new Rotation3d())));
     }
 }

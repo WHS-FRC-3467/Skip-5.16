@@ -1,0 +1,28 @@
+{
+    "name": "Platypus",
+    "rotations": [],
+    "position": [
+        0,
+        0,
+        0
+    ],
+    "cameras": [],
+    "components": [
+        {
+            "zeroedRotations": [],
+            "zeroedPosition": [
+                0,
+                -0.107,
+                -0.485
+            ]
+        },
+        {
+            "zeroedRotations": [],
+            "zeroedPosition": [
+                0,
+                0,
+                0
+            ]
+        }
+    ]
+}
