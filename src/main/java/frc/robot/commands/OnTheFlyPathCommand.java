@@ -96,7 +96,7 @@ public class OnTheFlyPathCommand extends Command {
     public void initialize()
     {
         if (shouldMirrorPath) {
-            double FIELD_WIDTH = FieldConstants.FIELD_WIDTH;
+            final double FIELD_WIDTH = FieldConstants.FIELD_WIDTH;
             if (waypointPoses != null) {
                 for (int i = 0; i < waypointPoses.size(); i++) {
                     waypointPoses.set(i,
