@@ -18,6 +18,7 @@ package frc.robot.util;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import java.util.Arrays;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
@@ -45,13 +46,22 @@ import lombok.AccessLevel;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HubState {
 
-    public static final double[] HUB_CHANGE_TIMES = {
+    private static final double[] HUB_CHANGE_TIMES = {
             130.0,
             105.0,
             80.0,
             55.0,
             30.0,
     };
+
+    /**
+     * Returns a copy of the hub change times array.
+     * 
+     * @return a defensive copy of the hub change times
+     */
+    public static double[] getHubChangeTimes() {
+        return Arrays.copyOf(HUB_CHANGE_TIMES, HUB_CHANGE_TIMES.length);
+    }
 
     @Getter
     private static final HubState instance = new HubState();
@@ -97,7 +107,7 @@ public class HubState {
 
     /**
      * Find the next time that the hub will change based on the current match time
-     * @param matchTime
+     * @param matchTime the current match time in seconds
      * @return the next hub change time, or 0.0 if no hub changes are scheduled
      */
     private double nextSwitchTime(double matchTime)

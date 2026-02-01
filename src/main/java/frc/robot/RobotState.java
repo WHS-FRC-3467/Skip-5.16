@@ -272,6 +272,7 @@ public class RobotState {
     }
 
     /**
+     * Returns height difference from mechanism to target, in meters.
      * 
      * @param mechanismHeight height of the mechanism from which the projectile is launched
      * @return height difference from mechanism to target, in meters
