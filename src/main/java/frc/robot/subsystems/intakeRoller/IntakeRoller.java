@@ -31,6 +31,11 @@ import frc.robot.subsystems.indexer.IndexerConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Subsystem that controls the intake roller mechanism.
+ * The roller can intake game pieces, eject them, or stop.
+ * Uses a flywheel mechanism for velocity control.
+ */
 public class IntakeRoller extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber INTAKE_SETPOINT =

@@ -20,7 +20,9 @@ import frc.lib.io.beambreak.BeamBreakIO;
 import frc.lib.io.beambreak.BeamBreakInputsAutoLogged;
 
 /**
- * Class for simplified BeamBreakIO implementation
+ * Wrapper class for beam break sensors that detect when an object breaks an infrared beam.
+ * Commonly used for detecting game pieces in the robot.
+ * Provides a simplified interface over BeamBreakIO implementations.
  */
 public class BeamBreak {
     private final BeamBreakIO io;
@@ -36,7 +38,9 @@ public class BeamBreak {
         this.io = io;
     }
 
-    /** Call this method periodically */
+    /**
+     * Call this method periodically to update sensor readings and log data.
+     */
     public void periodic()
     {
         io.updateInputs(inputs);

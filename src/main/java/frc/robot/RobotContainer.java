@@ -54,6 +54,16 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Translation3d;
 
+/**
+ * Container class for the robot that holds all subsystems, controllers, and command bindings.
+ * This class is responsible for:
+ * <ul>
+ *   <li>Instantiating all subsystems</li>
+ *   <li>Configuring controller button bindings</li>
+ *   <li>Providing autonomous command selection</li>
+ *   <li>Setting up dashboard controls and telemetry</li>
+ * </ul>
+ */
 public class RobotContainer {
     private final RobotState robotState = RobotState.getInstance();
 
@@ -119,6 +129,10 @@ public class RobotContainer {
         initializeDashboard();
     }
 
+    /**
+     * Configures button bindings for the Xbox controller.
+     * Maps controller inputs to robot commands for teleop control.
+     */
     private void configureButtonBindings()
     {
         // Default command, normal field-relative drive
@@ -156,8 +170,10 @@ public class RobotContainer {
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
     }
 
-
-    // Setup all SmartDashboard commands
+    /**
+     * Initializes SmartDashboard with test commands and controls for subsystems.
+     * Adds commands to the dashboard for manual testing and debugging.
+     */
     private void initializeDashboard()
     {
         SmartDashboard.putData("Indexer/Expel", indexer.setStateCommand(Indexer.State.EXPEL));

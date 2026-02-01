@@ -45,6 +45,22 @@ import java.util.function.Supplier;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 
+/**
+ * Factory class for creating drive-related commands.
+ * 
+ * <p>
+ * Provides factory methods for common drive operations including:
+ * <ul>
+ * <li>Joystick-controlled driving (field-relative and robot-relative)</li>
+ * <li>Angle locking for driver assistance</li>
+ * <li>Pathfinding to specific field positions</li>
+ * <li>System identification and characterization</li>
+ * </ul>
+ * 
+ * <p>
+ * All commands are designed to work with the {@link Drive} subsystem and integrate
+ * with PathPlanner for autonomous path following.
+ */
 public class DriveCommands {
     @Getter
     private static final double DEADBAND = 0.1;

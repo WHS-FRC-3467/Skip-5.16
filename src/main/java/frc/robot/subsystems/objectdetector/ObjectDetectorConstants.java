@@ -31,9 +31,21 @@ import frc.robot.RobotState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-/*
- * Subsystem constants (e.g. names, transforms) for the various object detector cameras on the
- * robot. Used to create object detector subsystems within RobotContainer.
+/**
+ * Configuration constants for the object detection subsystem.
+ * 
+ * <p>
+ * Contains camera calibration data, mounting positions, and simulation targets for ML-based
+ * object detection. Each camera has:
+ * <ul>
+ * <li>Extrinsics: Physical mounting transform (position and orientation on robot)</li>
+ * <li>Intrinsics: Camera matrix and distortion coefficients from calibration</li>
+ * <li>Performance: Resolution, FPS, latency, and standard deviation factors</li>
+ * </ul>
+ * 
+ * <p>
+ * Used for detecting game pieces or other objects using PhotonVision's ML pipeline.
+ * In simulation, uses configured target positions to test detection algorithms.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectDetectorConstants {

@@ -123,7 +123,7 @@ public class ObjectDetection {
     }
 
     /**
-     * Uses the camera's focal length & trig to estimate range from target; requires no measurement
+     * Uses the camera's focal length &amp; trig to estimate range from target; requires no measurement
      * of pitch. Utilizes pinhole model of a camera. Note that camera focal length in pixels = (P *
      * D) / H, where P = perceived width of known object (px), D = known distance from camera (in.),
      * H = known height of object (in.). For unreliable corner detection or object digital height
@@ -358,7 +358,7 @@ public class ObjectDetection {
      * This function returns a full record representing the detected Object -- Object ID,
      * confidence, pitch, yaw, area, robot distance to target, and target's field pose -- usually
      * requiring a functional ML pipeline. A PhotonVision ML detection that fails to identify the
-     * Object will return object ID & confidence as -1. Failed pose estimation will return relevant
+     * Object will return object ID &amp; confidence as -1. Failed pose estimation will return relevant
      * fields as empty.
      * 
      * @param target A single PhotonTrackedTarget representing the detected object of interest,
@@ -427,11 +427,11 @@ public class ObjectDetection {
      * 
      * <p>
      * This function returns a partial record representing the detected Blob (i.e Color or Contour)
-     * containing pitch, yaw, & area. These are baseline PhotonVision results relevant to multiple
+     * containing pitch, yaw, &amp; area. These are baseline PhotonVision results relevant to multiple
      * pipelines (Color, ML, etc.). Blob observations don't attempt to generate poses, object IDs,
      * or confidence. Therefore, fields relevant to pose estimation are returned empty and object ID
      * / confidence are assigned assigned -2 to differentiate this result from an ML detection that
-     * failed to generate both an ID & a pose (-1). See {@link #getObjectObservation}.
+     * failed to generate both an ID &amp; a pose (-1). See {@link #getObjectObservation}.
      * 
      * @param targets An array of PhotonTrackedTargets, likely from objectDetection.getTargets().
      * @param selection An enum representing the two selection modes: LARGEST or LOWEST. LARGEST
