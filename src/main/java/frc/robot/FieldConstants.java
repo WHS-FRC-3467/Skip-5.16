@@ -227,13 +227,13 @@ public class FieldConstants {
         public static final Translation2d LEFT_UPRIGHT =
             new Translation2d(
                 FRONT_FACE_X,
-                (AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(31).get().getY())
+                AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(31).get().getY()
                     + INNDER_OPENING_WIDTH / 2
                     + Units.inchesToMeters(0.75));
         public static final Translation2d RIGHT_UPRIGHT =
             new Translation2d(
                 FRONT_FACE_X,
-                (AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(31).get().getY())
+                AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(31).get().getY()
                     - INNDER_OPENING_WIDTH / 2
                     - Units.inchesToMeters(0.75));
     }
