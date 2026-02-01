@@ -31,8 +31,8 @@ import java.util.List;
  */
 public class DepotAuto extends AutoRoutine {
     /**
-     * Constructs a DepotAuto routine that shoots preload, collects from depot, and shoots collected fuel.
-     * Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
+     * Constructs a DepotAuto routine that shoots preload, collects from depot, and shoots collected
+     * fuel. Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
      *
      * @param drive the drive subsystem
      * @param intakeLinear the intake linear subsystem for deploying/retracting intake
@@ -67,7 +67,7 @@ public class DepotAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                AutoSegments.makePreloadShot(drive, intakeLinear, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
                 // Go to the DEPOT and intake FUEL
                 AutoSegments.driveAndIntake(drive, intakeLinear, intake, pathPlannerPaths.get(1),

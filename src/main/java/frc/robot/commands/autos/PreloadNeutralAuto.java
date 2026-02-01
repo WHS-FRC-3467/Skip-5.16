@@ -48,10 +48,7 @@ public class PreloadNeutralAuto extends AutoRoutine {
             case CENTER -> expectedPaths =
                 List.of("PreloadShoot-Center", "UnderTrench-Run-Center",
                     "SweepNeutral-Trench-Left", "UnderTrench-Shoot-Left");
-            case RIGHT -> expectedPaths = List.of("PreloadShoot-Right", "placeholder"); // TODO:
-                                                                                        // Flip left
-                                                                                        // side
-                                                                                        // paths
+            case RIGHT -> expectedPaths = List.of("PreloadShoot-Right", "placeholder"); // TODO
             default -> expectedPaths = List.of();
         };
 
