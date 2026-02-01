@@ -19,6 +19,10 @@ import com.ctre.phoenix6.CANBus;
 import frc.lib.util.Device;
 import frc.lib.util.Device.CAN;
 
+/**
+ * Hardware port definitions for all CAN devices and other I/O ports on the robot.
+ * Contains CAN IDs for motor controllers, sensors, and other devices connected to the robot.
+ */
 public class Ports {
     /*
      * LIST OF CHANNEL AND CAN IDS
