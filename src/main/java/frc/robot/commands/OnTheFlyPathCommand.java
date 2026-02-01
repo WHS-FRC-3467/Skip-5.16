@@ -36,6 +36,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
 
 public class OnTheFlyPathCommand extends Command {
@@ -91,8 +92,7 @@ public class OnTheFlyPathCommand extends Command {
     public void initialize()
     {
         if (shouldMirrorPath) {
-            double FIELD_WIDTH = Units.inchesToMeters(317); // Should be in a FieldConstants.java
-                                                            // file
+            double FIELD_WIDTH = FieldConstants.FIELD_WIDTH;
             if (waypointPoses != null) {
                 for (int i = 0; i < waypointPoses.size(); i++) {
                     waypointPoses.set(i,
