@@ -17,7 +17,8 @@ package frc.robot.util;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.util.LoggedTrigger;
+import java.util.Arrays;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
@@ -27,8 +28,8 @@ import lombok.AccessLevel;
  * <p>
  * {@code HubState} uses {@link edu.wpi.first.wpilibj.DriverStation#getMatchTime()} together with a
  * fixed schedule of {@link #HUB_CHANGE_TIMES} to determine when the active hub changes between
- * alliances. It maintains an internal {@link DriverStation.Alliance} value that is updated via
- * {@link #checkActiveAlliance()} as the match time crosses each hub change boundary.
+ * alliances. It maintains an internal {@link DriverStation.Alliance} value that is updated as the
+ * match time crosses each hub change boundary.
  * </p>
  * <p>
  * The class exposes two {@link edu.wpi.first.wpilibj2.command.button.Trigger} instances:
@@ -45,7 +46,7 @@ import lombok.AccessLevel;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HubState {
 
-    public static final double[] HUB_CHANGE_TIMES = {
+    private static final double[] HUB_CHANGE_TIMES = {
             130.0,
             105.0,
             80.0,
@@ -53,38 +54,54 @@ public class HubState {
             30.0,
     };
 
+    /**
+     * Returns a copy of the hub change times array.
+     *
+     * @return a defensive copy of the hub change times
+     */
+    public static double[] getHubChangeTimes()
+    {
+        return Arrays.copyOf(HUB_CHANGE_TIMES, HUB_CHANGE_TIMES.length);
+    }
+
     @Getter
     private static final HubState instance = new HubState();
 
     @Getter
-    private Trigger hubActive = new Trigger(() -> isOurHubActive());
+    private LoggedTrigger hubActive =
+        new LoggedTrigger("Hub/Hub Active Trigger", () -> isOurHubActive());
     // tells the robot if the hub is active
 
+    private static final double SECONDS_BEFORE = 5.0;
     /** activates {@link #SECONDS_BEFORE} seconds before the next hub change */
     @Getter
-    private Trigger hubChange = new Trigger(() -> isCloseToSwitching());
+    private LoggedTrigger hubChange =
+        new LoggedTrigger("Hub/Hub is about to change (within " + SECONDS_BEFORE + " seconds)",
+            () -> isCloseToSwitching());
     // Time (in seconds) before a hub change that the hubChange trigger activates
-    private static final double SECONDS_BEFORE = 5.0;
 
-    // Stores the alliance whose hub is currently active - default to our alliance during Auto - set to Blue as a backup
+
+    // Stores the alliance whose hub is currently active - default to our alliance during Auto - set
+    // to Blue as a backup
     private volatile Alliance activeAlliance = DriverStation.getAlliance().orElse(Alliance.Blue);
 
     // Stores the alliance whose hub is active in the 1st shift
     private volatile Alliance firstActiveAlliance = Alliance.Blue;
 
     /**
-     * Checks the active alliance based on the game-specific message from the DriverStation.
-     * Meant to only be called at the first possible change time.
+     * Checks the active alliance based on the game-specific message from the DriverStation. Meant
+     * to only be called at the first possible change time.
      */
     public void setFirstActiveAlliance()
     {
         String gameSpecificMessage = DriverStation.getGameSpecificMessage();
         // The game-specific message indicates which alliance's hub is INACTIVE during the first
         // alliance shift. We therefore set firstActiveAlliance to the *other* alliance:
-        //   - If the first character is 'B', the Blue hub is inactive, so the Red hub is active.
-        //   - If the first character is 'R', the Red hub is inactive, so the Blue hub is active.
+        // - If the first character is 'B', the Blue hub is inactive, so the Red hub is active.
+        // - If the first character is 'R', the Red hub is inactive, so the Blue hub is active.
         if (gameSpecificMessage != null && !gameSpecificMessage.isEmpty()) {
-            firstActiveAlliance = gameSpecificMessage.charAt(0) == 'B' ? Alliance.Red : Alliance.Blue;
+            firstActiveAlliance =
+                gameSpecificMessage.charAt(0) == 'B' ? Alliance.Red : Alliance.Blue;
         } else {
             // Fall back to the default alliance (Blue) and report the missing game-specific
             // message.
@@ -97,7 +114,8 @@ public class HubState {
 
     /**
      * Find the next time that the hub will change based on the current match time
-     * @param matchTime
+     * 
+     * @param matchTime the current match time in seconds
      * @return the next hub change time, or 0.0 if no hub changes are scheduled
      */
     private double nextSwitchTime(double matchTime)
@@ -125,8 +143,8 @@ public class HubState {
     }
 
     /**
-     * Meant to be called regularly. Checks which hub is active and stores
-     * it in {@link #activeAlliance}
+     * Meant to be called regularly. Checks which hub is active and stores it in
+     * {@link #activeAlliance}
      */
     public void periodic()
     {

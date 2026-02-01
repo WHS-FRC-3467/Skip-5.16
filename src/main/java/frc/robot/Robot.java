@@ -139,7 +139,10 @@ public class Robot extends LoggedRobot {
                 : Constants.RobotConstants.serial);
     }
 
-    /** This function is called periodically during all modes. */
+    /**
+     * This function is called periodically during all modes.
+     * Runs the CommandScheduler and updates robot state.
+     */
     @Override
     public void robotPeriodic()
     {
@@ -173,7 +176,10 @@ public class Robot extends LoggedRobot {
         checkedHubGameData = false;
     }
 
-    /** This function is called periodically when disabled. */
+    /**
+     * This function is called periodically when disabled.
+     * Checks and displays the robot's starting pose for autonomous mode.
+     */
     @Override
     public void disabledPeriodic()
     {
@@ -214,12 +220,16 @@ public class Robot extends LoggedRobot {
         }
     }
 
-    /** This function is called periodically during operator control. */
+    /**
+     * This function is called periodically during operator control.
+     * Manages hub state timing and game data updates during teleop.
+     */
     @Override
     public void teleopPeriodic()
     {
         // Hub State management
-        if (!checkedHubGameData && DriverStation.getMatchTime() <= HubState.HUB_CHANGE_TIMES[0] && DriverStation.getMatchTime() > HubState.HUB_CHANGE_TIMES[0] - 1.0) {
+        double firstHubChangeTime = HubState.getHubChangeTimes()[0];
+        if (!checkedHubGameData && DriverStation.getMatchTime() <= firstHubChangeTime && DriverStation.getMatchTime() > firstHubChangeTime - 1.0) {
             // At the beginning of the first alliance phase, check for hub game data
             HubState.getInstance().setFirstActiveAlliance();
             checkedHubGameData = true;

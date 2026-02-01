@@ -45,6 +45,22 @@ import java.util.function.Supplier;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 
+/**
+ * Factory class for creating drive-related commands.
+ * 
+ * <p>
+ * Provides factory methods for common drive operations including:
+ * <ul>
+ * <li>Joystick-controlled driving (field-relative and robot-relative)</li>
+ * <li>Angle locking for driver assistance</li>
+ * <li>Pathfinding to specific field positions</li>
+ * <li>System identification and characterization</li>
+ * </ul>
+ * 
+ * <p>
+ * All commands are designed to work with the {@link Drive} subsystem and integrate
+ * with PathPlanner for autonomous path following.
+ */
 public class DriveCommands {
     @Getter
     private static final double DEADBAND = 0.1;
@@ -62,6 +78,13 @@ public class DriveCommands {
     private DriveCommands()
     {}
 
+    /**
+     * Converts joystick inputs to a linear velocity vector.
+     * 
+     * @param x the x-axis joystick input
+     * @param y the y-axis joystick input
+     * @return the calculated linear velocity as a Translation2d
+     */
     public static Translation2d getLinearVelocityFromJoysticks(double x, double y)
     {
         double linearMagnitude = Math.pow(Math.hypot(x, y), 2);
@@ -75,6 +98,12 @@ public class DriveCommands {
 
     /**
      * Field relative drive command using two joysticks (controlling linear and angular velocities).
+     * 
+     * @param drive the drive subsystem
+     * @param xSupplier supplier for x-axis joystick input
+     * @param ySupplier supplier for y-axis joystick input
+     * @param omegaSupplier supplier for rotation joystick input
+     * @return the joystick drive command
      */
     public static Command joystickDrive(
         Drive drive,
@@ -119,6 +148,12 @@ public class DriveCommands {
      * Field relative drive command using joystick for linear control and PID for angular control.
      * Possible use cases include snapping to an angle, aiming at a vision target, or controlling
      * absolute rotation with a joystick.
+     * 
+     * @param drive the drive subsystem
+     * @param xSupplier supplier for x-axis joystick input
+     * @param ySupplier supplier for y-axis joystick input
+     * @param rotationSupplier supplier for target rotation angle
+     * @return the joystick drive at angle command
      */
     public static Command joystickDriveAtAngle(
         Drive drive,
@@ -174,9 +209,11 @@ public class DriveCommands {
 
     /**
      * Measures the velocity feedforward constants for the drive motors.
-     *
-     * <p>
-     * This command should only be used in voltage control mode.
+     * 
+     * <p>This command should only be used in voltage control mode.
+     * 
+     * @param drive the drive subsystem
+     * @return the feedforward characterization command
      */
     public static Command feedforwardCharacterization(Drive drive)
     {
@@ -231,15 +268,20 @@ public class DriveCommands {
                         double kV = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
 
                         NumberFormat formatter = new DecimalFormat("#0.00000");
-                        System.out
-                            .println("********** Drive FF Characterization Results **********");
-                        System.out.println("\tkS: " + formatter.format(kS));
-                        System.out.println("\tkV: " + formatter.format(kV));
+                        String results = "Drive FF Characterization Results - "
+                            + "kS: " + formatter.format(kS)
+                            + ", kV: " + formatter.format(kV);
+                        DriverStation.reportWarning(results, false);
                     }))
             .withName("Feedforward Characterization");
     }
 
-    /** Measures the robot's wheel radius by spinning in a circle. */
+    /**
+     * Measures the robot's wheel radius by spinning in a circle.
+     * 
+     * @param drive the drive subsystem
+     * @return the wheel radius characterization command
+     */
     public static Command wheelRadiusCharacterization(Drive drive)
     {
         RobotState robotState = RobotState.getInstance();
@@ -297,18 +339,12 @@ public class DriveCommands {
                                 / wheelDelta;
 
                             NumberFormat formatter = new DecimalFormat("#0.000");
-                            System.out.println(
-                                "********** Wheel Radius Characterization Results **********");
-                            System.out.println(
-                                "\tWheel Delta: " + formatter.format(wheelDelta) + " radians");
-                            System.out.println(
-                                "\tGyro Delta: " + formatter.format(state.gyroDelta) + " radians");
-                            System.out.println(
-                                "\tWheel Radius: "
-                                    + formatter.format(wheelRadius)
-                                    + " meters, "
-                                    + formatter.format(Units.metersToInches(wheelRadius))
-                                    + " inches");
+                            String results = "Wheel Radius Characterization Results - "
+                                + "Wheel Delta: " + formatter.format(wheelDelta) + " radians, "
+                                + "Gyro Delta: " + formatter.format(state.gyroDelta) + " radians, "
+                                + "Wheel Radius: " + formatter.format(wheelRadius) + " meters ("
+                                + formatter.format(Units.metersToInches(wheelRadius)) + " inches)";
+                            DriverStation.reportWarning(results, false);
                         })))
             .withName("Wheel Radius Characterization");
     }
@@ -322,13 +358,12 @@ public class DriveCommands {
     /**
      * Pathfinding command that uses the AutoBuilder to generate a path to a target position.
      * 
-     * @param currentPose Supplier for the robot's current pose
-     * @param targetPose The target pose to pathfind to.
-     * @param constraints The PathContraints to apply
-     * @param goalEndVelocity The goal final velocity in meters/sec.
-     * @param tolerance The allowed tolerance in meters of the robot's position from the target
-     *        pose. Note that this pathfinding feature does not take the robot to a desired
-     *        rotation.
+     * @param currentPose supplier for the robot's current pose
+     * @param targetPose the target pose to pathfind to
+     * @param constraints the path constraints to apply
+     * @param goalEndVelocity the goal final velocity
+     * @param tolerance the allowed position tolerance from the target pose
+     * @return the pathfinding command
      */
     public static Command pathFindToPose(Supplier<Pose2d> currentPose, Pose2d targetPose,
         PathConstraints constraints, LinearVelocity goalEndVelocity, Distance tolerance)

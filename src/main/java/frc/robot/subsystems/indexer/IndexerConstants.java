@@ -47,6 +47,11 @@ public class IndexerConstants {
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0)
         .withV(10.0);
 
+    /**
+     * Creates and configures a TalonFX motor controller configuration for the indexer.
+     * 
+     * @return The configured TalonFX configuration
+     */
     public static TalonFXConfiguration getFXConfig()
     {
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -78,6 +83,12 @@ public class IndexerConstants {
         return config;
     }
 
+    /**
+     * Factory method to create an Indexer subsystem instance.
+     * Creates the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
+     * 
+     * @return A fully configured Indexer subsystem
+     */
     public static Indexer get()
     {
         FlywheelMechanism<?> mechanism;

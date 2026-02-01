@@ -62,6 +62,11 @@ public class IntakeRollerConstants {
     // Velocity PID
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
 
+    /**
+     * Creates and configures a TalonFX motor controller configuration for the intake roller.
+     * 
+     * @return The configured TalonFX configuration
+     */
     public static TalonFXConfiguration getFXConfig()
     {
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -96,6 +101,12 @@ public class IntakeRollerConstants {
         return config;
     }
 
+    /**
+     * Factory method to create a FlywheelMechanism instance for the intake roller subsystem.
+     * Creates the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
+     * 
+     * @return A configured FlywheelMechanism instance
+     */
     public static FlywheelMechanism<?> getMechanism()
     {
         FlywheelMechanism<?> mechanism;
@@ -119,6 +130,11 @@ public class IntakeRollerConstants {
         return mechanism;
     }
 
+    /**
+     * Factory method to create an IntakeRoller subsystem instance.
+     * 
+     * @return A fully configured IntakeRoller subsystem
+     */
     public static IntakeRoller get()
     {
         return new IntakeRoller(getMechanism());

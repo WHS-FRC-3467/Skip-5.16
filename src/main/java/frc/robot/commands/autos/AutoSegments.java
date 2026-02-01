@@ -44,7 +44,6 @@ public class AutoSegments {
      * doesn't complete in 2.75s, attempt a shot anyway.
      * 
      * @param drive The Drive subsystem
-     * @param intakeLinear The IntakeLinear subsystem
      * @param indexer The Indexer subsystem
      * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
@@ -59,7 +58,7 @@ public class AutoSegments {
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
                 shooter.spinUpShooter()).withTimeout(2.75),
-            AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 1));
+            AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 2));
     }
 
     /**

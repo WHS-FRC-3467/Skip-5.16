@@ -9,6 +9,12 @@ import org.littletonrobotics.junction.Logger;
  * A helper class for logging various types of data related to FRC subsystems by Team 604 Quixilver
  */
 public class LoggerHelper {
+    /**
+     * Records the current command running on a subsystem to the logger.
+     *
+     * @param name The logging key prefix for this subsystem
+     * @param subsystem The subsystem to log the current command for
+     */
     public static void recordCurrentCommand(String name, SubsystemBase subsystem)
     {
         final var currentCommand = subsystem.getCurrentCommand();

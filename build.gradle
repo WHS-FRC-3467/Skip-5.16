@@ -196,3 +196,11 @@ task(eventDeploy) {
     }
 }
 createVersionFile.dependsOn(eventDeploy)
+
+// Configure javadoc task to use delombok source and fail on errors
+javadoc {
+    dependsOn delombok
+    source = delombok
+    options.addStringOption('Xdoclint:all,-missing', '-quiet')
+    failOnError = true
+}

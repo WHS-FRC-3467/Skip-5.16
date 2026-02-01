@@ -83,12 +83,22 @@ public class FlywheelVisualizer {
                 new Color8Bit(Color.kAliceBlue)));
     }
 
+    /**
+     * Sets the rotation angle of the flywheel visualization.
+     *
+     * @param angle The angle to display
+     */
     public void setAngle(Angle angle)
     {
         roller.setAngle(angle.in(Degrees));
         SmartDashboard.putData(name + " Visualizer", mechanism); // Creates mech2d in SmartDashboard
     }
 
+    /**
+     * Sets the background color of the visualization.
+     *
+     * @param color The background color to use
+     */
     public void setColor(Color color)
     {
         mechanism.setBackgroundColor(new Color8Bit(color));

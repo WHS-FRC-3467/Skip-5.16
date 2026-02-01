@@ -16,7 +16,11 @@ import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/** Add your docs here. */
+/**
+ * Subsystem that controls the indexer mechanism for moving game pieces within the robot.
+ * The indexer can pull game pieces in, expel them, or stop.
+ * Uses a flywheel mechanism for velocity control.
+ */
 public class Indexer extends SubsystemBase {
     private final FlywheelMechanism<?> io;
 
@@ -36,6 +40,11 @@ public class Indexer extends SubsystemBase {
         private final AngularVelocity stateVelocity;
     }
 
+    /**
+     * Constructs an Indexer subsystem.
+     * 
+     * @param io The flywheel mechanism for controlling the indexer motor
+     */
     public Indexer(FlywheelMechanism<?> io)
     {
         this.io = io;
@@ -85,6 +94,11 @@ public class Indexer extends SubsystemBase {
             .withName(state.name() + " Until Interrupted");
     }
 
+    /**
+     * Checks if the indexer velocity is near the current state's setpoint.
+     * 
+     * @return true if the indexer is within tolerance of the setpoint, false otherwise
+     */
     public boolean nearSetpoint()
     {
         return MathUtil.isNear(
@@ -93,11 +107,19 @@ public class Indexer extends SubsystemBase {
             IndexerConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
+    /**
+     * Closes the indexer mechanism and releases resources.
+     */
     public void close()
     {
         io.close();
     }
 
+    /**
+     * Gets the current velocity of the indexer motor.
+     * 
+     * @return The velocity in rotations per second
+     */
     public double getSpeed()
     {
         return io.getVelocity().in(RotationsPerSecond);

@@ -15,7 +15,18 @@
 
 package frc.lib.util;
 
+/**
+ * Functional interface for runnables that can throw checked exceptions.
+ * Useful for lambda expressions that need to handle checked exceptions.
+ * 
+ * @param <T> the type of exception that may be thrown
+ */
 @FunctionalInterface
 public interface ThrowingRunnable<T extends Exception> {
+    /**
+     * Executes this runnable, potentially throwing an exception.
+     * 
+     * @throws T the exception that may be thrown during execution
+     */
     public void run() throws T;
 }

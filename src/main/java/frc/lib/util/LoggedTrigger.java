@@ -39,6 +39,7 @@ import org.littletonrobotics.junction.Logger;
  * }</pre>
  */
 public class LoggedTrigger extends Trigger {
+    private final String name;
     /**
      * Creates a new LoggedTrigger that logs state changes.
      *
@@ -48,8 +49,10 @@ public class LoggedTrigger extends Trigger {
     public LoggedTrigger(String name, BooleanSupplier condition)
     {
         super(new LoggingBooleanSupplier(name, condition));
+        this.name = name;
     }
 
+    
     /**
      * Internal BooleanSupplier wrapper that logs state changes.
      */
@@ -79,5 +82,20 @@ public class LoggedTrigger extends Trigger {
 
             return currentState;
         }
+    }
+
+    /**
+     * Composes two logged triggers with logical AND.
+     *
+     * <p>The resulting trigger uses a combined log name derived from both component
+     * triggers, so its AdvantageKit signal clearly represents the composite condition
+     * rather than reusing the base trigger's log key.
+     *
+     * @param trigger the condition to compose with
+     * @return A trigger which is active when both component triggers are active.
+     */
+    public LoggedTrigger and(LoggedTrigger trigger) {
+        String combinedName = this.name + "_AND_" + trigger.name;
+        return new LoggedTrigger(combinedName, () -> (this.getAsBoolean() && trigger.getAsBoolean()));
     }
 }

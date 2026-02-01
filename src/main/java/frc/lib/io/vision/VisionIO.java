@@ -23,15 +23,37 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
 
+/**
+ * Hardware interface for vision cameras that detect AprilTags for robot localization.
+ * 
+ * <p>
+ * This interface defines the contract for vision camera hardware, allowing the robot to read
+ * camera results for pose estimation. Implementations handle vendor-specific camera APIs
+ * (PhotonVision, Limelight, etc.) while the rest of the robot code remains hardware-agnostic.
+ */
 public interface VisionIO {
+    /**
+     * Container for vision camera sensor readings and camera intrinsics.
+     * Logged automatically by AdvantageKit for replay and analysis.
+     */
     public static class VisionIOInputs implements LoggableInputs {
+        /** Whether the camera is connected and responding */
         public boolean connected = false;
+        /** Array of pipeline results from the camera since last update */
         public PhotonPipelineResult[] results = new PhotonPipelineResult[0];
 
         private boolean hasLoggedIntrinsics = false;
+        /** Camera intrinsic matrix (3x3) */
         public double[] cameraMatrix = null;
+        /** Camera distortion coefficients (8x1) */
         public double[] distCoeffs = null;
 
+        /**
+         * Constructs vision inputs with camera intrinsic parameters.
+         *
+         * @param cameraMatrix 3x3 camera intrinsic matrix
+         * @param distCoeffs 8x1 distortion coefficients
+         */
         public VisionIOInputs(Matrix<N3, N3> cameraMatrix, Matrix<N8, N1> distCoeffs)
         {
             this.cameraMatrix = cameraMatrix.getData();
@@ -83,6 +105,12 @@ public interface VisionIO {
         }
     }
 
+    /**
+     * Updates the vision inputs with the latest readings from the camera.
+     * Called periodically by the vision device layer.
+     *
+     * @param inputs The input object to populate with sensor data
+     */
     public default void updateInputs(VisionIOInputs inputs)
     {}
 }

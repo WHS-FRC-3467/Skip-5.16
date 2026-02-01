@@ -36,6 +36,16 @@ public abstract class AlignToPoseBase extends Command {
 
     private final AlignMode mode;
 
+    /**
+     * Constructs an AlignToPoseBase command.
+     *
+     * @param drive The drive subsystem to use
+     * @param targetPose Supplier for the target pose to align to
+     * @param mode Alignment mode (APPROACH or STRAFE)
+     * @param joystickInput Supplier for driver joystick input
+     * @param linearController PID controller for linear motion
+     * @param angularController PID controller for angular motion
+     */
     public AlignToPoseBase(
         Drive drive,
         Supplier<Pose2d> targetPose,
@@ -145,11 +155,21 @@ public abstract class AlignToPoseBase extends Command {
             .getTranslation();
     }
 
+    /**
+     * Gets the current distance error to the target pose.
+     *
+     * @return The distance error in meters
+     */
     public Distance getDistanceError()
     {
         return Meters.of(linearController.getPositionError());
     }
 
+    /**
+     * Gets the current angular error to the target pose.
+     *
+     * @return The angular error in radians
+     */
     public Angle getAngularError()
     {
         return Radians.of(angularController.getPositionError());

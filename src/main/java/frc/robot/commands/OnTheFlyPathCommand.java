@@ -88,6 +88,10 @@ public class OnTheFlyPathCommand extends Command {
         SmartDashboard.putData("Path Generation Preview", pathGenerationTrajectory);
     }
 
+    /**
+     * Initializes the command by generating the path and preparing it for execution.
+     * Applies path mirroring if enabled and creates waypoints from the current and target poses.
+     */
     @Override
     public void initialize()
     {
@@ -153,6 +157,10 @@ public class OnTheFlyPathCommand extends Command {
         command.initialize();
     }
 
+    /**
+     * Executes the path following command and updates visualization on the Field2d widget.
+     * Logs the current path poses for display in AdvantageScope.
+     */
     @Override
     public void execute()
     {
@@ -168,6 +176,12 @@ public class OnTheFlyPathCommand extends Command {
             path.getPathPoses().toArray(Pose2d[]::new));
     }
 
+    /**
+     * Checks if the robot has reached the target pose within the specified tolerances.
+     * 
+     * @return true if the robot is within both translational and rotational tolerances of the target
+     *         pose, false otherwise.
+     */
     @Override
     public boolean isFinished()
     {
@@ -181,6 +195,11 @@ public class OnTheFlyPathCommand extends Command {
                     .getRotation().getDegrees()) < rotTolerance.in(Degrees));
     }
 
+    /**
+     * Ends the path following command and clears the path visualization from the Field2d widget.
+     * 
+     * @param interrupted true if the command was interrupted, false if it completed normally.
+     */
     @Override
     public void end(boolean interrupted)
     {

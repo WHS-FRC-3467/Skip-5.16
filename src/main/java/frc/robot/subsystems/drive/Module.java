@@ -37,6 +37,13 @@ public class Module {
     private final Alert turnEncoderDisconnectedAlert;
     private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
 
+    /**
+     * Constructs a new Module instance.
+     *
+     * @param io IO interface for the module
+     * @param index Module index (0-3: FL, FR, BL, BR)
+     * @param constants Module-specific constants from DriveConstants
+     */
     public Module(
         ModuleIO io,
         int index,
@@ -55,6 +62,9 @@ public class Module {
             AlertType.kError);
     }
 
+    /**
+     * Updates inputs, processes odometry data, and updates connection alerts.
+     */
     public void periodic()
     {
         io.updateInputs(inputs);
@@ -77,6 +87,8 @@ public class Module {
 
     /**
      * Runs the module with the specified setpoint state. Mutates the state to optimize it.
+     *
+     * @param state Desired module state (speed and angle), will be optimized
      */
     public void runSetpoint(SwerveModuleState state)
     {
@@ -91,6 +103,8 @@ public class Module {
 
     /**
      * Runs the module with the specified output while controlling to zero degrees.
+     *
+     * @param output Drive motor output voltage
      */
     public void runCharacterization(double output)
     {
@@ -105,55 +119,91 @@ public class Module {
         io.setTurnOpenLoop(0.0);
     }
 
-    /** Returns the current turn angle of the module. */
+    /**
+     * Returns the current turn angle of the module.
+     *
+     * @return Current module angle
+     */
     public Rotation2d getAngle()
     {
         return inputs.turnPosition;
     }
 
-    /** Returns the current drive position of the module in meters. */
+    /**
+     * Returns the current drive position of the module in meters.
+     *
+     * @return Drive position in meters
+     */
     public double getPositionMeters()
     {
         return inputs.drivePositionRad * constants.WheelRadius;
     }
 
-    /** Returns the current drive velocity of the module in meters per second. */
+    /**
+     * Returns the current drive velocity of the module in meters per second.
+     *
+     * @return Drive velocity in meters per second
+     */
     public double getVelocityMetersPerSec()
     {
         return inputs.driveVelocityRadPerSec * constants.WheelRadius;
     }
 
-    /** Returns the module position (turn angle and drive position). */
+    /**
+     * Returns the module position (turn angle and drive position).
+     *
+     * @return Module position containing angle and distance
+     */
     public SwerveModulePosition getPosition()
     {
         return new SwerveModulePosition(getPositionMeters(), getAngle());
     }
 
-    /** Returns the module state (turn angle and drive velocity). */
+    /**
+     * Returns the module state (turn angle and drive velocity).
+     *
+     * @return Module state containing angle and velocity
+     */
     public SwerveModuleState getState()
     {
         return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
     }
 
-    /** Returns the module positions received this cycle. */
+    /**
+     * Returns the module positions received this cycle.
+     *
+     * @return Array of module positions from this cycle
+     */
     public SwerveModulePosition[] getOdometryPositions()
     {
         return odometryPositions;
     }
 
-    /** Returns the timestamps of the samples received this cycle. */
+    /**
+     * Returns the timestamps of the samples received this cycle.
+     *
+     * @return Array of timestamps in seconds
+     */
     public double[] getOdometryTimestamps()
     {
         return inputs.odometryTimestamps;
     }
 
-    /** Returns the module position in radians. */
+    /**
+     * Returns the module position in radians.
+     *
+     * @return Drive position in radians
+     */
     public double getWheelRadiusCharacterizationPosition()
     {
         return inputs.drivePositionRad;
     }
 
-    /** Returns the module velocity in rotations/sec (Phoenix native units). */
+    /**
+     * Returns the module velocity in rotations/sec (Phoenix native units).
+     *
+     * @return Drive velocity in rotations per second
+     */
     public double getFFCharacterizationVelocity()
     {
         return Units.radiansToRotations(inputs.driveVelocityRadPerSec);
