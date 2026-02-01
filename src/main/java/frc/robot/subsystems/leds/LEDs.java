@@ -21,6 +21,10 @@ import frc.lib.devices.Lights;
 import frc.lib.io.lights.LightsIO;
 import frc.lib.util.LoggerHelper;
 
+/**
+ * Subsystem that controls the robot's LED lights for visual feedback and animations.
+ * Provides commands for different animation patterns during disabled, autonomous, and teleop modes.
+ */
 public class LEDs extends SubsystemBase {
     private final Lights lights;
 

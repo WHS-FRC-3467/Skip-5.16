@@ -24,6 +24,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTunableNumber;
 
+/**
+ * Subsystem that controls the linear intake extension mechanism.
+ * The intake can extend outward to collect game pieces or retract inward for storage.
+ * Uses current-based control to detect when the mechanism has reached its limits.
+ */
 public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber INTAKE_CURRENT =
