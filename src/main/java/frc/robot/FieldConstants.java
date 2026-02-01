@@ -21,7 +21,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Pounds;
-import frc.lib.util.FieldUtil;
 
 /**
  * Contains information for location of field element and other useful reference points.
