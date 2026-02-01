@@ -85,12 +85,17 @@ public class LoggedTrigger extends Trigger {
     }
 
     /**
-     * Composes two logged triggers with logical AND. Keeps the name of the first trigger.
+     * Composes two logged triggers with logical AND.
+     *
+     * <p>The resulting trigger uses a combined log name derived from both component
+     * triggers, so its AdvantageKit signal clearly represents the composite condition
+     * rather than reusing the base trigger's log key.
      *
      * @param trigger the condition to compose with
      * @return A trigger which is active when both component triggers are active.
      */
     public LoggedTrigger and(LoggedTrigger trigger) {
-        return new LoggedTrigger(this.name, () -> (this.getAsBoolean() && trigger.getAsBoolean()));
+        String combinedName = this.name + "_AND_" + trigger.name;
+        return new LoggedTrigger(combinedName, () -> (this.getAsBoolean() && trigger.getAsBoolean()));
     }
 }
