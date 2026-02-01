@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
-import frc.lib.util.FieldUtil;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.autos.*;
@@ -51,7 +50,6 @@ import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 /**
@@ -179,7 +177,7 @@ public class RobotContainer {
                 () -> robotState.getTunnelAssistHeading()));
     }
 
-        /**
+    /**
      * Initializes SmartDashboard with test commands and controls for subsystems. Adds commands to
      * the dashboard for manual testing and debugging.
      */

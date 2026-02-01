@@ -127,9 +127,10 @@ public class RobotState {
     }
 
     /** 
-     * Returns the nearest cardinal angle (0, 90, 180, or 270 degrees) to the current robot angle.
+     * Returns the nearest cardinal angle (multiple of 90 degrees) to the current robot angle.
      */
-    public Rotation2d getNearestCardinalAngle() {
+    private Rotation2d getNearestCardinalAngle() 
+    {
         double currentAngle = getRotation().getDegrees();
         double nearestCardinalAngle = Math.round(currentAngle / 90.0) * 90.0;
         if (nearestCardinalAngle >= 180.0) {
@@ -144,30 +145,32 @@ public class RobotState {
      * Gets the heading the robot should maintain while driving in a trench.
      * <p> The robot will either align itself square with the trench if it is inside or partially inside the trench,
      * or point towards the opposite side of the trench it is nearest to if it is fully outside the trench. </p>
-     * <p> Two main cases: driving under our alliance trenches, and driving under the opposing alliance trenches. <p>
+     * <p> Two main cases: driving under our alliance trenches, and driving under the opposing alliance trenches. </p>
      * 
-     * <h4> Case 1: Alliance trenches </h4>
+     * <h4> Case 1: Our Alliance trenches </h4>
      * <p> If the robot is in the trench, return the nearest cardinal direction so the robot is square with the trench. </p>
      * <p> If the robot is outside of the trench but on the ALLIANCE side, return the angle towards the CENTER line. </p>
      * <p> If the robot is outside of the trench but on the CENTER side, return the angle towards the ALLIANCE side. </p>
      * 
-     * <h4>Case 2: Opponent trenches </h4>
+     * <h4> Case 2: Opposing Alliance trenches </h4>
      * <p> If the robot is in the trench, return the nearest cardinal direction so the robot is square with the trench. </p>
      * <p> If the robot is outside of the trench but on the OPPONENT ALLIANCE side, return the angle towards the CENTER line. </p>
      * <p> If the robot is outside of the trench but on the NEUTRAL ZONE, return the angle towards the OPPONENT ALLIANCE side. </p>
      * 
      * @return the desired heading
      */
-    public Rotation2d getTunnelAssistHeading() {
-        // FieldUtil.apply() flips the pose or x-coordinate if on red alliance
+    public Rotation2d getTunnelAssistHeading() 
+    {
+        // FieldUtil.apply() transforms the pose into the blue-side field frame (flips X and Y and rotates 180° when on red alliance)
         Pose2d pose = FieldUtil.apply(getEstimatedPose());
+        double halfRobotLength = Constants.FULL_ROBOT_LENGTH.in(Meters) / 2.0;
         // Check which side of the field the robot is on
         if (pose.getX() < FieldConstants.FIELD_CENTER.getX()) {
             // On our alliance's half of the field
-            if (pose.getX() < FieldConstants.LeftBump.NEAR_LEFT_CORNER.getX() - Constants.FULL_ROBOT_LENGTH.in(Meters) / 2) {
+            if (pose.getX() < FieldConstants.LeftBump.NEAR_LEFT_CORNER.getX() - halfRobotLength) {
                 // The robot is outside of the trench, on alliance side --> point towards center
                 return FieldUtil.apply(Rotation2d.kZero);
-            } else if (pose.getX() > FieldConstants.LeftBump.FAR_LEFT_CORNER.getX() + Constants.FULL_ROBOT_LENGTH.in(Meters) /2) {
+            } else if (pose.getX() > FieldConstants.LeftBump.FAR_LEFT_CORNER.getX() + halfRobotLength) {
                 // Robot is outside of the trench, in the NEUTRAL area --> point towards our alliance
                 return FieldUtil.apply(Rotation2d.k180deg);
             } else {
@@ -176,10 +179,10 @@ public class RobotState {
             }
         } else {
             // On the opposing alliance's half of the field - mirror the logic
-            if (pose.getX() > FieldConstants.FIELD_LENGTH - (FieldConstants.LeftBump.NEAR_LEFT_CORNER.getX() - Constants.FULL_ROBOT_LENGTH.in(Meters) / 2)) {
+            if (pose.getX() > FieldConstants.FIELD_LENGTH - (FieldConstants.LeftBump.NEAR_LEFT_CORNER.getX() - halfRobotLength)) {
                 // The robot is outside of the trench, on opposing alliance side --> point towards center/our alliance
                 return FieldUtil.apply(Rotation2d.k180deg);
-            } else if (pose.getX() < FieldConstants.FIELD_LENGTH - (FieldConstants.LeftBump.FAR_LEFT_CORNER.getX() + Constants.FULL_ROBOT_LENGTH.in(Meters) / 2)) {
+            } else if (pose.getX() < FieldConstants.FIELD_LENGTH - (FieldConstants.LeftBump.FAR_LEFT_CORNER.getX() + halfRobotLength)) {
                 // Robot is outside of the trench, in the NEUTRAL area --> point towards opposing alliance
                 return FieldUtil.apply(Rotation2d.kZero);
             } else {
