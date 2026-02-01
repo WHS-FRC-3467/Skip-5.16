@@ -19,6 +19,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 
 import java.util.ArrayList;
@@ -159,7 +160,10 @@ public class PhoenixOdometryThread extends Thread {
                         BaseStatusSignal.refreshAll(phoenixSignals);
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                DriverStation.reportError(
+                    "Phoenix odometry thread interrupted: " + e.getMessage(),
+                    e.getStackTrace());
+                Thread.currentThread().interrupt(); // Restore interrupt status
             } finally {
                 signalsLock.unlock();
             }

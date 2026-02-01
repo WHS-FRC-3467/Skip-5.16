@@ -15,6 +15,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -260,6 +261,8 @@ public class RobotContainer {
                     .in(Degrees));
 
         } catch (Exception e) {
+            DriverStation.reportError(
+                "Failed to check starting pose: " + e.getMessage(), e.getStackTrace());
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start", -1);
             SmartDashboard.putBoolean(
                 "Auto Pose Check/Robot Position within "
