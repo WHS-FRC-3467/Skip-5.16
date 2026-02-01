@@ -29,7 +29,7 @@ import frc.lib.util.LoggedTuneableProfiledPID;
 
 /**
  * Strategy layer that determines robot heading required to align robot with centroid of detected
- * contour. Communal for both teleop & auto. Logs outputs for sim.
+ * contour. Communal for both teleop &amp; auto. Logs outputs for sim.
  */
 public abstract class AlignToObjectBase {
     @Getter

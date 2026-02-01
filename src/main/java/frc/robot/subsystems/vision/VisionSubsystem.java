@@ -37,8 +37,8 @@ import frc.robot.RobotState;
  * 
  * <p>
  * It uses one or more {@link AprilTagCamera}s to detect field elements and estimate the robot's
- * pose on the field. Observations are processed through the {@link MultiTagOnCoproc} vision
- * processor, with a fallback to {@link LowestAmbiguity} if necessary. Valid observations are added
+ * pose on the field. Observations are processed through the MultiTagOnCoproc vision
+ * processor, with a fallback to LowestAmbiguity if necessary. Valid observations are added
  * to {@link RobotState} for use in localization and navigation.
  * 
  * <p>

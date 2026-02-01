@@ -27,7 +27,7 @@ Look for a **blue button** labeled "Run workflow" on the right side of the page,
 
 #### 3. Select Your Branch
 When you click "Run workflow", a dropdown appears:
-- **Branch:** Select `copilot/add-javadoc-generation-workflow`
+- **Branch:** Select `copilot/fix-javadocs-generation-errors`
 - Click the green **"Run workflow"** button in the dropdown
 
 #### 4. Watch It Run
@@ -61,7 +61,7 @@ If you have the GitHub CLI installed:
 
 ```bash
 # Trigger the workflow
-gh workflow run javadoc.yml --ref copilot/add-javadoc-generation-workflow
+gh workflow run javadoc.yml --ref copilot/fix-javadocs-generation-errors
 
 # Watch it run
 gh run watch
@@ -89,8 +89,19 @@ gh run list --workflow=javadoc.yml --limit 5
 
 1. ✓ Checks out the code from your selected branch
 2. ✓ Sets up Java 17
-3. ✓ Runs `./gradlew javadoc` to generate documentation
+3. ✓ Runs `./gradlew javadoc` to generate documentation (now includes annotation processor via delombok)
 4. ✓ Uploads the Javadoc as a build artifact
 5. ✓ Deploys the Javadoc to GitHub Pages
 
 All done automatically! 🎉
+
+## Recent Fixes (This PR)
+
+This PR fixes multiple javadoc generation errors that were causing the workflow to fail:
+
+- **Fixed HTML entities**: Escaped ampersands (`&` → `&amp;`) throughout javadoc comments
+- **Fixed malformed HTML**: Escaped less-than operators (`<=` → `&lt;=`)  
+- **Fixed invalid references**: Removed broken `{@link}` tags to non-existent classes and methods
+- **Fixed @param mismatches**: Corrected javadoc parameter names to match method signatures
+- **Enhanced build config**: Configured javadoc task to use delombok source (includes AdvantageKit's AutoLogged classes)
+- **Optimized workflow**: Removed redundant compilation step
