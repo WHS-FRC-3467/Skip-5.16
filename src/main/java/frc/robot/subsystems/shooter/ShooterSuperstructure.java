@@ -42,15 +42,40 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     /** Distance from goal in meters -> hood angle in degrees */
     private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
     static {
-        hoodAngleMap.put(2.604, 10.00); // Lowest
-        hoodAngleMap.put(3.42, 15.00); // Highest
+        hoodAngleMap.put(1.05, 2.0); // Lowest
+        hoodAngleMap.put(1.25, 4.0);
+        hoodAngleMap.put(1.45, 6.0);
+        hoodAngleMap.put(1.65, 9.0);
+        hoodAngleMap.put(1.85, 10.0);
+        hoodAngleMap.put(2.05, 15.0);
+        hoodAngleMap.put(2.25, 18.0);
+        hoodAngleMap.put(2.45, 19.0);
+        hoodAngleMap.put(2.65, 20.0);
+        hoodAngleMap.put(2.85, 21.0);
+        hoodAngleMap.put(3.05, 22.0);
+        hoodAngleMap.put(3.25, 24.0);
+        hoodAngleMap.put(3.45, 25.0);
+        hoodAngleMap.put(3.65, 27.0); // Highest
     }
 
     /** Distance from goal in meters -> flywheel speed in rotations per second */
     private static final InterpolatingDoubleTreeMap flywheelMap = new InterpolatingDoubleTreeMap();
     static {
-        flywheelMap.put(2.6, 20.8); // Lowest
-        flywheelMap.put(3.42, 22.5); // Highest
+        flywheelMap.put(1.05, 18.0);
+        flywheelMap.put(1.25, 18.0);
+        flywheelMap.put(1.45, 18.0);
+        flywheelMap.put(1.65, 19.0);
+        flywheelMap.put(1.85, 19.0);
+        flywheelMap.put(2.05, 19.5);
+        flywheelMap.put(2.25, 20.0);
+        flywheelMap.put(2.45, 20.5);
+        flywheelMap.put(2.65, 20.5);
+        flywheelMap.put(2.85, 21.0);
+        flywheelMap.put(3.05, 21.5);
+        flywheelMap.put(3.25, 22.0);
+        flywheelMap.put(3.45, 22.5);
+        flywheelMap.put(3.65, 23.0);
+        flywheelMap.put(3.85, 23.5);
     }
 
     private final RobotState robotState = RobotState.getInstance();
