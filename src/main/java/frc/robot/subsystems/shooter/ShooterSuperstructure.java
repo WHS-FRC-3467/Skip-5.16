@@ -20,6 +20,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
@@ -61,7 +62,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public final LoggedTrigger readyToShoot =
         new LoggedTrigger(this.getName() + "/readyToShoot", () -> {
             double dist = robotState
-                .getDistanceToTarget(robotState.getEstimatedPose()).in(Meters);
+                .getDistanceToTarget().in(Meters);
             return isFlywheelAt(RotationsPerSecond.of(flywheelMap.get(dist)))
                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
         });
@@ -168,10 +169,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         Supplier<AngularVelocity> desiredFlywheelVelocitySupplier =
             () -> RotationsPerSecond.of(flywheelMap
                 .get(robotState
-                    .getDistanceToTarget(robotState.getEstimatedPose()).in(Meters)));
+                    .getDistanceToTarget().in(Meters)));
         Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
             .get(robotState
-                .getDistanceToTarget(robotState.getEstimatedPose()).in(Meters)));
+                .getDistanceToTarget().in(Meters)));
 
         return Commands.run(() -> {
             spinFlywheel(desiredFlywheelVelocitySupplier.get());
@@ -193,11 +194,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     {
         Supplier<AngularVelocity> desiredFlywheelVelocitySupplier =
             () -> RotationsPerSecond.of(flywheelMap.get(robotState
-                .getDistanceToTarget(robotState.getEstimatedPose()).in(Meters)));
+                .getDistanceToTarget().in(Meters)));
 
         Supplier<Angle> desiredHoodPositionSupplier =
             () -> Degrees.of(hoodAngleMap.get(robotState
-                .getDistanceToTarget(robotState.getEstimatedPose()).in(Meters)));
+                .getDistanceToTarget().in(Meters)));
 
         return Commands.sequence(
             Commands.parallel(
@@ -255,6 +256,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 spinFlywheel(RotationsPerSecond.of(tuningFlywheelSpeedRPS.get()));
                 setHoodPosition(Degrees.of(tuningHoodAngleDegrees.get()));
             }
+
+            Logger.recordOutput(getName() + "/Tuning/DistanceToTargetMeters",
+                robotState.getDistanceToTarget().in(Meters));
         }
 
         leftFlywheelIO.periodic();
