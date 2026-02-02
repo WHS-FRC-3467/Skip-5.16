@@ -4,10 +4,13 @@
 
 package frc.robot.util;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -45,12 +48,23 @@ public class RobotSim {
         shootSimFuel.whileTrue(
             Commands.repeatingSequence(
                 Commands.waitSeconds(.1),
-                Commands.runOnce(() -> fuelSim.setHeldFuel(fuelSim.getHeldFuel() - 1)),
-                Commands.runOnce(() -> fuelSim.spawnFuel(
-                    new Translation3d(robotState.getEstimatedPose().getTranslation())
-                        .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
-                    fuelSim.launchVel(shooter.getAverageLinearVelocity(),
-                        shooter.getHoodAngle())))));
+                Commands.runOnce(() -> fuelSim.setHeldFuel(fuelSim.getHeldFuel() - 2)),
+                Commands.runOnce(() -> {
+                    fuelSim.spawnFuel(
+                        new Pose3d(robotState.getEstimatedPose())
+                            .plus(new Transform3d(Inches.of(-10), Inches.of(-3.6),
+                                Inches.of(21), Rotation3d.kZero))
+                            .getTranslation(),
+                        fuelSim.launchVel(shooter.getAverageLinearVelocity(),
+                            Degrees.of(75.0).minus(shooter.getHoodAngle())));
+                    fuelSim.spawnFuel(
+                        new Pose3d(robotState.getEstimatedPose())
+                            .plus(new Transform3d(Inches.of(-10), Inches.of(3.6),
+                                Inches.of(21), Rotation3d.kZero))
+                            .getTranslation(),
+                        fuelSim.launchVel(shooter.getAverageLinearVelocity(),
+                            Degrees.of(75.0).minus(shooter.getHoodAngle())));
+                })));
 
         Trigger intakeSimFuel =
             new Trigger(() -> (intakeRoller.getVelocity().in(RotationsPerSecond) > 1.0)
