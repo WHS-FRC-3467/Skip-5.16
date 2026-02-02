@@ -46,7 +46,6 @@ import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -190,37 +189,24 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
-        SmartDashboard.putData("Intake Roller/Eject",
+        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Eject",
             intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
-        SmartDashboard.putData("Intake Roller/Intake",
+        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Intake",
             intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
-        SmartDashboard.putData("Intake Roller/Stop",
+        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Stop",
             intakeRoller.setStateCommand(IntakeRoller.State.STOP));
-        SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
-        SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
-        SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
 
-        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
-            Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intakeLinear.extend());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intakeLinear.retract());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intakeLinear.cycle());
 
-        SmartDashboard.putData("Set flywheel to 30",
-            shooter.setFlyWheelSpeed(RotationsPerSecond.of(30)));
+        SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
 
-        SmartDashboard.putData("Set hood to 45 deg", shooter.setHoodAngle(Degrees.of(45)));
-
-        SmartDashboard.putData("Intake Roller/Eject",
-            intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
-        SmartDashboard.putData("Intake Roller/Intake",
-            intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
-        SmartDashboard.putData("Intake Roller/Stop",
-            intakeRoller.setStateCommand(IntakeRoller.State.STOP));
-        SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
-        SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
-        SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
-        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
-            Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
-        SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
-        SmartDashboard.putData("Run Indexer", indexer.setStateCommand(Indexer.State.PULL));
+        SmartDashboard.putData("Face Target",
+            DriveCommands.joystickDriveFacingTarget(
+                drive,
+                () -> -controller.getLeftX(),
+                () -> -controller.getLeftY()));
 
         if (Constants.currentMode == Mode.SIM) {
             var fuelSim = RobotSim.getInstance().getFuelSim();
@@ -239,6 +225,10 @@ public class RobotContainer {
                         .getTranslation(),
                     fuelSim.launchVel(shooter.getAverageLinearVelocity(),
                         Degrees.of(75.0).minus(shooter.getHoodAngle())));
+
+                SmartDashboard.putData("Toggle Tip Drivebase",
+                    Commands.run(
+                        () -> robotState.setDrivetrainAngled(!robotState.isDrivetrainAngled())));
             }));
         }
     }

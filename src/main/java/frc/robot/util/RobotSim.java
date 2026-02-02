@@ -86,6 +86,7 @@ public class RobotSim {
 
         fuelSim.start();
         SmartDashboard.putData(Commands.runOnce(() -> {
+            fuelSim.setHeldFuel(8);
             fuelSim.clearFuel();
             fuelSim.spawnStartingFuel();
         }).withName("Reset Fuel").ignoringDisable(true));

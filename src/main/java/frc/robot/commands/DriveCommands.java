@@ -58,8 +58,8 @@ import com.pathplanner.lib.path.PathConstraints;
  * </ul>
  * 
  * <p>
- * All commands are designed to work with the {@link Drive} subsystem and integrate
- * with PathPlanner for autonomous path following.
+ * All commands are designed to work with the {@link Drive} subsystem and integrate with PathPlanner
+ * for autonomous path following.
  */
 public class DriveCommands {
     @Getter
@@ -208,9 +208,28 @@ public class DriveCommands {
     }
 
     /**
+     * Field relative drive command using joystick for linear control and PID for angular control.
+     * Always faces the current target in RobotState
+     * 
+     * @param drive the drive subsystem
+     * @param xSupplier supplier for x-axis joystick input
+     * @param ySupplier supplier for y-axis joystick input
+     * @return the joystick drive facing target command
+     */
+    public static Command joystickDriveFacingTarget(
+        Drive drive,
+        DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier)
+    {
+        RobotState robotState = RobotState.getInstance();
+        return joystickDriveAtAngle(drive, xSupplier, ySupplier, robotState::getAngleToTarget);
+    }
+
+    /**
      * Measures the velocity feedforward constants for the drive motors.
      * 
-     * <p>This command should only be used in voltage control mode.
+     * <p>
+     * This command should only be used in voltage control mode.
      * 
      * @param drive the drive subsystem
      * @return the feedforward characterization command

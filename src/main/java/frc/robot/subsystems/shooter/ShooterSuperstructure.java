@@ -240,7 +240,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Creates a command to set the flywheel velocity.
+     * Creates a command to set the flywheel velocity (alternate spelling).
      * 
      * @param velocity the target angular velocity for both flywheels
      * @return command that sets the flywheel speed
@@ -248,17 +248,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public Command setFlywheelSpeed(AngularVelocity velocity)
     {
         return Commands.runOnce(() -> spinFlywheel(velocity));
-    }
-
-    /**
-     * Creates a command to set the flywheel velocity (alternate spelling).
-     * 
-     * @param velocity the target angular velocity for both flywheels
-     * @return command that sets the flywheel speed
-     */
-    public Command setFlyWheelSpeed(AngularVelocity velocity)
-    {
-        return setFlywheelSpeed(velocity);
     }
 
     @Override
