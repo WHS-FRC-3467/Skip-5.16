@@ -26,6 +26,7 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
+import frc.robot.subsystems.intakeRoller.IntakeRoller.State;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 
@@ -41,8 +42,8 @@ public class AutoSegments {
      * Drive to shooting location while spinning up shooter but not feeding game pieces. Once at
      * target position, with the shooter still spinning, verify subsystem process variables. Upon
      * confirmation of shooter-ready PVs, bring up the tower and indexer to begin shooting. Shoot
-     * the PRELOADED FUEL for 2s. Bring down shooter, tower, and indexer to finish. If path doesn't
-     * complete in 2.75s, attempt a shot anyway.
+     * the PRELOADED FUEL for 1.5s. Bring down shooter, tower, and indexer to finish. If path
+     * doesn't complete in 2.75s, attempt a shot anyway.
      * 
      * @param drive The Drive subsystem
      * @param indexer The Indexer subsystem
@@ -59,14 +60,14 @@ public class AutoSegments {
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
                 shooter.spinUpShooter()).withTimeout(2.75), // ~ +40% of max preload path time
-            AutoCommands.shootFuel(intakeLinear, indexer, tower, shooter, () -> true, 2));
+            AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 1.5));
     }
 
     /**
      * Drive to shooting location while spinning up shooter but not feeding game pieces. Once at
      * target position, with the shooter still spinning, verify subsystem process variables. Upon
      * confirmation of shooter-ready PVs, bring up the tower and indexer to begin shooting. Shoot
-     * all FUEL for 3s. Bring down shooter, tower, and indexer to finish. If path doesn't complete
+     * all FUEL for 5s. Bring down shooter, tower, and indexer to finish. If path doesn't complete
      * in 3.5s, attempt a shot anyway.
      * 
      * @param drive The Drive subsystem
@@ -84,12 +85,18 @@ public class AutoSegments {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
-                shooter.spinUpShooter()).withTimeout(3.5),
-            AutoCommands.shootFuel(intakeLinear, indexer, tower, shooter, () -> true, 3));
+                shooter.spinUpShooter()).withTimeout(3.5), // ~ +40% of max preload path time
+            new ParallelDeadlineGroup(
+                AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 5.0),
+                AutoCommands.agitateHopper(intakeLinear, tower, indexer,
+                    HopperAgitation.INTAKE_CYCLE)));
     }
 
-    // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
-    // intaking path is complete, stop the intake.
+    /**
+     * Drive to the end of the drive path, extend the intake, and drive into the FUEL with rollers
+     * running. Once the intaking path is complete, stop the intake. This AutoSegment only linearly
+     * actuates the intake while the robot is at stationary positions. Non-blocking command.
+     */
     public static Command driveAndIntake(Drive drive, IntakeLinear intakeLinear,
         IntakeRoller intakeRoller, PathPlannerPath drivePath, PathPlannerPath intakingPath,
         Time afterPathWait)
@@ -98,14 +105,29 @@ public class AutoSegments {
         // intaking path is complete, stop the intake.
         return Commands.sequence(
             AutoBuilder.followPath(drivePath),
+            AutoCommands.extendIntake(intakeLinear),
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(intakingPath),
-                intakeLinear.extend(),
+                intakeLinear.extend(), // Keep linear intake scheduled
                 intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.INTAKE)),
-            // TODO: Tune after-path wait time to ensure all FUEL is intaken
             Commands.waitSeconds(afterPathWait.in(Seconds)),
-            // End intaking
+            // Spin down intake
             intakeLinear.retract(),
             intakeRoller.stop());
+    }
+
+    /**
+     * A non-blocking command that initializes the intake by stopping the rollers and retracting the
+     * linear stage. Timeout after 1.5s.
+     * 
+     * @param intakeLinear the linear intake subsystem
+     * @param intakeRoller
+     * @return a command that initializes the intake.
+     */
+    public static Command initializeIntake(IntakeLinear intakeLinear, IntakeRoller intakeRoller)
+    {
+        return Commands.sequence(
+            intakeRoller.setStateCommand(State.STOP),
+            AutoCommands.retractIntake(intakeLinear));
     }
 }

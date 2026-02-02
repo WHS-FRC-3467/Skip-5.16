@@ -51,6 +51,7 @@ import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public class RobotContainer {
@@ -94,7 +95,11 @@ public class RobotContainer {
 
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
+
+        // Default - No Auto
         autoChooser.addDefaultOption("None", new NoneAuto());
+
+        // Preload + Neutral Auto - Start at Center
         autoChooser.addOption("PreloadNeutralAuto",
             new PreloadNeutralAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
                 StartPosition.CENTER));
@@ -214,8 +219,8 @@ public class RobotContainer {
     }
 
     /**
-     * Checks and displays the robot's starting pose accuracy relative to the selected autonomous path.
-     * This function is called periodically by Robot.java when disabled.
+     * Checks and displays the robot's starting pose accuracy relative to the selected autonomous
+     * path. This function is called periodically by Robot.java when disabled.
      */
     public void checkStartPose()
     {

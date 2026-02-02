@@ -60,15 +60,19 @@ public class PreloadNeutralAuto extends AutoRoutine {
             loadCommands(
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                // Initialize intake
+                AutoSegments.initializeIntake(intakeLinear, intakeRoller),
                 // Take preload shot
                 AutoSegments.makePreloadShot(drive, intakeLinear, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
                 // Make a run for the neutral zone
                 AutoSegments.driveAndIntake(drive, intakeLinear, intakeRoller,
                     pathPlannerPaths.get(1),
-                    pathPlannerPaths.get(2), Seconds.of(0.3)),
+                    pathPlannerPaths.get(2), Seconds.of(0.50)),
                 // Run back under the trench and shoot
                 AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
-                    pathPlannerPaths.get(3)));
+                    pathPlannerPaths.get(3)),
+                // Initialize the intake
+                AutoSegments.initializeIntake(intakeLinear, intakeRoller));
     }
 }
