@@ -49,27 +49,27 @@ public class IntakeLinearConstants {
 
     public static final String NAME = "Intake Linear";
 
-    private static final double GEARING = (2.0 / 1.0);
+    public static final double GEARING = (2.0 / 1.0);
 
-    private static final Distance MIN_DISTANCE = Inches.of(0.0);
-    private static final Distance MAX_DISTANCE = Inches.of(36.0);
-    private static final Distance STARTING_DISTANCE = Inches.of(0.0);
+    public static final Distance MIN_DISTANCE = Inches.of(0.0);
+    public static final Distance MAX_DISTANCE = Inches.of(11.4);
+    public static final Distance STARTING_DISTANCE = Inches.of(0.0);
 
-    private static final Distance DRUM_RADIUS = Inches.of(1.0);
-    private static final Mass CARRIAGE_MASS = Kilograms.of(.01);
+    public static final Distance DRUM_RADIUS = Inches.of(1.0);
+    public static final Mass CARRIAGE_MASS = Kilograms.of(.01);
     public static final DistanceAngleConverter CONVERTER = new DistanceAngleConverter(DRUM_RADIUS);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
+    public static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
 
     // Orientation for the linear mechanism.
     // Uses WPILib's counter-clockwise positive convention around Y-axis:
     // A pitch of -90 degrees represents a vertical mechanism extending upward (like an elevator).
     // Pitch of 0 degrees would be horizontal extending forward.
     // Roll and yaw can be used for mechanisms that extend in other directions.
-    private static final Rotation3d ORIENTATION =
+    public static final Rotation3d ORIENTATION =
         new Rotation3d(0.0, Degrees.of(0.0).in(Units.Radians), 0.0);
 
-    private static final LinearMechCharacteristics CHARACTERISTICS =
+    public static final LinearMechCharacteristics CHARACTERISTICS =
         new LinearMechCharacteristics(MIN_DISTANCE, MAX_DISTANCE,
             STARTING_DISTANCE, CONVERTER, ORIENTATION);
 
@@ -77,7 +77,8 @@ public class IntakeLinearConstants {
 
 
     /**
-     * Creates and configures a TalonFX motor controller configuration for the intake linear mechanism.
+     * Creates and configures a TalonFX motor controller configuration for the intake linear
+     * mechanism.
      * 
      * @return The configured TalonFX configuration
      */
@@ -113,8 +114,8 @@ public class IntakeLinearConstants {
     }
 
     /**
-     * Factory method to create a LinearMechanism instance for the intake linear subsystem.
-     * Creates the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
+     * Factory method to create a LinearMechanism instance for the intake linear subsystem. Creates
+     * the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
      * 
      * @return A configured LinearMechanism instance
      */
@@ -125,19 +126,19 @@ public class IntakeLinearConstants {
             case REAL:
                 mechanism = new LinearMechanismReal(NAME,
                     new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeLinear), CHARACTERISTICS);
-                    break;
+                break;
             case SIM:
-                mechanism =  new LinearMechanismSim(NAME,
+                mechanism = new LinearMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeLinear),
                     DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
-                    break;
+                break;
             case REPLAY:
-                mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS,new MotorIO() {}) {};
-                    break;
+                mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}) {};
+                break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
-                mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
     }
 

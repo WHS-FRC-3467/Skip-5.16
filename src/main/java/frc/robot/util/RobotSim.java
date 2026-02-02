@@ -18,65 +18,94 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RobotSim {
+    @Getter(lazy = true)
+    private static final RobotSim instance = new RobotSim();
+
     private final RobotState robotState = RobotState.getInstance();
-    private final FuelSim instance = FuelSim.getInstance();
+    private final FuelSim fuelSim = new FuelSim();
 
-    private final Trigger shootSimFuel;
-    private final Trigger intakeSimFuel;
+    private MechanismPosePublisher posePublisher = null;
 
-    /**
-     * Constructs a RobotSim instance to simulate fuel interactions with robot subsystems
-     * 
-     * @param drive Drive subsystem for robot pose tracking
-     * @param shooter Shooter superstructure for shooting fuel simulation
-     * @param indexer Indexer subsystem for detecting when to shoot
-     * @param intakeRoller Intake roller subsystem for intake velocity detection
-     * @param intakeLinear Linear intake subsystem for intake position detection
-     */
-    public RobotSim(
+    private void registerFuelSimMechanisms(
         Drive drive,
         ShooterSuperstructure shooter,
         Indexer indexer,
         IntakeRoller intakeRoller,
         IntakeLinear intakeLinear)
     {
-        shootSimFuel = new Trigger(() -> (shooter.readyToShoot.getAsBoolean()
-            && (indexer.getSpeed() > 0.1) && (instance.getHeldFuel() > 0)));
+        Trigger shootSimFuel = new Trigger(() -> (shooter.readyToShoot.getAsBoolean()
+            && (indexer.getSpeed() > 0.1) && (fuelSim.getHeldFuel() > 0)));
 
         shootSimFuel.whileTrue(
             Commands.repeatingSequence(
                 Commands.waitSeconds(.1),
-                Commands.runOnce(() -> instance.setHeldFuel(instance.getHeldFuel() - 1)),
-                Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
+                Commands.runOnce(() -> fuelSim.setHeldFuel(fuelSim.getHeldFuel() - 1)),
+                Commands.runOnce(() -> fuelSim.spawnFuel(
                     new Translation3d(robotState.getEstimatedPose().getTranslation())
                         .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
-                    FuelSim.getInstance().launchVel(shooter.getAverageLinearVelocity(),
+                    fuelSim.launchVel(shooter.getAverageLinearVelocity(),
                         shooter.getHoodAngle())))));
 
-        intakeSimFuel = new Trigger(() -> (intakeRoller.getVelocity().in(RotationsPerSecond) > 1.0)
-            && intakeLinear.isExtended.getAsBoolean());
+        Trigger intakeSimFuel =
+            new Trigger(() -> (intakeRoller.getVelocity().in(RotationsPerSecond) > 1.0)
+                && intakeLinear.isExtended.getAsBoolean());
 
-        instance.spawnStartingFuel();
-        instance.registerRobot(
+        fuelSim.spawnStartingFuel();
+        fuelSim.registerRobot(
             Constants.FULL_ROBOT_WIDTH.in(Meters),
             Constants.FULL_ROBOT_LENGTH.in(Meters),
             Constants.BUMPER_HEIGHT.in(Meters),
             robotState::getEstimatedPose,
             robotState::getVelocity);
-        instance.registerIntake(
+        fuelSim.registerIntake(
             -Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
             Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(10)).in(Meters),
             -Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
             Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
             intakeSimFuel);
 
-        instance.start();
+        fuelSim.start();
         SmartDashboard.putData(Commands.runOnce(() -> {
-            FuelSim.getInstance().clearFuel();
-            FuelSim.getInstance().spawnStartingFuel();
+            fuelSim.clearFuel();
+            fuelSim.spawnStartingFuel();
         }).withName("Reset Fuel").ignoringDisable(true));
+    }
 
+    /**
+     * Adds mechanism data to the sim
+     * 
+     * @param drive Drive subsystem for robot pose tracking
+     * @param shooter Shooter superstructure
+     * @param indexer Indexer subsystem
+     * @param intakeRoller Intake roller subsystem
+     * @param intakeLinear Linear intake subsystem
+     */
+    public void addMechanismData(
+        Drive drive,
+        ShooterSuperstructure shooter,
+        Indexer indexer,
+        IntakeRoller intakeRoller,
+        IntakeLinear intakeLinear)
+    {
+        registerFuelSimMechanisms(drive, shooter, indexer, intakeRoller, intakeLinear);
+        posePublisher = new MechanismPosePublisher(intakeLinear, shooter);
+    }
+
+    public FuelSim getFuelSim()
+    {
+        return fuelSim;
+    }
+
+    /** Updates all data that only matters in sim/replay. Should be called periodically */
+    public void updateSim()
+    {
+        fuelSim.updateSim();
+        posePublisher.update();
     }
 }

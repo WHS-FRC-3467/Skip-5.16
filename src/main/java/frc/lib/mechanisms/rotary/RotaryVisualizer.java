@@ -11,14 +11,10 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import java.util.Optional;
-import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -41,14 +37,9 @@ public class RotaryVisualizer {
 
     private final double armLength;
 
-    private Pose3d currentPose = new Pose3d();
-
-    private final RotaryMechCharacteristics constants;
-
     public RotaryVisualizer(String name, RotaryMechCharacteristics constants)
     {
         this.name = name;
-        this.constants = constants;
         mechanism = new LoggedMechanism2d(3.0, 3.0, new Color8Bit(Color.kBlack));
         LoggedMechanismRoot2d root = mechanism.getRoot(name + " root", 1.5, 1.5);
 
@@ -101,29 +92,7 @@ public class RotaryVisualizer {
 
     private void update()
     {
-        switch (constants.axis()) {
-            case ROLL:
-                currentPose = Pose3d.kZero.rotateBy(
-                    new Rotation3d(Degrees.of(measured.getAngle()), Degrees.zero(),
-                        Degrees.zero()));
-                break;
-            case PITCH:
-                currentPose = Pose3d.kZero.rotateBy(
-                    new Rotation3d(Degrees.zero(), Degrees.of(measured.getAngle()),
-                        Degrees.zero()));
-                break;
-            case YAW:
-                currentPose = Pose3d.kZero.rotateBy(
-                    new Rotation3d(Degrees.zero(), Degrees.zero(),
-                        Degrees.of(measured.getAngle())));
-                break;
-
-            default:
-                break;
-        }
-
         SmartDashboard.putData(name + " Visualizer", mechanism);
-        Logger.recordOutput(name + "Pose3d", currentPose);
     }
 
     /**
@@ -174,15 +143,5 @@ public class RotaryVisualizer {
         });
 
         update();
-    }
-
-    /**
-     * Gets a supplier for the 3D pose of the rotary mechanism.
-     *
-     * @return Supplier that provides the current 3D pose
-     */
-    public Supplier<Pose3d> getPoseSupplier()
-    {
-        return () -> currentPose;
     }
 }

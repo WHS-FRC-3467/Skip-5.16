@@ -6,14 +6,10 @@ package frc.lib.mechanisms.linear;
 
 import static edu.wpi.first.units.Units.Meters;
 import java.util.Optional;
-import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -56,7 +52,6 @@ public class LinearMechanismVisualizer {
     private final String name;
 
     private Rotation3d orientation;
-    private Pose3d currentPose = new Pose3d();
 
     public LinearMechanismVisualizer(String name, LinearMechCharacteristics characteristics)
     {
@@ -147,19 +142,7 @@ public class LinearMechanismVisualizer {
 
     private void update()
     {
-        // Calculate the 3D position based on measured distance and orientation
-        // The orientation defines the direction of linear motion
-        double distance = measured.getLength();
-
-        // Create a unit vector in the direction of motion (along X-axis in local frame)
-        // Then rotate it by the orientation to get the world-space direction
-        Translation3d direction = new Translation3d(distance, 0, 0).rotateBy(orientation);
-
-        // Apply offset and calculate final pose
-        currentPose = new Pose3d(direction, orientation);
-
         SmartDashboard.putData(name + " Visualizer", mechanism);
-        Logger.recordOutput(name + "Pose3d", currentPose);
     }
 
     /**
@@ -233,15 +216,5 @@ public class LinearMechanismVisualizer {
     public Rotation3d getOrientation()
     {
         return orientation;
-    }
-
-    /**
-     * Gets a supplier for the 3D pose of the linear mechanism.
-     *
-     * @return Supplier that provides the current 3D pose
-     */
-    public Supplier<Pose3d> getPoseSupplier()
-    {
-        return () -> currentPose;
     }
 }

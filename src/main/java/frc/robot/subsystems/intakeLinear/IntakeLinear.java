@@ -18,6 +18,7 @@ package frc.robot.subsystems.intakeLinear;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,9 +27,9 @@ import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 
 /**
- * Subsystem that controls the linear intake extension mechanism.
- * The intake can extend outward to collect game pieces or retract inward for storage.
- * Uses current-based control to detect when the mechanism has reached its limits.
+ * Subsystem that controls the linear intake extension mechanism. The intake can extend outward to
+ * collect game pieces or retract inward for storage. Uses current-based control to detect when the
+ * mechanism has reached its limits.
  */
 public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
@@ -49,9 +50,12 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
     public IntakeLinear(LinearMechanism<?> intakeLinearIO)
     {
         this.io = intakeLinearIO;
-        this.linearStopped = new LoggedTrigger("IntakeLinear/isLinearStopped",() -> isLinearStopped());
-        this.isExtended = new LoggedTrigger("IntakeLinear/isExtended", () -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8).and(linearStopped);
-        this.isRetracted = new LoggedTrigger("IntakeLinear/isRetracted", () -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8).and(linearStopped);
+        this.linearStopped =
+            new LoggedTrigger("IntakeLinear/isLinearStopped", () -> isLinearStopped());
+        this.isExtended = new LoggedTrigger("IntakeLinear/isExtended",
+            () -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8).and(linearStopped);
+        this.isRetracted = new LoggedTrigger("IntakeLinear/isRetracted",
+            () -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8).and(linearStopped);
     }
 
     /**
@@ -104,6 +108,15 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
         return Math.abs(io.getVelocity().in(RotationsPerSecond)) < 2.0;
     }
 
+    /**
+     * Gets the linear extension of the subsystem by converting the motor's rotation
+     * 
+     * @return The estimated linear extension of the subsystem
+     */
+    public Distance getExtension()
+    {
+        return IntakeLinearConstants.CONVERTER.toDistance(io.getPosition());
+    }
 
     @Override
     public void periodic()

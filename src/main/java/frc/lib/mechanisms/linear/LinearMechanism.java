@@ -5,9 +5,7 @@
 package frc.lib.mechanisms.linear;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.measure.Angle;
@@ -20,9 +18,8 @@ import frc.lib.util.MechanismUtil.DistanceAngleConverter;
 
 /**
  * Abstract class for linear mechanisms, which are mechanisms that move in a straight line. This
- * class extends Mechanism and provides characteristics specific to linear
- * mechanisms. Supports mechanisms at any orientation angle, including dynamic angle updates for
- * pivoting mechanisms.
+ * class extends Mechanism and provides characteristics specific to linear mechanisms. Supports
+ * mechanisms at any orientation angle, including dynamic angle updates for pivoting mechanisms.
  */
 public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
 
@@ -129,11 +126,5 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
     public Rotation3d getOrientation()
     {
         return visualizer.getOrientation();
-    }
-
-    @Override
-    public Supplier<Pose3d> getPoseSupplier()
-    {
-        return visualizer.getPoseSupplier();
     }
 }
