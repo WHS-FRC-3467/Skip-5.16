@@ -17,6 +17,7 @@ package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.Seconds;
 import java.util.List;
+import com.pathplanner.lib.auto.AutoBuilder;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
@@ -66,10 +67,10 @@ public class PreloadNeutralAuto extends AutoRoutine {
                 // Take preload shot
                 AutoSegments.makePreloadShot(drive, intakeLinear, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
+                AutoBuilder.followPath(pathPlannerPaths.get(1)),
                 // Make a run for the neutral zone
-                AutoSegments.driveAndIntake(drive, intakeLinear, intakeRoller,
-                    pathPlannerPaths.get(1),
-                    pathPlannerPaths.get(2), Seconds.of(0.0)),
+                AutoSegments.driveAndIntake(intakeLinear, intakeRoller,
+                    AutoBuilder.followPath(pathPlannerPaths.get(2)), Seconds.of(0.0)),
                 // Run back under the trench and shoot
                 AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
                     pathPlannerPaths.get(3)),
