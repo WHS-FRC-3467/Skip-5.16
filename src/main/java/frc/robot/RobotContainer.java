@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
-import frc.lib.util.FieldUtil;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.autos.*;
@@ -51,7 +50,6 @@ import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 /**
@@ -170,19 +168,13 @@ public class RobotContainer {
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
         
         // TODO: change button bindings as necessary
-        // X button: Align rotation parallel to trench while held - Going towards CENTER
+        // X button: Trench align rotational assist
         controller.x().whileTrue(
-            DriveCommands.joystickDriveAtAngle(drive, 
+            DriveCommands.joystickDriveAtAngle(
+                drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> (FieldUtil.shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero)));
-
-        // Y button: Align rotation parallel to trench while held - Returning from CENTER
-        controller.y().whileTrue(
-            DriveCommands.joystickDriveAtAngle(drive, 
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> (FieldUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)));
+                () -> robotState.getTunnelAssistHeading()));
     }
 
     /**
