@@ -76,7 +76,7 @@ public class RobotSim {
             Constants.FULL_ROBOT_LENGTH.in(Meters),
             Constants.BUMPER_HEIGHT.in(Meters),
             robotState::getEstimatedPose,
-            robotState::getVelocity);
+            robotState::getFieldRelativeVelocity);
         fuelSim.registerIntake(
             -Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
             Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(12)).in(Meters),

@@ -32,7 +32,6 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.lib.util.LoggedTrigger;
-import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
@@ -85,7 +84,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public final LoggedTrigger readyToShoot =
         new LoggedTrigger(this.getName() + "/readyToShoot", () -> {
             double dist = robotState
-                .getDistanceToTarget(robotState.getEstimatedPose()).in(Meters);
+                .getDistanceToTarget().in(Meters);
             return isFlywheelAt(RotationsPerSecond.of(flywheelMap.get(dist)))
                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
         });
@@ -185,10 +184,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         Supplier<AngularVelocity> desiredFlywheelVelocitySupplier =
             () -> RotationsPerSecond.of(flywheelMap
                 .get(robotState
-                    .getDistanceToTarget(robotState.getEstimatedPose()).in(Meters)));
+                    .getDistanceToTarget().in(Meters)));
         Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
             .get(robotState
-                .getDistanceToTarget(robotState.getEstimatedPose()).in(Meters)));
+                .getDistanceToTarget().in(Meters)));
 
         return Commands.run(() -> {
             spinFlywheel(desiredFlywheelVelocitySupplier.get());
@@ -210,11 +209,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     {
         Supplier<AngularVelocity> desiredFlywheelVelocitySupplier =
             () -> RotationsPerSecond.of(flywheelMap.get(robotState
-                .getDistanceToTarget(robotState.getEstimatedPose()).in(Meters)));
+                .getDistanceToTarget().in(Meters)));
 
         Supplier<Angle> desiredHoodPositionSupplier =
             () -> Degrees.of(hoodAngleMap.get(robotState
-                .getDistanceToTarget(robotState.getEstimatedPose()).in(Meters)));
+                .getDistanceToTarget().in(Meters)));
 
         return Commands.sequence(
             Commands.parallel(
