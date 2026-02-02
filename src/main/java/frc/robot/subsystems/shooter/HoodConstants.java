@@ -61,9 +61,9 @@ public class HoodConstants {
     private static final double ROTOR_TO_SENSOR = (50.0 / 1.0);
     private static final double SENSOR_TO_MECHANISM = 1.0;
 
-    public static final Angle MIN_ANGLE = Degrees.of(-90.0);
-    public static final Angle MAX_ANGLE = Degrees.of(90.0);
-    public static final Angle STARTING_ANGLE = Radians.zero();
+    public static final Angle MIN_ANGLE = Degrees.of(0.0);
+    public static final Angle MAX_ANGLE = Degrees.of(27.0);
+    public static final Angle STARTING_ANGLE = Degrees.of(0.0);
     public static final Distance ARM_LENGTH = Foot.one();
 
     public static final RotaryMechCharacteristics CONSTANTS =
@@ -83,9 +83,9 @@ public class HoodConstants {
         .withV(0.1);
 
     /**
-     * Creates a TalonFX motor controller configuration for the hood mechanism.
-     * Configures current limits, voltage limits, neutral mode, soft limits, gearing ratios,
-     * feedback sensor source, and motion magic parameters.
+     * Creates a TalonFX motor controller configuration for the hood mechanism. Configures current
+     * limits, voltage limits, neutral mode, soft limits, gearing ratios, feedback sensor source,
+     * and motion magic parameters.
      * 
      * @return configured TalonFXConfiguration for the hood motor
      */
@@ -127,8 +127,8 @@ public class HoodConstants {
     }
 
     /**
-     * Creates and configures the hood mechanism based on the current robot mode.
-     * Selects the appropriate implementation (real, sim, or replay) and enables tunable PID.
+     * Creates and configures the hood mechanism based on the current robot mode. Selects the
+     * appropriate implementation (real, sim, or replay) and enables tunable PID.
      * 
      * @return configured hood mechanism
      */

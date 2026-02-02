@@ -1,6 +1,15 @@
 {
     "name": "Platypus",
-    "rotations": [],
+    "rotations": [
+        {
+            "axis": "x",
+            "degrees": 90
+        },
+        {
+            "axis": "z",
+            "degrees": 90
+        }
+    ],
     "position": [
         0,
         0,
@@ -9,19 +18,54 @@
     "cameras": [],
     "components": [
         {
-            "zeroedRotations": [],
+            "zeroedRotations": [
+                {
+                    "axis": "x",
+                    "degrees": 90
+                },
+                {
+                    "axis": "z",
+                    "degrees": 90
+                }
+            ],
             "zeroedPosition": [
+                0.1,
                 0,
-                -0.107,
-                -0.485
+                -0.48
             ]
         },
         {
-            "zeroedRotations": [],
+            "zeroedRotations": [
+                {
+                    "axis": "x",
+                    "degrees": 90
+                },
+                {
+                    "axis": "z",
+                    "degrees": 90
+                }
+            ],
             "zeroedPosition": [
                 0,
                 0,
                 0
+            ]
+        },
+        {
+            "zeroedRotations": [
+                {
+                    "axis": "x",
+                    "degrees": 90
+                },
+                {
+                    "axis": "z",
+                    "degrees": 90
+                }
+            ],
+            "zeroedPosition": [
+                -0.192,
+                0,
+                -0.246
             ]
         }
     ]

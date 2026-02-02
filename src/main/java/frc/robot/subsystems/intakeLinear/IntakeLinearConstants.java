@@ -49,27 +49,27 @@ public class IntakeLinearConstants {
 
     public static final String NAME = "Intake Linear";
 
-    private static final double GEARING = (2.0 / 1.0);
+    public static final double GEARING = (2.0 / 1.0);
 
-    private static final Distance MIN_DISTANCE = Inches.of(0.0);
-    private static final Distance MAX_DISTANCE = Inches.of(11.4);
-    private static final Distance STARTING_DISTANCE = Inches.of(0.0);
+    public static final Distance MIN_DISTANCE = Inches.of(0.0);
+    public static final Distance MAX_DISTANCE = Inches.of(11.4);
+    public static final Distance STARTING_DISTANCE = Inches.of(0.0);
 
-    private static final Distance DRUM_RADIUS = Inches.of(1.0);
-    private static final Mass CARRIAGE_MASS = Kilograms.of(.01);
+    public static final Distance DRUM_RADIUS = Inches.of(1.0);
+    public static final Mass CARRIAGE_MASS = Kilograms.of(.01);
     public static final DistanceAngleConverter CONVERTER = new DistanceAngleConverter(DRUM_RADIUS);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
+    public static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
 
     // Orientation for the linear mechanism.
     // Uses WPILib's counter-clockwise positive convention around Y-axis:
     // A pitch of -90 degrees represents a vertical mechanism extending upward (like an elevator).
     // Pitch of 0 degrees would be horizontal extending forward.
     // Roll and yaw can be used for mechanisms that extend in other directions.
-    private static final Rotation3d ORIENTATION =
+    public static final Rotation3d ORIENTATION =
         new Rotation3d(0.0, Degrees.of(0.0).in(Units.Radians), 0.0);
 
-    private static final LinearMechCharacteristics CHARACTERISTICS =
+    public static final LinearMechCharacteristics CHARACTERISTICS =
         new LinearMechCharacteristics(MIN_DISTANCE, MAX_DISTANCE,
             STARTING_DISTANCE, CONVERTER, ORIENTATION);
 
@@ -98,7 +98,7 @@ public class IntakeLinearConstants {
         config.Voltage.PeakReverseVoltage = -12.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
 

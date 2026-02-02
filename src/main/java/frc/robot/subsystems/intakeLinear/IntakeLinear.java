@@ -45,10 +45,10 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
     {
         this.io = intakeLinearIO;
         this.linearStopped = new Trigger(() -> isLinearStopped());
-        this.isRetracted =
+        this.isExtended =
             new Trigger(() -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8)
                 .and(linearStopped);
-        this.isExtended =
+        this.isRetracted =
             new Trigger(() -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8)
                 .and(linearStopped);
     }
@@ -60,7 +60,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
      */
     public Command extend()
     {
-        return this.runOnce(() -> io.runCurrent(Amps.of(-INTAKE_CURRENT.get())));
+        return this.runOnce(() -> io.runCurrent(Amps.of(INTAKE_CURRENT.get())));
     }
 
     /**
@@ -70,7 +70,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
      */
     public Command retract()
     {
-        return this.runOnce(() -> io.runCurrent(Amps.of(INTAKE_CURRENT.get())));
+        return this.runOnce(() -> io.runCurrent(Amps.of(-INTAKE_CURRENT.get())));
     }
 
     /**
