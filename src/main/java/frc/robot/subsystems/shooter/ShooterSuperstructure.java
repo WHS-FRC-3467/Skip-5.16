@@ -39,7 +39,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     /** Distance from goal in meters -> hood angle in degrees */
     private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
     static {
-        hoodAngleMap.put(2.604, 5.00); // Lowest
+        hoodAngleMap.put(2.604, 10.00); // Lowest
         hoodAngleMap.put(3.42, 15.00); // Highest
     }
 
