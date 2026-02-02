@@ -22,6 +22,21 @@ import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive; // TODO: refactor drive to exist in lib
 
+/**
+ * Base command for autonomously driving the robot to a target pose.
+ * 
+ * <p>
+ * This command uses profiled PID controllers to control both linear (x, y) and
+ * angular (rotation) motion. It continuously calculates chassis speeds to move
+ * the robot toward the target pose while respecting velocity and acceleration limits.
+ * 
+ * <p>
+ * Subclasses should configure the PID controllers and maximum velocities specific
+ * to their robot. The command finishes when the robot is within the specified
+ * distance and angle tolerances (if set).
+ * 
+ * @see frc.robot.commands.DriveToPose
+ */
 public abstract class DriveToPoseBase extends Command {
     private final RobotState robotState = RobotState.getInstance();
 
@@ -37,7 +52,16 @@ public abstract class DriveToPoseBase extends Command {
     private Optional<Double> distanceTolerance = Optional.empty();
     private Optional<Double> angleTolerance = Optional.empty();
 
-
+    /**
+     * Constructs a DriveToPoseBase command.
+     *
+     * @param drive The drive subsystem to control
+     * @param targetPose Supplier providing the target pose to drive to
+     * @param linearController Profiled PID controller for linear motion
+     * @param angularController Profiled PID controller for angular motion
+     * @param maxLinearSpeed Maximum linear speed in meters per second
+     * @param maxAngularSpeed Maximum angular speed in radians per second
+     */
     public DriveToPoseBase(
         Drive drive,
         Supplier<Pose2d> targetPose,

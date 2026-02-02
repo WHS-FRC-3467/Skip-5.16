@@ -26,6 +26,11 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.StatusCode;
 import au.grapplerobotics.ConfigurationFailedException;
 
+/**
+ * Thread pool for executing CAN device configuration operations asynchronously.
+ * Automatically retries failed configuration attempts up to a maximum number of times.
+ * Prevents blocking the main robot loop during device initialization.
+ */
 public class CANUpdateThread implements AutoCloseable {
 
     private static final int MAX_RETRIES = 5;

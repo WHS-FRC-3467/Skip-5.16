@@ -91,6 +91,7 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     }
 
     // Private helper for simulating moving game pieces. Calls can have performance impact.
+    @SuppressWarnings("unused")
     private void updateTargetPoses()
     {
         visionSim.clearVisionTargets();

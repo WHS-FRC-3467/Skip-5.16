@@ -42,6 +42,22 @@ import frc.robot.RobotState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * Configuration constants for the vision subsystem.
+ * 
+ * <p>
+ * Contains camera calibration data, mounting positions, and factory methods for creating
+ * vision cameras. Each camera has:
+ * <ul>
+ * <li>Extrinsics: Physical mounting transform (position and orientation on robot)</li>
+ * <li>Intrinsics: Camera matrix and distortion coefficients from calibration</li>
+ * <li>Performance: Resolution, FPS, latency, and standard deviation factors</li>
+ * </ul>
+ * 
+ * <p>
+ * Camera intrinsics should be recalibrated when cameras are changed or remounted.
+ * Use PhotonVision's calibration tool to generate new intrinsic matrices.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class VisionConstants {
     // Extrinsics

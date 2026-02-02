@@ -72,7 +72,7 @@ public class ObjectDetector extends SubsystemBase {
                 robotState.getEstimatedPose());
         // If no record/pose was generated, return empty/partial record early & don't update pose
         // buffer
-        if (observation.isEmpty() || (observation.get().objectPose().isEmpty())) {
+        if (observation.isEmpty() || observation.get().objectPose().isEmpty()) {
             return observation;
         }
         // Pose generated: update object pose buffer of most-recently detected objects

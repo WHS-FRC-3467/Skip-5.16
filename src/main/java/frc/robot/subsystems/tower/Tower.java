@@ -29,7 +29,11 @@ import frc.lib.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-
+/**
+ * Subsystem that controls the tower mechanism that transfers game pieces from the indexer to the shooter.
+ * The tower can stop, idle at a slow speed to hold game pieces, or shoot at full speed.
+ * Uses a flywheel mechanism for velocity control.
+ */
 public class Tower extends SubsystemBase {
     private static final LoggedTunableNumber STOP_RPS =
         new LoggedTunableNumber(TowerConstants.NAME + "/StopRPS", 0.0);

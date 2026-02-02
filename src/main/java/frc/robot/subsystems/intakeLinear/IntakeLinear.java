@@ -21,18 +21,23 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.mechanisms.linear.LinearMechanism;
+import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 
+/**
+ * Subsystem that controls the linear intake extension mechanism.
+ * The intake can extend outward to collect game pieces or retract inward for storage.
+ * Uses current-based control to detect when the mechanism has reached its limits.
+ */
 public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber INTAKE_CURRENT =
         new LoggedTunableNumber(IntakeLinearConstants.NAME + "/IntakeCurrent", 10.0);
 
-    public final Trigger linearStopped;
-    public final Trigger isExtended;
-    public final Trigger isRetracted;
+    public final LoggedTrigger linearStopped;
+    public final LoggedTrigger isExtended;
+    public final LoggedTrigger isRetracted;
 
     private final LinearMechanism<?> io;
 
@@ -44,13 +49,9 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
     public IntakeLinear(LinearMechanism<?> intakeLinearIO)
     {
         this.io = intakeLinearIO;
-        this.linearStopped = new Trigger(() -> isLinearStopped());
-        this.isExtended =
-            new Trigger(() -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8)
-                .and(linearStopped);
-        this.isRetracted =
-            new Trigger(() -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8)
-                .and(linearStopped);
+        this.linearStopped = new LoggedTrigger("IntakeLinear/isLinearStopped",() -> isLinearStopped());
+        this.isExtended = new LoggedTrigger("IntakeLinear/isExtended", () -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8).and(linearStopped);
+        this.isRetracted = new LoggedTrigger("IntakeLinear/isRetracted", () -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8).and(linearStopped);
     }
 
     /**

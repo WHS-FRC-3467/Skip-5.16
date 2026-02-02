@@ -25,6 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 import com.pathplanner.lib.path.PathPlannerPath;
 
+/**
+ * Abstract base class for autonomous routines that use PathPlanner paths.
+ * Provides utilities for loading paths, combining them into commands, and retrieving path poses
+ * for visualization and starting position validation.
+ */
 public abstract class AutoRoutine extends SequentialCommandGroup {
     protected final List<PathPlannerPath> pathPlannerPaths = new ArrayList<>();
 

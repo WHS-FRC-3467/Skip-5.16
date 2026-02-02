@@ -32,6 +32,13 @@ import frc.lib.io.motor.MotorInputsAutoLogged;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.PID;
 
+/**
+ * Abstract base class for all robot mechanisms that use motors.
+ * Provides common functionality for motor control, PID tuning, logging, and visualization.
+ * Mechanisms include flywheels, linear actuators, and rotary arms.
+ * 
+ * @param <T> the type of MotorIO implementation used by this mechanism
+ */
 public abstract class Mechanism<T extends MotorIO> {
 
     protected final String name;
