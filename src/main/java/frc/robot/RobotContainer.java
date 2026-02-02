@@ -24,6 +24,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
+import frc.lib.util.FieldUtil;
+import frc.robot.Constants.Mode;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.autos.*;
@@ -45,11 +47,11 @@ import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.util.FuelSim;
 import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 /**
@@ -98,7 +100,8 @@ public class RobotContainer {
         VisionConstants.create();
 
         if (RobotBase.isSimulation()) {
-            new RobotSim(drive, shooter, indexer, intakeRoller, intakeLinear);
+            RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intakeRoller,
+                intakeLinear);
         }
 
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
@@ -166,12 +169,18 @@ public class RobotContainer {
         controller.rightTrigger().whileTrue(
             shooter.prepareShot(
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
-        
+
         // TODO: change button bindings as necessary
         // X button: Trench align rotational assist
         controller.x().whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
+            DriveCommands.joystickDriveAtAngle(drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> (FieldUtil.shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero)));
+
+        // Y button: Align rotation parallel to trench while held - Returning from CENTER
+        controller.y().whileTrue(
+            DriveCommands.joystickDriveAtAngle(drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
                 () -> robotState.getTunnelAssistHeading()));
@@ -200,13 +209,6 @@ public class RobotContainer {
         SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
             Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
 
-        SmartDashboard.putData("Shoot ball",
-            Commands.runOnce(() -> FuelSim.getInstance().spawnFuel(
-                new Translation3d(robotState.getEstimatedPose().getTranslation())
-                    .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
-                FuelSim.getInstance().launchVel(shooter.getAverageLinearVelocity(),
-                    shooter.getHoodAngle()))));
-
         SmartDashboard.putData("Set flywheel to 30",
             shooter.setFlyWheelSpeed(RotationsPerSecond.of(30)));
 
@@ -225,6 +227,16 @@ public class RobotContainer {
             Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
         SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
         SmartDashboard.putData("Run Indexer", indexer.setStateCommand(Indexer.State.PULL));
+
+        if (Constants.currentMode == Mode.SIM) {
+            SmartDashboard.putData("Shoot ball",
+                Commands.runOnce(() -> RobotSim.getInstance().getFuelSim().spawnFuel(
+                    new Translation3d(robotState.getEstimatedPose().getTranslation())
+                        .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
+                    RobotSim.getInstance().getFuelSim().launchVel(
+                        shooter.getAverageLinearVelocity(),
+                        shooter.getHoodAngle()))));
+        }
     }
 
     /**

@@ -40,8 +40,6 @@ public class FuelSim {
     private static final double FRICTION = 0.1; // proportion of horizontal velocity to lose per
                                                 // second while on ground
 
-    private static FuelSim instance = null;
-
     @Getter
     @Setter
     private int heldFuel = 8;
@@ -332,20 +330,6 @@ public class FuelSim {
     private double robotLength; // size along the robot's x axis
     private double bumperHeight;
     private ArrayList<SimIntake> intakes = new ArrayList<>();
-
-    /**
-     * Returns a singleton instance of FuelSim
-     * 
-     * @return The singleton FuelSim instance
-     */
-    public static FuelSim getInstance()
-    {
-        if (instance == null) {
-            instance = new FuelSim();
-        }
-
-        return instance;
-    }
 
     /**
      * Clears the field of fuel
@@ -855,7 +839,7 @@ public class FuelSim {
         }
     }
 
-    private FuelSim()
+    public FuelSim()
     {
         // Initialize grid
         for (int i = 0; i < GRID_COLS; i++) {
