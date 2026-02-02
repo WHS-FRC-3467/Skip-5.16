@@ -1,5 +1,6 @@
 {
     "name": "Platypus",
+    "disableSimplification": true,
     "rotations": [
         {
             "axis": "x",
