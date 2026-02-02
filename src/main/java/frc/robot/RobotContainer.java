@@ -20,17 +20,13 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
-import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
-import frc.lib.util.FieldUtil;
 import frc.robot.Constants.Mode;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.TeleopAlignToObject;
 import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -38,7 +34,6 @@ import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeLinear.IntakeLinearConstants;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.intakeRoller.IntakeRollerConstants;
-import frc.robot.subsystems.intakeRoller.IntakeRoller.State;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import frc.robot.subsystems.indexer.Indexer;
@@ -53,7 +48,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 
@@ -180,6 +174,15 @@ public class RobotContainer {
                 intakeLinear.extend(),
                 intakeRoller.setStateCommand(IntakeRoller.State.INTAKE)))
             .onFalse(intakeRoller.setStateCommand(IntakeRoller.State.STOP));
+
+        // Right Bumper: Trench Align
+        controller.rightBumper()
+            .whileTrue(
+                DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    robotState::getTunnelAssistHeading));
     }
 
     /**

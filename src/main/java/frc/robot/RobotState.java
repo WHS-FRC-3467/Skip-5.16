@@ -276,7 +276,7 @@ public class RobotState {
             case NEUTRAL_ZONE -> {
                 // In the official neutral zone, bias toward the nearer half's direction.
                 yield FieldUtil.apply(
-                    x < FieldConstants.FIELD_CENTER.getX() ? Rotation2d.k180deg : Rotation2d.kZero);
+                    x < FieldConstants.FIELD_CENTER.getX() ? Rotation2d.kZero : Rotation2d.k180deg);
             }
 
             case OPPONENT_ALLIANCE_ZONE -> {
