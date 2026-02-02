@@ -173,7 +173,7 @@ public class RobotContainer {
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
 
         // TODO: change button bindings as necessary
-        // X button: Align rotation parallel to trench while held - Going towards CENTER
+        // X button: Trench align rotational assist
         controller.x().whileTrue(
             DriveCommands.joystickDriveAtAngle(drive,
                 () -> -controller.getLeftY(),
@@ -185,7 +185,7 @@ public class RobotContainer {
             DriveCommands.joystickDriveAtAngle(drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> (FieldUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)));
+                () -> robotState.getTunnelAssistHeading()));
     }
 
     /**
