@@ -16,6 +16,14 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import frc.lib.io.motor.MotorIO;
 
+/**
+ * Abstract base class for rotary mechanisms that pivot around an axis.
+ * Examples include arms, hoods, and pivots. Supports position control with optional
+ * absolute encoder feedback and 3D visualization.
+ * 
+ * @param <T> the type of MotorIO implementation used by this mechanism
+ * @param <E> the type of AbsoluteEncoderIO implementation (if used)
+ */
 public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncoderIO>
     extends Mechanism<T> {
 

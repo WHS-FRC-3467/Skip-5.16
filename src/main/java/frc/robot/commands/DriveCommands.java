@@ -45,6 +45,22 @@ import java.util.function.Supplier;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 
+/**
+ * Factory class for creating drive-related commands.
+ * 
+ * <p>
+ * Provides factory methods for common drive operations including:
+ * <ul>
+ * <li>Joystick-controlled driving (field-relative and robot-relative)</li>
+ * <li>Angle locking for driver assistance</li>
+ * <li>Pathfinding to specific field positions</li>
+ * <li>System identification and characterization</li>
+ * </ul>
+ * 
+ * <p>
+ * All commands are designed to work with the {@link Drive} subsystem and integrate
+ * with PathPlanner for autonomous path following.
+ */
 public class DriveCommands {
     @Getter
     private static final double DEADBAND = 0.1;
@@ -252,10 +268,10 @@ public class DriveCommands {
                         double kV = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
 
                         NumberFormat formatter = new DecimalFormat("#0.00000");
-                        System.out
-                            .println("********** Drive FF Characterization Results **********");
-                        System.out.println("\tkS: " + formatter.format(kS));
-                        System.out.println("\tkV: " + formatter.format(kV));
+                        String results = "Drive FF Characterization Results - "
+                            + "kS: " + formatter.format(kS)
+                            + ", kV: " + formatter.format(kV);
+                        DriverStation.reportWarning(results, false);
                     }))
             .withName("Feedforward Characterization");
     }
@@ -323,18 +339,12 @@ public class DriveCommands {
                                 / wheelDelta;
 
                             NumberFormat formatter = new DecimalFormat("#0.000");
-                            System.out.println(
-                                "********** Wheel Radius Characterization Results **********");
-                            System.out.println(
-                                "\tWheel Delta: " + formatter.format(wheelDelta) + " radians");
-                            System.out.println(
-                                "\tGyro Delta: " + formatter.format(state.gyroDelta) + " radians");
-                            System.out.println(
-                                "\tWheel Radius: "
-                                    + formatter.format(wheelRadius)
-                                    + " meters, "
-                                    + formatter.format(Units.metersToInches(wheelRadius))
-                                    + " inches");
+                            String results = "Wheel Radius Characterization Results - "
+                                + "Wheel Delta: " + formatter.format(wheelDelta) + " radians, "
+                                + "Gyro Delta: " + formatter.format(state.gyroDelta) + " radians, "
+                                + "Wheel Radius: " + formatter.format(wheelRadius) + " meters ("
+                                + formatter.format(Units.metersToInches(wheelRadius)) + " inches)";
+                            DriverStation.reportWarning(results, false);
                         })))
             .withName("Wheel Radius Characterization");
     }

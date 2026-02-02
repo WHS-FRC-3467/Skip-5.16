@@ -16,7 +16,11 @@ import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/** Add your docs here. */
+/**
+ * Subsystem that controls the indexer mechanism for moving game pieces within the robot.
+ * The indexer can pull game pieces in, expel them, or stop.
+ * Uses a flywheel mechanism for velocity control.
+ */
 public class Indexer extends SubsystemBase {
     private final FlywheelMechanism<?> io;
 

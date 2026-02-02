@@ -15,6 +15,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
+import frc.lib.util.FieldUtil;
 import frc.robot.Constants.Mode;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
@@ -49,8 +51,19 @@ import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 
+/**
+ * Container class for the robot that holds all subsystems, controllers, and command bindings. This
+ * class is responsible for:
+ * <ul>
+ * <li>Instantiating all subsystems</li>
+ * <li>Configuring controller button bindings</li>
+ * <li>Providing autonomous command selection</li>
+ * <li>Setting up dashboard controls and telemetry</li>
+ * </ul>
+ */
 public class RobotContainer {
     private final RobotState robotState = RobotState.getInstance();
 
@@ -117,6 +130,10 @@ public class RobotContainer {
         initializeDashboard();
     }
 
+    /**
+     * Configures button bindings for the Xbox controller. Maps controller inputs to robot commands
+     * for teleop control.
+     */
     private void configureButtonBindings()
     {
         // Default command, normal field-relative drive
@@ -152,10 +169,27 @@ public class RobotContainer {
         controller.rightTrigger().whileTrue(
             shooter.prepareShot(
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
+
+        // TODO: change button bindings as necessary
+        // X button: Align rotation parallel to trench while held - Going towards CENTER
+        controller.x().whileTrue(
+            DriveCommands.joystickDriveAtAngle(drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> (FieldUtil.shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero)));
+
+        // Y button: Align rotation parallel to trench while held - Returning from CENTER
+        controller.y().whileTrue(
+            DriveCommands.joystickDriveAtAngle(drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> (FieldUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)));
     }
 
-
-    // Setup all SmartDashboard commands
+    /**
+     * Initializes SmartDashboard with test commands and controls for subsystems. Adds commands to
+     * the dashboard for manual testing and debugging.
+     */
     private void initializeDashboard()
     {
         SmartDashboard.putData("Indexer/Expel", indexer.setStateCommand(Indexer.State.EXPEL));
@@ -248,6 +282,8 @@ public class RobotContainer {
                     .in(Degrees));
 
         } catch (Exception e) {
+            DriverStation.reportError(
+                "Failed to check starting pose: " + e.getMessage(), e.getStackTrace());
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start", -1);
             SmartDashboard.putBoolean(
                 "Auto Pose Check/Robot Position within "

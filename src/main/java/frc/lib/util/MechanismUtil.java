@@ -14,12 +14,31 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
-/** Add your docs here. */
+/**
+ * Utility class for mechanism-related calculations and conversions.
+ * 
+ * <p>
+ * Provides tools for converting between linear and angular measurements, useful for mechanisms
+ * like elevators, spools, and pulleys where rotation causes linear motion.
+ */
 public class MechanismUtil {
 
+    /**
+     * Converts between distance and angle measurements based on a fixed radius.
+     * 
+     * <p>
+     * This is useful for mechanisms where rotation causes linear motion (elevators, spools, drums)
+     * or vice versa. For example, an elevator driven by a drum with a 2-inch radius: rotating the
+     * drum by 1 radian will raise the elevator by 2 inches.
+     */
     public static class DistanceAngleConverter {
         private final Distance radius;
 
+        /**
+         * Constructs a converter with the specified radius.
+         *
+         * @param radius The radius of the drum, pulley, or wheel
+         */
         public DistanceAngleConverter(Distance radius)
         {
             this.radius = radius;
