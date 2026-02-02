@@ -33,11 +33,6 @@ public record MechanismPosePublisher(IntakeLinear intake, ShooterSuperstructure 
 
     public void update()
     {
-
-        Logger.recordOutput("Test/RobotZero", new Pose3d());
-        Logger.recordOutput("Test/MechanismZero",
-            new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()});
-
         var hood =
             new Pose3d(
                 // Offset from origin (inverse of 1st component in
