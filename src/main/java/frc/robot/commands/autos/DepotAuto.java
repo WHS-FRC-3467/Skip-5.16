@@ -24,6 +24,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import static edu.wpi.first.units.Units.Seconds;
 import java.util.List;
+import com.pathplanner.lib.auto.AutoBuilder;
 
 /**
  * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect FUEL from
@@ -31,8 +32,8 @@ import java.util.List;
  */
 public class DepotAuto extends AutoRoutine {
     /**
-     * Constructs a DepotAuto routine that shoots preload, collects from depot, and shoots collected fuel.
-     * Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
+     * Constructs a DepotAuto routine that shoots preload, collects from depot, and shoots collected
+     * fuel. Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
      *
      * @param drive the drive subsystem
      * @param intakeLinear the intake linear subsystem for deploying/retracting intake
@@ -70,8 +71,10 @@ public class DepotAuto extends AutoRoutine {
                 AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
                 // Go to the DEPOT and intake FUEL
-                AutoSegments.driveAndIntake(drive, intakeLinear, intake, pathPlannerPaths.get(1),
-                    pathPlannerPaths.get(2), Seconds.of(0.3)),
+                AutoSegments.driveAndIntake(intakeLinear, intake,
+                    AutoBuilder.followPath(pathPlannerPaths.get(1))
+                        .andThen(AutoBuilder.followPath(pathPlannerPaths.get(2))),
+                    Seconds.of(0.3)),
                 // Drive to shooting location and shoot all FUEL
                 AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
                     pathPlannerPaths.get(3)));

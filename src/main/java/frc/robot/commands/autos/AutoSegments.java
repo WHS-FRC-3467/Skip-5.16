@@ -89,24 +89,22 @@ public class AutoSegments {
     /**
      * Returns a Command to Follow a path and collect FUEL in AUTO
      * 
-     * @param drive The Drive subsystem
      * @param intakeLinear The IntakeLinear subsystem
      * @param intakeRoller The IntakeRoller subsystem
      * @param drivePath The path to drive to the intaking location
-     * @param intakingPath The path to drive while intaking FUEL
+     * @param pathCommand The command that follows the desired path
      * @param afterPathWait The time to wait after the intaking path is complete before stopping the
      *        intake
      */
-    public static Command driveAndIntake(Drive drive, IntakeLinear intakeLinear,
-        IntakeRoller intakeRoller, PathPlannerPath drivePath, PathPlannerPath intakingPath,
+    public static Command driveAndIntake(IntakeLinear intakeLinear,
+        IntakeRoller intakeRoller, Command pathCommand,
         Time afterPathWait)
     {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
-            AutoBuilder.followPath(drivePath),
             new ParallelDeadlineGroup(
-                AutoBuilder.followPath(intakingPath),
+                pathCommand,
                 intakeLinear.extend(),
                 intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.INTAKE)),
             // TODO: Tune after-path wait time to ensure all FUEL is intaken

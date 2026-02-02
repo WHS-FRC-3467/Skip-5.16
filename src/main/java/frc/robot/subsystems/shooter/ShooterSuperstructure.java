@@ -46,8 +46,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     /** Distance from goal in meters -> flywheel speed in rotations per second */
     private static final InterpolatingDoubleTreeMap flywheelMap = new InterpolatingDoubleTreeMap();
     static {
-        flywheelMap.put(2.6, 20.5); // Lowest
-        flywheelMap.put(3.42, 22.0); // Highest
+        flywheelMap.put(2.6, 20.8); // Lowest
+        flywheelMap.put(3.42, 22.5); // Highest
     }
 
     private final RobotState robotState = RobotState.getInstance();

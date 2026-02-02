@@ -79,7 +79,7 @@ public class RobotSim {
             robotState::getVelocity);
         fuelSim.registerIntake(
             -Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
-            Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(10)).in(Meters),
+            Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(12)).in(Meters),
             -Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
             Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
             intakeSimFuel);
