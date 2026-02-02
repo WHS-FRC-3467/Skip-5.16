@@ -48,7 +48,8 @@ public class PreloadNeutralAuto extends AutoRoutine {
             case CENTER -> expectedPaths =
                 List.of("PreloadShoot-Center", "UnderTrench-Run-Center",
                     "SweepNeutral-Trench-Left", "UnderTrench-Shoot-Left");
-            case RIGHT -> expectedPaths = List.of("PreloadShoot-Right", "placeholder"); // TODO
+            case RIGHT -> expectedPaths = List.of("PreloadShoot-Right", "UnderTrench-Run-Right",
+                "SweepNeutral-Trench-Right", "UnderTrench-Shoot-Right");
             default -> expectedPaths = List.of();
         };
 
@@ -68,7 +69,7 @@ public class PreloadNeutralAuto extends AutoRoutine {
                 // Make a run for the neutral zone
                 AutoSegments.driveAndIntake(drive, intakeLinear, intakeRoller,
                     pathPlannerPaths.get(1),
-                    pathPlannerPaths.get(2), Seconds.of(0.50)),
+                    pathPlannerPaths.get(2), Seconds.of(0.0)),
                 // Run back under the trench and shoot
                 AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
                     pathPlannerPaths.get(3)),

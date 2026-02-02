@@ -109,13 +109,21 @@ public class RobotContainer {
         // Default - No Auto
         autoChooser.addDefaultOption("None", new NoneAuto());
 
-        // Preload + Neutral Auto - Start at Center
-        autoChooser.addOption("PreloadNeutralAuto",
+        // Preload + Neutral Auto
+        // Right start (blue canonical)
+        autoChooser.addOption("PreloadNeutralAuto-Right", new PreloadNeutralAuto(drive,
+            intakeLinear, intakeRoller, indexer, tower, shooter, StartPosition.RIGHT));
+        // Center start (blue canonical)
+        autoChooser.addOption("PreloadNeutralAuto-Center",
             new PreloadNeutralAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
                 StartPosition.CENTER));
+        // Left start (blue canonical)
+        autoChooser.addOption("PreloadNeutralAuto-Left",
+            new PreloadNeutralAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.LEFT));
 
-        // Depot Auto - Start at Center
-        autoChooser.addOption("DepotAuto",
+        // Depot Auto
+        autoChooser.addOption("DepotAuto-Center",
             new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
                 StartPosition.CENTER));
 
@@ -172,18 +180,18 @@ public class RobotContainer {
         controller.rightTrigger().whileTrue(
             shooter.prepareShot(
                 indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
-        
+
         // TODO: change button bindings as necessary
         // X button: Align rotation parallel to trench while held - Going towards CENTER
         controller.x().whileTrue(
-            DriveCommands.joystickDriveAtAngle(drive, 
+            DriveCommands.joystickDriveAtAngle(drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
                 () -> (FieldUtil.shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero)));
 
         // Y button: Align rotation parallel to trench while held - Returning from CENTER
         controller.y().whileTrue(
-            DriveCommands.joystickDriveAtAngle(drive, 
+            DriveCommands.joystickDriveAtAngle(drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
                 () -> (FieldUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)));
