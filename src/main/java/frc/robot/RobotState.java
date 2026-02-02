@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 import java.util.Optional;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -340,6 +341,13 @@ public class RobotState {
     @AutoLogOutput(key = "Robot/CurrentTarget")
     public Target getTarget()
     {
+        Logger.recordOutput("test/1",
+            new Pose2d(Target.FEED_LEFT.getAllianceTranslation().toTranslation2d(),
+                Rotation2d.kZero));
+        Logger.recordOutput("test/2",
+            new Pose2d(Target.FEED_RIGHT.getAllianceTranslation().toTranslation2d(),
+                Rotation2d.kZero));
+
         if (getFieldRegion() == FieldRegion.ALLIANCE_ZONE) {
             return Target.HUB;
         }

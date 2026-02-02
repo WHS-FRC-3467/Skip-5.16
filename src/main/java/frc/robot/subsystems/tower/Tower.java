@@ -30,8 +30,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Subsystem that controls the tower mechanism that transfers game pieces from the indexer to the shooter.
- * The tower can stop, idle at a slow speed to hold game pieces, or shoot at full speed.
+ * Subsystem that controls the tower mechanism that transfers game pieces from the indexer to the
+ * shooter. The tower can stop, idle at a slow speed to hold game pieces, or shoot at full speed.
  * Uses a flywheel mechanism for velocity control.
  */
 public class Tower extends SubsystemBase {
@@ -100,7 +100,7 @@ public class Tower extends SubsystemBase {
 
     /**
      * Holds a state until the command is interrupted. Once the command is interrupted, its state
-     * will automatically be set to {@link State#STOP}
+     * will automatically be set to {@link State#IDLE}
      * 
      * In a sequence, this command is blocking and requires this subsystem
      * 
@@ -109,7 +109,7 @@ public class Tower extends SubsystemBase {
      */
     public Command holdStateUntilInterrupted(State state)
     {
-        return this.startEnd(() -> setState(state), () -> setState(State.STOP))
+        return this.startEnd(() -> setState(state), () -> setState(State.IDLE))
             .withName(state.name() + " Until Interrupted");
     }
 
