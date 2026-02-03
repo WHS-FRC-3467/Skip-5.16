@@ -340,7 +340,12 @@ public class RobotState {
     @AutoLogOutput(key = "Robot/CurrentTarget")
     public Target getTarget()
     {
-        if (getFieldRegion() == FieldRegion.ALLIANCE_ZONE) {
+        FieldRegion region = getFieldRegion();
+
+        // Target the hub anywhere on our side *including* the near bump/trench lanes.
+        if (region == FieldRegion.ALLIANCE_ZONE
+            || region == FieldRegion.LEFT_BUMP_TRENCH
+            || region == FieldRegion.RIGHT_BUMP_TRENCH) {
             return Target.HUB;
         }
 
