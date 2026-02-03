@@ -211,8 +211,8 @@ public class RobotContainer {
         SmartDashboard.putData("Face Target",
             DriveCommands.joystickDriveFacingTarget(
                 drive,
-                () -> -controller.getLeftX(),
-                () -> -controller.getLeftY()));
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX()));
 
         if (Constants.currentMode == Mode.SIM) {
             var fuelSim = RobotSim.getInstance().getFuelSim();
