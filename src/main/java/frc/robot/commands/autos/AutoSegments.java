@@ -54,7 +54,7 @@ public class AutoSegments {
      * @return a command that drives to the shooting location and attempts to shoot all the
      *         PRELOADED FUEL
      */
-    public static Command makePreloadShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer,
+    public static Command makePreloadShot(Drive drive, Indexer indexer,
         Tower tower,
         ShooterSuperstructure shooter, PathPlannerPath path)
     {
@@ -77,9 +77,7 @@ public class AutoSegments {
      * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
      * @param path The path to drive to the shooting location, the robot will shoot from the path's
-     *        end pose
-     * @param path The path to drive to the shooting location, the robot will shoot from the path's
-     *        end pose
+     * end pose
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
     public static Command makeFullShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer,
@@ -129,7 +127,7 @@ public class AutoSegments {
      * linear stage. Timeout after 1.5s.
      * 
      * @param intakeLinear the linear intake subsystem
-     * @param intakeRoller
+     * @param intakeRoller the roller intake subsystem
      * @return a command that initializes the intake.
      */
     public static Command initializeIntake(IntakeLinear intakeLinear, IntakeRoller intakeRoller)

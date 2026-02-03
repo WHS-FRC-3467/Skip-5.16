@@ -97,9 +97,12 @@ public class AutoCommands {
                         .until(shooter.readyToShoot.and(canShoot).negate()))))
             .finallyDo(() -> {
                 // Defensively spin everything down, non-blocking
-                shooter.setFlyWheelSpeed(RadiansPerSecond.zero());
-                indexer.setStateCommand(Indexer.State.STOP);
-                tower.setStateCommand(Tower.State.STOP);
+                CommandScheduler.getInstance()
+                    .schedule(shooter.setFlyWheelSpeed(RadiansPerSecond.zero()));
+                CommandScheduler.getInstance()
+                    .schedule(indexer.setStateCommand(Indexer.State.STOP));
+                CommandScheduler.getInstance()
+                    .schedule(tower.setStateCommand(Tower.State.STOP));
             });
     }
 

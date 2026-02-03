@@ -68,7 +68,7 @@ public class DepotAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, intakeLinear, indexer, tower, shooter,
+                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
                 // Go to the DEPOT and intake FUEL
                 AutoSegments.driveAndIntake(intakeLinear, intake,

@@ -30,10 +30,6 @@ import frc.robot.subsystems.tower.Tower;
  * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect pieces from
  * the neutral zone, and then shoot them. Strategy layer.
  */
-/**
- * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect pieces from
- * the neutral zone, and then shoot them. Strategy layer.
- */
 public class PreloadNeutralAuto extends AutoRoutine {
 
     public PreloadNeutralAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intakeRoller,
@@ -65,7 +61,7 @@ public class PreloadNeutralAuto extends AutoRoutine {
                 // Initialize intake
                 AutoSegments.initializeIntake(intakeLinear, intakeRoller),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, intakeLinear, indexer, tower, shooter,
+                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
                 AutoBuilder.followPath(pathPlannerPaths.get(1)),
                 // Make a run for the neutral zone
