@@ -128,7 +128,7 @@ public class RobotState {
      */
     public ChassisSpeeds getFieldRelativeVelocity()
     {
-        return ChassisSpeeds.fromFieldRelativeSpeeds(
+        return ChassisSpeeds.fromRobotRelativeSpeeds(
             velocity.vxMetersPerSecond,
             velocity.vyMetersPerSecond,
             velocity.omegaRadiansPerSecond,
