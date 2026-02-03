@@ -161,10 +161,10 @@ public class RobotState {
      * Classifies the robot's current position into a broad field region.
      *
      * <p>
-     * The pose is transformed into the blue-alliance field frame via {@code FieldUtil.apply(...)}
-     * so that {@link FieldRegion#ALLIANCE_ZONE} always refers to the current alliance's side of the
-     * field (and {@link FieldRegion#OPPONENT_ALLIANCE_ZONE} to the far side), regardless of whether
-     * the robot is actually on blue or red.
+     * The pose is transformed into the current alliance field frame via
+     * {@code FieldUtil.apply(...)} so that {@link FieldRegion#ALLIANCE_ZONE} always refers to the
+     * current alliance's side of the field (and {@link FieldRegion#OPPONENT_ALLIANCE_ZONE} to the
+     * far side), regardless of whether the robot is actually on blue or red.
      *
      * <p>
      * Bump/trench lanes are checked first so they take precedence over the coarse X-based zone
