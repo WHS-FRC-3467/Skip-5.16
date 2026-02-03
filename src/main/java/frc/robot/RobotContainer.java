@@ -184,6 +184,9 @@ public class RobotContainer {
                     () -> -controller.getLeftX(),
                     robotState::getTunnelAssistHeading));
 
+        // D-Pad Up: Force Intake Linear Slide Back
+        controller.povUp().onTrue(intakeLinear.retract());
+
         // D-Pad Down: Unjam
         controller.povDown().whileTrue(Commands.parallel(
             intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.EJECT),
