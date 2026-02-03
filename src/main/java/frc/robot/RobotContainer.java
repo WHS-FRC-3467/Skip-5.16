@@ -183,6 +183,12 @@ public class RobotContainer {
                     () -> -controller.getLeftY(),
                     () -> -controller.getLeftX(),
                     robotState::getTunnelAssistHeading));
+
+        // D-Pad Down: Unjam
+        controller.povDown().whileTrue(Commands.parallel(
+            intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.EJECT),
+            indexer.holdStateUntilInterrupted(Indexer.State.EXPEL),
+            tower.holdStateUntilInterrupted(Tower.State.EJECT)));
     }
 
     /**

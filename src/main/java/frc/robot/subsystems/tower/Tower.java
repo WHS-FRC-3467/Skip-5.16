@@ -39,8 +39,10 @@ public class Tower extends SubsystemBase {
         new LoggedTunableNumber(TowerConstants.NAME + "/StopRPS", 0.0);
     private static final LoggedTunableNumber IDLE_RPS =
         new LoggedTunableNumber(TowerConstants.NAME + "/IdleRPS", -0.1);
+    private static final LoggedTunableNumber Eject_RPS =
+        new LoggedTunableNumber(TowerConstants.NAME + "/EjectRPS", -0.5);
     private static final LoggedTunableNumber SHOOT_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/IdleRPS",
+        new LoggedTunableNumber(TowerConstants.NAME + "/ShootRPS",
             TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private final FlywheelMechanism<?> io;
@@ -53,6 +55,8 @@ public class Tower extends SubsystemBase {
         STOP(() -> RotationsPerSecond.of(STOP_RPS.get())),
         IDLE(
             () -> RotationsPerSecond.of(IDLE_RPS.get())),
+        EJECT(
+            () -> RotationsPerSecond.of(Eject_RPS.get())),
         SHOOT(
             () -> RotationsPerSecond.of(SHOOT_RPS.get()));
 
