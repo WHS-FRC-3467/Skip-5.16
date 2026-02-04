@@ -35,9 +35,10 @@ public class DepotNeutralAuto extends AutoRoutine {
         List<String> expectedPaths;
         switch (start) {
             case LEFT -> expectedPaths =
-                List.of("DepotSweep-Left", "UnderTrench-Run-Left", "SweepNeutral-Trench-Left",
-                    "UnderTrench-Shoot-Left",
-                    "DepotSweep-From-Shot-Left", "Through-Depot", "Through-Depot-Reverse");
+                List.of("DepotSweep-Left", "DepotStage-LefT", "Through-Depot",
+                    "Through-Depot-Reverse",
+                    "UnderTrench-Run-Left", "SweepNeutral-Trench-Left",
+                    "UnderTrench-Shoot-Left");
             case CENTER -> expectedPaths =
                 List.of(); // Depot-center auto not yet implemented
             case RIGHT -> expectedPaths = List.of(); // Depot-right auto not yet implemented
@@ -53,26 +54,31 @@ public class DepotNeutralAuto extends AutoRoutine {
             loadCommands(
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
-                // Initialize intake
+                // Initialize intake to starting position
                 AutoSegments.initializeIntake(intakeLinear, intakeRoller),
-                // Drive to staging location
-                AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                // Run to neutral zone
-                AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                // Sweep neutral zone while intaking
+                // Drive to depot staging location
+                AutoBuilder.followPath(pathPlannerPaths.get(0))
+                    .andThen(AutoBuilder.followPath(pathPlannerPaths.get(1))),
+                // Sweep depot while intaking
                 AutoSegments.driveAndIntake(intakeLinear, intakeRoller,
                     AutoBuilder.followPath(pathPlannerPaths.get(2)), Seconds.of(0.0)),
-                // Run back under the trench and shoot
-                AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
+                // Re-initialize intake for depot shot
+                AutoSegments.initializeIntake(intakeLinear, intakeRoller),
+                // Reverse back through depot to shooting location & shoot depot fuel
+                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(3)),
-                // Run to depot
+                // Re-initialize intake for neutral run
+                AutoSegments.initializeIntake(intakeLinear, intakeRoller),
+                // Run to neutral zone
                 AutoBuilder.followPath(pathPlannerPaths.get(4)),
-                // Run through depot while intaking
+                // Sweep neutral zone while intaking
                 AutoSegments.driveAndIntake(intakeLinear, intakeRoller,
                     AutoBuilder.followPath(pathPlannerPaths.get(5)), Seconds.of(0.0)),
-                // Reverse back through depot to shooting location
-                AutoBuilder.followPath(pathPlannerPaths.get(6)));
-
+                // Run back under the trench and shoot
+                AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
+                    pathPlannerPaths.get(6)),
+                // Re-initialize intake for tele-op
+                AutoSegments.initializeIntake(intakeLinear, intakeRoller));
     }
 }
 

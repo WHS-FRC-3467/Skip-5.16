@@ -180,6 +180,8 @@ public class AutoCommands {
      * Creates a blocking command to agitate the balls in the hopper to facilitate shooting. Should
      * be externally interrupted / run in parallel with other commands. Can be used between
      * shootFuel() commands within an AutoSegment to prepare the hopper for game piece transport.
+     * Subsystems end up in time-dependent state; be sure to decorate or sequence this call with a
+     * state control command.
      * 
      * @param intake the linear intake subsystem
      * @param tower the tower subsystem

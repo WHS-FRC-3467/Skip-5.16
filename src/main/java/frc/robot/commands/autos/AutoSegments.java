@@ -20,6 +20,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.robot.subsystems.drive.Drive;
@@ -77,7 +78,7 @@ public class AutoSegments {
      * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
      * @param path The path to drive to the shooting location, the robot will shoot from the path's
-     * end pose
+     *        end pose
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
     public static Command makeFullShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer,
