@@ -77,6 +77,8 @@ public class OutpostAuto extends AutoRoutine {
                     pathPlannerPaths.get(0)),
                 // Go to the OUTPOST and intake FUEL
                 AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                // Wait for FUEL to be dumped
+                Commands.waitSeconds(3),
                 Commands.either(
                     Commands.runOnce(() -> RobotSim.getInstance().getFuelSim().setHeldFuel(20)),
                     Commands.none(), RobotBase::isSimulation),
