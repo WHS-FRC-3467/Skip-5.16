@@ -82,7 +82,7 @@ public class OutpostAuto extends AutoRoutine {
                     Commands.none(), RobotBase::isSimulation),
                 // Drive to shooting location and shoot all FUEL
                 AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
-                    pathPlannerPaths.get(3)));
+                    pathPlannerPaths.get(2)));
         }
     }
 }
