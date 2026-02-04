@@ -257,9 +257,9 @@ public class FieldConstants {
 
     public static class Outpost {
         // Dimensions
-        public static final double WIDTH = Units.inchesToMeters(31.8);
-        public static final double OPENING_DISTANCE_FROM_FLOOR = Units.inchesToMeters(28.1);
-        public static final double HEIGHT = Units.inchesToMeters(7.0);
+        public static final Distance WIDTH = Inches.of(31.8);
+        public static final Distance OPENING_DISTANCE_FROM_FLOOR = Inches.of(28.1);
+        public static final Distance HEIGHT = Inches.of(7.0);
 
         // Relevant reference points on alliance side
         public static final Translation2d CENTER_POINT =

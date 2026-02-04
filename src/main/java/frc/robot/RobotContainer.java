@@ -118,6 +118,10 @@ public class RobotContainer {
             new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
                 StartPosition.CENTER));
 
+        autoChooser.addOption("OutpostAuto",
+            new OutpostAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.LEFT));
+
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
         });
