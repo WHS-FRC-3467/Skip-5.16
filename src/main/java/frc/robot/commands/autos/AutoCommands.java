@@ -98,7 +98,7 @@ public class AutoCommands {
             .finallyDo(() -> {
                 // Spin shooter down, non-blocking
                 CommandScheduler.getInstance()
-                    .schedule(shooter.setFlyWheelSpeed(RadiansPerSecond.zero()));
+                    .schedule(shooter.setFlywheelSpeed(RadiansPerSecond.zero()));
             });
     }
 
