@@ -90,7 +90,6 @@ public class AutoSegments {
      * 
      * @param intakeLinear The IntakeLinear subsystem
      * @param intakeRoller The IntakeRoller subsystem
-     * @param drivePath The path to drive to the intaking location
      * @param pathCommand The command that follows the desired path
      * @param afterPathWait The time to wait after the intaking path is complete before stopping the
      *        intake
