@@ -25,6 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
+      "linkedName": "LeftPreloadShoot"
       "linkedName": "PreloadShoot-Left-End"
     }
   ],
@@ -45,7 +46,7 @@
     "rotation": -37.0
   },
   "reversed": false,
-  "folder": "LEFT",
+  "folder": "Preload",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -37.0

@@ -45,7 +45,7 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "RIGHT",
+  "folder": "Depot",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 48.50038271918936
