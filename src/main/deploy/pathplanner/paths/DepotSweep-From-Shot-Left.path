@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.8,
-        "y": 6.0
+        "x": 2.75,
+        "y": 7.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5217776174042683,
-        "y": 6.043096643464255
+        "x": 1.9884244406395983,
+        "y": 6.4667390524195705
       },
       "isLocked": false,
-      "linkedName": "PreloadShoot-Left-End"
+      "linkedName": "UnderTrench-Shoot-Left-End"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 6.0
       },
       "prevControl": {
-        "x": 2.3089695049954617,
-        "y": 5.943001465526033
+        "x": 2.058305667814262,
+        "y": 6.0
       },
       "nextControl": null,
       "isLocked": false,
@@ -41,14 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 3.0,
+    "velocity": 0,
     "rotation": 180.0
   },
   "reversed": false,
   "folder": "LEFT",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -37.0
+    "rotation": -57.5
   },
   "useDefaultConstraints": true
 }

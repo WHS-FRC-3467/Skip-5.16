@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.8,
+        "x": 2.5,
         "y": 6.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9818115579042976,
+        "x": 2.6818115579042967,
         "y": 7.043238255439696
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "DepotSweep-Left-End"
     },
     {
       "anchor": {
@@ -69,7 +69,7 @@
   "folder": "LEFT",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -38.622
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

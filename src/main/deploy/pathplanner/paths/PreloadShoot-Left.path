@@ -12,7 +12,7 @@
         "y": 6.0
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "PreloadShoot-Left-Start"
     },
     {
       "anchor": {
@@ -48,7 +48,7 @@
   "folder": "LEFT",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -33.74080864339587
+    "rotation": -37.0
   },
   "useDefaultConstraints": true
 }

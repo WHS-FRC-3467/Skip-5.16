@@ -30,9 +30,9 @@ import frc.robot.subsystems.tower.Tower;
  * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect pieces from
  * the neutral zone, and then shoot them. Strategy layer.
  */
-public class BasicNeutralAuto extends AutoRoutine {
+public class PreloadNeutralAuto extends AutoRoutine {
 
-    public BasicNeutralAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intakeRoller,
+    public PreloadNeutralAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intakeRoller,
         Indexer indexer, Tower tower,
         ShooterSuperstructure shooter, StartPosition start)
     {
@@ -40,13 +40,11 @@ public class BasicNeutralAuto extends AutoRoutine {
         List<String> expectedPaths;
         switch (start) {
             case LEFT -> expectedPaths =
-                List.of("PreloadShoot-Left", "UnderTrench-Run-Left", "SweepNeutral-Trench-Left",
-                    "UnderTrench-Shoot-Left");
+                List.of(); // Preload-left auto not yet implemented
             case CENTER -> expectedPaths =
                 List.of("PreloadShoot-Center", "UnderTrench-Run-Center",
                     "SweepNeutral-Trench-Left", "UnderTrench-Shoot-Left");
-            case RIGHT -> expectedPaths = List.of("PreloadShoot-Right", "UnderTrench-Run-Right",
-                "SweepNeutral-Trench-Right", "UnderTrench-Shoot-Right");
+            case RIGHT -> expectedPaths = List.of(); // Preload-right auto not yet implemented
             default -> expectedPaths = List.of();
         };
 
