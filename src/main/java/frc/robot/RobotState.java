@@ -18,6 +18,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,6 +28,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
@@ -61,6 +63,11 @@ public class RobotState {
     @Getter
     @Setter
     private ChassisSpeeds velocity = new ChassisSpeeds();
+
+
+    public BooleanSupplier auto = () -> false;
+    @Getter
+    private Trigger isAuto = new Trigger(auto);
 
     /**
      * Returns the robot's odometry-only pose (without vision corrections).

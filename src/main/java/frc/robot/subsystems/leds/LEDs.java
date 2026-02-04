@@ -20,13 +20,32 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.Lights;
 import frc.lib.io.lights.LightsIO;
 import frc.lib.util.LoggerHelper;
+import frc.robot.RobotContainer;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
- * Subsystem that controls the robot's LED lights for visual feedback and animations.
- * Provides commands for different animation patterns during disabled, autonomous, and teleop modes.
+ * Subsystem that controls the robot's LED lights for visual feedback and animations. Provides
+ * commands for different animation patterns during disabled, autonomous, and teleop modes.
  */
 public class LEDs extends SubsystemBase {
+    public RobotContainer robotContainer;
+
+    @RequiredArgsConstructor
+    @SuppressWarnings("ImmutableEnumChecker")
+    public enum State {
+        NONE(0),
+        RUNNING_INTAKE(0),
+        READY_TO_SHOOT(1),
+        SHOOTING(2),
+        RUNNING_AUTO(3);
+
+        private final int priority;
+    }
+
     private final Lights lights;
+
+    private State setState = State.NONE;
 
     /**
      * Constructs an LEDs subsystem.
@@ -45,8 +64,8 @@ public class LEDs extends SubsystemBase {
     }
 
     /**
-     * Creates a command to run the disabled animation on the LEDs.
-     * Turns off the LEDs when the command ends.
+     * Creates a command to run the disabled animation on the LEDs. Turns off the LEDs when the
+     * command ends.
      * 
      * @return A command that runs the disabled animation
      */
@@ -59,8 +78,8 @@ public class LEDs extends SubsystemBase {
     }
 
     /**
-     * Creates a command to run the autonomous animation on the LEDs.
-     * Turns off the LEDs when the command ends.
+     * Creates a command to run the autonomous animation on the LEDs. Turns off the LEDs when the
+     * command ends.
      * 
      * @return A command that runs the autonomous animation
      */
@@ -71,4 +90,41 @@ public class LEDs extends SubsystemBase {
             () -> lights.setAnimations(LEDsConstants.offAnimation))
             .withName("Auto Animation");
     }
+
+    public void smartHandler(State state)
+    {
+        if (state.priority > setState.priority) {
+            setLED(state);
+            setState = state;
+        }
+    }
+
+    public void dumbHandler(State state)
+    {
+        setLED(state);
+        setState = state;
+    }
+
+    private void setLED(State state)
+    {
+        switch (state) {
+            case RUNNING_INTAKE:
+                runDisabledAnimation();
+                break;
+            case READY_TO_SHOOT:
+                runDisabledAnimation();
+                break;
+            case SHOOTING:
+                runDisabledAnimation();
+                break;
+            case RUNNING_AUTO:
+                runAutoAnimation();
+                break;
+            default:
+                break;
+        }
+    }
+
+
+
 }

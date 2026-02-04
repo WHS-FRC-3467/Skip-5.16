@@ -130,6 +130,45 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
+
+        robotState.getIsAuto()
+            .onTrue(Commands.runOnce(() -> leds.smartHandler(LEDs.State.RUNNING_AUTO)));
+        robotState.getIsAuto()
+            .onFalse(Commands.runOnce(() -> changeState()));
+
+        shooter.getIsShooting()
+            .onTrue(Commands.runOnce(() -> leds.smartHandler(LEDs.State.SHOOTING)));
+        shooter.getIsShooting()
+            .onFalse(Commands.runOnce(() -> changeState()));
+
+        shooter.readyToShoot
+            .onTrue(Commands.runOnce(() -> leds.smartHandler(LEDs.State.READY_TO_SHOOT)));
+        shooter.readyToShoot
+            .onFalse(Commands.runOnce(() -> changeState()));
+
+        intakeRoller.getIntakeRunning()
+            .onTrue(Commands.runOnce(() -> leds.smartHandler(LEDs.State.RUNNING_INTAKE)));
+        intakeRoller.getIntakeRunning()
+            .onFalse(Commands.runOnce(() -> changeState()));
+
+    }
+
+    public void changeState()
+    {
+        LEDs.State returnState = LEDs.State.NONE;
+        if (robotState.getIsAuto().getAsBoolean()) { // highest priotiy6
+            returnState = LEDs.State.RUNNING_AUTO;
+
+        } else if (shooter.getIsShooting().getAsBoolean()) {
+            returnState = LEDs.State.SHOOTING;
+
+        } else if (shooter.readyToShoot.getAsBoolean()) {
+            returnState = LEDs.State.READY_TO_SHOOT;
+
+        } else if (intakeRoller.getIntakeRunning().getAsBoolean()) { // lowest pritoty
+            returnState = LEDs.State.RUNNING_INTAKE;
+        }
+        leds.dumbHandler(returnState);
     }
 
     /**
@@ -198,15 +237,6 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
-        SmartDashboard.putData("Intake Roller/Eject",
-            intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
-        SmartDashboard.putData("Intake Roller/Intake",
-            intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
-        SmartDashboard.putData("Intake Roller/Stop",
-            intakeRoller.setStateCommand(IntakeRoller.State.STOP));
-        SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
-        SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
-        SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
 
         SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
             Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));

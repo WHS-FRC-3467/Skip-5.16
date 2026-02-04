@@ -25,9 +25,13 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.leds.LEDs;
 import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
+import lombok.Getter;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -44,6 +48,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  */
 public class Robot extends LoggedRobot {
     private final RobotState robotState = RobotState.getInstance();
+
 
     private Command autonomousCommand;
     private RobotContainer robotContainer;
@@ -202,6 +207,7 @@ public class Robot extends LoggedRobot {
         if (autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(autonomousCommand);
         }
+        robotState.auto = () -> true;
     }
 
     /** This function is called periodically during autonomous. */
@@ -222,6 +228,7 @@ public class Robot extends LoggedRobot {
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
         }
+        robotState.auto = () -> false;
     }
 
     /**

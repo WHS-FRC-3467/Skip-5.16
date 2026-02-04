@@ -24,6 +24,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableNumber;
@@ -32,9 +33,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Subsystem that controls the intake roller mechanism.
- * The roller can intake game pieces, eject them, or stop.
- * Uses a flywheel mechanism for velocity control.
+ * Subsystem that controls the intake roller mechanism. The roller can intake game pieces, eject
+ * them, or stop. Uses a flywheel mechanism for velocity control.
  */
 public class IntakeRoller extends SubsystemBase implements AutoCloseable {
 
@@ -57,6 +57,9 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
         private final Supplier<AngularVelocity> angularVelocity;
 
     }
+
+    @Getter
+    private Trigger intakeRunning = new Trigger(() -> state == State.INTAKE);
 
     /** Constructor for the Intake subsystem - accepts a FlywheelMechanism. */
     public IntakeRoller(FlywheelMechanism<?> intakeIO)

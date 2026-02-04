@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
@@ -29,6 +30,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
@@ -36,6 +38,7 @@ import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
+import lombok.Getter;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
 
@@ -83,7 +86,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final RotaryMechanism<?, ?> hoodIO;
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
-
     public final LoggedTrigger readyToShoot =
         new LoggedTrigger(this.getName() + "/readyToShoot", () -> {
             double dist = robotState
@@ -98,6 +100,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         new LoggedTunableNumber(getName() + "/Tuning/FlywheelSpeedRPS", 0.0);
     private final LoggedTunableNumber tuningHoodAngleDegrees =
         new LoggedTunableNumber(getName() + "/Tuning/HoodAngleDegrees", 0.0);
+
+    private BooleanSupplier shooting = () -> false;
+
+    @Getter
+    private Trigger isShooting = new Trigger(shooting);
 
     /**
      * Constructs a new ShooterSuperstructure subsystem with the specified hood and flywheel
@@ -226,16 +233,20 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 .getDistanceToTarget().in(Meters)));
 
         return Commands.sequence(
+            Commands.run(() -> shooting = () -> true),
             Commands.parallel(
+
                 Commands.run(() -> spinFlywheel(desiredFlywheelVelocitySupplier.get())),
                 Commands.run(() -> setHoodPosition(desiredHoodPositionSupplier.get())),
                 // Require this subsystem
                 Commands.idle(this),
-
                 Commands.repeatingSequence(
                     Commands.waitUntil(readyToShoot),
                     whileAtPosition.until(readyToShoot.negate()))),
-            this.runOnce(() -> spinFlywheel(RotationsPerSecond.zero())));
+            this.runOnce(() -> spinFlywheel(RotationsPerSecond.zero())),
+            this.runOnce(() -> shooting = () -> false)
+
+        );
     }
 
     /**
