@@ -12,7 +12,7 @@
         "y": 6.043096643464255
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "PreloadShoot-Left-End"
     },
     {
       "anchor": {
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 3.0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": "LEFT",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -38.621813710817776
+    "rotation": -37.0
   },
   "useDefaultConstraints": true
 }

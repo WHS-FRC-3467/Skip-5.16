@@ -4,15 +4,15 @@
     {
       "anchor": {
         "x": 7.558,
-        "y": 5.309
+        "y": 5.309457917261056
       },
       "prevControl": null,
       "nextControl": {
         "x": 6.903441780821918,
-        "y": 6.415214041095891
+        "y": 6.415671958356946
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "SweepNeutral-Trench-Left-End"
     },
     {
       "anchor": {

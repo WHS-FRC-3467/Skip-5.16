@@ -41,7 +41,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "UnderTrench-Run-Left-End"
     }
   ],
   "rotationTargets": [
@@ -63,7 +63,7 @@
   },
   "goalEndState": {
     "velocity": 3.0,
-    "rotation": -45.00000000000004
+    "rotation": -45.0
   },
   "reversed": false,
   "folder": "LEFT",
