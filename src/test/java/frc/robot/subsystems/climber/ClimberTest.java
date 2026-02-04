@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
 
 public class ClimberTest implements AutoCloseable {
-    static final double DELTA = 1e-2; // acceptable deviation range
     Climber climber;
 
     @BeforeEach // this method will run before each test
@@ -56,8 +55,8 @@ public class ClimberTest implements AutoCloseable {
         try {
             // Check position to check if it is homed, and within tolerance of STOW setpoint.
             assertTrue(climber.nearGoal(Climber.Setpoint.STOW.getSetpoint()));
-		} catch (Exception e) {
-			fail("Failed to home climber Subsystem: " + e.getMessage());
+        } catch (Exception e) {
+            fail("Failed to home climber Subsystem: " + e.getMessage());
         }
     }
 

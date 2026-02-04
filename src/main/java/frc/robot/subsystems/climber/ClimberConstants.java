@@ -85,10 +85,8 @@ public class ClimberConstants {
 
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0);
 
-    // P = 30.0
-
     /**
-     * Creates and configures a TalonFX motor controller configuration for the intake linear
+     * Creates and configures a TalonFX motor controller configuration for the climber
      * mechanism.
      * 
      * @return The configured TalonFX configuration
@@ -144,11 +142,11 @@ public class ClimberConstants {
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new LinearMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeLinear), CHARACTERISTICS);
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.climberLinear), CHARACTERISTICS);
                 break;
             case SIM:
                 mechanism = new LinearMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeLinear),
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.climberLinear),
                     DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
                 break;
             case REPLAY:

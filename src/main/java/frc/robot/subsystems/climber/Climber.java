@@ -37,7 +37,22 @@ import frc.lib.util.LoggerHelper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/** Add your docs here. */
+/**
+ * Climber subsystem that controls a linear climbing mechanism.
+ *
+ * <p>This class wraps a {@link LinearMechanism} to command the climber to
+ * various named positions using closed-loop control. It exposes a set of
+ * logical {@link Setpoint}s ({@code HOME}, {@code STOW}, {@code RAISED},
+ * {@code DOWN}) that are converted to mechanism angle and distance via
+ * {@link ClimberConstants#CONVERTER}.
+ *
+ * <p>The subsystem also supports a homing routine, where the climber is
+ * driven slowly until a current spike is detected, at which point the
+ * encoder is zeroed at the {@code HOME} position. Commands such as
+ * {@link #setGoal(Setpoint)}, {@link #setGoalCommandWithWait(Setpoint)},
+ * and {@link #homeCommand()} are intended to be scheduled by higher-level
+ * routines or operator controls.
+ */
 public class Climber extends SubsystemBase {
     private final LinearMechanism<?> io;
     private Trigger homedTrigger;
@@ -89,8 +104,6 @@ public class Climber extends SubsystemBase {
 
     public boolean nearGoal(Distance goalPosition)
     {
-        System.out.println("Climber Position: " + ClimberConstants.CONVERTER.toDistance(io.getPosition()));
-        System.out.println("Climber Goal: " + goalPosition.in(Inches));
         return io.nearGoal(goalPosition, ClimberConstants.TOLERANCE);
     }
 
