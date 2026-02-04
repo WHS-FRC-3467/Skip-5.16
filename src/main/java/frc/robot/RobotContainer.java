@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
-import frc.lib.util.FieldUtil;
 import frc.robot.Constants.Mode;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
@@ -35,13 +34,10 @@ import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeLinear.IntakeLinearConstants;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.intakeRoller.IntakeRollerConstants;
-import frc.robot.subsystems.intakeRoller.IntakeRoller.State;
-import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.indexer.IndexerConstants;
-import frc.robot.subsystems.leds.LEDs;
-import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
@@ -52,7 +48,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 
@@ -71,16 +66,16 @@ public class RobotContainer {
 
     // Subsystems
     public final Drive drive;
-    private final LEDs leds;
-    private final ObjectDetector objectDetector;
     private final ShooterSuperstructure shooter;
     private final IntakeRoller intakeRoller;
     private final IntakeLinear intakeLinear;
     private final Indexer indexer;
     private final Tower tower;
+    private final ObjectDetector objectDetector;
 
     // Controller
-    private final CommandXboxControllerExtended controller = new CommandXboxControllerExtended(0);
+    private final CommandXboxControllerExtended controller =
+        new CommandXboxControllerExtended(0).withDeadband(0.1);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
@@ -92,14 +87,13 @@ public class RobotContainer {
     public RobotContainer()
     {
         drive = DriveConstants.get();
-        leds = LEDsConstants.get();
-        objectDetector = ObjectDetectorConstants.get();
         shooter = ShooterSuperstructureConstants.get();
         intakeRoller = IntakeRollerConstants.get();
         intakeLinear = IntakeLinearConstants.get();
         indexer = IndexerConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
+        objectDetector = ObjectDetectorConstants.get();
 
         if (RobotBase.isSimulation()) {
             RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intakeRoller,
@@ -154,46 +148,58 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> -controller.getRightX()));
 
-        // Right Trigger: Teleop vision align to largest contour (translation allowed)
-        // controller.rightTrigger(0.2)
-        // .whileTrue(new TeleopAlignToObject(drive, objectDetector, ContourSelectionMode.LARGEST,
-        // () -> -controller.getLeftY(), // forward/back
-        // () -> -controller.getLeftX(), // strafe
-        // () -> -controller.getRightX())); // fallback rotation
-
-        controller.button(1).whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> robotState.getAngleToTarget()));
-
-        // Left Bumper: Intake while held
-        controller.leftBumper().onTrue(intakeRoller.setStateCommand(State.INTAKE))
-            .onFalse(intakeRoller.stop());
-
-        // Back Button: Eject while held
-        controller.back().onTrue(intakeRoller.setStateCommand(State.EJECT))
-            .onFalse(intakeRoller.stop());
-
+        // Right Trigger: Shoot/Pass
         controller.rightTrigger().whileTrue(
-            shooter.prepareShot(
-                indexer.holdStateUntilInterrupted(Indexer.State.PULL)));
+            Commands.parallel(
+                // Aim towards target
+                DriveCommands.joystickDriveFacingTarget(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX()),
+                // Prepare shooter superstructure
+                shooter.prepareShot(
+                    // While shooter superstructure is prepared,
+                    // and drivetrain is aiming towards the target,
+                    // shoot
+                    Commands.parallel(
+                        indexer.holdStateUntilInterrupted(Indexer.State.PULL),
+                        tower.holdStateUntilInterrupted(Tower.State.SHOOT),
+                        intakeLinear.cycle())
+                        .onlyWhile(
+                            () -> Math.abs(robotState.getAngleToTarget()
+                                .minus(robotState.getEstimatedPose().getRotation())
+                                .getDegrees()) < 1.0)
+                        .repeatedly())))
+            .onFalse(Commands.parallel(
+                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                indexer.setStateCommand(Indexer.State.STOP),
+                tower.setStateCommand(Tower.State.IDLE),
+                intakeLinear.extend()));
 
-        // TODO: change button bindings as necessary
-        // X button: Trench align rotational assist
-        controller.x().whileTrue(
-            DriveCommands.joystickDriveAtAngle(drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> (FieldUtil.shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero)));
+        // Left Trigger: Intake
+        controller.leftTrigger().onTrue(
+            Commands.parallel(
+                intakeLinear.extend(),
+                intakeRoller.setStateCommand(IntakeRoller.State.INTAKE)))
+            .onFalse(intakeRoller.setStateCommand(IntakeRoller.State.STOP));
 
-        // Y button: Align rotation parallel to trench while held - Returning from CENTER
-        controller.y().whileTrue(
-            DriveCommands.joystickDriveAtAngle(drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> robotState.getTunnelAssistHeading()));
+        // Right Bumper: Trench Align
+        controller.rightBumper()
+            .whileTrue(
+                DriveCommands.joystickDriveAtAngle(
+                    drive,
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    robotState::getTunnelAssistHeading));
+
+        // D-Pad Up: Force Intake Linear Slide Back
+        controller.povUp().onTrue(intakeLinear.retract());
+
+        // D-Pad Down: Unjam
+        controller.povDown().whileTrue(Commands.parallel(
+            intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.EJECT),
+            indexer.holdStateUntilInterrupted(Indexer.State.EXPEL),
+            tower.holdStateUntilInterrupted(Tower.State.EJECT)));
     }
 
     /**
@@ -206,37 +212,24 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
-        SmartDashboard.putData("Intake Roller/Eject",
+        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Eject",
             intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
-        SmartDashboard.putData("Intake Roller/Intake",
+        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Intake",
             intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
-        SmartDashboard.putData("Intake Roller/Stop",
+        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Stop",
             intakeRoller.setStateCommand(IntakeRoller.State.STOP));
-        SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
-        SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
-        SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
 
-        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
-            Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intakeLinear.extend());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intakeLinear.retract());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intakeLinear.cycle());
 
-        SmartDashboard.putData("Set flywheel to 30",
-            shooter.setFlyWheelSpeed(RotationsPerSecond.of(30)));
+        SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
 
-        SmartDashboard.putData("Set hood to 45 deg", shooter.setHoodAngle(Degrees.of(45)));
-
-        SmartDashboard.putData("Intake Roller/Eject",
-            intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
-        SmartDashboard.putData("Intake Roller/Intake",
-            intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
-        SmartDashboard.putData("Intake Roller/Stop",
-            intakeRoller.setStateCommand(IntakeRoller.State.STOP));
-        SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
-        SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
-        SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
-        SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
-            Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
-        SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
-        SmartDashboard.putData("Run Indexer", indexer.setStateCommand(Indexer.State.PULL));
+        SmartDashboard.putData("Face Target",
+            DriveCommands.joystickDriveFacingTarget(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX()));
 
         if (Constants.currentMode == Mode.SIM) {
             var fuelSim = RobotSim.getInstance().getFuelSim();
@@ -255,6 +248,10 @@ public class RobotContainer {
                         .getTranslation(),
                     fuelSim.launchVel(shooter.getAverageLinearVelocity(),
                         Degrees.of(75.0).minus(shooter.getHoodAngle())));
+
+                SmartDashboard.putData("Toggle Tip Drivebase",
+                    Commands.run(
+                        () -> robotState.setDrivetrainAngled(!robotState.isDrivetrainAngled())));
             }));
         }
     }
