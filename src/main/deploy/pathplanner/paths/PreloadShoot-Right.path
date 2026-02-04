@@ -45,7 +45,7 @@
     "rotation": 46.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Preload",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

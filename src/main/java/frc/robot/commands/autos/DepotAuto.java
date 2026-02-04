@@ -51,11 +51,14 @@ public class DepotAuto extends AutoRoutine {
         List<String> expectedPaths;
         switch (start) {
             case LEFT -> expectedPaths =
-                List.of("PreloadShoot-Left", "Left-Near-Depot", "Through-Depot", "Depot-Shoot");
+                List.of("Preload/PreloadShoot-Left", "Depot/Left-Near-Depot", "Depot/Through-Depot",
+                    "Depot/Depot-Shoot");
             case CENTER -> expectedPaths =
-                List.of("PreloadShoot-Center", "Center-Near-Depot", "Through-Depot", "Depot-Shoot");
+                List.of("Preload/PreloadShoot-Center", "Depot/Center-Near-Depot",
+                    "Depot/Through-Depot", "Depot/Depot-Shoot");
             case RIGHT -> expectedPaths =
-                List.of("PreloadShoot-Right", "Right-Near-Depot", "Through-Depot", "Depot-Shoot");
+                List.of("Preload/PreloadShoot-Right", "Depot/Right-Near-Depot",
+                    "Depot/Through-Depot", "Depot/Depot-Shoot");
             default -> expectedPaths = List.of();
         }
 

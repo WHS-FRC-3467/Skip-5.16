@@ -48,10 +48,11 @@ public class PreloadNeutralAuto extends AutoRoutine {
     {
         // Choose path names based on start position
         switch (start) {
-            case LEFT -> this.loadAllPaths(List.of("PreloadShoot-Left", "placeholder"));
+            case LEFT -> this.loadAllPaths(List.of("Preload/PreloadShoot-Left", "placeholder"));
             case CENTER -> this
-                .loadAllPaths(List.of("PreloadShoot-Center", "1SweepNeutral-Bump-Center"));
-            case RIGHT -> this.loadAllPaths(List.of("PreloadShoot-Right", "placeholder"));
+                .loadAllPaths(
+                    List.of("Preload/PreloadShoot-Center", "Neutral/1SweepNeutral-Bump-Center"));
+            case RIGHT -> this.loadAllPaths(List.of("Preload/PreloadShoot-Right", "placeholder"));
         };
 
         // Load commands defensively
