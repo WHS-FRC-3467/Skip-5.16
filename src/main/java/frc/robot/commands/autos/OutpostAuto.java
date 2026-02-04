@@ -34,8 +34,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
  */
 public class OutpostAuto extends AutoRoutine {
     /**
-     * Constructs an OutpostAuto routine that shoots preload, collects from depot, and shoots
-     * collected fuel. Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
+     * Constructs an OutpostAuto routine that shoots preload, collects FUEL from the OUTPOST, and
+     * then shoots the collected FUEL. Path selection is based on the starting position (LEFT,
+     * CENTER, or RIGHT).
      *
      * @param drive the drive subsystem
      * @param intakeLinear the intake linear subsystem for deploying/retracting intake
