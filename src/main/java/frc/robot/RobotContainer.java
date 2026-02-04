@@ -51,8 +51,10 @@ import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 
 /**
  * Container class for the robot that holds all subsystems, controllers, and command bindings. This
@@ -241,13 +243,23 @@ public class RobotContainer {
         SmartDashboard.putData("Run Indexer", indexer.setStateCommand(Indexer.State.PULL));
 
         if (Constants.currentMode == Mode.SIM) {
-            SmartDashboard.putData("Shoot ball",
-                Commands.runOnce(() -> RobotSim.getInstance().getFuelSim().spawnFuel(
-                    new Translation3d(robotState.getEstimatedPose().getTranslation())
-                        .plus(new Translation3d(Inches.of(0), Inches.of(0), Inches.of(20))),
-                    RobotSim.getInstance().getFuelSim().launchVel(
-                        shooter.getAverageLinearVelocity(),
-                        shooter.getHoodAngle()))));
+            var fuelSim = RobotSim.getInstance().getFuelSim();
+            SmartDashboard.putData("Shoot Fuel", Commands.runOnce(() -> {
+                fuelSim.spawnFuel(
+                    new Pose3d(robotState.getEstimatedPose())
+                        .plus(new Transform3d(Inches.of(-10), Inches.of(-3.6),
+                            Inches.of(21), Rotation3d.kZero))
+                        .getTranslation(),
+                    fuelSim.launchVel(shooter.getAverageLinearVelocity(),
+                        Degrees.of(75.0).minus(shooter.getHoodAngle())));
+                fuelSim.spawnFuel(
+                    new Pose3d(robotState.getEstimatedPose())
+                        .plus(new Transform3d(Inches.of(-10), Inches.of(3.6),
+                            Inches.of(21), Rotation3d.kZero))
+                        .getTranslation(),
+                    fuelSim.launchVel(shooter.getAverageLinearVelocity(),
+                        Degrees.of(75.0).minus(shooter.getHoodAngle())));
+            }));
         }
     }
 

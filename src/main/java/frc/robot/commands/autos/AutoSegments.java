@@ -54,7 +54,7 @@ public class AutoSegments {
      * @return a command that drives to the shooting location and attempts to shoot all the
      *         PRELOADED FUEL
      */
-    public static Command makePreloadShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer,
+    public static Command makePreloadShot(Drive drive, Indexer indexer,
         Tower tower,
         ShooterSuperstructure shooter, PathPlannerPath path)
     {
@@ -77,9 +77,7 @@ public class AutoSegments {
      * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
      * @param path The path to drive to the shooting location, the robot will shoot from the path's
-     *        end pose
-     * @param path The path to drive to the shooting location, the robot will shoot from the path's
-     *        end pose
+     * end pose
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
     public static Command makeFullShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer,
@@ -100,26 +98,23 @@ public class AutoSegments {
      * running. Once the intaking path is complete, stop the intake. This AutoSegment only linearly
      * actuates the intake while the robot is stationary. Non-blocking command.
      * 
-     * @param drive the drive subsystem
-     * @param intakeLinear the intake linear subsystem
-     * @param intakeRoller the intake roller subsystem
-     * @param drivePath the path to drive to the intaking location
-     * @param intakingPath the path to drive while intaking FUEL
-     * @param afterPathWait the delay after finishing the intaking path before stopping the intake
-     * @return a command that drives and intakes FUEL
+     * @param intakeLinear The IntakeLinear subsystem
+     * @param intakeRoller The IntakeRoller subsystem
+     * @param drivePath The path to drive to the intaking location
+     * @param pathCommand The command that follows the desired path
+     * @param afterPathWait The time to wait after the intaking path is complete before stopping the
+     *        intake
      */
-    public static Command driveAndIntake(Drive drive, IntakeLinear intakeLinear,
-        IntakeRoller intakeRoller, PathPlannerPath drivePath, PathPlannerPath intakingPath,
+    public static Command driveAndIntake(IntakeLinear intakeLinear,
+        IntakeRoller intakeRoller, Command pathCommand,
         Time afterPathWait)
     {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
-            AutoBuilder.followPath(drivePath),
-            AutoCommands.extendIntake(intakeLinear),
             new ParallelDeadlineGroup(
-                AutoBuilder.followPath(intakingPath),
-                intakeLinear.extend(), // Keep linear intake scheduled
+                pathCommand,
+                intakeLinear.extend(),
                 intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.INTAKE)),
             Commands.waitSeconds(afterPathWait.in(Seconds)),
             // Spin down intake
@@ -132,7 +127,7 @@ public class AutoSegments {
      * linear stage. Timeout after 1.5s.
      * 
      * @param intakeLinear the linear intake subsystem
-     * @param intakeRoller
+     * @param intakeRoller the roller intake subsystem
      * @return a command that initializes the intake.
      */
     public static Command initializeIntake(IntakeLinear intakeLinear, IntakeRoller intakeRoller)

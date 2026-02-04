@@ -34,7 +34,7 @@ import frc.lib.util.LoggedTunableNumber;
 public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber INTAKE_CURRENT =
-        new LoggedTunableNumber(IntakeLinearConstants.NAME + "/IntakeCurrent", 10.0);
+        new LoggedTunableNumber(IntakeLinearConstants.NAME + "/IntakeCurrent", 60.0);
 
     public final LoggedTrigger linearStopped;
     public final LoggedTrigger isExtended;
