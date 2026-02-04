@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.util.Elastic;
 import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -176,6 +177,10 @@ public class Robot extends LoggedRobot {
     @Override
     public void disabledInit()
     {
+        // Switch to Autonomous tab in Elastic Dashboard
+        if (DriverStation.isFMSAttached()) {
+            Elastic.selectTab(1);
+        }
         // Reset hub game data check before starting the next match
         checkedHubGameData = false;
     }
@@ -196,6 +201,11 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit()
     {
+        // Switch to Autonomous tab in Elastic Dashboard
+        if (DriverStation.isFMSAttached()) {
+            Elastic.selectTab(1);
+        }
+
         autonomousCommand = robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command (example)
@@ -221,6 +231,11 @@ public class Robot extends LoggedRobot {
         // this line or comment it out.
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
+        }
+        
+        // Switch to Teleop tab in Elastic Dashboard
+        if (DriverStation.isFMSAttached()) {
+            Elastic.selectTab(0);
         }
     }
 
