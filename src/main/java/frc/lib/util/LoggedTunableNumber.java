@@ -29,7 +29,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
  */
 @SuppressWarnings("UnusedVariable")
 public class LoggedTunableNumber implements DoubleSupplier {
-    private static final String tableKey = "TunableNumbers";
+    private static final String tableKey = "Tuning";
 
     private final String key;
     private boolean hasDefault = false;
