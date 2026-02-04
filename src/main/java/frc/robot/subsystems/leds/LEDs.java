@@ -34,11 +34,12 @@ public class LEDs extends SubsystemBase {
     @RequiredArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
     public enum State {
-        NONE(0),
-        RUNNING_INTAKE(0),
-        READY_TO_SHOOT(1),
+        RUNNING_AUTO(3),
         SHOOTING(2),
-        RUNNING_AUTO(3);
+        READY_TO_SHOOT(1),
+        RUNNING_INTAKE(0),
+        NONE(0);
+
 
         private final int priority;
     }
@@ -107,6 +108,7 @@ public class LEDs extends SubsystemBase {
 
     private void setLED(State state)
     {
+
         switch (state) {
             case RUNNING_INTAKE:
                 runDisabledAnimation();
