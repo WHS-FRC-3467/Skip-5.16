@@ -85,7 +85,6 @@ public class AutoSegments {
             AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 3));
     }
 
-
     /**
      * Returns a Command to Follow a path and collect FUEL in AUTO
      * 

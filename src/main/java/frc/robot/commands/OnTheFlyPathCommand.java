@@ -29,7 +29,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -89,8 +88,8 @@ public class OnTheFlyPathCommand extends Command {
     }
 
     /**
-     * Initializes the command by generating the path and preparing it for execution.
-     * Applies path mirroring if enabled and creates waypoints from the current and target poses.
+     * Initializes the command by generating the path and preparing it for execution. Applies path
+     * mirroring if enabled and creates waypoints from the current and target poses.
      */
     @Override
     public void initialize()
@@ -158,8 +157,8 @@ public class OnTheFlyPathCommand extends Command {
     }
 
     /**
-     * Executes the path following command and updates visualization on the Field2d widget.
-     * Logs the current path poses for display in AdvantageScope.
+     * Executes the path following command and updates visualization on the Field2d widget. Logs the
+     * current path poses for display in AdvantageScope.
      */
     @Override
     public void execute()
@@ -179,8 +178,8 @@ public class OnTheFlyPathCommand extends Command {
     /**
      * Checks if the robot has reached the target pose within the specified tolerances.
      * 
-     * @return true if the robot is within both translational and rotational tolerances of the target
-     *         pose, false otherwise.
+     * @return true if the robot is within both translational and rotational tolerances of the
+     *         target pose, false otherwise.
      */
     @Override
     public boolean isFinished()
