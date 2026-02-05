@@ -3,45 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.8,
+        "x": 2.75,
         "y": 1.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.049548432641062,
-        "y": 1.0
+        "x": 1.4905592105243324,
+        "y": 0.8135635964924823
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.804,
-        "y": 2.031
+        "x": 0.4851024305555556,
+        "y": 0.6361016167534717
       },
       "prevControl": {
-        "x": 7.804,
-        "y": 1.7559048875097
-      },
-      "nextControl": {
-        "x": 7.804,
-        "y": 2.281
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 7.558,
-        "y": 2.691
-      },
-      "prevControl": {
-        "x": 7.80842105263158,
-        "y": 2.2944627192982456
+        "x": 1.4809429824541889,
+        "y": 0.7943311403491884
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "SweepNeutral-Trench-Right-End"
+      "linkedName": "OutpostIntakeEnd"
     }
   ],
   "rotationTargets": [],
@@ -57,14 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": 127.56899999999999
+    "velocity": 0,
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": "Right",
   "idealStartingState": {
-    "velocity": 3.0,
-    "rotation": 45.0
+    "velocity": 1.0,
+    "rotation": 57.5
   },
   "useDefaultConstraints": true
 }

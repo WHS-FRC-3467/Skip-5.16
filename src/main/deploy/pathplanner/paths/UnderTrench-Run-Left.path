@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.5,
+        "x": 1.8,
         "y": 6.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.6818115579042967,
-        "y": 7.043238255439696
+        "x": 1.8,
+        "y": 7.049094094903662
       },
       "isLocked": false,
-      "linkedName": "DepotSweep-Left-End"
+      "linkedName": "PreloadShoot-Left-End"
     },
     {
       "anchor": {
@@ -46,7 +46,11 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1,
+      "waypointRelativePos": 0.5989304812834227,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 1.0,
       "rotationDegrees": 0.0
     }
   ],
@@ -68,8 +72,8 @@
   "reversed": false,
   "folder": "Left",
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": 0.0
+    "velocity": 2.0,
+    "rotation": -37.0
   },
   "useDefaultConstraints": true
 }

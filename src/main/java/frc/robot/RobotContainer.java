@@ -119,6 +119,8 @@ public class RobotContainer {
         // Basic Neutral Autos
         autoChooser.addOption("BasicNeutralAuto-Left", new BasicNeutralAuto(drive, intakeLinear,
             intakeRoller, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption("BasicNeutralAuto-Right", new BasicNeutralAuto(drive, intakeLinear,
+            intakeRoller, indexer, tower, shooter, StartPosition.RIGHT));
 
         // Depot Auto
         autoChooser.addOption("DepotAuto-Left",
