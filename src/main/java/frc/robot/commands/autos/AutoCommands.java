@@ -148,7 +148,7 @@ public class AutoCommands {
 
     /**
      * Creates a command to extend the intake linearly. This command is blocking (2s max) until the
-     * retraction is complete. The intake will remain extended and energized at the conclusion of
+     * extension is complete. The intake will remain extended and energized at the conclusion of
      * this command.
      * 
      * @param intake the linear intake subsystem
@@ -180,8 +180,8 @@ public class AutoCommands {
      * Creates a blocking command to agitate the balls in the hopper to facilitate shooting. Should
      * be externally interrupted / run in parallel with other commands. Can be used between
      * shootFuel() commands within an AutoSegment to prepare the hopper for game piece transport.
-     * Subsystems end up in time-dependent state; be sure to decorate or sequence this call with a
-     * state control command.
+     * Subsystems end up in unguaranteed state; be sure to decorate or sequence this call with a
+     * known state control command.
      * 
      * @param intake the linear intake subsystem
      * @param tower the tower subsystem

@@ -3,68 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/DepotSweep-From-Shot-Left.path
         "x": 2.75,
         "y": 7.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9884244406395983,
-        "y": 6.4667390524195705
-========
-        "x": 1.8,
-        "y": 6.0
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 1.8852001164693961,
-        "y": 5.762981738524841
-      },
-      "isLocked": false,
-      "linkedName": "LeftPreloadShoot"
-    },
-    {
-      "anchor": {
-        "x": 1.926404730902778,
-        "y": 3.6471730143229157
-      },
-      "prevControl": {
-        "x": 1.9607846039941144,
-        "y": 4.034598744797822
-      },
-      "nextControl": {
-        "x": 1.9043067519833299,
-        "y": 3.398151570813174
->>>>>>>> origin/dev:src/main/deploy/pathplanner/paths/Left-Preload-To-Outpost.path
+        "x": 1.8886071428571425,
+        "y": 6.4482678571428576
       },
       "isLocked": false,
       "linkedName": "UnderTrench-Shoot-Left-End"
     },
     {
       "anchor": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/DepotSweep-From-Shot-Left.path
         "x": 1.2184308131241082,
         "y": 6.0
       },
       "prevControl": {
-        "x": 2.058305667814262,
-        "y": 6.0
+        "x": 1.9048035714285714,
+        "y": 6.4644642857142856
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "NearDepot-End"
-========
-        "x": 0.4851024305555556,
-        "y": 0.6361016167534717
-      },
-      "prevControl": {
-        "x": 0.37384504975499677,
-        "y": 0.41222264226636285
-      },
-      "nextControl": null,
-      "isLocked": false,
-      "linkedName": "OutpostIntakeEnd"
->>>>>>>> origin/dev:src/main/deploy/pathplanner/paths/Left-Preload-To-Outpost.path
     }
   ],
   "rotationTargets": [],
@@ -84,17 +45,10 @@
     "rotation": 180.0
   },
   "reversed": false,
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/DepotSweep-From-Shot-Left.path
-  "folder": "LEFT",
-  "idealStartingState": {
-    "velocity": 1.0,
-    "rotation": -57.5
-========
-  "folder": "Outpost",
+  "folder": "Left",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -37.0
->>>>>>>> origin/dev:src/main/deploy/pathplanner/paths/Left-Preload-To-Outpost.path
+    "rotation": -57.5
   },
   "useDefaultConstraints": true
 }

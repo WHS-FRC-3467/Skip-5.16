@@ -3,41 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/DepotSweep-Left.path
-        "x": 3.55,
-        "y": 6.0
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 2.4400260339566806,
-        "y": 6.0
-      },
-      "isLocked": false,
-      "linkedName": "DepotSweep-Left-Start"
-    },
-    {
-      "anchor": {
-        "x": 2.5,
-        "y": 6.0
-      },
-      "prevControl": {
-        "x": 3.6546172547839504,
-        "y": 6.0
-      },
-      "nextControl": null,
-      "isLocked": false,
-      "linkedName": "DepotSweep-Left-End"
-========
         "x": 1.7,
         "y": 0.78
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.5199893590461615,
-        "y": 0.8216052808017886
+        "x": 0.9978035714285709,
+        "y": 0.8766964285714292
       },
       "isLocked": false,
-      "linkedName": "RightPreloadShoot"
+      "linkedName": "PreloadShoot-Right-End"
     },
     {
       "anchor": {
@@ -45,13 +20,12 @@
         "y": 0.6361016167534717
       },
       "prevControl": {
-        "x": 1.180651729348038,
-        "y": 0.548029972358206
+        "x": 1.0202111168237498,
+        "y": 0.8308652506523863
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "OutpostIntakeEnd"
->>>>>>>> origin/dev:src/main/deploy/pathplanner/paths/Right-Preload-To-Outpost.path
     }
   ],
   "rotationTargets": [],
@@ -67,19 +41,11 @@
     "unlimited": false
   },
   "goalEndState": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/DepotSweep-Left.path
-    "velocity": 0.0,
-    "rotation": 0.0
-  },
-  "reversed": false,
-  "folder": "LEFT",
-========
     "velocity": 0,
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Outpost",
->>>>>>>> origin/dev:src/main/deploy/pathplanner/paths/Right-Preload-To-Outpost.path
+  "folder": "Right",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 46.0

@@ -26,26 +26,21 @@ import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 
-/**
- * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect pieces from
- * the neutral zone, and then shoot them. Strategy layer.
- */
-public class PreloadNeutralAuto extends AutoRoutine {
+public class BasicNeutralAuto extends AutoRoutine {
 
-    public PreloadNeutralAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intakeRoller,
-        Indexer indexer, Tower tower,
-        ShooterSuperstructure shooter, StartPosition start)
+    public BasicNeutralAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intakeRoller,
+        Indexer indexer, Tower tower, ShooterSuperstructure shooter, StartPosition start)
     {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
             case LEFT -> expectedPaths =
-                List.of(); // Preload-left auto not yet implemented
+                List.of("DepotSweep-Left", "UnderTrench-Run-Left", "SweepNeutral-Trench-Left",
+                    "UnderTrench-Shoot-Left",
+                    "DepotSweep-From-Shot-Left", "Through-Depot", "Through-Depot-Reverse");
             case CENTER -> expectedPaths =
-                List.of("PreloadShoot-Center", "UnderTrench-Run-Center",
-                    "SweepNeutral-Trench-Left", "UnderTrench-Shoot-Left",
-                    "TrenchRun-FromShot-Left");
-            case RIGHT -> expectedPaths = List.of(); // Preload-right auto not yet implemented
+                List.of(); // Depot-center auto not yet implemented
+            case RIGHT -> expectedPaths = List.of(); // Depot-right auto not yet implemented
             default -> expectedPaths = List.of();
         };
 
@@ -54,24 +49,34 @@ public class PreloadNeutralAuto extends AutoRoutine {
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null))
+
             loadCommands(
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
-                // Initialize intake
+                // Initialize intake to starting position
                 AutoSegments.initializeIntake(intakeLinear, intakeRoller),
-                // Take preload shot
-                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
-                    pathPlannerPaths.get(0)),
-                AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                // Make a run for the neutral zone
+                // Drive to staging location and then to the neutral zone
+                AutoBuilder.followPath(pathPlannerPaths.get(0))
+                    .andThen(AutoBuilder.followPath(pathPlannerPaths.get(1))),
+                // Sweep neutral zone while intaking
                 AutoSegments.driveAndIntake(intakeLinear, intakeRoller,
                     AutoBuilder.followPath(pathPlannerPaths.get(2)), Seconds.of(0.0)),
                 // Run back under the trench and shoot
                 AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
                     pathPlannerPaths.get(3)),
-                // Initialize the intake for tele-op stage
+                // Re-initialize intake for depot run
                 AutoSegments.initializeIntake(intakeLinear, intakeRoller),
-                // Stage for tele-op
-                AutoBuilder.followPath(pathPlannerPaths.get(4)));
+                // Run to depot
+                AutoBuilder.followPath(pathPlannerPaths.get(4)),
+                // Sweep through depot while intaking
+                AutoSegments.driveAndIntake(intakeLinear, intakeRoller,
+                    AutoBuilder.followPath(pathPlannerPaths.get(5)), Seconds.of(0.0)),
+                // Reverse back through depot to shooting location & shoot depot fuel
+                AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
+                    pathPlannerPaths.get(6)),
+                // Re-initialize intake for tele-op
+                AutoSegments.initializeIntake(intakeLinear, intakeRoller));
     }
 }
+
+

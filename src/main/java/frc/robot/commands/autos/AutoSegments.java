@@ -90,8 +90,7 @@ public class AutoSegments {
                 shooter.spinUpShooter()).withTimeout(3.5), // ~ +40% of max preload path time
             new ParallelDeadlineGroup(
                 AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 5.0), // ~10 bps
-                AutoCommands.agitateHopper(intakeLinear, tower, indexer,
-                    HopperAgitation.INTAKE_CYCLE)));
+                AutoCommands.agitateHopper(intakeLinear, tower, indexer, HopperAgitation.NONE)));
     }
 
     /**

@@ -3,60 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/Through-Depot-Reverse.path
-        "x": 0.4809272467861838,
-        "y": 5.969329529237618
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 1.244323178827404,
-        "y": 5.969329529237618
-========
         "x": 2.0,
         "y": 4.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.8405808927270322,
-        "y": 2.773284516525632
+        "x": 1.9048035714285714,
+        "y": 2.204803571428572
       },
       "isLocked": false,
-      "linkedName": "CenterPreloadShoot"
+      "linkedName": "PreloadShoot-Center-End"
     },
     {
       "anchor": {
-        "x": 1.598195855036685,
-        "y": 2.3628381076449134
-      },
-      "prevControl": {
-        "x": 1.8054748139609167,
-        "y": 2.8420517318969116
-      },
-      "nextControl": {
-        "x": 1.1951594469968796,
-        "y": 1.4310477377749895
->>>>>>>> origin/dev:src/main/deploy/pathplanner/paths/Center-Preload-To-Outpost.path
-      },
-      "isLocked": false,
-      "linkedName": "ThroughDepot-End"
-    },
-    {
-      "anchor": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/Through-Depot-Reverse.path
-        "x": 2.5,
-        "y": 6.0
-      },
-      "prevControl": {
-        "x": 1.7485545836617078,
-        "y": 6.0
-========
         "x": 0.4851024305555556,
         "y": 0.6361016167534717
       },
       "prevControl": {
-        "x": 1.3230809686699192,
-        "y": 1.069526972262853
->>>>>>>> origin/dev:src/main/deploy/pathplanner/paths/Center-Preload-To-Outpost.path
+        "x": 1.9371964285714283,
+        "y": 2.204803571428572
       },
       "nextControl": null,
       "isLocked": false,
@@ -76,22 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/Through-Depot-Reverse.path
-    "velocity": 0.0,
-    "rotation": -45.0
-  },
-  "reversed": false,
-  "folder": "LEFT",
-========
     "velocity": 0,
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Outpost",
->>>>>>>> origin/dev:src/main/deploy/pathplanner/paths/Center-Preload-To-Outpost.path
+  "folder": "Center",
   "idealStartingState": {
-    "velocity": 3.0,
-    "rotation": 180.0
+    "velocity": 0,
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }
