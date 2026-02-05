@@ -34,6 +34,8 @@ import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeLinear.IntakeLinearConstants;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.intakeRoller.IntakeRollerConstants;
+import frc.robot.subsystems.leds.LEDs;
+import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import frc.robot.subsystems.indexer.Indexer;
@@ -72,6 +74,7 @@ public class RobotContainer {
     private final Indexer indexer;
     private final Tower tower;
     private final ObjectDetector objectDetector;
+    private final LEDs leds;
 
     // Controller
     private final CommandXboxControllerExtended controller =
@@ -94,6 +97,7 @@ public class RobotContainer {
         tower = TowerConstants.get();
         VisionConstants.create();
         objectDetector = ObjectDetectorConstants.get();
+        leds = LEDsConstants.get();
 
         if (RobotBase.isSimulation()) {
             RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intakeRoller,
