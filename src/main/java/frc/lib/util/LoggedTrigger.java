@@ -15,6 +15,7 @@
 
 package frc.lib.util;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -40,6 +41,7 @@ import org.littletonrobotics.junction.Logger;
  */
 public class LoggedTrigger extends Trigger {
     private final String name;
+
     /**
      * Creates a new LoggedTrigger that logs state changes.
      *
@@ -52,7 +54,7 @@ public class LoggedTrigger extends Trigger {
         this.name = name;
     }
 
-    
+
     /**
      * Internal BooleanSupplier wrapper that logs state changes.
      */
@@ -87,15 +89,46 @@ public class LoggedTrigger extends Trigger {
     /**
      * Composes two logged triggers with logical AND.
      *
-     * <p>The resulting trigger uses a combined log name derived from both component
-     * triggers, so its AdvantageKit signal clearly represents the composite condition
-     * rather than reusing the base trigger's log key.
+     * <p>
+     * The resulting trigger uses a combined log name derived from both component triggers, so its
+     * AdvantageKit signal clearly represents the composite condition rather than reusing the base
+     * trigger's log key.
      *
      * @param trigger the condition to compose with
      * @return A trigger which is active when both component triggers are active.
      */
-    public LoggedTrigger and(LoggedTrigger trigger) {
+    public LoggedTrigger and(LoggedTrigger trigger)
+    {
         String combinedName = this.name + "_AND_" + trigger.name;
-        return new LoggedTrigger(combinedName, () -> (this.getAsBoolean() && trigger.getAsBoolean()));
+        return new LoggedTrigger(combinedName,
+            () -> (this.getAsBoolean() && trigger.getAsBoolean()));
+    }
+
+
+    /**
+     * Creates a new debounced trigger from this trigger - it will become active when this trigger
+     * has been active for longer than the specified period.
+     *
+     * @param seconds The debounce period.
+     * @return The debounced trigger (rising edges debounced only)
+     */
+    @Override
+    public LoggedTrigger debounce(double seconds)
+    {
+        return debounce(seconds, Debouncer.DebounceType.kRising);
+    }
+
+    /**
+     * Creates a new debounced trigger from this trigger - it will become active when this trigger
+     * has been active for longer than the specified period.
+     *
+     * @param seconds The debounce period.
+     * @param type The debounce type.
+     * @return The debounced trigger.
+     */
+    @Override
+    public LoggedTrigger debounce(double seconds, Debouncer.DebounceType type)
+    {
+        return new LoggedTrigger(name, super.debounce(seconds, type));
     }
 }

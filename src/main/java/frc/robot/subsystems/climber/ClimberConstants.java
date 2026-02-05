@@ -117,7 +117,6 @@ public class ClimberConstants {
         config.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
             CONVERTER.toAngle(MIN_DISTANCE).in(Rotations);
 
-        // Need to set these because we can't do it in runPosition() anymore (CTRE API change)
         config.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY.in(RotationsPerSecond);
         config.MotionMagic.MotionMagicAcceleration = ACCELERATION.in(RotationsPerSecondPerSecond);
 
@@ -131,22 +130,22 @@ public class ClimberConstants {
     }
 
     /**
-     * Factory method to create a LinearMechanism instance for the intake linear subsystem. Creates
-     * the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
+     * Factory method to create a Climber instance for the climber subsystem. Creates the
+     * appropriate subsystem based on the current robot mode (REAL, SIM, or REPLAY).
      * 
-     * @return A configured LinearMechanism instance
+     * @return A configured Climber instance
      */
-    private static LinearMechanism<?> getMechanism()
+    public static Climber get()
     {
         LinearMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new LinearMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.climberLinear), CHARACTERISTICS);
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.climber), CHARACTERISTICS);
                 break;
             case SIM:
                 mechanism = new LinearMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.climberLinear),
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.climber),
                     DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
                 break;
             case REPLAY:
@@ -156,17 +155,6 @@ public class ClimberConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return mechanism;
-    }
-
-    /**
-     * Factory method to create a Climber instance for the climber subsystem. Creates the
-     * appropriate subsystem based on the current robot mode (REAL, SIM, or REPLAY).
-     * 
-     * @return A configured Climber instance
-     */
-    public static Climber get()
-    {
-        return new Climber(getMechanism());
+        return new Climber(mechanism);
     }
 }

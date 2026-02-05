@@ -26,12 +26,12 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
 
-public class ClimberTest implements AutoCloseable {
+public class ClimberTest {
     Climber climber;
 
     @BeforeEach // this method will run before each test
     void setup() {
-        assert HAL.initialize(500, 0); // initialize the HAL, crash if failed
+        assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
         climber = ClimberConstants.get();
 
@@ -43,18 +43,21 @@ public class ClimberTest implements AutoCloseable {
         Timer.delay(0.100);
     }
   
-    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @AfterEach // this method will run after each test
     void shutdown() throws Exception {
-      close();
+        try {
+            climber.close();
+        } catch (Exception e) {
+            fail("Failed to close Climber subsystem: " + e.getMessage());
+        }
     }
  
     @Test // marks this method as a test
     void home() {
         TestUtil.runTest(climber.homeCommand(), 0.1, climber);
         try {
-            // Check position to check if it is homed, and within tolerance of STOW setpoint.
-            assertTrue(climber.nearGoal(Climber.Setpoint.STOW.getSetpoint()));
+            // Check position to check if it is homed, and within tolerance of the default STOW State.
+            assertTrue(climber.nearGoal());
         } catch (Exception e) {
             fail("Failed to home climber Subsystem: " + e.getMessage());
         }
@@ -62,17 +65,12 @@ public class ClimberTest implements AutoCloseable {
 
     @Test
     void goToGoal() {
-        TestUtil.runTest(climber.setGoal(Climber.Setpoint.RAISED), 1.5, climber);
+        TestUtil.runTest(climber.setGoal(Climber.State.RAISED), 1.5, climber);
         try {
-            // Check to see if climber subsystem is within tolerance of RAISED setpoint.
-            assertTrue(climber.nearGoal(Climber.Setpoint.RAISED.getSetpoint()));
+            // Check to see if climber subsystem is within tolerance of RAISED State.
+            assertTrue(climber.nearGoal());
         } catch (Exception e) {
             fail("Failed to run climber Subsystem to RAISED: " + e.getMessage());
         }
-    }
-    
-    @Override
-    public void close() {
-       climber.close();
     }
 }
