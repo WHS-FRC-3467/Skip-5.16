@@ -8,44 +8,55 @@
         "layouts": [],
         "containers": [
           {
-            "title": "Example Pathfind to Pose",
-            "x": 50.0,
-            "y": 50.0,
+            "title": "Detection Camera #0-processed",
+            "x": 850.0,
+            "y": 0.0,
             "width": 300.0,
-            "height": 150.0,
-            "type": "Command",
+            "height": 300.0,
+            "type": "Camera Stream",
             "properties": {
-              "topic": "/SmartDashboard/Example Pathfind to Pose",
+              "topic": "/CameraPublisher/Detection Camera #0-processed",
               "period": 0.06,
-              "show_type": true,
-              "maximize_button_space": false
+              "rotation_turns": 0
             }
           },
           {
-            "title": "Example On The Fly Path",
-            "x": 50.0,
-            "y": 200.0,
+            "title": "front_left-processed",
+            "x": 500.0,
+            "y": 300.0,
             "width": 300.0,
-            "height": 150.0,
-            "type": "Command",
+            "height": 300.0,
+            "type": "Camera Stream",
             "properties": {
-              "topic": "/SmartDashboard/Example On The Fly Path",
+              "topic": "/CameraPublisher/front_left-processed",
               "period": 0.06,
-              "show_type": true,
-              "maximize_button_space": false
+              "rotation_turns": 0
             }
           },
           {
-            "title": "Path Generation Preview",
-            "x": 350.0,
-            "y": 50.0,
-            "width": 900.0,
-            "height": 450.0,
+            "title": "front_right-processed",
+            "x": 200.0,
+            "y": 300.0,
+            "width": 300.0,
+            "height": 300.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/front_right-processed",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "Robot Pose Field Map",
+            "x": 200.0,
+            "y": 0.0,
+            "width": 600.0,
+            "height": 300.0,
             "type": "Field",
             "properties": {
-              "topic": "/SmartDashboard/Path Generation Preview",
+              "topic": "/SmartDashboard/Robot Pose Field Map",
               "period": 0.06,
-              "field_game": "Reefscape",
+              "field_game": "Rebuilt",
               "robot_width": 0.85,
               "robot_length": 0.85,
               "show_other_objects": true,
@@ -54,6 +65,40 @@
               "robot_color": 4294198070,
               "trajectory_color": 4294967295,
               "show_robot_outside_widget": true
+            }
+          },
+          {
+            "title": "Hub Active",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 150.0,
+            "height": 150.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Hub Active",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Hub Changing Soon",
+            "x": 0.0,
+            "y": 150.0,
+            "width": 150.0,
+            "height": 150.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Hub Changing Soon",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           }
         ]

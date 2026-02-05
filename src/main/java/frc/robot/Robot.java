@@ -22,6 +22,7 @@ import au.grapplerobotics.CanBridge;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -50,6 +51,7 @@ public class Robot extends LoggedRobot {
     private RobotContainer robotContainer;
     private boolean checkedHubGameData = false; // whether we've checked for hub game data at the
                                                 // start of the first alliance phase
+    private Field2d fieldMap = new Field2d();
 
     public Robot()
     {
@@ -139,6 +141,8 @@ public class Robot extends LoggedRobot {
         Logger.recordOutput("Robot Serial",
             Robot.isReal() ? Constants.RobotConstants.serial.subSequence(0, 8).toString()
                 : Constants.RobotConstants.serial);
+
+        SmartDashboard.putData("Robot Pose Field Map", fieldMap);
     }
 
     /**
@@ -171,6 +175,9 @@ public class Robot extends LoggedRobot {
             HubState.getInstance().getHubActive().getAsBoolean());
         SmartDashboard.putBoolean("Hub Changing Soon",
             HubState.getInstance().getHubChange().getAsBoolean());
+
+        // Driver Elastic Dashboard - Update the robot's pose on the main fieldmap
+        fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
     }
 
     /** This function is called once when the robot is disabled. */
