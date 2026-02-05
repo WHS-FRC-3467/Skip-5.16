@@ -130,7 +130,7 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
-
+        // boilder plate which activates on a triggers true or false
         robotState.getIsAuto()
             .onTrue(Commands.runOnce(() -> leds.smartHandler(LEDs.State.RUNNING_AUTO)));
         robotState.getIsAuto()
@@ -153,10 +153,12 @@ public class RobotContainer {
 
     }
 
+    // on a triggers false the change state function will activate and it will go down the list of
+    // triggers and when it finds one which is true it will return that respective state
     public void changeState()
     {
-        LEDs.State returnState = LEDs.State.NONE;
-        if (robotState.getIsAuto().getAsBoolean()) { // highest priotiy6
+        LEDs.State returnState = LEDs.State.NONE; // returns led state NONE if no triggers are true
+        if (robotState.getIsAuto().getAsBoolean()) { // highest priority
             returnState = LEDs.State.RUNNING_AUTO;
 
         } else if (shooter.getIsShooting().getAsBoolean()) {

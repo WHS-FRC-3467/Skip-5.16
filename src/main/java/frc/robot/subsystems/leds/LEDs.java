@@ -15,6 +15,7 @@
 
 package frc.robot.subsystems.leds;
 
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.Lights;
@@ -34,10 +35,12 @@ public class LEDs extends SubsystemBase {
     @RequiredArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
     public enum State {
-        RUNNING_AUTO(3),
-        SHOOTING(2),
-        READY_TO_SHOOT(1),
-        RUNNING_INTAKE(0),
+        // list of states with their respective prioritys, ie if both RUNNING_AUTO and
+        // RUNNING_INTAKE are true it will set to RUNNING_AUTO
+        RUNNING_AUTO(4),
+        SHOOTING(3),
+        READY_TO_SHOOT(2),
+        RUNNING_INTAKE(1),
         NONE(0);
 
 
@@ -46,7 +49,7 @@ public class LEDs extends SubsystemBase {
 
     private final Lights lights;
 
-    private State setState = State.NONE;
+    private State setState = State.NONE; // the set state
 
     /**
      * Constructs an LEDs subsystem.
@@ -62,6 +65,7 @@ public class LEDs extends SubsystemBase {
     public void periodic()
     {
         LoggerHelper.recordCurrentCommand(LEDsConstants.NAME, this);
+        Logger.recordOutput(LEDsConstants.NAME, setState);
     }
 
     /**
@@ -92,6 +96,8 @@ public class LEDs extends SubsystemBase {
             .withName("Auto Animation");
     }
 
+    // checks if the supplied states priotity is higher than the set states priority and if it
+    // is it will set the led to the supplied state and set the setState to the supplied state
     public void smartHandler(State state)
     {
         if (state.priority > setState.priority) {
@@ -99,6 +105,9 @@ public class LEDs extends SubsystemBase {
             setState = state;
         }
     }
+
+    // same thing as smartHandler but it sets the state without checking anything as the logic is
+    // handled in robotContainer
 
     public void dumbHandler(State state)
     {
@@ -108,7 +117,7 @@ public class LEDs extends SubsystemBase {
 
     private void setLED(State state)
     {
-
+        // just matches states with their animations, only 1 works
         switch (state) {
             case RUNNING_INTAKE:
                 runDisabledAnimation();
