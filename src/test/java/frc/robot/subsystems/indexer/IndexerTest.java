@@ -49,7 +49,7 @@ public class IndexerTest {
         try {
             indexer.close();
         } catch (Exception e) {
-            fail("Failed to close Intake subsystem: " + e.getMessage());
+            fail("Failed to close Indexer subsystem: " + e.getMessage());
         }
     }
 
