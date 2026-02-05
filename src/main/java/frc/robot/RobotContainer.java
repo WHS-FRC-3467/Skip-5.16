@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
@@ -84,6 +85,8 @@ public class RobotContainer {
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
     public static Field2d autoPreviewField = new Field2d();
 
+    private final Trigger isAutonomous = new Trigger(DriverStation::isAutonomous);
+
     /**
      * The container for the robot. Contains subsystems, IO devices, and commands.
      */
@@ -133,9 +136,9 @@ public class RobotContainer {
         configureButtonBindings();
         initializeDashboard();
         // boilder plate which activates on a triggers true or false
-        robotState.getIsAuto()
+        isAutonomous
             .onTrue(Commands.runOnce(() -> leds.smartHandler(LEDs.State.RUNNING_AUTO)));
-        robotState.getIsAuto()
+        isAutonomous
             .onFalse(Commands.runOnce(() -> changeState()));
 
         shooter.getIsShooting()
@@ -160,7 +163,7 @@ public class RobotContainer {
     public void changeState()
     {
         LEDs.State returnState = LEDs.State.NONE; // returns led state NONE if no triggers are true
-        if (robotState.getIsAuto().getAsBoolean()) { // highest priority
+        if (DriverStation.isAutonomous()) { // highest priority
             returnState = LEDs.State.RUNNING_AUTO;
 
         } else if (shooter.getIsShooting().getAsBoolean()) {

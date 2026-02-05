@@ -22,7 +22,6 @@ import frc.lib.devices.Lights;
 import frc.lib.io.lights.LightsIO;
 import frc.lib.util.LoggerHelper;
 import frc.robot.RobotContainer;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -32,19 +31,20 @@ import lombok.RequiredArgsConstructor;
 public class LEDs extends SubsystemBase {
     public RobotContainer robotContainer;
 
+    /**
+     * The states for the lights in order from highest priority to low
+     */
     @RequiredArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
     public enum State {
         // list of states with their respective prioritys, ie if both RUNNING_AUTO and
         // RUNNING_INTAKE are true it will set to RUNNING_AUTO
-        RUNNING_AUTO(4),
-        SHOOTING(3),
-        READY_TO_SHOOT(2),
-        RUNNING_INTAKE(1),
-        NONE(0);
 
-
-        private final int priority;
+        RUNNING_AUTO,
+        SHOOTING,
+        READY_TO_SHOOT,
+        RUNNING_INTAKE,
+        NONE;
     }
 
     private final Lights lights;
@@ -100,7 +100,7 @@ public class LEDs extends SubsystemBase {
     // is it will set the led to the supplied state and set the setState to the supplied state
     public void smartHandler(State state)
     {
-        if (state.priority > setState.priority) {
+        if (state.ordinal() < setState.ordinal()) {
             setLED(state);
             setState = state;
         }
@@ -119,20 +119,15 @@ public class LEDs extends SubsystemBase {
     {
         // just matches states with their animations, only 1 works
         switch (state) {
-            case RUNNING_INTAKE:
-                runDisabledAnimation();
-                break;
-            case READY_TO_SHOOT:
-                runDisabledAnimation();
-                break;
-            case SHOOTING:
-                runDisabledAnimation();
-                break;
-            case RUNNING_AUTO:
-                runAutoAnimation();
-                break;
-            default:
-                break;
+            case RUNNING_INTAKE -> runDisabledAnimation();
+
+            case READY_TO_SHOOT -> runDisabledAnimation();
+
+            case SHOOTING -> runDisabledAnimation();
+
+            case RUNNING_AUTO -> runAutoAnimation();
+            default -> {
+            }
         }
     }
 
