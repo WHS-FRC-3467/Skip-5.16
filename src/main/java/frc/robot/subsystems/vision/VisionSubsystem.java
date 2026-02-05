@@ -16,8 +16,10 @@
 package frc.robot.subsystems.vision;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonPoseEstimator;
@@ -37,9 +39,9 @@ import frc.robot.RobotState;
  * 
  * <p>
  * It uses one or more {@link AprilTagCamera}s to detect field elements and estimate the robot's
- * pose on the field. Observations are processed through the MultiTagOnCoproc vision
- * processor, with a fallback to LowestAmbiguity if necessary. Valid observations are added
- * to {@link RobotState} for use in localization and navigation.
+ * pose on the field. Observations are processed through the MultiTagOnCoproc vision processor, with
+ * a fallback to LowestAmbiguity if necessary. Valid observations are added to {@link RobotState}
+ * for use in localization and navigation.
  * 
  * <p>
  * The subsystem periodically polls cameras for new results and logs both accepted and rejected
@@ -144,8 +146,8 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     /**
-     * Periodically processes vision results from all cameras.
-     * Filters, validates, and adds pose observations to RobotState for localization.
+     * Periodically processes vision results from all cameras. Filters, validates, and adds pose
+     * observations to RobotState for localization.
      */
     @Override
     public void periodic()
@@ -217,6 +219,9 @@ public class VisionSubsystem extends SubsystemBase {
                     poseRecord.pose().toPose2d());
             }
 
+            Set<Integer> tagsAccepted = new HashSet<>();
+            Set<Integer> tagsRejected = new HashSet<>();
+
             Logger.recordOutput(
                 cameraLogPrefix + "/Results/AcceptedLength",
                 acceptedResults.size());
@@ -224,6 +229,8 @@ public class VisionSubsystem extends SubsystemBase {
                 Logger.recordOutput(
                     cameraLogPrefix + "/Results/Accepted/" + i,
                     acceptedResults.get(i));
+
+                tagsAccepted.addAll(getTagsUsed(acceptedResults.get(i).targets));
             }
 
             Logger.recordOutput(
@@ -233,25 +240,39 @@ public class VisionSubsystem extends SubsystemBase {
                 Logger.recordOutput(
                     cameraLogPrefix + "/Results/Rejected/" + i,
                     rejectedResults.get(i));
+
+                tagsRejected.addAll(getTagsUsed(rejectedResults.get(i).targets));
             }
 
             Logger.recordOutput(
-                cameraLogPrefix + "/Poses/AcceptedLength",
-                acceptedPoses.size());
-            for (int i = 0; i < acceptedPoses.size(); i++) {
-                Logger.recordOutput(
-                    cameraLogPrefix + "/Poses/Accepted/" + i,
-                    acceptedPoses.get(i));
-            }
+                cameraLogPrefix + "/Poses/Accepted",
+                acceptedPoses.toArray(Pose2d[]::new));
 
             Logger.recordOutput(
-                cameraLogPrefix + "/Poses/RejectedLength",
-                rejectedPoses.size());
-            for (int i = 0; i < rejectedPoses.size(); i++) {
-                Logger.recordOutput(
-                    cameraLogPrefix + "/Poses/Rejected/" + i,
-                    rejectedPoses.get(i));
-            }
+                cameraLogPrefix + "/Poses/Rejected",
+                rejectedPoses.toArray(Pose2d[]::new));
+
+            List<Pose3d> tagPosesAccepted = tagsAccepted
+                .stream()
+                .map(this::getTagPose)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+
+            List<Pose3d> tagPosesRejected = tagsRejected
+                .stream()
+                .map(this::getTagPose)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+
+            Logger.recordOutput(
+                cameraLogPrefix + "/TagPoses/Accepted",
+                tagPosesAccepted.toArray(Pose3d[]::new));
+
+            Logger.recordOutput(
+                cameraLogPrefix + "/TagPoses/Rejected",
+                tagPosesRejected.toArray(Pose3d[]::new));
         }
     }
 
@@ -269,5 +290,10 @@ public class VisionSubsystem extends SubsystemBase {
             tagsUsed.add(target.getFiducialId());
         }
         return tagsUsed;
+    }
+
+    private Optional<Pose3d> getTagPose(int id)
+    {
+        return AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(id);
     }
 }
