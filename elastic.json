@@ -5,12 +5,43 @@
     {
       "name": "Teleoperated",
       "grid_layout": {
-        "layouts": [],
+        "layouts": [
+          {
+            "title": "RadioStatus",
+            "x": 1000.0,
+            "y": 150.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Connected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RadioStatus/Connected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              }
+            ]
+          }
+        ],
         "containers": [
           {
             "title": "Detection Camera #0-processed",
-            "x": 850.0,
-            "y": 0.0,
+            "x": 1000.0,
+            "y": 300.0,
             "width": 300.0,
             "height": 300.0,
             "type": "Camera Stream",
@@ -22,7 +53,7 @@
           },
           {
             "title": "front_left-processed",
-            "x": 500.0,
+            "x": 700.0,
             "y": 300.0,
             "width": 300.0,
             "height": 300.0,
@@ -35,7 +66,7 @@
           },
           {
             "title": "front_right-processed",
-            "x": 200.0,
+            "x": 350.0,
             "y": 300.0,
             "width": 300.0,
             "height": 300.0,
@@ -48,9 +79,9 @@
           },
           {
             "title": "Robot Pose Field Map",
-            "x": 200.0,
+            "x": 350.0,
             "y": 0.0,
-            "width": 600.0,
+            "width": 650.0,
             "height": 300.0,
             "type": "Field",
             "properties": {
@@ -69,7 +100,7 @@
           },
           {
             "title": "Hub Active",
-            "x": 0.0,
+            "x": 1000.0,
             "y": 0.0,
             "width": 150.0,
             "height": 150.0,
@@ -86,8 +117,8 @@
           },
           {
             "title": "Hub Changing Soon",
-            "x": 0.0,
-            "y": 150.0,
+            "x": 1150.0,
+            "y": 0.0,
             "width": 150.0,
             "height": 150.0,
             "type": "Boolean Box",
@@ -100,6 +131,18 @@
               "true_icon": "None",
               "false_icon": "None"
             }
+          },
+          {
+            "title": "Alerts",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 300.0,
+            "height": 600.0,
+            "type": "Alerts",
+            "properties": {
+              "topic": "/SmartDashboard/Alerts",
+              "period": 0.06
+            }
           }
         ]
       }
@@ -110,7 +153,7 @@
         "layouts": [
           {
             "title": "Auto Pose Check",
-            "x": 950.0,
+            "x": 1200.0,
             "y": 0.0,
             "width": 300.0,
             "height": 300.0,
@@ -182,12 +225,42 @@
                 }
               }
             ]
+          },
+          {
+            "title": "RadioStatus",
+            "x": 1200.0,
+            "y": 450.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Connected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RadioStatus/Connected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              }
+            ]
           }
         ],
         "containers": [
           {
             "title": "Auto Choices",
-            "x": 950.0,
+            "x": 1200.0,
             "y": 300.0,
             "width": 300.0,
             "height": 150.0,
@@ -200,9 +273,9 @@
           },
           {
             "title": "Auto Preview",
-            "x": 0.0,
+            "x": 300.0,
             "y": 0.0,
-            "width": 950.0,
+            "width": 900.0,
             "height": 450.0,
             "type": "Field",
             "properties": {
@@ -217,6 +290,18 @@
               "robot_color": 4294198070,
               "trajectory_color": 4294967295,
               "show_robot_outside_widget": true
+            }
+          },
+          {
+            "title": "Alerts",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 300.0,
+            "height": 600.0,
+            "type": "Alerts",
+            "properties": {
+              "topic": "/SmartDashboard/Alerts",
+              "period": 0.06
             }
           }
         ]
@@ -2326,8 +2411,162 @@
     {
       "name": "Pit",
       "grid_layout": {
-        "layouts": [],
-        "containers": []
+        "layouts": [
+          {
+            "title": "Intake Linear",
+            "x": 50.0,
+            "y": 50.0,
+            "width": 300.0,
+            "height": 350.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Cycle",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Cycle",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Extend",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Extend",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Retract",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Retract",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Intake Roller",
+            "x": 400.0,
+            "y": 50.0,
+            "width": 300.0,
+            "height": 350.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Eject",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Roller/Eject",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Intake",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Roller/Intake",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Stop",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Roller/Stop",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "title": "Set flywheel to 30",
+            "x": 750.0,
+            "y": 50.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Set flywheel to 30",
+              "period": 0.06,
+              "show_type": true,
+              "maximize_button_space": false
+            }
+          },
+          {
+            "title": "Set hood to 45 deg",
+            "x": 1100.0,
+            "y": 50.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Set hood to 45 deg",
+              "period": 0.06,
+              "show_type": true,
+              "maximize_button_space": false
+            }
+          },
+          {
+            "title": "Run Indexer",
+            "x": 750.0,
+            "y": 250.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Run Indexer",
+              "period": 0.06,
+              "show_type": true,
+              "maximize_button_space": false
+            }
+          }
+        ]
       }
     },
     {
