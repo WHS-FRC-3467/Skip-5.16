@@ -30,8 +30,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Subsystem that controls the tower mechanism that transfers game pieces from the indexer to the shooter.
- * The tower can stop, idle at a slow speed to hold game pieces, or shoot at full speed.
+ * Subsystem that controls the tower mechanism that transfers game pieces from the indexer to the
+ * shooter. The tower can stop, idle at a slow speed to hold game pieces, or shoot at full speed.
  * Uses a flywheel mechanism for velocity control.
  */
 public class Tower extends SubsystemBase {
@@ -39,8 +39,10 @@ public class Tower extends SubsystemBase {
         new LoggedTunableNumber(TowerConstants.NAME + "/StopRPS", 0.0);
     private static final LoggedTunableNumber IDLE_RPS =
         new LoggedTunableNumber(TowerConstants.NAME + "/IdleRPS", -0.1);
+    private static final LoggedTunableNumber Eject_RPS =
+        new LoggedTunableNumber(TowerConstants.NAME + "/EjectRPS", -0.5);
     private static final LoggedTunableNumber SHOOT_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/IdleRPS",
+        new LoggedTunableNumber(TowerConstants.NAME + "/ShootRPS",
             TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private final FlywheelMechanism<?> io;
@@ -53,6 +55,8 @@ public class Tower extends SubsystemBase {
         STOP(() -> RotationsPerSecond.of(STOP_RPS.get())),
         IDLE(
             () -> RotationsPerSecond.of(IDLE_RPS.get())),
+        EJECT(
+            () -> RotationsPerSecond.of(Eject_RPS.get())),
         SHOOT(
             () -> RotationsPerSecond.of(SHOOT_RPS.get()));
 
@@ -100,7 +104,7 @@ public class Tower extends SubsystemBase {
 
     /**
      * Holds a state until the command is interrupted. Once the command is interrupted, its state
-     * will automatically be set to {@link State#STOP}
+     * will automatically be set to {@link State#IDLE}
      * 
      * In a sequence, this command is blocking and requires this subsystem
      * 
@@ -109,7 +113,7 @@ public class Tower extends SubsystemBase {
      */
     public Command holdStateUntilInterrupted(State state)
     {
-        return this.startEnd(() -> setState(state), () -> setState(State.STOP))
+        return this.startEnd(() -> setState(state), () -> setState(State.IDLE))
             .withName(state.name() + " Until Interrupted");
     }
 
