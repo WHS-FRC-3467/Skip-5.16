@@ -5,13 +5,13 @@
 package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -32,15 +32,14 @@ public class IndexerConstants {
 
     public static String NAME = "Indexer";
 
-    public static final AngularVelocity MAX_VELOCITY =
-        Units.RadiansPerSecond.of(2 * Math.PI);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(60);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
 
-    private static final double GEARING = (2.0 / 1.0);
+    private static final double GEARING = (48.0 / 22.0) * (24.0 / 36.0) * (17.0 / 18.0);
 
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.2);
+    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
+    private static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
@@ -84,8 +83,8 @@ public class IndexerConstants {
     }
 
     /**
-     * Factory method to create an Indexer subsystem instance.
-     * Creates the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
+     * Factory method to create an Indexer subsystem instance. Creates the appropriate mechanism
+     * based on the current robot mode (REAL, SIM, or REPLAY).
      * 
      * @return A fully configured Indexer subsystem
      */
