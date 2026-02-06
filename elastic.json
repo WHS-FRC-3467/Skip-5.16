@@ -8,9 +8,9 @@
         "layouts": [
           {
             "title": "RadioStatus",
-            "x": 1000.0,
+            "x": 1150.0,
             "y": 150.0,
-            "width": 300.0,
+            "width": 150.0,
             "height": 150.0,
             "type": "List Layout",
             "properties": {
@@ -143,6 +143,22 @@
               "topic": "/SmartDashboard/Alerts",
               "period": 0.06
             }
+          },
+          {
+            "title": "MatchTime",
+            "x": 1000.0,
+            "y": 150.0,
+            "width": 150.0,
+            "height": 150.0,
+            "type": "Match Time",
+            "properties": {
+              "topic": "/AdvantageKit/DriverStation/MatchTime",
+              "period": 0.06,
+              "data_type": "double",
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 20,
+              "yellow_start_time": 30
+            }
           }
         ]
       }
@@ -151,6 +167,36 @@
       "name": "Autonomous",
       "grid_layout": {
         "layouts": [
+          {
+            "title": "RadioStatus",
+            "x": 1050.0,
+            "y": 450.0,
+            "width": 150.0,
+            "height": 150.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Connected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RadioStatus/Connected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              }
+            ]
+          },
           {
             "title": "Auto Pose Check",
             "x": 1200.0,
@@ -191,7 +237,7 @@
                 }
               },
               {
-                "title": "Robot Position within 2.9999999999999996 inches",
+                "title": "Robot Position within 3 inches",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 150.0,
@@ -199,6 +245,23 @@
                 "type": "Boolean Box",
                 "properties": {
                   "topic": "/SmartDashboard/Auto Pose Check/Robot Position within 2.9999999999999996 inches",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Robot Rotation within 5.000e+00 ° degrees",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/SmartDashboard/Auto Pose Check/Robot Rotation within 5.000e+00 ° degrees",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -216,36 +279,6 @@
                 "type": "Boolean Box",
                 "properties": {
                   "topic": "/SmartDashboard/Auto Pose Check/Robot Rotation within 5.0 degrees",
-                  "period": 0.06,
-                  "data_type": "boolean",
-                  "true_color": 4283215696,
-                  "false_color": 4294198070,
-                  "true_icon": "None",
-                  "false_icon": "None"
-                }
-              }
-            ]
-          },
-          {
-            "title": "RadioStatus",
-            "x": 1200.0,
-            "y": 450.0,
-            "width": 300.0,
-            "height": 150.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "Connected",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 150.0,
-                "height": 150.0,
-                "type": "Boolean Box",
-                "properties": {
-                  "topic": "/AdvantageKit/RadioStatus/Connected",
                   "period": 0.06,
                   "data_type": "boolean",
                   "true_color": 4283215696,
@@ -302,6 +335,20 @@
             "properties": {
               "topic": "/SmartDashboard/Alerts",
               "period": 0.06
+            }
+          },
+          {
+            "title": "Start Pose (x, y, degrees)",
+            "x": 1200.0,
+            "y": 450.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Start Pose (x, y, degrees)",
+              "period": 0.06,
+              "data_type": "double[]",
+              "show_submit_button": false
             }
           }
         ]
