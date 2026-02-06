@@ -73,6 +73,8 @@ public class OutpostAuto extends AutoRoutine {
             loadCommands(
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                // Initialize intake
+                AutoSegments.initializeIntake(intakeLinear, intake),
                 // Take preload shot
                 AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),

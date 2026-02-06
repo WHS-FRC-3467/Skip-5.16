@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.4851024305555556,
-        "y": 0.6361016167534717
+        "x": 2.75,
+        "y": 7.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.0471962119681302,
-        "y": 0.6361016167534717
+        "x": 2.0771491228070174,
+        "y": 6.35251096491228
       },
       "isLocked": false,
-      "linkedName": "OutpostIntakeEnd"
+      "linkedName": "UnderTrench-Shoot-Left-End"
     },
     {
       "anchor": {
-        "x": 1.7,
-        "y": 0.78
+        "x": 1.2184308131241082,
+        "y": 6.0
       },
       "prevControl": {
-        "x": 1.2407499999999996,
-        "y": 0.9090892857142854
+        "x": 2.057916666666667,
+        "y": 6.35251096491228
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "PreloadShoot-Right-End"
+      "linkedName": "NearDepot-End"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 46.0
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Right",
+  "folder": "Left",
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": 180.0
+    "velocity": 1.0,
+    "rotation": -57.5
   },
   "useDefaultConstraints": true
 }

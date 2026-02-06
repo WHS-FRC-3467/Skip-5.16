@@ -25,6 +25,7 @@ import frc.robot.subsystems.tower.Tower;
 import static edu.wpi.first.units.Units.Seconds;
 import java.util.List;
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 /**
  * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect FUEL from
@@ -70,14 +71,19 @@ public class DepotAuto extends AutoRoutine {
             loadCommands(
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                // Initialize intake
+                AutoSegments.initializeIntake(intakeLinear, intake),
                 // Take preload shot
                 AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
-                // Go to the DEPOT and intake FUEL
+                // Drive to depot
+                AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                // Pre-deploy intake before driving through depot
+                AutoCommands.extendIntake(intakeLinear),
+                Commands.waitSeconds(0.25),
+                // Run through depot while intaking FUEL
                 AutoSegments.driveAndIntake(intakeLinear, intake,
-                    AutoBuilder.followPath(pathPlannerPaths.get(1))
-                        .andThen(AutoBuilder.followPath(pathPlannerPaths.get(2))),
-                    Seconds.of(0.3)),
+                    AutoBuilder.followPath(pathPlannerPaths.get(2)), Seconds.of(0.5)),
                 // Drive to shooting location and shoot all FUEL
                 AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
                     pathPlannerPaths.get(3)));
