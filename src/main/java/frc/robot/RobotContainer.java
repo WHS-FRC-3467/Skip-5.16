@@ -92,6 +92,7 @@ public class RobotContainer {
      */
     public RobotContainer()
     {
+
         drive = DriveConstants.get();
         shooter = ShooterSuperstructureConstants.get();
         intakeRoller = IntakeRollerConstants.get();
@@ -101,7 +102,7 @@ public class RobotContainer {
         VisionConstants.create();
         objectDetector = ObjectDetectorConstants.get();
         leds = LEDsConstants.get();
-
+        
         if (RobotBase.isSimulation()) {
             RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intakeRoller,
                 intakeLinear);
@@ -131,52 +132,35 @@ public class RobotContainer {
             new WheelCharacterizationAuto(drive));
 
         autoChooser.addOption("Wheel Slip Characterization", new WheelSlipAuto(drive));
+       
+       
 
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
-        // boilder plate which activates on a triggers true or false
+        // boiler plate which activates on a triggers true or false
         isAutonomous
-            .onTrue(Commands.runOnce(() -> leds.smartHandler(LEDs.State.RUNNING_AUTO)));
+            .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_AUTO));
         isAutonomous
-            .onFalse(Commands.runOnce(() -> changeState()));
-
+            .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_AUTO));
         shooter.getIsShooting()
-            .onTrue(Commands.runOnce(() -> leds.smartHandler(LEDs.State.SHOOTING)));
+               .onTrue(leds.scheduleStateCommand(LEDs.State.SHOOTING));
         shooter.getIsShooting()
-            .onFalse(Commands.runOnce(() -> changeState()));
+               .onFalse(leds.unscheduleStateCommand(LEDs.State.SHOOTING));
 
         shooter.readyToShoot
-            .onTrue(Commands.runOnce(() -> leds.smartHandler(LEDs.State.READY_TO_SHOOT)));
+              .onTrue(leds.scheduleStateCommand(LEDs.State.READY_TO_SHOOT));
         shooter.readyToShoot
-            .onFalse(Commands.runOnce(() -> changeState()));
+              .onFalse(leds.unscheduleStateCommand(LEDs.State.READY_TO_SHOOT));
 
         intakeRoller.getIntakeRunning()
-            .onTrue(Commands.runOnce(() -> leds.smartHandler(LEDs.State.RUNNING_INTAKE)));
-        intakeRoller.getIntakeRunning()
-            .onFalse(Commands.runOnce(() -> changeState()));
+              .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_INTAKE));
+               intakeRoller.getIntakeRunning()
+              .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_INTAKE));
 
     }
 
-    // on a triggers false the change state function will activate and it will go down the list of
-    // triggers and when it finds one which is true it will return that respective state
-    public void changeState()
-    {
-        LEDs.State returnState = LEDs.State.NONE; // returns led state NONE if no triggers are true
-        if (DriverStation.isAutonomous()) { // highest priority
-            returnState = LEDs.State.RUNNING_AUTO;
 
-        } else if (shooter.getIsShooting().getAsBoolean()) {
-            returnState = LEDs.State.SHOOTING;
-
-        } else if (shooter.readyToShoot.getAsBoolean()) {
-            returnState = LEDs.State.READY_TO_SHOOT;
-
-        } else if (intakeRoller.getIntakeRunning().getAsBoolean()) { // lowest pritoty
-            returnState = LEDs.State.RUNNING_INTAKE;
-        }
-        leds.dumbHandler(returnState);
-    }
 
     /**
      * Configures button bindings for the Xbox controller. Maps controller inputs to robot commands

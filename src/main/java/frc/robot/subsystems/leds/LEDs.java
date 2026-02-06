@@ -15,13 +15,22 @@
 
 package frc.robot.subsystems.leds;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.TreeSet;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
+import com.ctre.phoenix6.controls.ControlRequest;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.Lights;
 import frc.lib.io.lights.LightsIO;
 import frc.lib.util.LoggerHelper;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -34,22 +43,26 @@ public class LEDs extends SubsystemBase {
     /**
      * The states for the lights in order from highest priority to low
      */
+    @Getter
     @RequiredArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
     public enum State {
         // list of states with their respective prioritys, ie if both RUNNING_AUTO and
         // RUNNING_INTAKE are true it will set to RUNNING_AUTO
 
-        RUNNING_AUTO,
-        SHOOTING,
-        READY_TO_SHOOT,
-        RUNNING_INTAKE,
-        NONE;
+        RUNNING_AUTO(LEDsConstants.autoAnimation),
+        SHOOTING(LEDsConstants.offAnimation),
+        READY_TO_SHOOT(LEDsConstants.offAnimation),
+        RUNNING_INTAKE(LEDsConstants.offAnimation),
+        NONE(LEDsConstants.offAnimation);
+
+        private final List<ControlRequest> animation;
     }
 
     private final Lights lights;
 
-    private State setState = State.NONE; // the set state
+    private final TreeSet<State> stateQueue;
+    private Optional<State> currentState = Optional.empty();
 
     /**
      * Constructs an LEDs subsystem.
@@ -59,78 +72,64 @@ public class LEDs extends SubsystemBase {
     public LEDs(LightsIO io)
     {
         lights = new Lights(io);
+
+        stateQueue = new TreeSet<>((a, b) -> Integer.compare(a.ordinal(), b.ordinal()));
+    }
+
+    private Optional<State> getCurrentStateFromQueue()
+    {
+      
+        State currentState;
+        try {
+            currentState = stateQueue.first();
+        } catch (NoSuchElementException e) {
+            currentState = null;
+        }
+
+        return Optional.ofNullable(currentState);
+    }
+
+    private boolean updateCurrentState()
+    {
+        Optional<State> newState = getCurrentStateFromQueue();
+
+        boolean hasChanged = !this.currentState.equals(newState);
+
+        this.currentState = newState;
+        return hasChanged;
+    }
+
+    private void updateState()
+    {
+        boolean hasChanged = updateCurrentState();
+        if (hasChanged) {
+            if (currentState.isPresent()) {
+                lights.setAnimations(currentState.get().getAnimation());
+            } else {
+                lights.setAnimations(LEDsConstants.offAnimation);
+            }
+        }
     }
 
     @Override
     public void periodic()
     {
+        updateState();
+
+
         LoggerHelper.recordCurrentCommand(LEDsConstants.NAME, this);
-        Logger.recordOutput(LEDsConstants.NAME, setState);
+        currentState
+            .ifPresent(s -> Logger.recordOutput(LEDsConstants.NAME + "/State", s.name()));
+        Logger.recordOutput(LEDsConstants.NAME + "/StateQ", stateQueue.toString());
     }
 
-    /**
-     * Creates a command to run the disabled animation on the LEDs. Turns off the LEDs when the
-     * command ends.
-     * 
-     * @return A command that runs the disabled animation
-     */
-    public Command runDisabledAnimation()
+    public Command scheduleStateCommand(State state)
     {
-        return this.startEnd(
-            () -> lights.setAnimations(LEDsConstants.disabledAnimation),
-            () -> lights.setAnimations(LEDsConstants.offAnimation))
-            .withName("Disabled Animation");
+        return this.runOnce(() -> stateQueue.add(state));
     }
 
-    /**
-     * Creates a command to run the autonomous animation on the LEDs. Turns off the LEDs when the
-     * command ends.
-     * 
-     * @return A command that runs the autonomous animation
-     */
-    public Command runAutoAnimation()
+    public Command unscheduleStateCommand(State state)
     {
-        return this.startEnd(
-            () -> lights.setAnimations(LEDsConstants.autoAnimation),
-            () -> lights.setAnimations(LEDsConstants.offAnimation))
-            .withName("Auto Animation");
+        return this.runOnce(() -> stateQueue.remove(state));
     }
-
-    // checks if the supplied states priotity is higher than the set states priority and if it
-    // is it will set the led to the supplied state and set the setState to the supplied state
-    public void smartHandler(State state)
-    {
-        if (state.ordinal() < setState.ordinal()) {
-            setLED(state);
-            setState = state;
-        }
-    }
-
-    // same thing as smartHandler but it sets the state without checking anything as the logic is
-    // handled in robotContainer
-
-    public void dumbHandler(State state)
-    {
-        setLED(state);
-        setState = state;
-    }
-
-    private void setLED(State state)
-    {
-        // just matches states with their animations, only 1 works
-        switch (state) {
-            case RUNNING_INTAKE -> runDisabledAnimation();
-
-            case READY_TO_SHOOT -> runDisabledAnimation();
-
-            case SHOOTING -> runDisabledAnimation();
-
-            case RUNNING_AUTO -> runAutoAnimation();
-            default -> {
-            }
-        }
-    }
-
-
-
 }
