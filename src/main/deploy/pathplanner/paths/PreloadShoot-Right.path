@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.55,
-        "y": 0.775
+        "x": 3.4,
+        "y": 0.78
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5500000000000003,
-        "y": 0.7750000000000001
+        "x": 2.4000000000000004,
+        "y": 0.78
       },
       "isLocked": false,
       "linkedName": null
@@ -21,11 +21,11 @@
       },
       "prevControl": {
         "x": 2.6999999999999993,
-        "y": 0.7799999999999999
+        "y": 0.78
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightPreloadShoot"
+      "linkedName": "PreloadShoot-Right-End"
     }
   ],
   "rotationTargets": [],
@@ -45,10 +45,10 @@
     "rotation": 46.0
   },
   "reversed": false,
-  "folder": "Preload",
+  "folder": "Right",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 46.0
   },
   "useDefaultConstraints": true
 }

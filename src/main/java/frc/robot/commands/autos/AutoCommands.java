@@ -4,7 +4,7 @@
 
 package frc.robot.commands.autos;
 
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -12,16 +12,17 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
 import frc.robot.commands.DriveCommands;
+import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
-import frc.robot.subsystems.tower.Tower;
 
 /**
  * Class containing useful individual commands or small-group command sequences that can be strung
@@ -61,36 +62,44 @@ public class AutoCommands {
     }
 
     /**
-     * Creates a command sequence to shoot fuel from the robot. Spins up the shooter, pulls fuel
-     * through the indexer when ready, and stops after the duration.
+     * Creates a command sequence that attempts to shoot fuel from the robot for duration. Spins up
+     * the shooter, only pulls fuel through the feeder when ready, then stops indexer, tower, &
+     * shooter after duration. If shooting is disrupted during duration because shooter readiness
+     * drops, attempt a flywheel/hood adjustment and, if successful, re-commence shooting within the
+     * remaining window. Unconditionally stops shot attempts after duration.
      *
      * @param indexer the indexer subsystem
      * @param tower the tower subsystem
      * @param shooter the shooter superstructure
-     * @param canShoot an extra checkl for whether or not balls can be shot, besides the shooter
-     *        superstructure being at the correct state
-     * @param duration the maximum duration in seconds to run the shooting sequence
+     * @param canShoot secondary check on whether the robot is properly aligned to the target,
+     *        independent of whether the the shooter is at the proper state
+     * @param duration the approximate duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer
      */
-    public static Command shootFuel(Indexer indexer, Tower tower, ShooterSuperstructure shooter,
-        BooleanSupplier canShoot, double duration)
+    public static Command shootFuel(Indexer indexer, Tower tower,
+        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration)
     {
         return Commands.sequence(
-            Commands.parallel(
-                // Continuously update flywheel speed and hood position
-                shooter.spinUpShooter(),
-                // Run the indexer while the shooter is at position
-                Commands.parallel(
-                    indexer.holdStateUntilInterrupted(Indexer.State.PULL),
-                    tower.holdStateUntilInterrupted(Tower.State.SHOOT))
-                    // Stop running if not at position
-                    .onlyWhile(shooter.readyToShoot.and(canShoot))
-                    .repeatedly()) // Try again
-                .withTimeout(duration), // Stop after duration
-            // Reset subsystems to usual states
-            Commands.parallel(
-                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
-                indexer.setStateCommand(Indexer.State.STOP)));
+            // Defensively gate shooting until ready (5 scans max)
+            new ParallelDeadlineGroup(
+                Commands.waitUntil(shooter.readyToShoot.and(canShoot)),
+                shooter.spinUpShooter()).withTimeout(0.10),
+            // Shoot when ready. If readiness drops mid-cycle, adjust shooter, then resume
+            new ParallelDeadlineGroup(
+                Commands.waitSeconds(duration), // Unconditionally stop shooting after duration
+                shooter.spinUpShooter(), // Keep shooter scheduled and updating
+                Commands.repeatingSequence(
+                    // Repeat shot attempts until duration timeout
+                    Commands.waitUntil(shooter.readyToShoot.and(canShoot)),
+                    Commands.parallel(
+                        indexer.holdStateUntilInterrupted(Indexer.State.PULL),
+                        tower.holdStateUntilInterrupted(Tower.State.SHOOT))
+                        .until(shooter.readyToShoot.and(canShoot).negate()))))
+            .finallyDo(() -> {
+                // Spin shooter down, non-blocking
+                CommandScheduler.getInstance()
+                    .schedule(shooter.setFlywheelSpeed(RadiansPerSecond.zero()));
+            });
     }
 
     /**
@@ -107,9 +116,8 @@ public class AutoCommands {
      * @param duration the maximum duration in seconds to run the align-and-shoot sequence
      * @return a command that aligns the robot to the target and shoots for up to the given duration
      */
-    public static Command alignAndShoot(Drive drive, Indexer indexer, Tower tower,
-        ShooterSuperstructure shooter,
-        double duration)
+    public static Command alignAndShoot(Drive drive, Indexer indexer,
+        Tower tower, ShooterSuperstructure shooter, double duration)
     {
         final var robotState = RobotState.getInstance();
         return Commands.deadline(
@@ -136,5 +144,68 @@ public class AutoCommands {
             linear.extend(),
             intake.holdStateUntilInterrupted(IntakeRoller.State.INTAKE))
             .finallyDo(() -> CommandScheduler.getInstance().schedule(linear.retract()));
+    }
+
+    /**
+     * Creates a command to extend the intake linearly. This command is blocking (2s max) until the
+     * extension is complete. The intake will remain extended and energized at the conclusion of
+     * this command.
+     * 
+     * @param intake the linear intake subsystem
+     * @return a command that retracts the intake and keeps it retracted when finished
+     */
+    public static Command extendIntake(IntakeLinear intake)
+    {
+        return Commands.sequence(
+            intake.extend(),
+            Commands.waitUntil(intake.isExtended).withTimeout(2.0)); // Wait until slam or max
+    }
+
+    /**
+     * Creates a command to retract the intake linearly. This command is blocking (2s max) until the
+     * retraction is complete. The intake will remain retracted and energized at the conclusion of
+     * this command.
+     * 
+     * @param intake the linear intake subsystem
+     * @return a command that retracts the intake and keeps it retracted when finished
+     */
+    public static Command retractIntake(IntakeLinear intake)
+    {
+        return Commands.sequence(
+            intake.retract(),
+            Commands.waitUntil(intake.isRetracted).withTimeout(2.0)); // Wait until slam or max
+    }
+
+    /**
+     * Creates a blocking command to agitate the balls in the hopper to facilitate shooting. Should
+     * be externally interrupted / run in parallel with other commands. Can be used between
+     * shootFuel() commands within an AutoSegment to prepare the hopper for game piece transport.
+     * Subsystems end up in unguaranteed state; be sure to decorate or sequence this call with a
+     * known state control command.
+     * 
+     * @param intake the linear intake subsystem
+     * @param tower the tower subsystem
+     * @param indexer the indexer subsystem
+     * @return a blocking command that agitates the balls in the hopper and stops when finished
+     */
+    public static Command agitateHopper(IntakeLinear intake, Tower tower, Indexer indexer,
+        HopperAgitation state)
+    {
+        switch (state) {
+            case INTAKE_CYCLE:
+                return intake.cycle();
+            case TOWER_PULSE:
+                return Commands.repeatingSequence(
+                    tower.holdStateUntilInterrupted(Tower.State.SHOOT).withTimeout(0.1),
+                    tower.holdStateUntilInterrupted(Tower.State.STOP).withTimeout(0.05));
+            case INDEXER_PULSE:
+                return Commands.repeatingSequence(
+                    indexer.holdStateUntilInterrupted(Indexer.State.PULL).withTimeout(0.1),
+                    indexer.holdStateUntilInterrupted(Indexer.State.STOP).withTimeout(0.05));
+            case NONE:
+                return Commands.none();
+            default:
+                return Commands.none();
+        }
     }
 }

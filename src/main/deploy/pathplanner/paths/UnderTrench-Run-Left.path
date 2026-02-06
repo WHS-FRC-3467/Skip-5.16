@@ -8,43 +8,52 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.471678571428571,
-        "y": 4.828625
+        "x": 1.8,
+        "y": 7.049094094903662
       },
       "isLocked": false,
       "linkedName": "PreloadShoot-Left-End"
     },
     {
       "anchor": {
-        "x": 2.137,
-        "y": 3.647
+        "x": 4.634,
+        "y": 7.444
       },
       "prevControl": {
-        "x": 2.471678571428571,
-        "y": 4.828625
+        "x": 3.365417429292755,
+        "y": 7.444
       },
       "nextControl": {
-        "x": 1.7148050774552324,
-        "y": 2.1563874602651874
+        "x": 5.8372952924393715,
+        "y": 7.444
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.4851024305555556,
-        "y": 0.6361016167534717
+        "x": 6.8,
+        "y": 7.0
       },
       "prevControl": {
-        "x": 1.726642857142857,
-        "y": 2.1724107142857143
+        "x": 6.528234101917314,
+        "y": 7.388121925647266
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "OutpostIntakeEnd"
+      "linkedName": "UnderTrench-Run-Left-End"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5989304812834227,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 0.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -57,13 +66,13 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 180.0
+    "velocity": 3.0,
+    "rotation": -45.0
   },
   "reversed": false,
   "folder": "Left",
   "idealStartingState": {
-    "velocity": 0,
+    "velocity": 2.0,
     "rotation": -37.0
   },
   "useDefaultConstraints": true
