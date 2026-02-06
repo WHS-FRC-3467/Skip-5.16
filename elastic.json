@@ -3740,6 +3740,125 @@
         ],
         "containers": []
       }
+    },
+    {
+      "name": "Lookup Tuning",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "FlywheelSpeedRPS",
+            "x": 950.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/ShooterSuperstructure/Tuning/FlywheelSpeedRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "HoodAngleDegrees",
+            "x": 750.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/ShooterSuperstructure/Tuning/HoodAngleDegrees",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Enable",
+            "x": 550.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Tuning/ShooterSuperstructure/Tuning/Enable",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "EjectRPS",
+            "x": 350.0,
+            "y": 150.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/Tower/EjectRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "IdleRPS",
+            "x": 550.0,
+            "y": 150.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/Tower/IdleRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "ShootRPS",
+            "x": 750.0,
+            "y": 150.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/Tower/ShootRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "StopRPS",
+            "x": 950.0,
+            "y": 150.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/Tower/StopRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "DistanceToTargetMeters",
+            "x": 350.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterSuperstructure/Tuning/DistanceToTargetMeters",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
     }
   ]
 }
