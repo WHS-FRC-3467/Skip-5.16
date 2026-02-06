@@ -39,10 +39,10 @@ class DriveTest {
     {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
         drive = new Drive(new GyroIO() {},
-            new ModuleIOSim(DriveConstants.FrontLeft),
-            new ModuleIOSim(DriveConstants.FrontRight),
-            new ModuleIOSim(DriveConstants.BackLeft),
-            new ModuleIOSim(DriveConstants.BackRight));
+            new ModuleIOSim("FrontLeft", DriveConstants.FrontLeft),
+            new ModuleIOSim("FrontRight", DriveConstants.FrontRight),
+            new ModuleIOSim("BackLeft", DriveConstants.BackLeft),
+            new ModuleIOSim("BackRight", DriveConstants.BackRight));
 
         /* enable the robot */
         DriverStationSim.setEnabled(true);

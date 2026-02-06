@@ -44,6 +44,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
+import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
@@ -102,6 +103,9 @@ public class Drive extends SubsystemBase {
     private final Alert gyroDisconnectedAlert =
         new Alert("Disconnected gyro, using kinematics as fallback.",
             AlertType.kError);
+
+    private final LoggedTunableBoolean enableSkidDetection =
+        new LoggedTunableBoolean("Drive/Enable Skid Detection", false);
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
 
@@ -239,7 +243,9 @@ public class Drive extends SubsystemBase {
                 gyroAngle = Optional.of(gyroInputs.yawPosition);
             }
 
-            boolean[] badWheels = computeSkidMaskForSample(i, sampleTimestamps, modulePositions);
+            boolean[] badWheels = enableSkidDetection.get()
+                ? computeSkidMaskForSample(i, sampleTimestamps, modulePositions)
+                : new boolean[] {false, false, false, false};
 
             // Keep the latest sample easy to view in AdvantageScope.
             if (i == sampleCount - 1) {
@@ -527,31 +533,37 @@ public class Drive extends SubsystemBase {
     {
         boolean[] bad = new boolean[] {false, false, false, false};
 
-        // Needs a previous sample to estimate per-wheel velocity.
+        SwerveModuleState[] measuredStates;
+
         if (sampleIndex <= 0) {
-            skidTransMagLatest = new double[] {0.0, 0.0, 0.0, 0.0};
-            return bad;
+            /*
+             * In sim we often only have one odometry sample per cycle. In that case we cannot
+             * compute velocity from position delta, so we use the instantaneous measured module
+             * states for this cycle. It is quite rare to not have multiple samples on a real robot,
+             * but if that happens, this isn't a bad metric.
+             */
+            measuredStates = getModuleStates();
+        } else {
+            double dt = sampleTimestamps[sampleIndex] - sampleTimestamps[sampleIndex - 1];
+            if (dt <= 1e-6) {
+                skidTransMagLatest = new double[] {0.0, 0.0, 0.0, 0.0};
+                return bad;
+            }
+
+            SwerveModulePosition[] positionsPrev = new SwerveModulePosition[4];
+            for (int i = 0; i < 4; i++) {
+                positionsPrev[i] = modules[i].getOdometryPositions()[sampleIndex - 1];
+            }
+
+            measuredStates = new SwerveModuleState[4];
+            for (int i = 0; i < 4; i++) {
+                double deltaMeters =
+                    positionsNow[i].distanceMeters - positionsPrev[i].distanceMeters;
+                double speedMps = deltaMeters / dt;
+                measuredStates[i] = new SwerveModuleState(speedMps, positionsNow[i].angle);
+            }
         }
 
-        double dt = sampleTimestamps[sampleIndex] - sampleTimestamps[sampleIndex - 1];
-        if (dt <= 1e-6) {
-            skidTransMagLatest = new double[] {0.0, 0.0, 0.0, 0.0};
-            return bad;
-        }
-
-        SwerveModulePosition[] positionsPrev = new SwerveModulePosition[4];
-        for (int i = 0; i < 4; i++) {
-            positionsPrev[i] = modules[i].getOdometryPositions()[sampleIndex - 1];
-        }
-
-        SwerveModuleState[] measuredStates = new SwerveModuleState[4];
-        for (int i = 0; i < 4; i++) {
-            double deltaMeters = positionsNow[i].distanceMeters - positionsPrev[i].distanceMeters;
-            double speedMps = deltaMeters / dt;
-            measuredStates[i] = new SwerveModuleState(speedMps, positionsNow[i].angle);
-        }
-
-        // Uses wheel motion to estimate omega since we only have gyro angle here, not gyro rate.
         double omega = kinematics.toChassisSpeeds(measuredStates).omegaRadiansPerSecond;
 
         Translation2d[] locations = getModuleTranslations();

@@ -26,6 +26,8 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import frc.lib.util.LoggedTunableBoolean;
+import frc.lib.util.LoggedTunableNumber;
 
 /**
  * Physics sim implementation of module IO. The sim models are configured using a set of module
@@ -37,7 +39,9 @@ public class ModuleIOSim implements ModuleIO {
     private static final double DRIVE_KP = 0.05;
     private static final double DRIVE_KD = 0.0;
     private static final double DRIVE_KS = 0.0;
-    private static final double DRIVE_KV_ROT = 0.742; // Updated from 0.91035 to reflect new gear ratio (6.0 vs 7.3636): 0.91035 * (6.0/7.3636) = 0.742
+    // Updated from 0.91035 to reflect new gear ratio (6.0 vs 7.3636): 0.91035 * (6.0/7.3636) =
+    // 0.742
+    private static final double DRIVE_KV_ROT = 0.742;
     private static final double DRIVE_KV = 1.0 / Units.rotationsToRadians(1.0 / DRIVE_KV_ROT);
     private static final double TURN_KP = 12.5;
     private static final double TURN_KD = 0.0;
@@ -46,6 +50,19 @@ public class ModuleIOSim implements ModuleIO {
 
     private final DCMotorSim driveSim;
     private final DCMotorSim turnSim;
+
+    /**
+     * Dashboard input for whether or not to enable simulated module skid.
+     *
+     * When enabled, the drive motor voltage applied to the simulation is multiplied by
+     * {@link #skidMultiplier}. This intentionally makes the simulated wheel "over-achieve" compared
+     * to the rest of the drivetrain, which is a simple way to create a repeatable skid-like outlier
+     * for testing detection and filtering logic.
+     */
+    private final LoggedTunableBoolean enableSkid;
+
+    /** The multiplier applied to the drive voltage when {@link #enableSkid} is active. */
+    private final LoggedTunableNumber skidMultiplier;
 
     private boolean driveClosedLoop = false;
     private boolean turnClosedLoop = false;
@@ -61,6 +78,7 @@ public class ModuleIOSim implements ModuleIO {
      * @param constants Module-specific constants for configuring the simulation
      */
     public ModuleIOSim(
+        String name,
         SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants)
     {
         // Create drive and turn sim models
@@ -75,6 +93,10 @@ public class ModuleIOSim implements ModuleIO {
 
         // Enable wrapping for turn PID
         turnController.enableContinuousInput(-Math.PI, Math.PI);
+
+        // Instantiate tuning values
+        enableSkid = new LoggedTunableBoolean("Drive/" + name + "/Enable Skid Simulation", false);
+        skidMultiplier = new LoggedTunableNumber("Drive/" + name + "/Skid Multiplier", 1.8);
     }
 
     @Override
@@ -87,6 +109,7 @@ public class ModuleIOSim implements ModuleIO {
         } else {
             driveController.reset();
         }
+
         if (turnClosedLoop) {
             turnAppliedVolts = turnController.calculate(turnSim.getAngularPositionRad());
         } else {
@@ -115,8 +138,7 @@ public class ModuleIOSim implements ModuleIO {
         inputs.turnAppliedVolts = turnAppliedVolts;
         inputs.turnCurrentAmps = Math.abs(turnSim.getCurrentDrawAmps());
 
-        // Update odometry inputs (50Hz because high-frequency odometry in sim doesn't
-        // matter)
+        // Update odometry inputs (50Hz because high-frequency odometry in sim doesn't matter)
         inputs.odometryTimestamps = new double[] {Timer.getFPGATimestamp()};
         inputs.odometryDrivePositionsRad = new double[] {inputs.drivePositionRad};
         inputs.odometryTurnPositions = new Rotation2d[] {inputs.turnPosition};
@@ -125,6 +147,8 @@ public class ModuleIOSim implements ModuleIO {
     @Override
     public void setDriveOpenLoop(double output)
     {
+        output = output * (enableSkid.get() ? skidMultiplier.get() : 1.0);
+
         driveClosedLoop = false;
         driveAppliedVolts = output;
     }
@@ -139,6 +163,8 @@ public class ModuleIOSim implements ModuleIO {
     @Override
     public void setDriveVelocity(double velocityRadPerSec)
     {
+        velocityRadPerSec = velocityRadPerSec * (enableSkid.get() ? skidMultiplier.get() : 1.0);
+
         driveClosedLoop = true;
         driveFFVolts = DRIVE_KS * Math.signum(velocityRadPerSec) + DRIVE_KV * velocityRadPerSec;
         driveController.setSetpoint(velocityRadPerSec);

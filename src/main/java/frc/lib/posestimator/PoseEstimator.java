@@ -23,6 +23,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N3;
@@ -71,6 +72,20 @@ public class PoseEstimator {
         double linearOdometryStdDev,
         double angularOdometryStdDev)
     {
+        this(kinematics, null, odometryBufferSize, linearOdometryStdDev, angularOdometryStdDev);
+    }
+
+    /**
+     * If module translations are provided, odometry can ignore skidding wheels using the
+     * {@code badWheels} array in {@link OdometryObservation}.
+     */
+    public PoseEstimator(
+        SwerveDriveKinematics kinematics,
+        Translation2d[] moduleTranslations,
+        Time odometryBufferSize,
+        double linearOdometryStdDev,
+        double angularOdometryStdDev)
+    {
         double linearOdometryVariance = Math.pow(linearOdometryStdDev, 2);
         double angularOdometryVariance = Math.pow(angularOdometryStdDev, 2);
 
@@ -80,7 +95,7 @@ public class PoseEstimator {
                 angularOdometryVariance // Rotation
         };
 
-        odometry = new SwerveOdometry(kinematics, odometryBufferSize);
+        odometry = new SwerveOdometry(kinematics, moduleTranslations, odometryBufferSize);
     }
 
     public PoseEstimator(
@@ -211,8 +226,8 @@ public class PoseEstimator {
             Rotation2d.fromRadians(scaledVisionCorrectionVector.get(2, 0)));
 
         estimatedPose = oldPose
-            .transformBy(scaledVisionCorrection) // Adjust by the correction
-            .transformBy(poseDeltaThenToNow); // Bring back to present time (latency comp)
+            .transformBy(scaledVisionCorrection)
+            .transformBy(poseDeltaThenToNow);
     }
 
     public void resetPose(Pose2d pose)

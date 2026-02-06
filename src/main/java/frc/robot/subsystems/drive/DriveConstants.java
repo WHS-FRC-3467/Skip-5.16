@@ -353,10 +353,10 @@ public class DriveConstants {
             case SIM:
                 return new Drive(
                     new GyroIO() {},
-                    new ModuleIOSim(DriveConstants.FrontLeft),
-                    new ModuleIOSim(DriveConstants.FrontRight),
-                    new ModuleIOSim(DriveConstants.BackLeft),
-                    new ModuleIOSim(DriveConstants.BackRight));
+                    new ModuleIOSim("FrontLeft", DriveConstants.FrontLeft),
+                    new ModuleIOSim("FrontRight", DriveConstants.FrontRight),
+                    new ModuleIOSim("BackLeft", DriveConstants.BackLeft),
+                    new ModuleIOSim("BackRight", DriveConstants.BackRight));
             case REPLAY:
                 return new Drive(
                     new GyroIO() {},
@@ -371,10 +371,10 @@ public class DriveConstants {
 
 
     /**
-     * Maximum absolute pitch/roll angle at which the drivetrain is still considered level.
-     * When the robot's pitch/roll exceeds this threshold, the drivetrain is treated as
-     * angled and vision-based pose updates are ignored to prevent inaccurate pose
-     * estimation while the robot is on an incline or bump.
+     * Maximum absolute pitch/roll angle at which the drivetrain is still considered level. When the
+     * robot's pitch/roll exceeds this threshold, the drivetrain is treated as angled and
+     * vision-based pose updates are ignored to prevent inaccurate pose estimation while the robot
+     * is on an incline or bump.
      */
     public static final Angle ANGLED_TOLERANCE = Degrees.of(2.0);
 
