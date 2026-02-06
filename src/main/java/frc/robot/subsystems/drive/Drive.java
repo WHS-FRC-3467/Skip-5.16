@@ -489,6 +489,37 @@ public class Drive extends SubsystemBase {
             || Math.abs(gyroIO.getRoll()) > DriveConstants.ANGLED_TOLERANCE.in(Degrees);
     }
 
+    /**
+     * Computes a per-odometry-sample skid mask.
+     *
+     * <p>
+     * The returned array is aligned to the odometry sample at {@code sampleIndex}. This matters
+     * because {@link frc.lib.posestimator.SwerveOdometry} integrates pose using those exact sampled
+     * positions.
+     *
+     * <p>
+     * Approach:
+     * <ul>
+     * <li>Estimate each wheel's velocity at this sample from position delta divided by dt.</li>
+     * <li>Use kinematics to estimate the robot's angular velocity (omega) for that sample.</li>
+     * <li>For each wheel, subtract the rotational velocity component caused by omega.</li>
+     * <li>Compare the remaining translational speed magnitudes across wheels.</li>
+     * </ul>
+     *
+     * <p>
+     * Skid rule: A wheel is flagged as skidding if its translational speed magnitude is an outlier
+     * compared to the median wheel translational speed. This catches common cases like one wheel
+     * spinning freely or one wheel being dragged.
+     *
+     * <p>
+     * When translation is very small, encoder noise and quantization dominate. In that case we skip
+     * skid detection and return all-false to avoid false positives.
+     *
+     * @param sampleIndex index into the odometry sample arrays for this cycle
+     * @param sampleTimestamps timestamps for the odometry samples, in seconds
+     * @param positionsNow module positions at {@code sampleIndex}
+     * @return boolean[4] where true means "ignore this wheel for this odometry update"
+     */
     private boolean[] computeSkidMaskForSample(
         int sampleIndex,
         double[] sampleTimestamps,
