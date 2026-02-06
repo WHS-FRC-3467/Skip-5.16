@@ -38,8 +38,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -47,8 +47,8 @@ import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import frc.robot.util.LocalADStarAK;
 import frc.robot.RobotState;
+import frc.robot.util.LocalADStarAK;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -63,6 +63,7 @@ public class Drive extends SubsystemBase {
         new CANBus(DriveConstants.drivetrainConstants.CANBusName).isNetworkFD()
             ? 250.0
             : 100.0;
+
     public static final double DRIVE_BASE_RADIUS = Math.max(
         Math.max(
             Math.hypot(DriveConstants.FrontLeft.LocationX, DriveConstants.FrontLeft.LocationY),
@@ -75,6 +76,7 @@ public class Drive extends SubsystemBase {
     private static final double ROBOT_MASS_KG = 74.088;
     private static final double ROBOT_MOI = 6.883;
     private static final double WHEEL_COF = 1.2;
+
     private static final RobotConfig PP_CONFIG = new RobotConfig(
         ROBOT_MASS_KG,
         ROBOT_MOI,
@@ -89,15 +91,41 @@ public class Drive extends SubsystemBase {
         getModuleTranslations());
 
     static final Lock odometryLock = new ReentrantLock();
+
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+
     private final SysIdRoutine sysId;
+
     private final Alert gyroDisconnectedAlert =
         new Alert("Disconnected gyro, using kinematics as fallback.",
             AlertType.kError);
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+
+    /*
+     * Wheel skid detection for odometry: We compute a per-sample badWheels array and attach it to
+     * the odometry observation. The odometry integrator can then ignore those wheels for that
+     * integration step.
+     *
+     * The detection checks how consistent each wheel's translational velocity is compared to the
+     * others. A wheel that is slipping is often an outlier.
+     */
+    private static final double SKID_OUTLIER_SCALE = 1.35;
+
+    /*
+     * At very low translation speeds, encoder quantization and noise can cause false positives. We
+     * skip skid detection if the median translational speed is below this threshold.
+     */
+    private static final double SKID_MIN_TRANSLATION_MPS = 0.15;
+
+    @AutoLogOutput(key = "Drive/Skid/BadWheelsLatest")
+    private boolean[] skidBadWheelsLatest = new boolean[] {false, false, false, false};
+
+    @AutoLogOutput(key = "Drive/Skid/TransMagLatest")
+    private double[] skidTransMagLatest = new double[] {0.0, 0.0, 0.0, 0.0};
 
     /**
      * Constructs a new Drive subsystem.
@@ -116,6 +144,7 @@ public class Drive extends SubsystemBase {
         ModuleIO brModuleIO)
     {
         this.gyroIO = gyroIO;
+
         modules[0] = new Module(flModuleIO, 0, DriveConstants.FrontLeft);
         modules[1] = new Module(frModuleIO, 1, DriveConstants.FrontRight);
         modules[2] = new Module(blModuleIO, 2, DriveConstants.BackLeft);
@@ -140,12 +169,15 @@ public class Drive extends SubsystemBase {
                 PP_CONFIG,
                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                 this);
+
             Pathfinding.setPathfinder(new LocalADStarAK());
+
             PathPlannerLogging.setLogActivePathCallback(
                 (activePath) -> {
                     Logger.recordOutput(
                         "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
                 });
+
             PathPlannerLogging.setLogTargetPoseCallback(
                 (targetPose) -> {
                     Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
@@ -168,6 +200,7 @@ public class Drive extends SubsystemBase {
     public void periodic()
     {
         LoggerHelper.recordCurrentCommand("Drive", this);
+
         odometryLock.lock(); // Prevents odometry updates while reading data
         gyroIO.updateInputs(gyroInputs);
         Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -194,6 +227,7 @@ public class Drive extends SubsystemBase {
 
         double[] sampleTimestamps = modules[0].getOdometryTimestamps();
         int sampleCount = sampleTimestamps.length;
+
         for (int i = 0; i < sampleCount; i++) {
             SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
             for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
@@ -205,9 +239,19 @@ public class Drive extends SubsystemBase {
                 gyroAngle = Optional.of(gyroInputs.yawPosition);
             }
 
+            boolean[] badWheels = computeSkidMaskForSample(i, sampleTimestamps, modulePositions);
+
+            // Keep the latest sample easy to view in AdvantageScope.
+            if (i == sampleCount - 1) {
+                skidBadWheelsLatest = badWheels.clone();
+            }
+
             robotState.addOdometryObservation(
-                new OdometryObservation(Seconds.of(sampleTimestamps[i]), modulePositions,
-                    gyroAngle));
+                new OdometryObservation(
+                    Seconds.of(sampleTimestamps[i]),
+                    modulePositions,
+                    gyroAngle,
+                    badWheels));
         }
 
         // Update RobotState velocity
@@ -430,18 +474,92 @@ public class Drive extends SubsystemBase {
     /**
      * Returns whether the drivetrain is operating at a significant angle.
      *
-     * <p>This checks the current pitch and roll reported by the gyro against the
-     * configured maximum allowed angle ({@link DriveConstants#ANGLED_TOLERANCE}).
-     * It is used to detect when the robot is on an incline or traversing a bump
-     * so that vision-based pose updates can be temporarily ignored while the
-     * drivetrain is not level.
+     * <p>
+     * This checks the current pitch and roll reported by the gyro against the configured maximum
+     * allowed angle ({@link DriveConstants#ANGLED_TOLERANCE}). It is used to detect when the robot
+     * is on an incline or traversing a bump so that vision-based pose updates can be temporarily
+     * ignored while the drivetrain is not level.
      *
-     * @return {@code true} if the absolute pitch or roll exceeds the allowed
-     *         threshold, indicating the drivetrain is sufficiently angled;
-     *         {@code false} otherwise.
+     * @return {@code true} if the absolute pitch or roll exceeds the allowed threshold, indicating
+     *         the drivetrain is sufficiently angled; {@code false} otherwise.
      */
-    public boolean isAngled() {
+    public boolean isAngled()
+    {
         return Math.abs(gyroIO.getPitch()) > DriveConstants.ANGLED_TOLERANCE.in(Degrees)
             || Math.abs(gyroIO.getRoll()) > DriveConstants.ANGLED_TOLERANCE.in(Degrees);
+    }
+
+    private boolean[] computeSkidMaskForSample(
+        int sampleIndex,
+        double[] sampleTimestamps,
+        SwerveModulePosition[] positionsNow)
+    {
+        boolean[] bad = new boolean[] {false, false, false, false};
+
+        // Needs a previous sample to estimate per-wheel velocity.
+        if (sampleIndex <= 0) {
+            skidTransMagLatest = new double[] {0.0, 0.0, 0.0, 0.0};
+            return bad;
+        }
+
+        double dt = sampleTimestamps[sampleIndex] - sampleTimestamps[sampleIndex - 1];
+        if (dt <= 1e-6) {
+            skidTransMagLatest = new double[] {0.0, 0.0, 0.0, 0.0};
+            return bad;
+        }
+
+        SwerveModulePosition[] positionsPrev = new SwerveModulePosition[4];
+        for (int i = 0; i < 4; i++) {
+            positionsPrev[i] = modules[i].getOdometryPositions()[sampleIndex - 1];
+        }
+
+        SwerveModuleState[] measuredStates = new SwerveModuleState[4];
+        for (int i = 0; i < 4; i++) {
+            double deltaMeters = positionsNow[i].distanceMeters - positionsPrev[i].distanceMeters;
+            double speedMps = deltaMeters / dt;
+            measuredStates[i] = new SwerveModuleState(speedMps, positionsNow[i].angle);
+        }
+
+        // Uses wheel motion to estimate omega since we only have gyro angle here, not gyro rate.
+        double omega = kinematics.toChassisSpeeds(measuredStates).omegaRadiansPerSecond;
+
+        Translation2d[] locations = getModuleTranslations();
+        double[] transMag = new double[4];
+        for (int i = 0; i < 4; i++) {
+            Translation2d vMeas =
+                new Translation2d(measuredStates[i].speedMetersPerSecond, measuredStates[i].angle);
+
+            Translation2d r = locations[i];
+            Translation2d vRot = new Translation2d(-omega * r.getY(), omega * r.getX());
+
+            transMag[i] = vMeas.minus(vRot).getNorm();
+        }
+
+        skidTransMagLatest = transMag.clone();
+
+        double median = median(transMag);
+        if (median < SKID_MIN_TRANSLATION_MPS) {
+            return bad;
+        }
+
+        double low = median / SKID_OUTLIER_SCALE;
+        double high = median * SKID_OUTLIER_SCALE;
+
+        for (int i = 0; i < 4; i++) {
+            bad[i] = (transMag[i] < low) || (transMag[i] > high);
+        }
+
+        return bad;
+    }
+
+    private static double median(double[] values)
+    {
+        double[] copy = values.clone();
+        java.util.Arrays.sort(copy);
+        int n = copy.length;
+        if ((n & 1) == 1) {
+            return copy[n / 2];
+        }
+        return 0.5 * (copy[n / 2 - 1] + copy[n / 2]);
     }
 }
