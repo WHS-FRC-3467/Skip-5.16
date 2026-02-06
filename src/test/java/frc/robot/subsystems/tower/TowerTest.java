@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.indexer;
+package frc.robot.subsystems.tower;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -24,8 +24,6 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
-import frc.robot.subsystems.tower.Tower;
-import frc.robot.subsystems.tower.TowerConstants;
 
 public class TowerTest {
     Tower tower;

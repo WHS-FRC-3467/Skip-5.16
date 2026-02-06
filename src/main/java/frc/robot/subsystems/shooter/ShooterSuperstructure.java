@@ -19,7 +19,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -36,10 +35,11 @@ import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
+import frc.robot.RobotState.Target;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
 
-    /** Distance from goal in meters -> hood angle in degrees */
+    /** Distance from hub in meters -> hood angle in degrees */
     private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
     static {
         hoodAngleMap.put(1.05, 2.0); // Lowest
@@ -58,24 +58,42 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         hoodAngleMap.put(3.65, 27.0); // Highest
     }
 
-    /** Distance from goal in meters -> flywheel speed in rotations per second */
-    private static final InterpolatingDoubleTreeMap flywheelMap = new InterpolatingDoubleTreeMap();
+    /** Distance from hub in meters -> flywheel speed in rotations per second */
+    private static final InterpolatingDoubleTreeMap hubFlywheelMap =
+        new InterpolatingDoubleTreeMap();
     static {
-        flywheelMap.put(1.05, 18.0);
-        flywheelMap.put(1.25, 18.0);
-        flywheelMap.put(1.45, 18.0);
-        flywheelMap.put(1.65, 19.0);
-        flywheelMap.put(1.85, 19.0);
-        flywheelMap.put(2.05, 19.5);
-        flywheelMap.put(2.25, 20.0);
-        flywheelMap.put(2.45, 20.5);
-        flywheelMap.put(2.65, 20.5);
-        flywheelMap.put(2.85, 21.0);
-        flywheelMap.put(3.05, 21.5);
-        flywheelMap.put(3.25, 22.0);
-        flywheelMap.put(3.45, 22.5);
-        flywheelMap.put(3.65, 23.0);
-        flywheelMap.put(3.85, 23.5);
+        hubFlywheelMap.put(1.05, 18.0);
+        hubFlywheelMap.put(1.25, 18.0);
+        hubFlywheelMap.put(1.45, 18.0);
+        hubFlywheelMap.put(1.65, 19.0);
+        hubFlywheelMap.put(1.85, 19.0);
+        hubFlywheelMap.put(2.05, 19.5);
+        hubFlywheelMap.put(2.25, 20.0);
+        hubFlywheelMap.put(2.45, 20.5);
+        hubFlywheelMap.put(2.65, 20.5);
+        hubFlywheelMap.put(2.85, 21.0);
+        hubFlywheelMap.put(3.05, 21.5);
+        hubFlywheelMap.put(3.25, 22.0);
+        hubFlywheelMap.put(3.45, 22.5);
+        hubFlywheelMap.put(3.65, 23.0);
+        hubFlywheelMap.put(3.85, 23.5);
+    }
+
+    /** Distance from feed pose in meters -> flywheel speed in rotations per second */
+    private static final InterpolatingDoubleTreeMap feedFlywheelMap =
+        new InterpolatingDoubleTreeMap();
+    static {
+        feedFlywheelMap.put(3.0, 16.0);
+        feedFlywheelMap.put(4.0, 17.0);
+        feedFlywheelMap.put(5.0, 19.0);
+        feedFlywheelMap.put(6.0, 21.0);
+        feedFlywheelMap.put(7.0, 24.0);
+        feedFlywheelMap.put(8.0, 26.0);
+        feedFlywheelMap.put(9.0, 28.0);
+        feedFlywheelMap.put(10.0, 29.5);
+        feedFlywheelMap.put(11.0, 31.0);
+        feedFlywheelMap.put(12.0, 33.0);
+        feedFlywheelMap.put(13.0, 34.0);
     }
 
     private final RobotState robotState = RobotState.getInstance();
@@ -88,7 +106,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         new LoggedTrigger(this.getName() + "/readyToShoot", () -> {
             double dist = robotState
                 .getDistanceToTarget().in(Meters);
-            return isFlywheelAt(RotationsPerSecond.of(flywheelMap.get(dist)))
+            return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
         });
 
@@ -182,6 +200,29 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
     }
 
+    private AngularVelocity getDesiredFlywheelVelocity()
+    {
+        InterpolatingDoubleTreeMap flywheelMap = switch (robotState.getTarget()) {
+            case HUB -> hubFlywheelMap;
+            case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
+        };
+
+        return RotationsPerSecond.of(
+            flywheelMap.get(
+                robotState.getDistanceToTarget().in(Meters)));
+    }
+
+    private Angle getDesiredHoodAngle()
+    {
+        if (robotState.getTarget() == Target.HUB) {
+            return Degrees.of(
+                hoodAngleMap.get(
+                    robotState.getDistanceToTarget().in(Meters)));
+        }
+
+        return Degrees.of(27.0);
+    }
+
     /**
      * Spins the flywheel and actuates the hood to the proper values given field-relative robot
      * pose. Perpetual command -- never spins down. Therefore, to end, this should be interrupted by
@@ -191,17 +232,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     public Command spinUpShooter()
     {
-        Supplier<AngularVelocity> desiredFlywheelVelocitySupplier =
-            () -> RotationsPerSecond.of(flywheelMap
-                .get(robotState
-                    .getDistanceToTarget().in(Meters)));
-        Supplier<Angle> desiredHoodPositionSupplier = () -> Degrees.of(hoodAngleMap
-            .get(robotState
-                .getDistanceToTarget().in(Meters)));
-
         return Commands.run(() -> {
-            spinFlywheel(desiredFlywheelVelocitySupplier.get());
-            setHoodPosition(desiredHoodPositionSupplier.get());
+            spinFlywheel(getDesiredFlywheelVelocity());
+            setHoodPosition(getDesiredHoodAngle());
         }, this).withName("Spin-Up Shooter");
     }
 
@@ -217,18 +250,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     public Command prepareShot(Command whileAtPosition)
     {
-        Supplier<AngularVelocity> desiredFlywheelVelocitySupplier =
-            () -> RotationsPerSecond.of(flywheelMap.get(robotState
-                .getDistanceToTarget().in(Meters)));
-
-        Supplier<Angle> desiredHoodPositionSupplier =
-            () -> Degrees.of(hoodAngleMap.get(robotState
-                .getDistanceToTarget().in(Meters)));
-
         return Commands.sequence(
             Commands.parallel(
-                Commands.run(() -> spinFlywheel(desiredFlywheelVelocitySupplier.get())),
-                Commands.run(() -> setHoodPosition(desiredHoodPositionSupplier.get())),
+                Commands.run(() -> spinFlywheel(getDesiredFlywheelVelocity())),
+                Commands.run(() -> setHoodPosition(getDesiredHoodAngle())),
                 // Require this subsystem
                 Commands.idle(this),
 
@@ -250,7 +275,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Creates a command to set the flywheel velocity.
+     * Creates a command to set the flywheel velocity (alternate spelling).
      * 
      * @param velocity the target angular velocity for both flywheels
      * @return command that sets the flywheel speed
@@ -258,17 +283,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public Command setFlywheelSpeed(AngularVelocity velocity)
     {
         return Commands.runOnce(() -> spinFlywheel(velocity));
-    }
-
-    /**
-     * Creates a command to set the flywheel velocity (alternate spelling).
-     * 
-     * @param velocity the target angular velocity for both flywheels
-     * @return command that sets the flywheel speed
-     */
-    public Command setFlyWheelSpeed(AngularVelocity velocity)
-    {
-        return setFlywheelSpeed(velocity);
     }
 
     @Override

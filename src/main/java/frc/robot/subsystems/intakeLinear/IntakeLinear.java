@@ -33,7 +33,7 @@ import frc.lib.util.LoggedTunableNumber;
 public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber INTAKE_CURRENT =
-        new LoggedTunableNumber(IntakeLinearConstants.NAME + "/IntakeCurrent", 60.0);
+        new LoggedTunableNumber(IntakeLinearConstants.NAME + "/IntakeCurrentTorqueCurrent", 60.0);
 
     public final LoggedTrigger linearStopped;
     public final LoggedTrigger isExtended;
@@ -50,10 +50,11 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
     {
         this.io = intakeLinearIO;
         this.linearStopped =
-            new LoggedTrigger("IntakeLinear/isLinearStopped", () -> isLinearStopped());
-        this.isExtended = new LoggedTrigger("IntakeLinear/isExtended",
+            new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearStopped",
+                () -> isLinearStopped());
+        this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
             () -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8).and(linearStopped);
-        this.isRetracted = new LoggedTrigger("IntakeLinear/isRetracted",
+        this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
             () -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8).and(linearStopped);
     }
 
