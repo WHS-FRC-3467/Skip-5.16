@@ -33,7 +33,7 @@ public class IndexerConstants {
     public static String NAME = "Indexer";
 
     public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(60);
-    public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
+    public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second).times(10);
 
     private static final double GEARING = (48.0 / 22.0) * (24.0 / 36.0) * (17.0 / 18.0);
 
@@ -43,8 +43,8 @@ public class IndexerConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0)
-        .withV(10.0);
+    public static final PID SLOT0_PID = new PID(100.0, 0.0, 0.0)
+        .withV(0.0);
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the indexer.
