@@ -226,6 +226,7 @@ public class RobotContainer {
         SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
         SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
         SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
+        SmartDashboard.putData("Intake Linear/Coast", intakeLinear.coast());
         SmartDashboard.putData("Sim Test: Toggle Tip Drivebase",
             Commands.run(() -> RobotState.getInstance().setDrivetrainAngled(true)));
         SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());

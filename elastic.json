@@ -2460,61 +2460,6 @@
       "grid_layout": {
         "layouts": [
           {
-            "title": "Intake Linear",
-            "x": 50.0,
-            "y": 50.0,
-            "width": 300.0,
-            "height": 350.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "Cycle",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Linear/Cycle",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Extend",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Linear/Extend",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Retract",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Linear/Retract",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              }
-            ]
-          },
-          {
             "title": "Intake Roller",
             "x": 400.0,
             "y": 50.0,
@@ -2562,6 +2507,75 @@
                 "type": "Command",
                 "properties": {
                   "topic": "/SmartDashboard/Intake Roller/Stop",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Intake Linear",
+            "x": 50.0,
+            "y": 50.0,
+            "width": 300.0,
+            "height": 450.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Coast",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Coast",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Cycle",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Cycle",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Extend",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Extend",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Retract",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Retract",
                   "period": 0.06,
                   "show_type": true,
                   "maximize_button_space": false
