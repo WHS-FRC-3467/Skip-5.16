@@ -102,7 +102,7 @@ public class RobotContainer {
         VisionConstants.create();
         objectDetector = ObjectDetectorConstants.get();
         leds = LEDsConstants.get();
-        
+
         if (RobotBase.isSimulation()) {
             RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intakeRoller,
                 intakeLinear);
@@ -132,35 +132,14 @@ public class RobotContainer {
             new WheelCharacterizationAuto(drive));
 
         autoChooser.addOption("Wheel Slip Characterization", new WheelSlipAuto(drive));
-       
-       
+
+
 
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
-        // boiler plate which activates on a triggers true or false
-        isAutonomous
-            .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_AUTO));
-        isAutonomous
-            .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_AUTO));
-        shooter.getIsShooting()
-               .onTrue(leds.scheduleStateCommand(LEDs.State.SHOOTING));
-        shooter.getIsShooting()
-               .onFalse(leds.unscheduleStateCommand(LEDs.State.SHOOTING));
-
-        shooter.readyToShoot
-              .onTrue(leds.scheduleStateCommand(LEDs.State.READY_TO_SHOOT));
-        shooter.readyToShoot
-              .onFalse(leds.unscheduleStateCommand(LEDs.State.READY_TO_SHOOT));
-
-        intakeRoller.getIntakeRunning()
-              .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_INTAKE));
-               intakeRoller.getIntakeRunning()
-              .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_INTAKE));
-
+        configureLEDTriggers();
     }
-
-
 
     /**
      * Configures button bindings for the Xbox controller. Maps controller inputs to robot commands
@@ -282,6 +261,22 @@ public class RobotContainer {
                         () -> robotState.setDrivetrainAngled(!robotState.isDrivetrainAngled())));
             }));
         }
+    }
+
+    /** Creates and/or binds triggers to LED states */
+    private void configureLEDTriggers()
+    {
+        isAutonomous
+            .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_AUTO))
+            .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_AUTO));
+
+        shooter.readyToShoot
+            .onTrue(leds.scheduleStateCommand(LEDs.State.READY_TO_SHOOT))
+            .onFalse(leds.unscheduleStateCommand(LEDs.State.READY_TO_SHOOT));
+
+        new Trigger(() -> intakeRoller.getState() == IntakeRoller.State.INTAKE)
+            .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_INTAKE))
+            .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_INTAKE));
     }
 
     /**

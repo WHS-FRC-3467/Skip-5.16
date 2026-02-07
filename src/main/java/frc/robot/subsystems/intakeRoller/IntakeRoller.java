@@ -24,7 +24,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableNumber;
@@ -44,6 +43,8 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
         new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);
 
     private final FlywheelMechanism<?> io;
+
+    @Getter
     private State state = State.STOP;
 
     @RequiredArgsConstructor
@@ -57,9 +58,6 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
         private final Supplier<AngularVelocity> angularVelocity;
 
     }
-
-    @Getter
-    private Trigger intakeRunning = new Trigger(() -> state == State.INTAKE);
 
     /** Constructor for the Intake subsystem - accepts a FlywheelMechanism. */
     public IntakeRoller(FlywheelMechanism<?> intakeIO)

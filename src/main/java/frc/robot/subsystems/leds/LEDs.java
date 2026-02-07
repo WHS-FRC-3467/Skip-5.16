@@ -19,17 +19,14 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.TreeSet;
-import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.controls.ControlRequest;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.Lights;
 import frc.lib.io.lights.LightsIO;
 import frc.lib.util.LoggerHelper;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -51,7 +48,6 @@ public class LEDs extends SubsystemBase {
         // RUNNING_INTAKE are true it will set to RUNNING_AUTO
 
         RUNNING_AUTO(LEDsConstants.autoAnimation),
-        SHOOTING(LEDsConstants.offAnimation),
         READY_TO_SHOOT(LEDsConstants.offAnimation),
         RUNNING_INTAKE(LEDsConstants.offAnimation),
         NONE(LEDsConstants.offAnimation);
@@ -78,7 +74,7 @@ public class LEDs extends SubsystemBase {
 
     private Optional<State> getCurrentStateFromQueue()
     {
-      
+
         State currentState;
         try {
             currentState = stateQueue.first();
