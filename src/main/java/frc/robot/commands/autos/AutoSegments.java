@@ -20,7 +20,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.robot.subsystems.drive.Drive;
@@ -62,7 +61,7 @@ public class AutoSegments {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
-                shooter.spinUpShooter()).withTimeout(2.75), // ~ +40% of max preload path time
+                AutoCommands.prepareStaticShot(path, shooter)).withTimeout(2.75), // ~ +40% max path
             AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 1.5));
     }
 
@@ -87,9 +86,9 @@ public class AutoSegments {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
-                shooter.spinUpShooter()).withTimeout(3.5), // ~ +40% of max preload path time
+                AutoCommands.prepareStaticShot(path, shooter)).withTimeout(3.5), // ~ +40% max path
             new ParallelDeadlineGroup(
-                AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 5.0), // ~10 bps
+                AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 5.0), // ~ 10 bps
                 AutoCommands.agitateHopper(intakeLinear, tower, indexer, HopperAgitation.NONE)));
     }
 

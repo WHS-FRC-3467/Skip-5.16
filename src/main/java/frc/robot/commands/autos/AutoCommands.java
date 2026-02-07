@@ -4,6 +4,7 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -207,5 +208,25 @@ public class AutoCommands {
             default:
                 return Commands.none();
         }
+    }
+
+    /**
+     * Prepares the shooter for shooting at the end of the provided path. Perpetual command -- never
+     * spins down. Therefore, to end, this should be interrupted by a parent command group or
+     * timed-out. Primarily for use in autos.
+     * 
+     * @param path the path to drive, the shooter will prepare to shoot at the target from the
+     *        path's end pose. If anywhere on current alliance side (including bump/trench lanes),
+     *        target is the alliance hub. Otherwise, target is the alliance zone.
+     * @param shooter the shooter subsystem
+     * @return a command that prepares the shooter to shoot the target from the end of the provided
+     *         path
+     */
+    public static Command prepareStaticShot(PathPlannerPath path, ShooterSuperstructure shooter)
+    {
+        final var robotState = RobotState.getInstance();
+        return shooter.spinUpShooterToDistance(
+            Meters.of(path.getAllPathPoints().get(path.getAllPathPoints().size() - 1).position
+                .getDistance(robotState.getTarget().getAllianceTranslation().toTranslation2d())));
     }
 }

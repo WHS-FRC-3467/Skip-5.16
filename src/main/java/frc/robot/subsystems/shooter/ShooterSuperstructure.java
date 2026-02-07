@@ -24,6 +24,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -223,12 +224,37 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Degrees.of(27.0);
     }
 
+    private Angle getHoodAngleAtDistance(Distance distance)
+    {
+        return Degrees.of(hoodAngleMap.get(distance.in(Meters)));
+    }
+
+    private AngularVelocity getFlywheelVelocityAtDistance(Distance distance)
+    {
+        return RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters)));
+    }
+
     /**
-     * Spins the flywheel and actuates the hood to the proper values given field-relative robot
-     * pose. Perpetual command -- never spins down. Therefore, to end, this should be interrupted by
-     * a parent command group or timed-out. Primarily for use in autos.
+     * Statically spins the flywheel and actuates the hood to the proper values based on a provided
+     * distance to target. Perpetual command -- never spins down. Therefore, to end, this should be
+     * interrupted by a parent command group or timed-out. Primarily for use in autos.
      * 
-     * @return Shooter spin-up command.
+     * @return Static shooter spin-up command.
+     */
+    public Command spinUpShooterToDistance(Distance distance)
+    {
+        return Commands.run(() -> {
+            spinFlywheel(getFlywheelVelocityAtDistance(distance));
+            setHoodPosition(getHoodAngleAtDistance(distance));
+        }, this).withName("Spin-Up Shooter to Distance");
+    }
+
+    /**
+     * Dynamically spins the flywheel and actuates the hood to the proper values given current
+     * field-relative robot pose. Perpetual command -- never spins down. Therefore, to end, this
+     * should be interrupted by a parent command group or timed-out.
+     * 
+     * @return Dynamically-updating shooter spin-up command.
      */
     public Command spinUpShooter()
     {
