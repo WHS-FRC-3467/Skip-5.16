@@ -166,14 +166,6 @@ public class Robot extends LoggedRobot {
         // Return to non-RT thread priority (do not modify the first argument)
         // Threads.setCurrentThreadPriority(false, 10);
 
-        // Provide SmartDashboard (Elastic Dashboard) updates on Hub state
-        SmartDashboard.putBoolean("Hub Active",
-            frc.robot.util.HubState.getInstance().getHubActive().getAsBoolean());
-        SmartDashboard.putBoolean("Hub Active",
-            HubState.getInstance().getHubActive().getAsBoolean());
-        SmartDashboard.putBoolean("Hub Changing Soon",
-            HubState.getInstance().getHubChange().getAsBoolean());
-
         // Driver Elastic Dashboard - Update the robot's pose on the main fieldmap
         fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
     }
@@ -198,6 +190,7 @@ public class Robot extends LoggedRobot {
     public void disabledPeriodic()
     {
         robotContainer.checkStartPose();
+        robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
 
     /**
@@ -223,7 +216,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousPeriodic()
     {
-        RobotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
+        robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
 
     /** This function is called once when teleop is enabled. */
@@ -237,7 +230,7 @@ public class Robot extends LoggedRobot {
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
         }
-        
+
         // Switch to Teleop tab in Elastic Dashboard
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(0);

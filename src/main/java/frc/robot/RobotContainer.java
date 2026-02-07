@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
+import frc.lib.util.FieldUtil;
 import frc.robot.Constants.Mode;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
@@ -82,7 +83,7 @@ public class RobotContainer {
 
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
-    public static Field2d autoPreviewField = new Field2d();
+    public final Field2d autoPreviewField = new Field2d();
 
     /**
      * The container for the robot. Contains subsystems, IO devices, and commands.
@@ -148,7 +149,9 @@ public class RobotContainer {
                 StartPosition.RIGHT));
 
         autoChooser.onChange(auto -> {
-            autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());
+            autoPreviewField.getObject("path")
+                .setPoses(auto.getAllPathPoses().stream()
+                    .map(p -> FieldUtil.apply(p)).toArray(Pose2d[]::new));
         });
 
         autoChooser.addOption("Drive Wheel Radius Characterization",
@@ -318,21 +321,24 @@ public class RobotContainer {
             Pose2d startPose = autoPreviewField.getObject("path").getPoses().get(0);
             autoPreviewField.getObject("startPose").setPose(startPose);
 
-            Distance distanceFromStartPose = Meters.of(robotState.getEstimatedPose().getTranslation()
-                .getDistance(startPose.getTranslation()));
+            Distance distanceFromStartPose =
+                Meters.of(robotState.getEstimatedPose().getTranslation()
+                    .getDistance(startPose.getTranslation()));
             double degreesFromStartPose = Math.abs(robotState.getEstimatedPose().getRotation()
                 .minus(startPose.getRotation())
                 .getDegrees());
-            
-            double[] startPoseArray = {startPose.getX(), startPose.getY(), startPose.getRotation().getDegrees()};
+
+            double[] startPoseArray =
+                {startPose.getX(), startPose.getY(), startPose.getRotation().getDegrees()};
             SmartDashboard.putNumberArray("Start Pose (x, y, degrees)", startPoseArray);
-            
+
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start",
                 (int) Math.round(distanceFromStartPose.in(Inches) * 100.0) / 100.0);
             SmartDashboard.putBoolean(
                 "Auto Pose Check/Robot Position within "
                     + PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches) + " inches",
-                distanceFromStartPose.in(Inches) < PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches));
+                distanceFromStartPose.in(Inches) < PathConstants.STARTING_POSE_DRIVE_TOLERANCE
+                    .in(Inches));
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start",
                 (int) Math.round(degreesFromStartPose * 100.0) / 100.0);
             SmartDashboard.putBoolean(
