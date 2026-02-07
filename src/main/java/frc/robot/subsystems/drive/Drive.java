@@ -105,7 +105,7 @@ public class Drive extends SubsystemBase {
             AlertType.kError);
 
     private final LoggedTunableBoolean enableSkidDetection =
-        new LoggedTunableBoolean("Drive/Enable Skid Detection", false);
+        new LoggedTunableBoolean("Drive/Enable Skid Detection", true);
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
 

@@ -53,8 +53,8 @@ public class SwerveOdometry {
      * {@code badWheels[i] == true} means module {@code i} should be ignored for this update.
      *
      * <p>
-     * Decision: - The mask is carried per-observation so skid detection can be done at the same
-     * rate/timestamps as odometry sampling (instead of at 50Hz in subsystem periodic).
+     * The mask is carried per-observation so skid detection can be done at the same rate/timestamps
+     * as odometry sampling (instead of at 50Hz in subsystem periodic).
      */
     @SuppressWarnings("ArrayRecordComponent")
     public static final record OdometryObservation(
@@ -76,18 +76,27 @@ public class SwerveOdometry {
     private final SwerveDriveKinematics kinematics;
 
     /**
-     * Module locations are required to solve chassis motion from a *subset* of wheels.
+     * Module locations are required to solve chassis motion from a subset of wheels.
      *
-     * Decision: - If module translations are not provided, we still run odometry normally, but we
-     * cannot ignore skidding wheels because we can't build correct subset kinematics.
+     * If module translations are not provided, we still run odometry normally, but we cannot ignore
+     * skidding wheels because we can't build correct subset kinematics.
      */
     private final Translation2d[] moduleTranslationsOrNull;
 
     /**
-     * Cache subset kinematics to avoid rebuilding objects when the same badWheels pattern repeats.
+     * Cache of kinematics objects for "good wheel subsets".
      *
-     * Decision: - We keep the external API as boolean[] for clarity, but cache with an immutable
-     * key that stores a defensive copy of the boolean[].
+     * {@link SwerveDriveKinematics} is constructed from a fixed set of module translation vectors.
+     * When we ignore a skidding wheel, the set of translations changes, so we need a different
+     * kinematics object to correctly solve chassis motion from only the remaining wheels.
+     *
+     * Odometry can run at 100 to 250 Hz. When skid is active, repeatedly constructing new
+     * kinematics objects creates unnecessary allocation and garbage collection work. The possible
+     * patterns are small and repeat often (usually none, or one wheel), so caching keeps the
+     * runtime steady.
+     *
+     * The key is based on the contents of the badWheels array. We do not use the boolean[] directly
+     * because arrays are mutable and use reference identity for hash/equality.
      */
     private final Map<BadWheelsKey, SwerveDriveKinematics> subsetKinematicsCache = new HashMap<>();
 
@@ -185,9 +194,8 @@ public class SwerveOdometry {
             }
         }
 
-        // Decision:
-        // - With fewer than 3 good modules, the solve can get unstable (especially omega).
-        // - Falling back to all wheels is usually less noisy than trying to integrate from 1–2
+        // With fewer than 3 good modules, the solve can get unstable (especially omega).
+        // Falling back to all wheels is usually less noisy than trying to integrate from 1-2
         // modules.
         if (goodCount < 3) {
             return kinematics.toTwist2d(last, current);
@@ -235,10 +243,14 @@ public class SwerveOdometry {
     }
 
     /**
-     * Immutable key for caching subset kinematics.
+     * Immutable key used by {@link #subsetKinematicsCache}.
      *
-     * Decision: - We defensively copy the boolean[] so accidental mutations in calling code won't
-     * poison the cache. - Hash/equality are based on the contents of the boolean[].
+     * The cache needs "same mask means same entry" behavior. A boolean[] cannot be used directly as
+     * a Map key because its equals/hashCode are based on object identity, and the array can be
+     * mutated after the call.
+     *
+     * This class snapshots the mask and uses content-based equality so the cache behaves
+     * predictably even if the caller reuses or mutates the original boolean[].
      */
     private static final class BadWheelsKey {
         private final boolean[] badWheels;
