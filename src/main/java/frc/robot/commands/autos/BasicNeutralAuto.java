@@ -16,7 +16,6 @@
 package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.Seconds;
-import java.util.Collections;
 import java.util.List;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.RobotBase;
