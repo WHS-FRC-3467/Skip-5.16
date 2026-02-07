@@ -310,14 +310,12 @@ public class RobotContainer {
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start",
                 Math.round(distanceFromStartPose * 100.0) / 100.0);
             SmartDashboard.putBoolean(
-                "Auto Pose Check/Robot Position within "
-                    + PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches) + " inches",
+                "Auto Pose Check/Robot Position Within Tolerance",
                 distanceFromStartPose < PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches));
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start",
                 Math.round(degreesFromStartPose * 100.0) / 100.0);
             SmartDashboard.putBoolean(
-                "Auto Pose Check/Robot Rotation within "
-                    + PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES + " degrees",
+                "Auto Pose Check/Robot Rotation Within Tolerance",
                 degreesFromStartPose < PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES
                     .in(Degrees));
 
