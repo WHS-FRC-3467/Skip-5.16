@@ -43,7 +43,8 @@ public class BasicNeutralAuto extends AutoRoutine {
                     "DepotSweep-From-Shot-Left", "Through-Depot", "Through-Depot-Reverse",
                     "UnderTrench-Run-Left");
             case CENTER -> expectedPaths =
-                List.of(); // TODO: Strategy for center start position
+                List.of(); // Note: CENTER is not registered in RobotContainer for this auto
+                           // Required paths not yet created (would need BasicNeutral-Start-Center, etc.)
             case RIGHT -> expectedPaths =
                 List.of("BasicNeutral-Start-Left", "SweepNeutral-Trench-Left",
                     "UnderTrench-Shoot-Left",

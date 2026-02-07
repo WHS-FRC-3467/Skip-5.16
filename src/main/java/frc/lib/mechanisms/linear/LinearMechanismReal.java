@@ -29,7 +29,15 @@ public class LinearMechanismReal extends LinearMechanism<MotorIO> {
         super(name, characteristics, io);
     }
 
-    // TODO: Verify operation works correctly on real TalonFX
+    /**
+     * Sets the encoder position of the motor.
+     * 
+     * <p>This method passes through to the underlying MotorIO implementation.
+     * For TalonFX motors, this sets the rotor position. Verify that the encoder
+     * position updates correctly during initial hardware testing.
+     * 
+     * @param position The position to set the encoder to
+     */
     @Override
     public void setEncoderPosition(Angle position)
     {

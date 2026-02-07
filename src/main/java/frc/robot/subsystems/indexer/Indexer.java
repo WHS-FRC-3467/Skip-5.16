@@ -27,7 +27,7 @@ public class Indexer extends SubsystemBase {
     private State state = State.STOP;
 
     @RequiredArgsConstructor
-    @SuppressWarnings("Immutable")
+    @SuppressWarnings("ImmutableEnumChecker")
     @Getter
     public enum State {
         STOP(

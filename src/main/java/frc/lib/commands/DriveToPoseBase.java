@@ -20,7 +20,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.robot.RobotState;
-import frc.robot.subsystems.drive.Drive; // TODO: refactor drive to exist in lib
+import frc.robot.subsystems.drive.Drive; // Note: Drive subsystem is in frc.robot because it contains
+                                         // robot-specific drivetrain configurations. A generic drive
+                                         // interface could be added to frc.lib in the future.
 
 /**
  * Base command for autonomously driving the robot to a target pose.

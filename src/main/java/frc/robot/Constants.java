@@ -53,8 +53,9 @@ public final class Constants {
         public static boolean isComp;
         public static boolean isAlpha;
 
-        // TODO: Fill in with real serial number prefixes. Figure out by displaying/logging String
-        // serial.
+        // Note: Update these with actual robot serial numbers from RoboRIO.
+        // Serial numbers can be viewed in AdvantageKit logs under "RealOutputs/SystemStats/serialNumber"
+        // or by logging System.getenv("serialnum") during robot initialization.
         public static final String compSerial = "0001";
         public static final String alphaSerial = "0000";
 

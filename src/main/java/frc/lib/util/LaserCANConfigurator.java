@@ -38,9 +38,9 @@ import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
  *     laser.setTimingBudget(TimingBudget.TIMING_BUDGET_33MS);
  *     
  *     Measurement m = laser.getMeasurement();
- *     System.out.println("Distance: " + m.distance_mm + "mm");
+ *     Logger.recordOutput("LaserCAN/Distance", m.distance_mm);
  * } catch (Exception e) {
- *     e.printStackTrace();
+ *     DriverStation.reportError("LaserCAN configuration failed: " + e.getMessage(), e.getStackTrace());
  * }
  * }</pre>
  */
