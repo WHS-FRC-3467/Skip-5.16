@@ -110,19 +110,47 @@ public class RobotContainer {
 
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
-        autoChooser.addDefaultOption("None", new NoneAuto());
-        autoChooser.addOption("PreloadNeutralAuto",
-            new PreloadNeutralAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
-                StartPosition.CENTER));
 
-        // Depot Auto - Start at Center
-        autoChooser.addOption("DepotAuto",
+        // Default - No Auto
+        autoChooser.addDefaultOption("None", new NoneAuto());
+
+        // Preload Autos
+        autoChooser.addOption("PreloadAuto-Left", new PreloadAuto(drive, intakeLinear, intakeRoller,
+            indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption("PreloadAuto-Center",
+            new PreloadAuto(drive, intakeLinear, intakeRoller,
+                indexer, tower, shooter, StartPosition.CENTER));
+        autoChooser.addOption("PreloadAuto-Right",
+            new PreloadAuto(drive, intakeLinear, intakeRoller,
+                indexer, tower, shooter, StartPosition.RIGHT));
+
+        // Basic Neutral Autos
+        autoChooser.addOption("BasicNeutralAuto-Left", new BasicNeutralAuto(drive, intakeLinear,
+            intakeRoller, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption("BasicNeutralAuto-Right", new BasicNeutralAuto(drive, intakeLinear,
+            intakeRoller, indexer, tower, shooter, StartPosition.RIGHT));
+
+        // Depot Auto
+        autoChooser.addOption("DepotAuto-Left",
+            new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.LEFT));
+        autoChooser.addOption("DepotAuto-Center",
             new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
                 StartPosition.CENTER));
+        autoChooser.addOption("DepotAuto-Right",
+            new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.RIGHT));
 
-        autoChooser.addOption("OutpostAuto",
+        // Outpost Autos
+        autoChooser.addOption("OutpostAuto-Left",
             new OutpostAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
                 StartPosition.LEFT));
+        autoChooser.addOption("OutpostAuto-Center",
+            new OutpostAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.CENTER));
+        autoChooser.addOption("OutpostAuto-Right",
+            new OutpostAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+                StartPosition.RIGHT));
 
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path").setPoses(auto.getAllPathPoses());

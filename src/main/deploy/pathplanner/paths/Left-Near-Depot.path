@@ -8,11 +8,11 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5217776174042683,
-        "y": 6.043096643464255
+        "x": 2.081540432007786,
+        "y": 6.0
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "PreloadShoot-Left-End"
     },
     {
       "anchor": {
@@ -20,12 +20,12 @@
         "y": 6.0
       },
       "prevControl": {
-        "x": 2.3089695049954617,
-        "y": 5.943001465526033
+        "x": 2.310458043279411,
+        "y": 6.0
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "NearDepot"
+      "linkedName": "NearDepot-End"
     }
   ],
   "rotationTargets": [],
@@ -41,14 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 3.0,
+    "velocity": 0.0,
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Depot",
+  "folder": "Left",
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": -38.621813710817776
+    "velocity": 1.0,
+    "rotation": -37.0
   },
   "useDefaultConstraints": true
 }

@@ -28,39 +28,36 @@ import frc.robot.subsystems.tower.Tower;
  * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect pieces from
  * the neutral zone, and then shoot them. Strategy layer.
  */
-public class PreloadNeutralAuto extends AutoRoutine {
+public class PreloadAuto extends AutoRoutine {
 
-    /**
-     * Constructs a PreloadNeutralAuto routine that shoots preload and collects from neutral zone.
-     * Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
-     *
-     * @param drive the drive subsystem
-     * @param intakeLinear the intake linear subsystem for deploying/retracting intake
-     * @param intake the intake roller subsystem for collecting fuel
-     * @param indexer the indexer subsystem for managing fuel flow
-     * @param tower the tower subsystem for moving fuel to shooter
-     * @param shooter the shooter superstructure for launching fuel
-     * @param start the starting position on the field
-     */
-    public PreloadNeutralAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake,
+    public PreloadAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intakeRoller,
         Indexer indexer, Tower tower,
         ShooterSuperstructure shooter, StartPosition start)
     {
         // Choose path names based on start position
+        List<String> expectedPaths;
         switch (start) {
-            case LEFT -> this.loadAllPaths(List.of("PreloadShoot-Left", "placeholder"));
-            case CENTER -> this
-                .loadAllPaths(
-                    List.of("PreloadShoot-Center", "1SweepNeutral-Bump-Center"));
-            case RIGHT -> this.loadAllPaths(List.of("PreloadShoot-Right", "placeholder"));
+            case LEFT -> expectedPaths =
+                List.of("PreloadShoot-Left");
+            case CENTER -> expectedPaths =
+                List.of("PreloadShoot-Center");
+            case RIGHT -> expectedPaths =
+                List.of("PreloadShoot-Right");
+            default -> expectedPaths = List.of();
         };
 
-        // Load commands defensively
-        if (!pathPlannerPaths.isEmpty() && pathPlannerPaths.get(0) != null) {
+        // Load the named paths
+        this.loadAllPaths(expectedPaths);
+
+        // Defensive check: ensure we loaded exactly the expected number of paths and none are null
+        if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null))
             loadCommands(
+                // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                // Initialize intake
+                AutoSegments.initializeIntake(intakeLinear, intakeRoller),
+                // Take preload shot
                 AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)));
-        }
     }
 }

@@ -17,6 +17,7 @@ package frc.robot.subsystems.intakeLinear;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -105,7 +106,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     private boolean isLinearStopped()
     {
-        return Math.abs(io.getVelocity().in(RotationsPerSecond)) < 1;
+        return Math.abs(io.getVelocity().in(RotationsPerSecond)) < 2.0;
     }
 
     /**
@@ -121,6 +122,9 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
     @Override
     public void periodic()
     {
+        Logger.recordOutput(this.getName() + "/State",
+            this.isExtended.getAsBoolean() ? "EXTENDED"
+                : this.isRetracted.getAsBoolean() ? "RETRACTED" : "MOVING");
         io.periodic();
     }
 

@@ -8,11 +8,11 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.5199893590461615,
-        "y": 0.8216052808017886
+        "x": 0.9978035714285709,
+        "y": 0.8766964285714292
       },
       "isLocked": false,
-      "linkedName": "RightPreloadShoot"
+      "linkedName": "PreloadShoot-Right-End"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 0.6361016167534717
       },
       "prevControl": {
-        "x": 1.180651729348038,
-        "y": 0.548029972358206
+        "x": 1.0202111168237498,
+        "y": 0.8308652506523863
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Outpost",
+  "folder": "Right",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 46.0
