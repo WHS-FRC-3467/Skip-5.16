@@ -46,11 +46,13 @@ import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.units.measure.Distance;
 
 /**
  * Container class for the robot that holds all subsystems, controllers, and command bindings. This
@@ -314,10 +316,10 @@ public class RobotContainer {
 
         try {
             Pose2d startPose = autoPreviewField.getObject("path").getPoses().get(0);
-            autoPreviewField.getObject("path").setPose(startPose);
+            autoPreviewField.getObject("startPose").setPose(startPose);
 
-            double distanceFromStartPose = robotState.getEstimatedPose().getTranslation()
-                .getDistance(startPose.getTranslation());
+            Distance distanceFromStartPose = Meters.of(robotState.getEstimatedPose().getTranslation()
+                .getDistance(startPose.getTranslation()));
             double degreesFromStartPose = Math.abs(robotState.getEstimatedPose().getRotation()
                 .minus(startPose.getRotation())
                 .getDegrees());
@@ -326,11 +328,11 @@ public class RobotContainer {
             SmartDashboard.putNumberArray("Start Pose (x, y, degrees)", startPoseArray);
             
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start",
-                (int) Math.round(distanceFromStartPose * 100.0) / 100.0);
+                (int) Math.round(distanceFromStartPose.in(Inches) * 100.0) / 100.0);
             SmartDashboard.putBoolean(
                 "Auto Pose Check/Robot Position within "
                     + PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches) + " inches",
-                distanceFromStartPose < PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches));
+                distanceFromStartPose.in(Inches) < PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches));
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start",
                 (int) Math.round(degreesFromStartPose * 100.0) / 100.0);
             SmartDashboard.putBoolean(
