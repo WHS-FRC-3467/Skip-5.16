@@ -128,11 +128,7 @@ public class Robot extends LoggedRobot {
          * significantly higher delay compared with subsequent runs. To help alleviate this issue,
          * run this warmup command in the background when code starts. This command will not control
          * the robot, it will simply run through a full pathfinding command to warm up the library.
-         * public void robotInit() { /* Due to the nature of how Java works, the first run of a
-         * pathfinding command could have a significantly higher delay compared with subsequent
-         * runs. To help alleviate this issue, run this warmup command in the background when code
-         * starts. This command will not control the robot, it will simply run through a full
-         * pathfinding command to warm up the library. Source: PathPlanner Docs
+         * Source: PathPlanner Docs
          */
         // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
         CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
