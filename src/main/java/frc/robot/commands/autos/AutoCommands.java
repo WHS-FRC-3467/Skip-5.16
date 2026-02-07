@@ -42,8 +42,8 @@ public class AutoCommands {
      */
     public static Command resetSimOdom(Drive drive, PathPlannerPath path)
     {
-        final RobotState robotState = RobotState.getInstance();
         if (RobotBase.isSimulation()) {
+            final RobotState robotState = RobotState.getInstance();
             return drive.runOnce(
                 () -> {
                     Pose2d pose =
