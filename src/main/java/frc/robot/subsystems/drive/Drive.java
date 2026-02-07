@@ -129,7 +129,7 @@ public class Drive extends SubsystemBase {
     private boolean[] skidBadWheelsLatest = new boolean[] {false, false, false, false};
 
     @AutoLogOutput(key = "Drive/Skid/TransMagLatest")
-    private double[] skidTransMagLatest = new double[] {0.0, 0.0, 0.0, 0.0};
+    private double[] skidTranslationalSpeedMagnitudesLatest = new double[] {0.0, 0.0, 0.0, 0.0};
 
     /**
      * Constructs a new Drive subsystem.
@@ -232,10 +232,11 @@ public class Drive extends SubsystemBase {
         double[] sampleTimestamps = modules[0].getOdometryTimestamps();
         int sampleCount = sampleTimestamps.length;
 
-        for (int i = 0; i < sampleCount; i++) {
+        for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
             SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
             for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-                modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
+                modulePositions[moduleIndex] =
+                    modules[moduleIndex].getOdometryPositions()[sampleIndex];
             }
 
             Optional<Rotation2d> gyroAngle = Optional.empty();
@@ -244,17 +245,17 @@ public class Drive extends SubsystemBase {
             }
 
             boolean[] badWheels = enableSkidDetection.get()
-                ? computeSkidMaskForSample(i, sampleTimestamps, modulePositions)
+                ? computeSkidMaskForSample(sampleIndex, sampleTimestamps, modulePositions)
                 : new boolean[] {false, false, false, false};
 
             // Keep the latest sample easy to view in AdvantageScope.
-            if (i == sampleCount - 1) {
+            if (sampleIndex == sampleCount - 1) {
                 skidBadWheelsLatest = badWheels.clone();
             }
 
             robotState.addOdometryObservation(
                 new OdometryObservation(
-                    Seconds.of(sampleTimestamps[i]),
+                    Seconds.of(sampleTimestamps[sampleIndex]),
                     modulePositions,
                     gyroAngle,
                     badWheels));
@@ -285,8 +286,8 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
 
         // Send setpoints to modules
-        for (int i = 0; i < 4; i++) {
-            modules[i].runSetpoint(setpointStates[i]);
+        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+            modules[moduleIndex].runSetpoint(setpointStates[moduleIndex]);
         }
 
         // Log optimized setpoints (runSetpoint mutates each state)
@@ -300,8 +301,8 @@ public class Drive extends SubsystemBase {
      */
     public void runCharacterization(double output)
     {
-        for (int i = 0; i < 4; i++) {
-            modules[i].runCharacterization(output);
+        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+            modules[moduleIndex].runCharacterization(output);
         }
     }
 
@@ -318,8 +319,8 @@ public class Drive extends SubsystemBase {
     public void stopWithX()
     {
         Rotation2d[] headings = new Rotation2d[4];
-        for (int i = 0; i < 4; i++) {
-            headings[i] = getModuleTranslations()[i].getAngle();
+        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+            headings[moduleIndex] = getModuleTranslations()[moduleIndex].getAngle();
         }
         kinematics.resetHeadings(headings);
         stop();
@@ -359,8 +360,8 @@ public class Drive extends SubsystemBase {
     private SwerveModuleState[] getModuleStates()
     {
         SwerveModuleState[] states = new SwerveModuleState[4];
-        for (int i = 0; i < 4; i++) {
-            states[i] = modules[i].getState();
+        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+            states[moduleIndex] = modules[moduleIndex].getState();
         }
         return states;
     }
@@ -373,8 +374,8 @@ public class Drive extends SubsystemBase {
     protected SwerveModulePosition[] getModulePositions()
     {
         SwerveModulePosition[] states = new SwerveModulePosition[4];
-        for (int i = 0; i < 4; i++) {
-            states[i] = modules[i].getPosition();
+        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+            states[moduleIndex] = modules[moduleIndex].getPosition();
         }
         return states;
     }
@@ -398,8 +399,8 @@ public class Drive extends SubsystemBase {
     public double[] getWheelRadiusCharacterizationPositions()
     {
         double[] values = new double[4];
-        for (int i = 0; i < 4; i++) {
-            values[i] = modules[i].getWheelRadiusCharacterizationPosition();
+        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+            values[moduleIndex] = modules[moduleIndex].getWheelRadiusCharacterizationPosition();
         }
         return values;
     }
@@ -412,8 +413,8 @@ public class Drive extends SubsystemBase {
     public double getFFCharacterizationVelocity()
     {
         double output = 0.0;
-        for (int i = 0; i < 4; i++) {
-            output += modules[i].getFFCharacterizationVelocity() / 4.0;
+        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+            output += modules[moduleIndex].getFFCharacterizationVelocity() / 4.0;
         }
         return output;
     }
@@ -531,7 +532,7 @@ public class Drive extends SubsystemBase {
         double[] sampleTimestamps,
         SwerveModulePosition[] positionsNow)
     {
-        boolean[] bad = new boolean[] {false, false, false, false};
+        boolean[] badWheels = new boolean[] {false, false, false, false};
 
         SwerveModuleState[] measuredStates;
 
@@ -544,55 +545,81 @@ public class Drive extends SubsystemBase {
              */
             measuredStates = getModuleStates();
         } else {
-            double dt = sampleTimestamps[sampleIndex] - sampleTimestamps[sampleIndex - 1];
-            if (dt <= 1e-6) {
-                skidTransMagLatest = new double[] {0.0, 0.0, 0.0, 0.0};
-                return bad;
+            double secondsBetweenSamples = sampleTimestamps[sampleIndex]
+                - sampleTimestamps[sampleIndex - 1];
+
+            if (secondsBetweenSamples <= 1e-6) {
+                skidTranslationalSpeedMagnitudesLatest = new double[] {0.0, 0.0, 0.0, 0.0};
+                return badWheels;
             }
 
-            SwerveModulePosition[] positionsPrev = new SwerveModulePosition[4];
-            for (int i = 0; i < 4; i++) {
-                positionsPrev[i] = modules[i].getOdometryPositions()[sampleIndex - 1];
+            SwerveModulePosition[] previousModulePositions = new SwerveModulePosition[4];
+            for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+                previousModulePositions[moduleIndex] =
+                    modules[moduleIndex].getOdometryPositions()[sampleIndex - 1];
             }
 
             measuredStates = new SwerveModuleState[4];
-            for (int i = 0; i < 4; i++) {
-                double deltaMeters =
-                    positionsNow[i].distanceMeters - positionsPrev[i].distanceMeters;
-                double speedMps = deltaMeters / dt;
-                measuredStates[i] = new SwerveModuleState(speedMps, positionsNow[i].angle);
+            for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+                double deltaDistanceMeters =
+                    positionsNow[moduleIndex].distanceMeters
+                        - previousModulePositions[moduleIndex].distanceMeters;
+
+                double speedMetersPerSecond = deltaDistanceMeters / secondsBetweenSamples;
+
+                measuredStates[moduleIndex] =
+                    new SwerveModuleState(speedMetersPerSecond, positionsNow[moduleIndex].angle);
             }
         }
 
-        double omega = kinematics.toChassisSpeeds(measuredStates).omegaRadiansPerSecond;
+        final double angularVelocityRadiansPerSecond =
+            kinematics.toChassisSpeeds(measuredStates).omegaRadiansPerSecond;
 
-        Translation2d[] locations = getModuleTranslations();
-        double[] transMag = new double[4];
-        for (int i = 0; i < 4; i++) {
-            Translation2d vMeas =
-                new Translation2d(measuredStates[i].speedMetersPerSecond, measuredStates[i].angle);
+        Translation2d[] moduleLocations = getModuleTranslations();
+        double[] translationalSpeedMagnitudesMetersPerSecond = new double[4];
 
-            Translation2d r = locations[i];
-            Translation2d vRot = new Translation2d(-omega * r.getY(), omega * r.getX());
+        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+            Translation2d measuredWheelVelocityVector =
+                new Translation2d(
+                    measuredStates[moduleIndex].speedMetersPerSecond,
+                    measuredStates[moduleIndex].angle);
 
-            transMag[i] = vMeas.minus(vRot).getNorm();
+            Translation2d moduleLocation = moduleLocations[moduleIndex];
+
+            Translation2d rotationalVelocityVector =
+                new Translation2d(
+                    -angularVelocityRadiansPerSecond * moduleLocation.getY(),
+                    angularVelocityRadiansPerSecond * moduleLocation.getX());
+
+            translationalSpeedMagnitudesMetersPerSecond[moduleIndex] =
+                measuredWheelVelocityVector.minus(rotationalVelocityVector).getNorm();
         }
 
-        skidTransMagLatest = transMag.clone();
+        skidTranslationalSpeedMagnitudesLatest =
+            translationalSpeedMagnitudesMetersPerSecond.clone();
 
-        double median = median(transMag);
-        if (median < SKID_MIN_TRANSLATION_MPS) {
-            return bad;
+        double medianTranslationalSpeedMetersPerSecond =
+            median(translationalSpeedMagnitudesMetersPerSecond);
+
+        if (medianTranslationalSpeedMetersPerSecond < SKID_MIN_TRANSLATION_MPS) {
+            return badWheels;
         }
 
-        double low = median / SKID_OUTLIER_SCALE;
-        double high = median * SKID_OUTLIER_SCALE;
+        double minimumAcceptableSpeedMetersPerSecond =
+            medianTranslationalSpeedMetersPerSecond / SKID_OUTLIER_SCALE;
+        double maximumAcceptableSpeedMetersPerSecond =
+            medianTranslationalSpeedMetersPerSecond * SKID_OUTLIER_SCALE;
 
-        for (int i = 0; i < 4; i++) {
-            bad[i] = (transMag[i] < low) || (transMag[i] > high);
+        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+            double translationalSpeedMetersPerSecond =
+                translationalSpeedMagnitudesMetersPerSecond[moduleIndex];
+
+            badWheels[moduleIndex] =
+                (translationalSpeedMetersPerSecond < minimumAcceptableSpeedMetersPerSecond)
+                    || (translationalSpeedMetersPerSecond > maximumAcceptableSpeedMetersPerSecond);
         }
 
-        return bad;
+        return badWheels;
     }
 
     private static double median(double[] values)
