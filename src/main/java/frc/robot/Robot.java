@@ -128,11 +128,7 @@ public class Robot extends LoggedRobot {
          * significantly higher delay compared with subsequent runs. To help alleviate this issue,
          * run this warmup command in the background when code starts. This command will not control
          * the robot, it will simply run through a full pathfinding command to warm up the library.
-         * public void robotInit() { /* Due to the nature of how Java works, the first run of a
-         * pathfinding command could have a significantly higher delay compared with subsequent
-         * runs. To help alleviate this issue, run this warmup command in the background when code
-         * starts. This command will not control the robot, it will simply run through a full
-         * pathfinding command to warm up the library. Source: PathPlanner Docs
+         * Source: PathPlanner Docs
          */
         // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
         CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
@@ -168,14 +164,13 @@ public class Robot extends LoggedRobot {
 
         // Provide SmartDashboard (Elastic Dashboard) updates on Hub state
         SmartDashboard.putBoolean("Hub Active",
-            frc.robot.util.HubState.getInstance().getHubActive().getAsBoolean());
-        SmartDashboard.putBoolean("Hub Active",
             HubState.getInstance().getHubActive().getAsBoolean());
         SmartDashboard.putBoolean("Hub Changing Soon",
             HubState.getInstance().getHubChange().getAsBoolean());
 
-        // Driver Elastic Dashboard - Update the robot's pose on the main fieldmap
-        fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
+        // Driver Elastic Dashboard - Update the robot's pose on the main and auto preview fieldmap
+        fieldMap.setRobotPose(robotState.getEstimatedPose());
+        RobotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
 
     /** This function is called once when the robot is disabled. */
@@ -222,9 +217,7 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic()
-    {
-        RobotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
-    }
+    {}
 
     /** This function is called once when teleop is enabled. */
     @Override
