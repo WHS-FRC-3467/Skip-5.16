@@ -105,10 +105,11 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
     }
 
     /**
-     * Coast intake linear for for pit testing 
+     * Coast intake linear for pit testing.
      * @return a command to set the intake linear mechanism to coast mode.
      */
-    public Command coast() {
+    public Command coast()
+    {
         return this.runOnce(() -> io.runCoast());
     }
 
