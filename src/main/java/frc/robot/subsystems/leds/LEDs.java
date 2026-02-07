@@ -47,7 +47,7 @@ public class LEDs extends SubsystemBase {
     @RequiredArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
     public enum State {
-        // list of states with their respective prioritys, ie if both RUNNING_AUTO and
+        // list of states with their respective priorities, ie if both RUNNING_AUTO and
         // RUNNING_INTAKE are true it will set to RUNNING_AUTO
 
         RUNNING_AUTO(LEDsConstants.autoAnimation),
