@@ -147,7 +147,8 @@ public class ModuleIOSim implements ModuleIO {
     @Override
     public void setDriveOpenLoop(double output)
     {
-        output = output * (enableSkid.get() ? skidMultiplier.get() : 1.0);
+        output =
+            output * (enableSkid.get() ? MathUtil.clamp(skidMultiplier.get(), -12.0, 12.0) : 1.0);
 
         driveClosedLoop = false;
         driveAppliedVolts = output;
