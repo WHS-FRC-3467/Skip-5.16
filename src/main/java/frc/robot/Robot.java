@@ -51,7 +51,7 @@ public class Robot extends LoggedRobot {
     private Command autonomousCommand;
     private RobotContainer robotContainer;
     private boolean checkedHubGameData = false; // whether we've checked for hub game data at the
-                                                // start of the first alliance phases
+                                                // start of the first alliance phase
     private Field2d fieldMap = new Field2d();
 
     public Robot()
