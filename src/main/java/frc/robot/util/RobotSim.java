@@ -70,6 +70,7 @@ public class RobotSim {
             new Trigger(() -> (intakeRoller.getVelocity().in(RotationsPerSecond) > 1.0)
                 && intakeLinear.isExtended.getAsBoolean());
 
+        fuelSim.enableAirResistance();
         fuelSim.spawnStartingFuel();
         fuelSim.registerRobot(
             Constants.FULL_ROBOT_WIDTH.in(Meters),
