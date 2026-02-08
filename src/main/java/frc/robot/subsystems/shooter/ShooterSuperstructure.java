@@ -62,38 +62,38 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private static final InterpolatingDoubleTreeMap hubFlywheelMap =
         new InterpolatingDoubleTreeMap();
     static {
-        hubFlywheelMap.put(1.05, 18.0);
-        hubFlywheelMap.put(1.25, 18.0);
-        hubFlywheelMap.put(1.45, 18.0);
-        hubFlywheelMap.put(1.65, 19.0);
-        hubFlywheelMap.put(1.85, 19.0);
-        hubFlywheelMap.put(2.05, 19.5);
-        hubFlywheelMap.put(2.25, 20.0);
-        hubFlywheelMap.put(2.45, 20.5);
-        hubFlywheelMap.put(2.65, 20.5);
-        hubFlywheelMap.put(2.85, 21.0);
-        hubFlywheelMap.put(3.05, 21.5);
-        hubFlywheelMap.put(3.25, 22.0);
-        hubFlywheelMap.put(3.45, 22.5);
-        hubFlywheelMap.put(3.65, 23.0);
-        hubFlywheelMap.put(3.85, 23.5);
+        hubFlywheelMap.put(1.05, 19.0);
+        hubFlywheelMap.put(1.25, 19.0);
+        hubFlywheelMap.put(1.45, 19.0);
+        hubFlywheelMap.put(1.65, 20.0);
+        hubFlywheelMap.put(1.85, 20.0);
+        hubFlywheelMap.put(2.05, 20.5);
+        hubFlywheelMap.put(2.25, 21.0);
+        hubFlywheelMap.put(2.45, 21.5);
+        hubFlywheelMap.put(2.65, 22.5);
+        hubFlywheelMap.put(2.85, 22.0);
+        hubFlywheelMap.put(3.05, 22.5);
+        hubFlywheelMap.put(3.25, 23.0);
+        hubFlywheelMap.put(3.45, 23.5);
+        hubFlywheelMap.put(3.65, 24.0);
+        hubFlywheelMap.put(3.85, 24.5);
     }
 
     /** Distance from feed pose in meters -> flywheel speed in rotations per second */
     private static final InterpolatingDoubleTreeMap feedFlywheelMap =
         new InterpolatingDoubleTreeMap();
     static {
-        feedFlywheelMap.put(3.0, 16.0);
-        feedFlywheelMap.put(4.0, 17.0);
-        feedFlywheelMap.put(5.0, 19.0);
-        feedFlywheelMap.put(6.0, 21.0);
-        feedFlywheelMap.put(7.0, 24.0);
-        feedFlywheelMap.put(8.0, 26.0);
-        feedFlywheelMap.put(9.0, 28.0);
-        feedFlywheelMap.put(10.0, 29.5);
-        feedFlywheelMap.put(11.0, 31.0);
-        feedFlywheelMap.put(12.0, 33.0);
-        feedFlywheelMap.put(13.0, 34.0);
+        feedFlywheelMap.put(3.0, 17.0);
+        feedFlywheelMap.put(4.0, 18.0);
+        feedFlywheelMap.put(5.0, 20.0);
+        feedFlywheelMap.put(6.0, 22.0);
+        feedFlywheelMap.put(7.0, 25.0);
+        feedFlywheelMap.put(8.0, 27.0);
+        feedFlywheelMap.put(9.0, 29.0);
+        feedFlywheelMap.put(10.0, 30.5);
+        feedFlywheelMap.put(11.0, 32.0);
+        feedFlywheelMap.put(12.0, 34.0);
+        feedFlywheelMap.put(13.0, 35.0);
     }
 
     private final RobotState robotState = RobotState.getInstance();

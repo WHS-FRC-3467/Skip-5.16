@@ -324,7 +324,7 @@ public class FuelSim {
         }
 
         /**
-         * Update the fuel's pose while it is in the hopper by applying the robot's translation
+         * If the fuel is in the hopper, update it's pose by applying the robot's translation
          * since the last update. This keeps hopper-held fuel fixed relative to the robot.
          *
          * @param robotPose current robot pose
