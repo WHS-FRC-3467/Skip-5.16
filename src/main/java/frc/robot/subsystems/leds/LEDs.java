@@ -108,7 +108,7 @@ public class LEDs extends SubsystemBase {
             stateQueue
                 .stream()
                 .map(s -> s.name())
-                .toArray(State[]::new));
+                .toArray(String[]::new));
     }
 
     public Command scheduleStateCommand(State state)
