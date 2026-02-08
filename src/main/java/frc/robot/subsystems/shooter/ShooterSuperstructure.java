@@ -224,37 +224,30 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Degrees.of(27.0);
     }
 
-    private Angle getHoodAngleAtDistance(Distance distance)
-    {
-        return Degrees.of(hoodAngleMap.get(distance.in(Meters)));
-    }
-
-    private AngularVelocity getFlywheelVelocityAtDistance(Distance distance)
-    {
-        return RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters)));
-    }
-
     /**
-     * Statically spins the flywheel and actuates the hood to the proper values based on a provided
-     * distance to target. Perpetual command -- never spins down. Therefore, to end, this should be
-     * interrupted by a parent command group or timed-out. Primarily for use in autos.
+     * Statically spins the flywheel and actuates the hood to the proper values for a HUB SHOT given
+     * a provided distance. ONLY valid for HUB shots. Perpetual command -- never spins down.
+     * Therefore, to end, this should be interrupted by a parent command group or timed-out.
+     * Primarily for use in autos.
      * 
-     * @return Static shooter spin-up command.
+     * @param distance the distance from the desired robot shot position to the HUB.
+     * @return Static non-updating HUB only shooter spin-up command.
      */
-    public Command spinUpShooterToDistance(Distance distance)
+    public Command spinUpShooterToHubDistance(Distance distance)
     {
         return Commands.run(() -> {
-            spinFlywheel(getFlywheelVelocityAtDistance(distance));
-            setHoodPosition(getHoodAngleAtDistance(distance));
+            spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))));
+            setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
         }, this).withName("Spin-Up Shooter to Distance");
     }
 
     /**
-     * Dynamically spins the flywheel and actuates the hood to the proper values given current
-     * field-relative robot pose. Perpetual command -- never spins down. Therefore, to end, this
-     * should be interrupted by a parent command group or timed-out.
+     * Dynamically spins the flywheel and actuates the hood to the proper values for ANY target shot
+     * given current field-relative robot pose. Valid for ANY target. Perpetual command -- never
+     * spins down. Therefore, to end, this should be interrupted by a parent command group or
+     * timed-out.
      * 
-     * @return Dynamically-updating shooter spin-up command.
+     * @return Dynamically-updating ALL TARGET shooter spin-up command.
      */
     public Command spinUpShooter()
     {

@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -17,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
+import frc.robot.RobotState.Target;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.drive.Drive;
@@ -211,22 +213,23 @@ public class AutoCommands {
     }
 
     /**
-     * Prepares the shooter for shooting at the end of the provided path. Perpetual command -- never
-     * spins down. Therefore, to end, this should be interrupted by a parent command group or
-     * timed-out. Primarily for use in autos.
+     * Prepares the shooter for shooting at THE HUB at the end of the provided path. Only valid to
+     * prepare shots for THE HUB. Perpetual command -- never spins down. Therefore, to end, this
+     * should be interrupted by a parent command group or timed-out. Primarily for use in autos.
      * 
-     * @param path the path to drive, the shooter will prepare to shoot at the target from the
-     *        path's end pose. If anywhere on current alliance side (including bump/trench lanes),
-     *        target is the alliance hub. Otherwise, target is the alliance zone.
+     * @param path the path to drive, the shooter will prepare to shoot at the end of this path.
      * @param shooter the shooter subsystem
-     * @return a command that prepares the shooter to shoot the target from the end of the provided
+     * @return a command that prepares the shooter to shoot THE HUB from the end of the provided
      *         path
      */
     public static Command prepareStaticShot(PathPlannerPath path, ShooterSuperstructure shooter)
     {
-        final var robotState = RobotState.getInstance();
-        return shooter.spinUpShooterToDistance(
-            Meters.of(path.getAllPathPoints().get(path.getAllPathPoints().size() - 1).position
-                .getDistance(robotState.getTarget().getAllianceTranslation().toTranslation2d())));
+        // All paths blue canonical, so flip end translation if red alliance
+        Translation2d targetTranslation = FieldUtil.shouldFlip()
+            ? path.getAllPathPoints().get(path.getAllPathPoints().size() - 1).flip().position
+            : path.getAllPathPoints().get(path.getAllPathPoints().size() - 1).position;
+        return shooter.spinUpShooterToHubDistance(
+            Meters.of(targetTranslation
+                .getDistance(Target.HUB.getAllianceTranslation().toTranslation2d())));
     }
 }
