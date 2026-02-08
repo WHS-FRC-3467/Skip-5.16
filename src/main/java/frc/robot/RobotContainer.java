@@ -362,8 +362,7 @@ public class RobotContainer {
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start",
                 (int) Math.round(distanceFromStartPose.in(Inches) * 100.0) / 100.0);
             SmartDashboard.putBoolean(
-                "Auto Pose Check/Robot Position within "
-                    + PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches) + " inches",
+                "Auto Pose Check/Robot Position Within Tolerance",
                 distanceFromStartPose.in(Inches) < PathConstants.STARTING_POSE_DRIVE_TOLERANCE
                     .in(Inches));
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start",
@@ -374,17 +373,13 @@ public class RobotContainer {
                     .in(Degrees));
 
         } catch (Exception e) {
-            DriverStation.reportError(
-                "Failed to check starting pose: " + e.getMessage(), e.getStackTrace());
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start", -1);
             SmartDashboard.putBoolean(
-                "Auto Pose Check/Robot Position within "
-                    + PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches) + " inches",
+                "Auto Pose Check/Robot Position Within Tolerance",
                 false);
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start", -1);
             SmartDashboard.putBoolean(
-                "Auto Pose Check/Robot Rotation within "
-                    + PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees) + " degrees",
+                "Auto Pose Check/Robot Rotation Within Tolerance",
                 false);
         }
     }
