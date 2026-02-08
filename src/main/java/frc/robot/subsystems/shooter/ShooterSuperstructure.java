@@ -223,6 +223,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Degrees.of(0.0);
     }
 
+    // Gets ball trajectory exit angle relative to horizontal, accounting for hood angle and
+    // physical offset of the hood from horizontal
+    public Angle getExitAngle()
+    {
+        return Degrees.of(90).minus(HoodConstants.MIN_ANGLE_OFFSET).minus(hoodIO.getPosition());
+    }
+
     /**
      * Spins the flywheel and actuates the hood to the proper values given field-relative robot
      * pose. Perpetual command -- never spins down. Therefore, to end, this should be interrupted by

@@ -38,6 +38,7 @@ import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerConstants;
+import frc.robot.subsystems.shooter.HoodConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
@@ -48,8 +49,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 
 /**
  * Container class for the robot that holds all subsystems, controllers, and command bindings. This
@@ -248,6 +247,9 @@ public class RobotContainer {
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intakeLinear.cycle());
 
         SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
+        SmartDashboard.putData("Hood angle", Commands.runOnce(() -> System.out.println(
+            Degrees.of(90).minus(HoodConstants.MIN_ANGLE_OFFSET).minus(shooter.getHoodAngle())
+                .in(Degrees))));
 
         SmartDashboard.putData("Face Target",
             DriveCommands.joystickDriveFacingTarget(
@@ -263,13 +265,13 @@ public class RobotContainer {
                         .plus(Constants.LEFT_SHOOTER_EXIT_TRANSFORM)
                         .getTranslation(),
                     fuelSim.launchVel(shooter.getAverageLinearVelocity(),
-                        Degrees.of(75.0).minus(shooter.getHoodAngle())));
+                        shooter.getExitAngle()));
                 fuelSim.spawnFuel(
                     new Pose3d(robotState.getEstimatedPose())
                         .plus(Constants.RIGHT_SHOOTER_EXIT_TRANSFORM)
                         .getTranslation(),
                     fuelSim.launchVel(shooter.getAverageLinearVelocity(),
-                        Degrees.of(75.0).minus(shooter.getHoodAngle())));
+                        shooter.getExitAngle()));
 
                 SmartDashboard.putData("Toggle Tip Drivebase",
                     Commands.run(
