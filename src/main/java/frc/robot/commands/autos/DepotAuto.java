@@ -23,6 +23,7 @@ import frc.robot.subsystems.intakeRoller.IntakeRoller;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import static edu.wpi.first.units.Units.Seconds;
+import java.util.Collections;
 import java.util.List;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -65,6 +66,9 @@ public class DepotAuto extends AutoRoutine {
 
         // Load the named paths
         this.loadAllPaths(expectedPaths);
+
+        // Mirror necessary paths when starting on  RIGHT side so the dashboard shows correct poses
+        this.setMirrorFlags(Collections.nCopies(expectedPaths.size(), false), start);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null)) {
