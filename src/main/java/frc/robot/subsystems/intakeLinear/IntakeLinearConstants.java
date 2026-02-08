@@ -52,7 +52,7 @@ public class IntakeLinearConstants {
     public static final double GEARING = (42.0 / 12.0);
 
     public static final Distance MIN_DISTANCE = Inches.of(0.0);
-    public static final Distance MAX_DISTANCE = Inches.of(11.135);
+    public static final Distance MAX_DISTANCE = Inches.of(11.375);
     public static final Distance STARTING_DISTANCE = Inches.of(0.0);
 
     public static final Distance DRUM_RADIUS = Inches.of(0.5);

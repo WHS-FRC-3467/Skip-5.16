@@ -220,7 +220,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     robotState.getDistanceToTarget().in(Meters)));
         }
 
-        return Degrees.of(27.0);
+        return Degrees.of(0.0);
     }
 
     /**

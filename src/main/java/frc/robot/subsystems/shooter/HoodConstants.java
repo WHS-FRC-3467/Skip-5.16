@@ -5,27 +5,23 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Foot;
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Second;
 import java.util.Optional;
 import com.ctre.phoenix6.configs.*;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.AngularAccelerationUnit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
-import edu.wpi.first.units.measure.Velocity;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
@@ -54,16 +50,16 @@ public class HoodConstants {
         RadiansPerSecond.of(10);
     public static final AngularAcceleration ACCELERATION =
         RadiansPerSecondPerSecond.of(100);
-    public static final Velocity<AngularAccelerationUnit> JERK =
-        RadiansPerSecondPerSecond.per(Second).of(0);
 
-    private static final double ROTOR_TO_SENSOR = (50.0 / 1.0);
-    private static final double SENSOR_TO_MECHANISM = 1.0;
+    private static final double GEARING = (48.0 / 14.0) * (164.0 / 10.0);
+
+    // 17 to 44 deg
+    public static final Angle MIN_ANGLE_OFFSET = Degrees.of(17.0);
 
     public static final Angle MIN_ANGLE = Degrees.of(0.0);
     public static final Angle MAX_ANGLE = Degrees.of(27.0);
     public static final Angle STARTING_ANGLE = Degrees.of(0.0);
-    public static final Distance ARM_LENGTH = Foot.one();
+    public static final Distance ARM_LENGTH = Inches.of(6.9);
 
     public static final RotaryMechCharacteristics CONSTANTS =
         new RotaryMechCharacteristics(
@@ -112,15 +108,11 @@ public class HoodConstants {
         config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = MIN_ANGLE.in(Units.Rotations);
 
-        config.Feedback.RotorToSensorRatio = ROTOR_TO_SENSOR;
-        config.Feedback.SensorToMechanismRatio = SENSOR_TO_MECHANISM;
-
-        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+        config.Feedback.SensorToMechanismRatio = GEARING;
 
         config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
         config.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY.in(RotationsPerSecond);
         config.MotionMagic.MotionMagicAcceleration = ACCELERATION.in(RotationsPerSecondPerSecond);
-        config.MotionMagic.MotionMagicJerk = JERK.in(RotationsPerSecondPerSecond.per(Second));
 
         return config;
     }

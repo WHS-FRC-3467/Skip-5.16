@@ -260,15 +260,13 @@ public class RobotContainer {
             SmartDashboard.putData("Shoot Fuel", Commands.runOnce(() -> {
                 fuelSim.spawnFuel(
                     new Pose3d(robotState.getEstimatedPose())
-                        .plus(new Transform3d(Inches.of(-10), Inches.of(-3.6),
-                            Inches.of(21), Rotation3d.kZero))
+                        .plus(Constants.LEFT_SHOOTER_EXIT_TRANSFORM)
                         .getTranslation(),
                     fuelSim.launchVel(shooter.getAverageLinearVelocity(),
                         Degrees.of(75.0).minus(shooter.getHoodAngle())));
                 fuelSim.spawnFuel(
                     new Pose3d(robotState.getEstimatedPose())
-                        .plus(new Transform3d(Inches.of(-10), Inches.of(3.6),
-                            Inches.of(21), Rotation3d.kZero))
+                        .plus(Constants.RIGHT_SHOOTER_EXIT_TRANSFORM)
                         .getTranslation(),
                     fuelSim.launchVel(shooter.getAverageLinearVelocity(),
                         Degrees.of(75.0).minus(shooter.getHoodAngle())));
