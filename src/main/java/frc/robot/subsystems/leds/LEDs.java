@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.Lights;
 import frc.lib.io.lights.LightsIO;
 import frc.lib.util.LoggerHelper;
-import frc.robot.RobotContainer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -34,8 +33,6 @@ import lombok.RequiredArgsConstructor;
  * commands for different animation patterns during disabled, autonomous, and teleop modes.
  */
 public class LEDs extends SubsystemBase {
-    public RobotContainer robotContainer;
-
     /**
      * The states for the lights in order from highest priority to low
      */
