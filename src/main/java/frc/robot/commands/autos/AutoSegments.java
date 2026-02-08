@@ -61,7 +61,7 @@ public class AutoSegments {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
-                AutoCommands.prepareStaticShot(path, shooter)).withTimeout(2.75), // ~ +40% max path
+                AutoCommands.prepareHubShot(path, shooter)).withTimeout(2.75), // ~ +40% max path
             AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 1.5));
     }
 
@@ -86,7 +86,7 @@ public class AutoSegments {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
-                AutoCommands.prepareStaticShot(path, shooter)).withTimeout(3.5), // ~ +40% max path
+                AutoCommands.prepareHubShot(path, shooter)).withTimeout(3.5), // ~ +40% max path
             new ParallelDeadlineGroup(
                 AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 5.0), // ~ 10 bps
                 AutoCommands.agitateHopper(intakeLinear, tower, indexer, HopperAgitation.NONE)));

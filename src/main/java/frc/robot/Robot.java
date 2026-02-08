@@ -271,8 +271,8 @@ public class Robot extends LoggedRobot {
     @Override
     public void simulationInit()
     {
-        DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
-        DriverStationSim.notifyNewData();
+        // DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+        // DriverStationSim.notifyNewData();
     }
 
     /** This function is called periodically whilst in simulation. */

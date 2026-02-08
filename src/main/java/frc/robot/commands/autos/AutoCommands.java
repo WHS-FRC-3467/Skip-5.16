@@ -5,7 +5,6 @@
 package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -66,10 +65,10 @@ public class AutoCommands {
 
     /**
      * Creates a command sequence that attempts to shoot fuel from the robot for duration. Spins up
-     * the shooter, only pulls fuel through the feeder when ready, then stops indexer, tower, and
-     * shooter after duration. If shooting is disrupted during duration because shooter readiness
-     * drops, attempt a flywheel/hood adjustment and, if successful, re-commence shooting within the
-     * remaining window. Unconditionally stops shot attempts after duration.
+     * the shooter, only pulls fuel through the feeder when ready, then stops indexer & tower after
+     * duration. If shooting is disrupted during duration because shooter readiness drops, attempt a
+     * flywheel/hood adjustment and, if successful, re-commence shooting within the remaining
+     * window. Unconditionally stops shot attempts after duration.
      *
      * @param indexer the indexer subsystem
      * @param tower the tower subsystem
@@ -77,7 +76,8 @@ public class AutoCommands {
      * @param canShoot secondary check on whether the robot is properly aligned to the target,
      *        independent of whether the the shooter is at the proper state
      * @param duration the approximate duration in seconds to run the shooting sequence
-     * @return a command that shoots fuel and then stops the indexer
+     * @return a command that shoots fuel and then stops the indexer / tower after the given
+     *         duration
      */
     public static Command shootFuel(Indexer indexer, Tower tower,
         ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration)
@@ -100,8 +100,8 @@ public class AutoCommands {
                         .until(shooter.readyToShoot.and(canShoot).negate()))))
             .finallyDo(() -> {
                 // Spin shooter down, non-blocking
-                CommandScheduler.getInstance()
-                    .schedule(shooter.setFlywheelSpeed(RadiansPerSecond.zero()));
+                // CommandScheduler.getInstance()
+                // .schedule(shooter.setFlywheelSpeed(RadiansPerSecond.zero()));
             });
     }
 
@@ -222,7 +222,7 @@ public class AutoCommands {
      * @return a command that prepares the shooter to shoot THE HUB from the end of the provided
      *         path
      */
-    public static Command prepareStaticShot(PathPlannerPath path, ShooterSuperstructure shooter)
+    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter)
     {
         // All paths blue canonical, so flip end translation if red alliance
         Translation2d targetTranslation = FieldUtil.shouldFlip()
