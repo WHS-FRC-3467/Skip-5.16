@@ -104,6 +104,15 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
         return this.runOnce(() -> io.runBrake());
     }
 
+    /**
+     * Coast intake linear for pit testing.
+     * @return a command to set the intake linear mechanism to coast mode.
+     */
+    public Command coast()
+    {
+        return this.runOnce(() -> io.runCoast());
+    }
+
     private boolean isLinearStopped()
     {
         return Math.abs(io.getVelocity().in(RotationsPerSecond)) < 2.0;
