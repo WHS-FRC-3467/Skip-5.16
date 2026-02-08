@@ -225,11 +225,10 @@ public class AutoCommands {
     public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter)
     {
         // All paths blue canonical, so flip end translation if red alliance
-        Translation2d targetTranslation = FieldUtil.shouldFlip()
-            ? path.getAllPathPoints().get(path.getAllPathPoints().size() - 1).flip().position
-            : path.getAllPathPoints().get(path.getAllPathPoints().size() - 1).position;
         return shooter.spinUpShooterToHubDistance(
-            Meters.of(targetTranslation
-                .getDistance(Target.HUB.getAllianceTranslation().toTranslation2d())));
+            Meters.of(
+                FieldUtil
+                    .apply(path.getAllPathPoints().get(path.getAllPathPoints().size() - 1).position)
+                    .getDistance(Target.HUB.getAllianceTranslation().toTranslation2d())));
     }
 }
