@@ -246,9 +246,9 @@ public class Drive extends SubsystemBase {
 
         for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
             SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
-            for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-                modulePositions[moduleIndex] =
-                    modules[moduleIndex].getOdometryPositions()[sampleIndex];
+            for (int i = 0; i < 4; i++) {
+                modulePositions[i] =
+                    modules[i].getOdometryPositions()[sampleIndex];
             }
 
             Optional<Rotation2d> gyroAngle = Optional.empty();
@@ -298,8 +298,8 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
 
         // Send setpoints to modules
-        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-            modules[moduleIndex].runSetpoint(setpointStates[moduleIndex]);
+        for (int i = 0; i < 4; i++) {
+            modules[i].runSetpoint(setpointStates[i]);
         }
 
         // Log optimized setpoints (runSetpoint mutates each state)
@@ -313,8 +313,8 @@ public class Drive extends SubsystemBase {
      */
     public void runCharacterization(double output)
     {
-        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-            modules[moduleIndex].runCharacterization(output);
+        for (int i = 0; i < 4; i++) {
+            modules[i].runCharacterization(output);
         }
     }
 
@@ -331,8 +331,8 @@ public class Drive extends SubsystemBase {
     public void stopWithX()
     {
         Rotation2d[] headings = new Rotation2d[4];
-        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-            headings[moduleIndex] = MODULE_TRANSLATIONS.get(moduleIndex).getAngle();
+        for (int i = 0; i < 4; i++) {
+            headings[i] = MODULE_TRANSLATIONS.get(i).getAngle();
         }
         kinematics.resetHeadings(headings);
         stop();
@@ -372,8 +372,8 @@ public class Drive extends SubsystemBase {
     private SwerveModuleState[] getModuleStates()
     {
         SwerveModuleState[] states = new SwerveModuleState[4];
-        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-            states[moduleIndex] = modules[moduleIndex].getState();
+        for (int i = 0; i < 4; i++) {
+            states[i] = modules[i].getState();
         }
         return states;
     }
@@ -386,8 +386,8 @@ public class Drive extends SubsystemBase {
     protected SwerveModulePosition[] getModulePositions()
     {
         SwerveModulePosition[] states = new SwerveModulePosition[4];
-        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-            states[moduleIndex] = modules[moduleIndex].getPosition();
+        for (int i = 0; i < 4; i++) {
+            states[i] = modules[i].getPosition();
         }
         return states;
     }
@@ -411,8 +411,8 @@ public class Drive extends SubsystemBase {
     public double[] getWheelRadiusCharacterizationPositions()
     {
         double[] values = new double[4];
-        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-            values[moduleIndex] = modules[moduleIndex].getWheelRadiusCharacterizationPosition();
+        for (int i = 0; i < 4; i++) {
+            values[i] = modules[i].getWheelRadiusCharacterizationPosition();
         }
         return values;
     }
@@ -425,8 +425,8 @@ public class Drive extends SubsystemBase {
     public double getFFCharacterizationVelocity()
     {
         double output = 0.0;
-        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-            output += modules[moduleIndex].getFFCharacterizationVelocity() / 4.0;
+        for (int i = 0; i < 4; i++) {
+            output += modules[i].getFFCharacterizationVelocity() / 4.0;
         }
         return output;
     }
@@ -547,21 +547,21 @@ public class Drive extends SubsystemBase {
             }
 
             SwerveModulePosition[] previousModulePositions = new SwerveModulePosition[4];
-            for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-                previousModulePositions[moduleIndex] =
-                    modules[moduleIndex].getOdometryPositions()[sampleIndex - 1];
+            for (int i = 0; i < 4; i++) {
+                previousModulePositions[i] =
+                    modules[i].getOdometryPositions()[sampleIndex - 1];
             }
 
             measuredStates = new SwerveModuleState[4];
-            for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+            for (int i = 0; i < 4; i++) {
                 double deltaDistanceMeters =
-                    positionsNow[moduleIndex].distanceMeters
-                        - previousModulePositions[moduleIndex].distanceMeters;
+                    positionsNow[i].distanceMeters
+                        - previousModulePositions[i].distanceMeters;
 
                 double speedMetersPerSecond = deltaDistanceMeters / secondsBetweenSamples;
 
-                measuredStates[moduleIndex] =
-                    new SwerveModuleState(speedMetersPerSecond, positionsNow[moduleIndex].angle);
+                measuredStates[i] =
+                    new SwerveModuleState(speedMetersPerSecond, positionsNow[i].angle);
             }
         }
 
@@ -570,20 +570,20 @@ public class Drive extends SubsystemBase {
 
         double[] translationalSpeedMagnitudesMetersPerSecond = new double[4];
 
-        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+        for (int i = 0; i < 4; i++) {
             Translation2d measuredWheelVelocityVector =
                 new Translation2d(
-                    measuredStates[moduleIndex].speedMetersPerSecond,
-                    measuredStates[moduleIndex].angle);
+                    measuredStates[i].speedMetersPerSecond,
+                    measuredStates[i].angle);
 
-            Translation2d moduleLocation = MODULE_TRANSLATIONS.get(moduleIndex);
+            Translation2d moduleLocation = MODULE_TRANSLATIONS.get(i);
 
             Translation2d rotationalVelocityVector =
                 new Translation2d(
                     -angularVelocityRadiansPerSecond * moduleLocation.getY(),
                     angularVelocityRadiansPerSecond * moduleLocation.getX());
 
-            translationalSpeedMagnitudesMetersPerSecond[moduleIndex] =
+            translationalSpeedMagnitudesMetersPerSecond[i] =
                 measuredWheelVelocityVector.minus(rotationalVelocityVector).getNorm();
         }
 
@@ -602,11 +602,11 @@ public class Drive extends SubsystemBase {
         double maximumAcceptableSpeedMetersPerSecond =
             medianTranslationalSpeedMetersPerSecond * SKID_OUTLIER_SCALE;
 
-        for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+        for (int i = 0; i < 4; i++) {
             double translationalSpeedMetersPerSecond =
-                translationalSpeedMagnitudesMetersPerSecond[moduleIndex];
+                translationalSpeedMagnitudesMetersPerSecond[i];
 
-            badWheels[moduleIndex] =
+            badWheels[i] =
                 (translationalSpeedMetersPerSecond < minimumAcceptableSpeedMetersPerSecond)
                     || (translationalSpeedMetersPerSecond > maximumAcceptableSpeedMetersPerSecond);
         }
