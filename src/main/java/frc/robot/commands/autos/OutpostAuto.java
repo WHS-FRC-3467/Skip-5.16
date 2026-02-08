@@ -83,7 +83,7 @@ public class OutpostAuto extends AutoRoutine {
                 // Wait for FUEL to be dumped
                 Commands.waitSeconds(3),
                 Commands.either(
-                    Commands.runOnce(() -> RobotSim.getInstance().getFuelSim().setHeldFuel(20)),
+                    Commands.runOnce(() -> RobotSim.getInstance().getFuelSim().fillHopper(20)),
                     Commands.none(), RobotBase::isSimulation),
                 // Drive to shooting location and shoot all FUEL
                 AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
