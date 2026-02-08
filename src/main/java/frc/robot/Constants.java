@@ -31,7 +31,6 @@ import frc.robot.subsystems.drive.DriveConstants;
  */
 
 public final class Constants {
-   
     public static final Mode simMode = Mode.SIM;
     public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
