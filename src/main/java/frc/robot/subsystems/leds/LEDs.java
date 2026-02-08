@@ -16,7 +16,6 @@
 package frc.robot.subsystems.leds;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.TreeSet;
 import org.littletonrobotics.junction.Logger;
@@ -58,7 +57,7 @@ public class LEDs extends SubsystemBase {
     private final Lights lights;
 
     private final TreeSet<State> stateQueue;
-    private Optional<State> currentState = Optional.empty();
+    private State currentState = State.NONE;
 
     /**
      * Constructs an LEDs subsystem.
@@ -70,17 +69,14 @@ public class LEDs extends SubsystemBase {
         lights = new Lights(io);
 
         stateQueue = new TreeSet<>((a, b) -> Integer.compare(a.ordinal(), b.ordinal()));
+
+        lights.setAnimations(currentState.getAnimation());
     }
 
     private Optional<State> getCurrentStateFromQueue()
     {
 
-        State currentState;
-        try {
-            currentState = stateQueue.first();
-        } catch (NoSuchElementException e) {
-            currentState = null;
-        }
+        State currentState = stateQueue.isEmpty() ? null : stateQueue.first();
 
         return Optional.ofNullable(currentState);
     }
@@ -89,9 +85,9 @@ public class LEDs extends SubsystemBase {
     {
         Optional<State> newState = getCurrentStateFromQueue();
 
-        boolean hasChanged = !this.currentState.equals(newState);
+        boolean hasChanged = !this.currentState.equals(newState.orElse(null));
 
-        this.currentState = newState;
+        this.currentState = newState.orElse(State.NONE);
         return hasChanged;
     }
 
@@ -99,11 +95,7 @@ public class LEDs extends SubsystemBase {
     {
         boolean hasChanged = updateCurrentState();
         if (hasChanged) {
-            if (currentState.isPresent()) {
-                lights.setAnimations(currentState.get().getAnimation());
-            } else {
-                lights.setAnimations(LEDsConstants.offAnimation);
-            }
+            lights.setAnimations(currentState.getAnimation());
         }
     }
 
@@ -114,9 +106,12 @@ public class LEDs extends SubsystemBase {
 
 
         LoggerHelper.recordCurrentCommand(LEDsConstants.NAME, this);
-        currentState
-            .ifPresent(s -> Logger.recordOutput(LEDsConstants.NAME + "/State", s.name()));
-        Logger.recordOutput(LEDsConstants.NAME + "/StateQ", stateQueue.toString());
+        Logger.recordOutput(LEDsConstants.NAME + "/State", currentState.name());
+        Logger.recordOutput(LEDsConstants.NAME + "/StateQueue",
+            stateQueue
+                .stream()
+                .map(s -> s.name())
+                .toArray(State[]::new));
     }
 
     public Command scheduleStateCommand(State state)
