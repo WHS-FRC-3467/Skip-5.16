@@ -50,6 +50,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.RobotState;
 import frc.robot.util.LocalADStarAK;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -73,6 +74,16 @@ public class Drive extends SubsystemBase {
             Math.hypot(DriveConstants.BackLeft.LocationX, DriveConstants.BackLeft.LocationY),
             Math.hypot(DriveConstants.BackRight.LocationX, DriveConstants.BackRight.LocationY)));
 
+    public static final List<Translation2d> MODULE_TRANSLATIONS = List.of(
+        new Translation2d(DriveConstants.FrontLeft.LocationX,
+            DriveConstants.FrontLeft.LocationY),
+        new Translation2d(DriveConstants.FrontRight.LocationX,
+            DriveConstants.FrontRight.LocationY),
+        new Translation2d(DriveConstants.BackLeft.LocationX,
+            DriveConstants.BackLeft.LocationY),
+        new Translation2d(DriveConstants.BackRight.LocationX,
+            DriveConstants.BackRight.LocationY));
+
     // PathPlanner config constants
     private static final double ROBOT_MASS_KG = 74.088;
     private static final double ROBOT_MOI = 6.883;
@@ -89,7 +100,7 @@ public class Drive extends SubsystemBase {
                 .withReduction(DriveConstants.FrontLeft.DriveMotorGearRatio),
             DriveConstants.FrontLeft.SlipCurrent,
             1),
-        getModuleTranslations());
+        MODULE_TRANSLATIONS.toArray(Translation2d[]::new));
 
     static final Lock odometryLock = new ReentrantLock();
 
@@ -107,7 +118,8 @@ public class Drive extends SubsystemBase {
     private final LoggedTunableBoolean enableSkidDetection =
         new LoggedTunableBoolean("Drive/Enable Skid Detection", true);
 
-    private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+    private SwerveDriveKinematics kinematics =
+        new SwerveDriveKinematics(MODULE_TRANSLATIONS.toArray(Translation2d[]::new));
 
     /*
      * Wheel skid detection for odometry: We compute a per-sample badWheels array and attach it to
@@ -320,7 +332,7 @@ public class Drive extends SubsystemBase {
     {
         Rotation2d[] headings = new Rotation2d[4];
         for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-            headings[moduleIndex] = getModuleTranslations()[moduleIndex].getAngle();
+            headings[moduleIndex] = MODULE_TRANSLATIONS.get(moduleIndex).getAngle();
         }
         kinematics.resetHeadings(headings);
         stop();
@@ -440,25 +452,6 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Returns an array of module translations.
-     *
-     * @return Array of Translation2d objects representing module positions relative to robot center
-     */
-    public static Translation2d[] getModuleTranslations()
-    {
-        return new Translation2d[] {
-                new Translation2d(DriveConstants.FrontLeft.LocationX,
-                    DriveConstants.FrontLeft.LocationY),
-                new Translation2d(DriveConstants.FrontRight.LocationX,
-                    DriveConstants.FrontRight.LocationY),
-                new Translation2d(DriveConstants.BackLeft.LocationX,
-                    DriveConstants.BackLeft.LocationY),
-                new Translation2d(DriveConstants.BackRight.LocationX,
-                    DriveConstants.BackRight.LocationY)
-        };
-    }
-
-    /**
      * Returns the acceleration of the gyro in the X direction.
      *
      * @return Acceleration in the X direction in G's
@@ -575,7 +568,6 @@ public class Drive extends SubsystemBase {
         final double angularVelocityRadiansPerSecond =
             kinematics.toChassisSpeeds(measuredStates).omegaRadiansPerSecond;
 
-        Translation2d[] moduleLocations = getModuleTranslations();
         double[] translationalSpeedMagnitudesMetersPerSecond = new double[4];
 
         for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
@@ -584,7 +576,7 @@ public class Drive extends SubsystemBase {
                     measuredStates[moduleIndex].speedMetersPerSecond,
                     measuredStates[moduleIndex].angle);
 
-            Translation2d moduleLocation = moduleLocations[moduleIndex];
+            Translation2d moduleLocation = MODULE_TRANSLATIONS.get(moduleIndex);
 
             Translation2d rotationalVelocityVector =
                 new Translation2d(
