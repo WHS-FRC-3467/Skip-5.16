@@ -24,6 +24,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.util.RobotSim;
 import java.util.List;
+import java.util.Collections;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -67,6 +68,9 @@ public class OutpostAuto extends AutoRoutine {
 
         // Load the named paths
         this.loadAllPaths(expectedPaths);
+
+        // Keep track of which paths must be mirrored for RIGHT side autos
+        this.setMirrorFlags(Collections.nCopies(expectedPaths.size(), false), start);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null)) {

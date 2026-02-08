@@ -22,10 +22,12 @@ import au.grapplerobotics.CanBridge;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.util.Elastic;
 import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -49,6 +51,7 @@ public class Robot extends LoggedRobot {
     private RobotContainer robotContainer;
     private boolean checkedHubGameData = false; // whether we've checked for hub game data at the
                                                 // start of the first alliance phase
+    private Field2d fieldMap = new Field2d();
 
     public Robot()
     {
@@ -125,11 +128,7 @@ public class Robot extends LoggedRobot {
          * significantly higher delay compared with subsequent runs. To help alleviate this issue,
          * run this warmup command in the background when code starts. This command will not control
          * the robot, it will simply run through a full pathfinding command to warm up the library.
-         * public void robotInit() { /* Due to the nature of how Java works, the first run of a
-         * pathfinding command could have a significantly higher delay compared with subsequent
-         * runs. To help alleviate this issue, run this warmup command in the background when code
-         * starts. This command will not control the robot, it will simply run through a full
-         * pathfinding command to warm up the library. Source: PathPlanner Docs
+         * Source: PathPlanner Docs
          */
         // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
         CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
@@ -138,6 +137,8 @@ public class Robot extends LoggedRobot {
         Logger.recordOutput("Robot Serial",
             Robot.isReal() ? Constants.RobotConstants.serial.subSequence(0, 8).toString()
                 : Constants.RobotConstants.serial);
+
+        SmartDashboard.putData("Robot Pose Field Map", fieldMap);
     }
 
     /**
@@ -161,19 +162,18 @@ public class Robot extends LoggedRobot {
         // Return to non-RT thread priority (do not modify the first argument)
         // Threads.setCurrentThreadPriority(false, 10);
 
-        // Provide SmartDashboard (Elastic Dashboard) updates on Hub state
-        SmartDashboard.putBoolean("Hub Active",
-            frc.robot.util.HubState.getInstance().getHubActive().getAsBoolean());
-        SmartDashboard.putBoolean("Hub Active",
-            HubState.getInstance().getHubActive().getAsBoolean());
-        SmartDashboard.putBoolean("Hub Changing Soon",
-            HubState.getInstance().getHubChange().getAsBoolean());
+        // Driver Elastic Dashboard - Update the robot's pose on the main fieldmap
+        fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
     }
 
     /** This function is called once when the robot is disabled. */
     @Override
     public void disabledInit()
     {
+        // Switch to Autonomous tab in Elastic Dashboard
+        if (DriverStation.isFMSAttached()) {
+            Elastic.selectTab(1);
+        }
         // Reset hub game data check before starting the next match
         checkedHubGameData = false;
     }
@@ -186,6 +186,7 @@ public class Robot extends LoggedRobot {
     public void disabledPeriodic()
     {
         robotContainer.checkStartPose();
+        robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
 
     /**
@@ -194,6 +195,11 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit()
     {
+        // Switch to Autonomous tab in Elastic Dashboard
+        if (DriverStation.isFMSAttached()) {
+            Elastic.selectTab(1);
+        }
+
         autonomousCommand = robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command (example)
@@ -206,7 +212,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousPeriodic()
     {
-        RobotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
+        robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
 
     /** This function is called once when teleop is enabled. */
@@ -219,6 +225,11 @@ public class Robot extends LoggedRobot {
         // this line or comment it out.
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
+        }
+
+        // Switch to Teleop tab in Elastic Dashboard
+        if (DriverStation.isFMSAttached()) {
+            Elastic.selectTab(0);
         }
     }
 
