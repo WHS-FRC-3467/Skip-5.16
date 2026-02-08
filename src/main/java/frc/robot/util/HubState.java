@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.lib.util.LoggedTrigger;
 import java.util.Arrays;
+import org.littletonrobotics.junction.Logger;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
@@ -167,6 +168,11 @@ public class HubState {
             // Fourth Shift - switch from third shift
             activeAlliance = (firstActiveAlliance == Alliance.Blue) ? Alliance.Red : Alliance.Blue;
         }
+
+        hubActive.getAsBoolean();
+        Logger.recordOutput(
+            "Hub/Time Until Next Phase",
+            matchTime - nextSwitchTime(matchTime));
     }
 
     /**
