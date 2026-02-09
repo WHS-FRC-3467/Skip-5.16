@@ -102,7 +102,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final RotaryMechanism<?, ?> hoodIO;
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
-
     public final LoggedTrigger readyToShoot =
         new LoggedTrigger(this.getName() + "/readyToShoot", () -> {
             double dist = robotState
@@ -275,7 +274,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 Commands.run(() -> setHoodPosition(getDesiredHoodAngle())),
                 // Require this subsystem
                 Commands.idle(this),
-
                 Commands.repeatingSequence(
                     Commands.waitUntil(readyToShoot),
                     whileAtPosition.until(readyToShoot.negate()))),

@@ -62,6 +62,7 @@ public class RobotState {
     @Setter
     private ChassisSpeeds velocity = new ChassisSpeeds();
 
+
     /**
      * Returns the robot's odometry-only pose (without vision corrections).
      * 

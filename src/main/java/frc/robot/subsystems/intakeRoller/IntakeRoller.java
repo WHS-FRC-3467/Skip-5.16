@@ -32,9 +32,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Subsystem that controls the intake roller mechanism.
- * The roller can intake game pieces, eject them, or stop.
- * Uses a flywheel mechanism for velocity control.
+ * Subsystem that controls the intake roller mechanism. The roller can intake game pieces, eject
+ * them, or stop. Uses a flywheel mechanism for velocity control.
  */
 public class IntakeRoller extends SubsystemBase implements AutoCloseable {
 
@@ -44,6 +43,8 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
         new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);
 
     private final FlywheelMechanism<?> io;
+
+    @Getter
     private State state = State.STOP;
 
     @RequiredArgsConstructor
