@@ -3,230 +3,121 @@
 Codebase for the 2026 season REBUILT
 
 <!-- MERMAID_DIAGRAM_START -->
-## Robot Structure
+## Robot Code Architecture
 
-This diagram is automatically generated from the code in `src/main/java/frc/robot/` and updated during the build process.
-It shows the relationships between subsystems, commands, and core robot classes.
+This diagram is automatically generated from the codebase and shows the three-layer architecture.
 
-**Legend:**
-- `<<subsystem>>` - Robot subsystems that control hardware
-- `<<command>>` - Commands that define robot behaviors
-- `<<namespace>>` - Grouping of autonomous commands
+**Architecture Layers:**
+
+1. **IO Layer** (`frc.lib.io.*`) - Hardware abstraction interfaces
+   - Define contracts for interacting with hardware (motors, sensors, etc.)
+   - Multiple implementations per interface (real hardware, simulation)
+   
+2. **Mechanism Layer** (`frc.lib.mechanisms.*`) - Reusable mechanism abstractions
+   - Provide common patterns for robot mechanisms (flywheels, arms, elevators)
+   - Generic over IO interfaces for hardware independence
+   
+3. **Subsystem Layer** (`frc.robot.subsystems.*`) - Robot-specific logic
+   - Implement robot behaviors using mechanisms
+   - Extend WPILib's SubsystemBase
+   - Expose Command factories for robot actions
+
+**Key Relationships:**
+- Mechanisms use IO interfaces (via generics)
+- Subsystems use Mechanisms
+- Clear separation enables testing, simulation, and code reuse
 
 To manually regenerate the diagram, run: `./gradlew generateMermaidDiagram`
 
 ```mermaid
 classDiagram
-    class Robot {
-        +robotInit()
-        +robotInit()
-        +robotPeriodic()
-        +disabledInit()
-        +disabledPeriodic()
-        +autonomousInit()
-        +autonomousPeriodic()
-        +teleopInit()
+    class AbsoluteEncoderIO {
+        <<IO Interface>>
     }
-    class RobotContainer {
-        +robotState: RobotState
-        +leds: LEDs
-        +objectDetector: ObjectDetector
-        +shooter: ShooterSuperstructure
-        +intakeRoller: IntakeRoller
-        +intakeLinear: IntakeLinear
-        +indexer: Indexer
-        +tower: Tower
-        +controller: CommandXboxControllerExtended
-        +getAutonomousCommand()
-        +checkStartPose()
+    class BeamBreakIO {
+        <<IO Interface>>
     }
-    class Main {
-        +main()
+    class DistanceSensorIO {
+        <<IO Interface>>
     }
-    class Constants {
+    class LightsIO {
+        <<IO Interface>>
     }
-    class Ports {
+    class MotorIO {
+        <<IO Interface>>
     }
-    class RobotState {
-        +getOdometryPose()
-        +getEstimatedPose()
-        +addOdometryObservation()
-        +addVisionObservation()
-        +getPoseAtTime()
-        +getRotation()
-        +getFieldRelativeVelocity()
-        +publishMechanismPoses()
+    class ObjectDetectionIO {
+        <<IO Interface>>
     }
-    class FieldConstants {
-        +getLayout()
-        +getLayoutString()
+    class ServoIO {
+        <<IO Interface>>
+    }
+    class VisionIO {
+        <<IO Interface>>
+    }
+    class FlywheelMechanism {
+        <<Mechanism>>
+        ~T: T extends MotorIO~
+    }
+    class LinearMechanism {
+        <<Mechanism>>
+        ~T: T extends MotorIO~
+    }
+    class Mechanism {
+        <<Mechanism>>
+        ~T: T extends MotorIO~
+    }
+    class RotaryMechanism {
+        <<Mechanism>>
+        ~T: T extends MotorIO, E extends AbsoluteEncoderIO~
     }
     class Drive {
-        <<subsystem>>
-        +periodic()
-        +runVelocity()
-        +runCharacterization()
-        +stop()
-        +stopWithX()
-        +sysIdQuasistatic()
-    }
-    class GyroIO {
-        <<subsystem>>
-    }
-    class GyroIOPigeon2 {
-        <<subsystem>>
-        +updateInputs()
-        +getAccelerationX()
-        +getAccelerationY()
-        +getPitch()
-        +getRoll()
+        <<Subsystem>>
+        -gyroIO: GyroIO
     }
     class Indexer {
-        <<subsystem>>
-        +periodic()
-        +setStateCommand()
-        +holdStateUntilInterrupted()
-        +nearSetpoint()
-        +close()
-        +getSpeed()
+        <<Subsystem>>
+        -io: FlywheelMechanism<?>
     }
     class IntakeLinear {
-        <<subsystem>>
-        +extend()
-        +retract()
-        +cycle()
-        +stop()
-        +periodic()
-        +close()
+        <<Subsystem>>
+        -io: LinearMechanism<?>
     }
     class IntakeRoller {
-        <<subsystem>>
-        +setStateCommand()
-        +holdStateUntilInterrupted()
-        +stop()
-        +nearSetpoint()
-        +getVelocity()
-        +periodic()
+        <<Subsystem>>
+        -io: FlywheelMechanism<?>
     }
     class LEDs {
-        <<subsystem>>
-        +periodic()
-        +runDisabledAnimation()
-        +runAutoAnimation()
-    }
-    class Module {
-        <<subsystem>>
-        +periodic()
-        +runSetpoint()
-        +runCharacterization()
-        +stop()
-        +getAngle()
-        +getPositionMeters()
-    }
-    class ModuleIO {
-        <<subsystem>>
-    }
-    class ModuleIOSim {
-        <<subsystem>>
-        +updateInputs()
-        +setDriveOpenLoop()
-        +setTurnOpenLoop()
-        +setDriveVelocity()
-        +setTurnPosition()
-    }
-    class ModuleIOTalonFX {
-        <<subsystem>>
-        +updateInputs()
-        +setDriveOpenLoop()
-        +setTurnOpenLoop()
-        +setDriveVelocity()
-        +setTurnPosition()
+        <<Subsystem>>
     }
     class ObjectDetector {
-        <<subsystem>>
-        +periodic()
-    }
-    class PhoenixOdometryThread {
-        <<subsystem>>
-        +getInstance()
-        +registerSignal()
-        +registerSignal()
-        +makeTimestampQueue()
-        +run()
+        <<Subsystem>>
     }
     class ShooterSuperstructure {
-        <<subsystem>>
-        +getHoodAngle()
-        +getAverageFlywheelVelocity()
-        +getAverageLinearVelocity()
-        +spinUpShooter()
-        +prepareShot()
-        +setHoodAngle()
+        <<Subsystem>>
+        -hoodIO: RotaryMechanism<?, ?>
+        -leftFlywheelIO: FlywheelMechanism<?>
+        -rightFlywheelIO: FlywheelMechanism<?>
     }
     class Tower {
-        <<subsystem>>
-        +periodic()
-        +setStateCommand()
-        +holdStateUntilInterrupted()
-        +nearSetpoint()
-        +close()
-        +getSpeed()
+        <<Subsystem>>
+        -io: FlywheelMechanism<?>
     }
     class VisionSubsystem {
-        <<subsystem>>
-        +VisionPoseRecord()
-        +preFilter()
-        +postFilter()
-        +periodic()
+        <<Subsystem>>
     }
-    class AlignToObjectBase {
-        <<command>>
-    }
-    class AlignToPose {
-        <<command>>
-    }
-    class DriveCommands {
-        <<command>>
-        +getLinearVelocityFromJoysticks()
-        +joystickDrive()
-        +joystickDriveAtAngle()
-        +feedforwardCharacterization()
-    }
-    class DriveToPose {
-        <<command>>
-    }
-    class OnTheFlyPathCommand {
-        <<command>>
-        +initialize()
-        +execute()
-        +isFinished()
-        +end()
-    }
-    class TeleopAlignToObject {
-        <<command>>
-        +initialize()
-        +execute()
-        +isFinished()
-    }
-    class AutoCommands {
-        <<namespace>>
-        AutoCommands
-        AutoSegments
-        DepotAuto
-        NoneAuto
-        PreloadNeutralAuto
-        StartPosition
-        WheelCharacterizationAuto
-        WheelSlipAuto
-    }
-    Robot --> RobotContainer : uses
-    RobotContainer --> ObjectDetector : contains
-    RobotContainer --> ShooterSuperstructure : contains
-    RobotContainer --> IntakeLinear : contains
-    RobotContainer --> IntakeRoller : contains
-    RobotContainer --> Tower : contains
-    RobotContainer --> LEDs : contains
-    RobotContainer --> Indexer : contains
+    Mechanism ..> MotorIO : uses
+    RotaryMechanism ..> MotorIO : uses
+    RotaryMechanism ..> AbsoluteEncoderIO : uses
+    LinearMechanism ..> MotorIO : uses
+    FlywheelMechanism ..> MotorIO : uses
+    ShooterSuperstructure --> RotaryMechanism : uses
+    ShooterSuperstructure --> FlywheelMechanism : uses
+    ShooterSuperstructure --> FlywheelMechanism : uses
+    IntakeLinear --> LinearMechanism : uses
+    IntakeRoller --> FlywheelMechanism : uses
+    Tower --> FlywheelMechanism : uses
+    Indexer --> FlywheelMechanism : uses
 ```
 
 <!-- MERMAID_DIAGRAM_END -->
