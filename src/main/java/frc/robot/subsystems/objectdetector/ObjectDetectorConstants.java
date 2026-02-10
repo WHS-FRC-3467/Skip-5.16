@@ -23,11 +23,11 @@ import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.wpilibj.Timer;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.lib.io.objectdetection.*;
 import frc.robot.Constants;
 import frc.robot.RobotState;
+import frc.robot.util.RobotSim;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -35,8 +35,8 @@ import lombok.NoArgsConstructor;
  * Configuration constants for the object detection subsystem.
  * 
  * <p>
- * Contains camera calibration data, mounting positions, and simulation targets for ML-based
- * object detection. Each camera has:
+ * Contains camera calibration data, mounting positions, and simulation targets for ML-based object
+ * detection. Each camera has:
  * <ul>
  * <li>Extrinsics: Physical mounting transform (position and orientation on robot)</li>
  * <li>Intrinsics: Camera matrix and distortion coefficients from calibration</li>
@@ -44,8 +44,8 @@ import lombok.NoArgsConstructor;
  * </ul>
  * 
  * <p>
- * Used for detecting game pieces or other objects using PhotonVision's ML pipeline.
- * In simulation, uses configured target positions to test detection algorithms.
+ * Used for detecting game pieces or other objects using PhotonVision's ML pipeline. In simulation,
+ * uses configured target positions to test detection algorithms.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectDetectorConstants {
@@ -128,25 +128,13 @@ public class ObjectDetectorConstants {
     };
     // Dynamic supplier for moving sim targets
     public static Supplier<VisionTargetSim[]> visionTargetSimSupplier =
-        () -> SIM_TARGETS = new VisionTargetSim[] {
-                new VisionTargetSim(new Pose3d(3, 2, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                    new TargetModel(OBJECT0_HEIGHT_METERS)),
-                new VisionTargetSim(new Pose3d(7, 6, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                    new TargetModel(OBJECT0_HEIGHT_METERS)),
-                new VisionTargetSim(new Pose3d(12, 7, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                    new TargetModel(OBJECT0_HEIGHT_METERS)),
-                new VisionTargetSim(
-                    new Pose3d(13, 4, 10 * OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                    new TargetModel(10 * OBJECT0_HEIGHT_METERS)),
-                new VisionTargetSim(
-                    new Pose3d(16, 3.5 * Math.sin(0.25 * Math.PI * Timer.getFPGATimestamp()) + 4.1,
-                        OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                    new TargetModel(OBJECT0_HEIGHT_METERS)),
-        };
+        () -> RobotSim.getInstance().getFuelSim().getFuelPoses().stream().limit(20)
+            .map(pose -> new VisionTargetSim(pose, new TargetModel(OBJECT0_HEIGHT_METERS)))
+            .toArray(VisionTargetSim[]::new);
 
     /**
-     * Creates and configures an ObjectDetector subsystem based on the current robot mode.
-     * Selects the appropriate IO implementation (real hardware, simulation, or replay).
+     * Creates and configures an ObjectDetector subsystem based on the current robot mode. Selects
+     * the appropriate IO implementation (real hardware, simulation, or replay).
      * 
      * @return a configured ObjectDetector instance
      */

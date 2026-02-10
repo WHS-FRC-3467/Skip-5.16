@@ -28,7 +28,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Generates the Object Detection subsystem which consists of some number of Object Detection
@@ -40,7 +42,7 @@ public class ObjectDetector extends SubsystemBase {
     private final ObjectDetection objectDetection;
 
     @Getter
-    private Optional<ObjectDetectionObservation> latestObjectObservation;
+    private ArrayList<Optional<ObjectDetectionObservation>> latestObjectObservation;
     @Getter
     private Optional<ObjectDetectionObservation> latestBigContourObservation;
     @Getter
@@ -49,8 +51,8 @@ public class ObjectDetector extends SubsystemBase {
     private ArrayList<Translation2d> objectPoseBuffer = new ArrayList<>(10);
 
     /**
-     * Constructs a new ObjectDetector subsystem with the specified IO implementation.
-     * Creates an Object Detection device that can periodically update its inputs field.
+     * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
+     * Object Detection device that can periodically update its inputs field.
      * 
      * @param io the IO implementation for object detection (real, sim, or replay)
      */
@@ -82,7 +84,7 @@ public class ObjectDetector extends SubsystemBase {
         return observation;
     }
 
-    // Private helper for generating latest Contour observation.
+    // Private helper for generating latest Contour observation
     private Optional<ObjectDetectionObservation> generateContourObservation(
         ContourSelectionMode selection)
     {
@@ -169,19 +171,25 @@ public class ObjectDetector extends SubsystemBase {
         objectDetection.periodic();
         // Now that inputs are updated, re-populate observations with new data
         if (objectDetection.getTargets().length > 0) {
-            // Generate latest ML Object observation
-            latestObjectObservation = generateObjectObservation(objectDetection.getTargets()[0]);
+            // Generate latest ML Object observations
+            latestObjectObservation =
+                Arrays.stream(objectDetection.getTargets()).map(this::generateObjectObservation)
+                    .collect(Collectors.toCollection(ArrayList::new));
             // Generate latest Contour observations
             latestBigContourObservation = generateContourObservation(ContourSelectionMode.LARGEST);
             latestLowContourObservation = generateContourObservation(ContourSelectionMode.LOWEST);
-        } else {
+        } else
+
+        {
             // Prevent stale data from persisting
-            latestObjectObservation = Optional.empty();
+            latestObjectObservation = new ArrayList<>();
+            latestObjectObservation.add(Optional.empty());
             latestBigContourObservation = Optional.empty();
             latestLowContourObservation = Optional.empty();
         }
+
         // Log Object & Blob observations for sim
-        logObjectObservation(latestObjectObservation);
+        logObjectObservation(latestObjectObservation.get(0));
         logContourObservation(latestBigContourObservation, ContourSelectionMode.LARGEST);
         logContourObservation(latestLowContourObservation, ContourSelectionMode.LOWEST);
     }
