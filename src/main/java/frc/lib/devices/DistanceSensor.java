@@ -84,8 +84,12 @@ public class DistanceSensor {
      */
     public boolean betweenDistance(Distance min, Distance max)
     {
-        return getDistance().isPresent()
-            ? getDistance().get().gt(min) && getDistance().get().lt(max)
-            : false;
+        Optional<Distance> distanceOpt = getDistance();
+        if (distanceOpt.isEmpty()) {
+            return false;
+        }
+
+        Distance distance = distanceOpt.get();
+        return distance.gte(min) && distance.lte(max);
     }
 }

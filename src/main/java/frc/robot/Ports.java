@@ -50,7 +50,7 @@ public class Ports {
     public static final Device.CAN intakeRoller = new CAN(21, "rio");
     public static final Device.CAN intakeLinear = new CAN(22, "rio");
     public static final Device.CAN tower = new CAN(17, "rio");
-    public static final Device.CAN towerLaserCAN1 = new CAN(23, "rio");
-    public static final Device.CAN towerLaserCAN2 = new CAN(24, "rio");
+    public static final Device.CAN towerLaserCAN1 = new CAN(24, "rio");
+    public static final Device.CAN towerLaserCAN2 = new CAN(25, "rio");
     public static final Device.CAN climber = new CAN(30, "rio");
 }

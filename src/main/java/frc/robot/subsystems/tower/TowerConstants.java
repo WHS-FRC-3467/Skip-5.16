@@ -161,7 +161,7 @@ public class TowerConstants {
                 return new DistanceSensorIOSim(LASERCAN1_NAME);
 
             case REPLAY:
-                return new DistanceSensorIO() {};
+                return replayStub(LASERCAN1_NAME);
 
             default:
                 throw new IllegalArgumentException("Unrecognized Robot Mode.");
@@ -183,10 +183,28 @@ public class TowerConstants {
                 return new DistanceSensorIOSim(LASERCAN2_NAME);
 
             case REPLAY:
-                return new DistanceSensorIO() {};
+                return replayStub(LASERCAN2_NAME);
 
             default:
                 throw new IllegalArgumentException("Unrecognized Robot Mode.");
         }
+    }
+
+    private static DistanceSensorIO replayStub(String name)
+    {
+        return new DistanceSensorIO() {
+            @Override
+            public String getName()
+            {
+                return name;
+            }
+
+            @Override
+            public void updateInputs(DistanceSensorInputs inputs)
+            {
+                inputs.connected = false;
+                inputs.distance = null;
+            }
+        };
     }
 }
