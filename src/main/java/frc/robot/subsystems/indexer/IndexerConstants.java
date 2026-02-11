@@ -18,6 +18,7 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
+import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
@@ -84,8 +85,8 @@ public class IndexerConstants {
     }
 
     /**
-     * Factory method to create an Indexer subsystem instance.
-     * Creates the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
+     * Factory method to create an Indexer subsystem instance. Creates the appropriate mechanism
+     * based on the current robot mode (REAL, SIM, or REPLAY).
      * 
      * @return A fully configured Indexer subsystem
      */
@@ -95,11 +96,14 @@ public class IndexerConstants {
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer));
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer,
+                        new TalonFXFollower(Ports.indexerCentering, true)));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer), DCMOTOR, MOI,
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer,
+                        new TalonFXFollower(Ports.indexerCentering, true)),
+                    DCMOTOR, MOI,
                     TOLERANCE);
                 break;
             case REPLAY:
