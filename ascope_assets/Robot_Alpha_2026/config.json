@@ -15,7 +15,100 @@
         0,
         0
     ],
-    "cameras": [],
+    "cameras": [
+        {
+            "name": "front",
+            "fov": 55,
+            "resolution": [
+                1600,
+                1304
+            ],
+            "position": [
+                -0.1905,
+                0.3048,
+                0.55245
+            ],
+            "rotations": [
+                {
+                    "axis": "y",
+                    "degrees": -44.695911
+                },
+                {
+                    "axis": "z",
+                    "degrees": -8.965230
+                }
+            ]
+        },
+        {
+            "name": "left",
+            "fov": 55,
+            "resolution": [
+                1600,
+                1304
+            ],
+            "position": [
+                -0.2032,
+                0.29845,
+                0.55245
+            ],
+            "rotations": [
+                {
+                    "axis": "y",
+                    "degrees": -18.173
+                },
+                {
+                    "axis": "z",
+                    "degrees": 90
+                }
+            ]
+        },
+        {
+            "name": "right",
+            "fov": 55,
+            "resolution": [
+                1600,
+                1304
+            ],
+            "position": [
+                -0.2032,
+                -0.29845,
+                0.55245
+            ],
+            "rotations": [
+                {
+                    "axis": "y",
+                    "degrees": -18.173
+                },
+                {
+                    "axis": "z",
+                    "degrees": -90
+                }
+            ]
+        },
+        {
+            "name": "back",
+            "fov": 55,
+            "resolution": [
+                1600,
+                1304
+            ],
+            "position": [
+                -0.2413,
+                -0.3048,
+                0.4318
+            ],
+            "rotations": [
+                {
+                    "axis": "y",
+                    "degrees": -18.173
+                },
+                {
+                    "axis": "z",
+                    "degrees": -193.422996
+                }
+            ]
+        }
+    ],
     "components": [
         {
             "zeroedRotations": [
