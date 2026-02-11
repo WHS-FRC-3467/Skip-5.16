@@ -56,7 +56,7 @@ public class RobotState {
     @AutoLogOutput(key = "Drive/DrivetrainAngled")
     private boolean drivetrainAngled = false;
 
-    public Trigger facingTarget = new Trigger(() -> Math.abs(getAngleToTarget()
+    public final Trigger facingTarget = new Trigger(() -> Math.abs(getAngleToTarget()
         .minus(getEstimatedPose().getRotation())
         .getDegrees()) < SHOOT_TOLERANCE_DEGREES.get());
 
