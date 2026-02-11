@@ -15,17 +15,29 @@
 
 package frc.robot.subsystems.tower;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Millimeters;
 import static edu.wpi.first.units.Units.Second;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
+import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
+import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import frc.lib.io.distancesensor.DistanceSensorIO;
+import frc.lib.io.distancesensor.DistanceSensorIOLaserCAN;
+import frc.lib.io.distancesensor.DistanceSensorIOSim;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
@@ -57,9 +69,22 @@ public class TowerConstants {
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0)
         .withV(10.0);
 
+    // LaserCAN shared configs
+    private final static RangingMode LASERCAN_RANGING_MODE = RangingMode.SHORT;
+    private final static RegionOfInterest LASERCAN_ROI = new RegionOfInterest(8, 8, 4, 4);
+    private final static TimingBudget TIMING_BUDGET = TimingBudget.TIMING_BUDGET_20MS;
+    public final static Distance MINIMUM_TRIP_DISTANCE = Millimeters.of(0.0);
+    public final static Distance MAXIMUM_TRIP_DISTANCE = Millimeters.of(10);
+
+    // LaserCAN #1
+    public final static String LASERCAN1_NAME = NAME + "/LaserCAN1";
+
+    // LaserCAN #2
+    public final static String LASERCAN2_NAME = NAME + "/LaserCAN2";
+
     /**
-     * Creates a TalonFX motor controller configuration for the tower mechanism.
-     * Configures current limits, voltage limits, neutral mode, gearing ratios, and PID gains.
+     * Creates a TalonFX motor controller configuration for the tower mechanism. Configures current
+     * limits, voltage limits, neutral mode, gearing ratios, and PID gains.
      * 
      * @return configured TalonFXConfiguration for the tower motor
      */
@@ -95,8 +120,8 @@ public class TowerConstants {
     }
 
     /**
-     * Creates and configures a Tower subsystem based on the current robot mode.
-     * Selects the appropriate flywheel mechanism implementation (real, sim, or replay).
+     * Creates and configures a Tower subsystem based on the current robot mode. Selects the
+     * appropriate flywheel mechanism implementation (real, sim, or replay).
      * 
      * @return configured Tower instance
      */
@@ -121,5 +146,51 @@ public class TowerConstants {
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return new Tower(mechanism);
+    }
+
+    // Return an IO implementation of distance sensor IO based on current robot state (lower &
+    // upper)
+    public static DistanceSensorIO laserCAN1IO()
+    {
+        switch (Constants.currentMode) {
+            case REAL:
+                return new DistanceSensorIOLaserCAN(
+                    Ports.towerLaserCAN1,
+                    LASERCAN1_NAME,
+                    LASERCAN_RANGING_MODE,
+                    LASERCAN_ROI,
+                    TIMING_BUDGET);
+
+            case SIM:
+                return new DistanceSensorIOSim(LASERCAN1_NAME);
+
+            case REPLAY:
+                return new DistanceSensorIO() {};
+
+            default:
+                throw new IllegalArgumentException("Unrecognized Robot Mode.");
+        }
+    }
+
+    public static DistanceSensorIO laserCAN2IO()
+    {
+        switch (Constants.currentMode) {
+            case REAL:
+                return new DistanceSensorIOLaserCAN(
+                    Ports.towerLaserCAN2,
+                    LASERCAN2_NAME,
+                    LASERCAN_RANGING_MODE,
+                    LASERCAN_ROI,
+                    TIMING_BUDGET);
+
+            case SIM:
+                return new DistanceSensorIOSim(LASERCAN2_NAME);
+
+            case REPLAY:
+                return new DistanceSensorIO() {};
+
+            default:
+                throw new IllegalArgumentException("Unrecognized Robot Mode.");
+        }
     }
 }

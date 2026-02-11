@@ -75,4 +75,17 @@ public class DistanceSensor {
         return inputs.ambientSignal;
     }
 
+    /**
+     * Whether the current measured reading is between a specified min & max distance
+     * 
+     * @param min minimum distance to compare to
+     * @param max maximum distance to compare to
+     * @return boolean specifying whether current distance reading is contained [min, max]
+     */
+    public boolean betweenDistance(Distance min, Distance max)
+    {
+        return getDistance().isPresent()
+            ? getDistance().get().gt(min) && getDistance().get().lt(max)
+            : false;
+    }
 }
