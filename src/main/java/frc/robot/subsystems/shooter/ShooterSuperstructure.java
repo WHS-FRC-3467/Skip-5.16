@@ -24,6 +24,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -101,7 +102,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final RotaryMechanism<?, ?> hoodIO;
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
-
     public final LoggedTrigger readyToShoot =
         new LoggedTrigger(this.getName() + "/readyToShoot", () -> {
             double dist = robotState
@@ -231,11 +231,29 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Spins the flywheel and actuates the hood to the proper values given field-relative robot
-     * pose. Perpetual command -- never spins down. Therefore, to end, this should be interrupted by
-     * a parent command group or timed-out. Primarily for use in autos.
+     * Statically spins the flywheel and actuates the hood to the proper values for a HUB SHOT given
+     * a provided distance. ONLY valid for HUB shots. Perpetual command -- never spins down.
+     * Therefore, to end, this should be interrupted by a parent command group or timed-out.
+     * Primarily for use in autos.
      * 
-     * @return Shooter spin-up command.
+     * @param distance the distance from the desired robot shot position to the HUB.
+     * @return Static non-updating HUB only shooter spin-up command.
+     */
+    public Command spinUpShooterToHubDistance(Distance distance)
+    {
+        return Commands.run(() -> {
+            spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))));
+            setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
+        }, this).withName("Spin-Up Shooter to Distance");
+    }
+
+    /**
+     * Dynamically spins the flywheel and actuates the hood to the proper values for ANY target shot
+     * given current field-relative robot pose. Valid for ANY target. Perpetual command -- never
+     * spins down. Therefore, to end, this should be interrupted by a parent command group or
+     * timed-out.
+     * 
+     * @return Dynamically-updating ALL TARGET shooter spin-up command.
      */
     public Command spinUpShooter()
     {
@@ -263,7 +281,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 Commands.run(() -> setHoodPosition(getDesiredHoodAngle())),
                 // Require this subsystem
                 Commands.idle(this),
-
                 Commands.repeatingSequence(
                     Commands.waitUntil(readyToShoot),
                     whileAtPosition.until(readyToShoot.negate()))),

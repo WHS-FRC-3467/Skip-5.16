@@ -20,8 +20,8 @@ import frc.lib.util.Device;
 import frc.lib.util.Device.CAN;
 
 /**
- * Hardware port definitions for all CAN devices and other I/O ports on the robot.
- * Contains CAN IDs for motor controllers, sensors, and other devices connected to the robot.
+ * Hardware port definitions for all CAN devices and other I/O ports on the robot. Contains CAN IDs
+ * for motor controllers, sensors, and other devices connected to the robot.
  */
 public class Ports {
     /*
@@ -44,6 +44,8 @@ public class Ports {
     public static final Device.CAN rightFlywheelFollower = new CAN(5, "rio");
 
     public static final Device.CAN indexer = new CAN(18, "rio");
+    public static final Device.CAN indexerCentering = new CAN(23, "rio");
+
     public static final Device.CAN hood = new CAN(20, "rio");
     public static final Device.CAN indexerLaserCAN = new CAN(19, "rio");
     public static final Device.CAN intakeRoller = new CAN(21, "rio");

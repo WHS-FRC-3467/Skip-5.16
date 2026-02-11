@@ -4,7 +4,7 @@
 
 package frc.robot.commands.autos;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Meters;
 import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,8 +14,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.lib.util.FieldUtil;
-import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
+import frc.robot.RobotState.Target;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.drive.Drive;
@@ -29,9 +29,6 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
  * together into larger command units (AutoSegments). Command logic layer.
  */
 public class AutoCommands {
-    private static final LoggedTunableNumber SHOOT_TOLERANCE_DEGREES =
-        new LoggedTunableNumber("Auto/ShootToleranceDegrees", 6.7);
-
     /**
      * Resets the robot's odometry to the starting pose of the specified path. Handles alliance
      * flipping if necessary. ONLY RUNS IN SIMULATION.
@@ -42,8 +39,8 @@ public class AutoCommands {
      */
     public static Command resetSimOdom(Drive drive, PathPlannerPath path)
     {
-        final RobotState robotState = RobotState.getInstance();
         if (RobotBase.isSimulation()) {
+            final RobotState robotState = RobotState.getInstance();
             return drive.runOnce(
                 () -> {
                     Pose2d pose =
@@ -63,10 +60,10 @@ public class AutoCommands {
 
     /**
      * Creates a command sequence that attempts to shoot fuel from the robot for duration. Spins up
-     * the shooter, only pulls fuel through the feeder when ready, then stops indexer, tower, &
-     * shooter after duration. If shooting is disrupted during duration because shooter readiness
-     * drops, attempt a flywheel/hood adjustment and, if successful, re-commence shooting within the
-     * remaining window. Unconditionally stops shot attempts after duration.
+     * the shooter, only pulls fuel through the feeder when ready, then stops indexer & tower after
+     * duration. If shooting is disrupted during duration because shooter readiness drops, attempt a
+     * flywheel/hood adjustment and, if successful, re-commence shooting within the remaining
+     * window. Unconditionally stops shot attempts after duration.
      *
      * @param indexer the indexer subsystem
      * @param tower the tower subsystem
@@ -74,7 +71,8 @@ public class AutoCommands {
      * @param canShoot secondary check on whether the robot is properly aligned to the target,
      *        independent of whether the the shooter is at the proper state
      * @param duration the approximate duration in seconds to run the shooting sequence
-     * @return a command that shoots fuel and then stops the indexer
+     * @return a command that shoots fuel and then stops the indexer / tower after the given
+     *         duration
      */
     public static Command shootFuel(Indexer indexer, Tower tower,
         ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration)
@@ -97,8 +95,8 @@ public class AutoCommands {
                         .until(shooter.readyToShoot.and(canShoot).negate()))))
             .finallyDo(() -> {
                 // Spin shooter down, non-blocking
-                CommandScheduler.getInstance()
-                    .schedule(shooter.setFlywheelSpeed(RadiansPerSecond.zero()));
+                // CommandScheduler.getInstance()
+                // .schedule(shooter.setFlywheelSpeed(RadiansPerSecond.zero()));
             });
     }
 
@@ -122,9 +120,7 @@ public class AutoCommands {
         final var robotState = RobotState.getInstance();
         return Commands.deadline(
             shootFuel(indexer, tower, shooter,
-                () -> Math.abs(robotState.getAngleToTarget()
-                    .minus(robotState.getEstimatedPose().getRotation())
-                    .getDegrees()) < SHOOT_TOLERANCE_DEGREES.get(),
+                robotState.facingTarget,
                 duration),
             DriveCommands.joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0,
                 robotState::getAngleToTarget));
@@ -207,5 +203,25 @@ public class AutoCommands {
             default:
                 return Commands.none();
         }
+    }
+
+    /**
+     * Prepares the shooter for shooting at THE HUB at the end of the provided path. Only valid to
+     * prepare shots for THE HUB. Perpetual command -- never spins down. Therefore, to end, this
+     * should be interrupted by a parent command group or timed-out. Primarily for use in autos.
+     * 
+     * @param path the path to drive, the shooter will prepare to shoot at the end of this path.
+     * @param shooter the shooter subsystem
+     * @return a command that prepares the shooter to shoot THE HUB from the end of the provided
+     *         path
+     */
+    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter)
+    {
+        // All paths blue canonical, so flip end translation if red alliance
+        return shooter.spinUpShooterToHubDistance(
+            Meters.of(
+                FieldUtil
+                    .apply(path.getAllPathPoints().get(path.getAllPathPoints().size() - 1).position)
+                    .getDistance(Target.HUB.getAllianceTranslation().toTranslation2d())));
     }
 }

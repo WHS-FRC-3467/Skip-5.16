@@ -49,6 +49,9 @@ public class PreloadAuto extends AutoRoutine {
         // Load the named paths
         this.loadAllPaths(expectedPaths);
 
+        // Mirror necessary paths when starting on  RIGHT side so the dashboard shows correct poses
+        this.setMirrorFlags(List.of(false), start);
+
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null))
             loadCommands(
