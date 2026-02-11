@@ -15,7 +15,6 @@
 
 package frc.robot.subsystems.tower;
 
-import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Millimeters;
 import static edu.wpi.first.units.Units.Second;
@@ -26,9 +25,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
 import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
 import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -74,7 +70,7 @@ public class TowerConstants {
     private final static RegionOfInterest LASERCAN_ROI = new RegionOfInterest(8, 8, 4, 4);
     private final static TimingBudget TIMING_BUDGET = TimingBudget.TIMING_BUDGET_20MS;
     public final static Distance MINIMUM_TRIP_DISTANCE = Millimeters.of(0.0);
-    public final static Distance MAXIMUM_TRIP_DISTANCE = Millimeters.of(10);
+    public final static Distance MAXIMUM_TRIP_DISTANCE = Millimeters.of(15);
 
     // LaserCAN #1
     public final static String LASERCAN1_NAME = NAME + "/LaserCAN1";

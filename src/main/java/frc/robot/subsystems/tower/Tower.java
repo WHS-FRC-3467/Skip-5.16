@@ -50,17 +50,17 @@ public class Tower extends SubsystemBase {
     private final FlywheelMechanism<?> io;
     private State state = State.STOP;
 
-    private final static DistanceSensor laserCAN1 =
+    private final DistanceSensor laserCAN1 =
         new DistanceSensor(TowerConstants.laserCAN1IO());
-    private final static DistanceSensor laserCAN2 =
+    private final DistanceSensor laserCAN2 =
         new DistanceSensor(TowerConstants.laserCAN2IO());
 
     public final LoggedTrigger laserCAN1Tripped =
-        new LoggedTrigger(this.getName() + "/" + TowerConstants.LASERCAN1_NAME,
+        new LoggedTrigger(TowerConstants.LASERCAN1_NAME,
             () -> laserCAN1.betweenDistance(TowerConstants.MINIMUM_TRIP_DISTANCE,
                 TowerConstants.MAXIMUM_TRIP_DISTANCE));
     public final LoggedTrigger laserCAN2Tripped =
-        new LoggedTrigger(this.getName() + "/" + TowerConstants.LASERCAN2_NAME,
+        new LoggedTrigger(TowerConstants.LASERCAN2_NAME,
             () -> laserCAN2.betweenDistance(TowerConstants.MINIMUM_TRIP_DISTANCE,
                 TowerConstants.MAXIMUM_TRIP_DISTANCE));
 
