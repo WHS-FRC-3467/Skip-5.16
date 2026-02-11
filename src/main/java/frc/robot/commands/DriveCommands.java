@@ -226,6 +226,24 @@ public class DriveCommands {
     }
 
     /**
+     * Stationary control command that prohibits motion while it aims towards the target, holding
+     * the wheels in an x pattern when it is at its position
+     * 
+     * @param drive the drive subsystem
+     * @return the static aim towards target command
+     */
+    public static Command staticAimTowardsTarget(Drive drive)
+    {
+        RobotState robotState = RobotState.getInstance();
+        return Commands.repeatingSequence(
+            joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget)
+                .until(robotState.facingTarget),
+            drive.runOnce(drive::stopWithX)
+                .andThen(drive.idle())
+                .onlyWhile(robotState.facingTarget));
+    }
+
+    /**
      * Measures the velocity feedforward constants for the drive motors.
      * 
      * <p>

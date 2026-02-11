@@ -193,10 +193,7 @@ public class RobotContainer {
         controller.rightTrigger().whileTrue(
             Commands.parallel(
                 // Aim towards target
-                DriveCommands.joystickDriveFacingTarget(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX()),
+                DriveCommands.staticAimTowardsTarget(drive),
                 // Prepare shooter superstructure
                 shooter.prepareShot(
                     // While shooter superstructure is prepared,
@@ -206,10 +203,7 @@ public class RobotContainer {
                         indexer.holdStateUntilInterrupted(Indexer.State.PULL),
                         tower.holdStateUntilInterrupted(Tower.State.SHOOT),
                         intakeLinear.cycle())
-                        .onlyWhile(
-                            () -> Math.abs(robotState.getAngleToTarget()
-                                .minus(robotState.getEstimatedPose().getRotation())
-                                .getDegrees()) < 1.0)
+                        .onlyWhile(robotState.facingTarget)
                         .repeatedly())))
             .onFalse(Commands.parallel(
                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),

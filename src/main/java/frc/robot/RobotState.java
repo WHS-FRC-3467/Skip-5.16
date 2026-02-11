@@ -26,10 +26,12 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.FieldUtil;
+import frc.lib.util.LoggedTunableNumber;
 import frc.robot.subsystems.drive.Drive;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -39,6 +41,9 @@ import lombok.Setter;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RobotState {
+
+    private static final LoggedTunableNumber SHOOT_TOLERANCE_DEGREES =
+        new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 1.0);
 
     private static final double LINEAR_ODOMETRY_STD_DEV = 0.01;
     private static final double ANGULAR_ODOMETRY_STD_DEV = 0.01;
@@ -50,6 +55,10 @@ public class RobotState {
     @Getter
     @AutoLogOutput(key = "Drive/DrivetrainAngled")
     private boolean drivetrainAngled = false;
+
+    public Trigger facingTarget = new Trigger(() -> Math.abs(getAngleToTarget()
+        .minus(getEstimatedPose().getRotation())
+        .getDegrees()) < SHOOT_TOLERANCE_DEGREES.get());
 
     // -------- POSE ESTIMATION --------
 
