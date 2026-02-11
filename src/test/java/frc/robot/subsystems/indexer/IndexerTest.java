@@ -64,7 +64,6 @@ public class IndexerTest {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
             assertTrue(indexer.nearSetpoint());
         } catch (Exception e) {
-            System.out.println("Velocity: " + indexer.getSpeed());
             fail("Failed to run Indexer to pull: " + e.getMessage());
         }
     }
