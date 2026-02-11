@@ -8,14 +8,12 @@ import static edu.wpi.first.units.Units.Meters;
 import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.lib.util.FieldUtil;
-import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
 import frc.robot.commands.DriveCommands;
@@ -31,9 +29,6 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
  * together into larger command units (AutoSegments). Command logic layer.
  */
 public class AutoCommands {
-    private static final LoggedTunableNumber SHOOT_TOLERANCE_DEGREES =
-        new LoggedTunableNumber("Auto/ShootToleranceDegrees", 6.7);
-
     /**
      * Resets the robot's odometry to the starting pose of the specified path. Handles alliance
      * flipping if necessary. ONLY RUNS IN SIMULATION.
@@ -125,9 +120,7 @@ public class AutoCommands {
         final var robotState = RobotState.getInstance();
         return Commands.deadline(
             shootFuel(indexer, tower, shooter,
-                () -> Math.abs(robotState.getAngleToTarget()
-                    .minus(robotState.getEstimatedPose().getRotation())
-                    .getDegrees()) < SHOOT_TOLERANCE_DEGREES.get(),
+                robotState.facingTarget,
                 duration),
             DriveCommands.joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0,
                 robotState::getAngleToTarget));
