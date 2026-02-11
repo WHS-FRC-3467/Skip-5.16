@@ -226,8 +226,8 @@ public class DriveCommands {
     }
 
     /**
-     * Stationary control command that prohibits motion while it aims towards the target, holding
-     * the wheels in an x pattern when it is at its position
+     * Stationary control command that prohibits motion while it aims towards the target, then
+     * holds the wheels in an X pattern once the robot is aligned with the target heading.
      * 
      * @param drive the drive subsystem
      * @return the static aim towards target command
