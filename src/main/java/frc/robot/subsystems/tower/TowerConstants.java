@@ -31,6 +31,7 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import frc.lib.devices.DistanceSensor;
 import frc.lib.io.distancesensor.DistanceSensorIO;
 import frc.lib.io.distancesensor.DistanceSensorIOLaserCAN;
 import frc.lib.io.distancesensor.DistanceSensorIOSim;
@@ -146,65 +147,39 @@ public class TowerConstants {
 
     // Return an IO implementation of distance sensor IO based on current robot state (lower &
     // upper)
-    public static DistanceSensorIO laserCAN1IO()
+    public static DistanceSensor getLaserCAN1()
     {
-        switch (Constants.currentMode) {
-            case REAL:
-                return new DistanceSensorIOLaserCAN(
-                    Ports.towerLaserCAN1,
-                    LASERCAN1_NAME,
-                    LASERCAN_RANGING_MODE,
-                    LASERCAN_ROI,
-                    TIMING_BUDGET);
+        return new DistanceSensor(LASERCAN1_NAME, switch (Constants.currentMode) {
+            case REAL -> new DistanceSensorIOLaserCAN(
+                Ports.towerLaserCAN1,
+                LASERCAN1_NAME,
+                LASERCAN_RANGING_MODE,
+                LASERCAN_ROI,
+                TIMING_BUDGET);
 
-            case SIM:
-                return new DistanceSensorIOSim(LASERCAN1_NAME);
+            case SIM -> new DistanceSensorIOSim(LASERCAN1_NAME);
 
-            case REPLAY:
-                return replayStub(LASERCAN1_NAME);
+            case REPLAY -> new DistanceSensorIO() {};
 
-            default:
-                throw new IllegalArgumentException("Unrecognized Robot Mode.");
-        }
+            default -> throw new IllegalArgumentException("Unrecognized Robot Mode.");
+        });
     }
 
-    public static DistanceSensorIO laserCAN2IO()
+    public static DistanceSensor getLaserCAN2()
     {
-        switch (Constants.currentMode) {
-            case REAL:
-                return new DistanceSensorIOLaserCAN(
-                    Ports.towerLaserCAN2,
-                    LASERCAN2_NAME,
-                    LASERCAN_RANGING_MODE,
-                    LASERCAN_ROI,
-                    TIMING_BUDGET);
+        return new DistanceSensor(LASERCAN2_NAME, switch (Constants.currentMode) {
+            case REAL -> new DistanceSensorIOLaserCAN(
+                Ports.towerLaserCAN2,
+                LASERCAN2_NAME,
+                LASERCAN_RANGING_MODE,
+                LASERCAN_ROI,
+                TIMING_BUDGET);
 
-            case SIM:
-                return new DistanceSensorIOSim(LASERCAN2_NAME);
+            case SIM -> new DistanceSensorIOSim(LASERCAN2_NAME);
 
-            case REPLAY:
-                return replayStub(LASERCAN2_NAME);
+            case REPLAY -> new DistanceSensorIO() {};
 
-            default:
-                throw new IllegalArgumentException("Unrecognized Robot Mode.");
-        }
-    }
-
-    private static DistanceSensorIO replayStub(String name)
-    {
-        return new DistanceSensorIO() {
-            @Override
-            public String getName()
-            {
-                return name;
-            }
-
-            @Override
-            public void updateInputs(DistanceSensorInputs inputs)
-            {
-                inputs.connected = false;
-                inputs.distance = null;
-            }
-        };
+            default -> throw new IllegalArgumentException("Unrecognized Robot Mode.");
+        });
     }
 }
