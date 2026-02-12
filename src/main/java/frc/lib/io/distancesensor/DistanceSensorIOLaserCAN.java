@@ -35,7 +35,6 @@ import frc.lib.util.LaserCANConfigurator;
 public class DistanceSensorIOLaserCAN implements DistanceSensorIO {
     private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOLaserCAN.class.getName());
 
-    private final String name;
     private final LaserCANConfigurator laserCAN;
 
     private final CANUpdateThread updateThread = new CANUpdateThread();
@@ -56,8 +55,6 @@ public class DistanceSensorIOLaserCAN implements DistanceSensorIO {
      */
     public DistanceSensorIOLaserCAN(Device.CAN id, String name, RangingMode rangingMode,
         RegionOfInterest regionOfInterest, TimingBudget timingBudget) {
-        this.name = name;
-
         laserCANOnWrongBusAlert =
             new Alert("LaserCAN " + name + " must be wired to the RIO's CAN bus",
                 AlertType.kError);
