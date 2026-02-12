@@ -52,11 +52,12 @@ public class ObjectDetector extends SubsystemBase {
      * Constructs a new ObjectDetector subsystem with the specified IO implementation.
      * Creates an Object Detection device that can periodically update its inputs field.
      * 
+     * @param cameraName the name of the camera for logging purposes
      * @param io the IO implementation for object detection (real, sim, or replay)
      */
-    public ObjectDetector(ObjectDetectionIO io)
+    public ObjectDetector(String cameraName, ObjectDetectionIO io)
     {
-        objectDetection = new ObjectDetection(io);
+        objectDetection = new ObjectDetection(cameraName, io);
     }
 
     // Private helper for generating latest ML Object Observation and updating internal buffer of
