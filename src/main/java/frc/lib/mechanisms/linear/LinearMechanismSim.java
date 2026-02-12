@@ -46,8 +46,8 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
      * @param io The motor IO simulation
      * @param motor The DC motor characteristics
      * @param mass The mass of the carriage
-     * @param constraints The mechanism characteristics including orientation
      * @param useGravity Whether to simulate gravity effects (applies when orientation is vertical)
+     * @param constraints The mechanism characteristics including orientation
      */
     public LinearMechanismSim(
         String name,

@@ -25,8 +25,7 @@ public class BeamBreakIODIO implements BeamBreakIO {
 
     /**
      * Constructs a {@link BeamBreakIODIO} object with the specified DIO ID
-     *
-     * @param id The CANDevice identifying the bus and device ID for this sensor.
+
      */
     public BeamBreakIODIO(Device.DIO id)
     {
