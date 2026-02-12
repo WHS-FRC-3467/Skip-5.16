@@ -31,6 +31,7 @@ import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.MechanismConstant;
 import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.mechanisms.linear.LinearMechanism.LinearMechCharacteristics;
 import frc.lib.mechanisms.linear.LinearMechanismReal;
@@ -47,6 +48,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class IntakeLinearConstants {
 
+    private static MechanismConstant mech = new MechanismConstant(1.0);
     public static final String NAME = "Intake Linear";
 
     public static final double GEARING = (2.0 / 1.0);
@@ -125,15 +127,15 @@ public class IntakeLinearConstants {
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new LinearMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeLinear), CHARACTERISTICS);
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeLinear), CHARACTERISTICS, mech);
                 break;
             case SIM:
                 mechanism = new LinearMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeLinear),
-                    DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
+                    DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false, mech);
                 break;
             case REPLAY:
-                mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}) {};
+                mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}, mech) {};
                 break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");

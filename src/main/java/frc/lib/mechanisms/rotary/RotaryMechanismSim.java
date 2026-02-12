@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.lib.io.absoluteencoder.AbsoluteEncoderIOSim;
 import frc.lib.io.motor.MotorIOSim;
+import frc.lib.mechanisms.MechanismConstant;
 
 /**
  * A simulated implementation of the RotaryMechanism base class that uses SingleJointedArmSim to
@@ -34,9 +35,9 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
     public RotaryMechanismSim(String name, MotorIOSim io, DCMotor dcMotor,
         MomentOfInertia momentOfInertia, Boolean useGravity,
         RotaryMechCharacteristics characteristics,
-        Optional<AbsoluteEncoderIOSim> absoluteEncoder)
+        Optional<AbsoluteEncoderIOSim> absoluteEncoder, MechanismConstant mech)
     {
-        super(name, characteristics, io, absoluteEncoder);
+        super(name, characteristics, io, absoluteEncoder, mech);
 
         if (momentOfInertia.isEquivalent(KilogramSquareMeters.zero()))
             throw new IllegalArgumentException(

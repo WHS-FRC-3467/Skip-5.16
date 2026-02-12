@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
+import frc.lib.mechanisms.MechanismSubsystem;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,7 @@ import lombok.RequiredArgsConstructor;
  * The indexer can pull game pieces in, expel them, or stop.
  * Uses a flywheel mechanism for velocity control.
  */
-public class Indexer extends SubsystemBase {
-    private final FlywheelMechanism<?> io;
-
+public class Indexer extends MechanismSubsystem {
     private State state = State.STOP;
 
     @RequiredArgsConstructor
@@ -47,14 +46,18 @@ public class Indexer extends SubsystemBase {
      */
     public Indexer(FlywheelMechanism<?> io)
     {
-        this.io = io;
+       super(io);
     }
+    
 
     @Override
     public void periodic()
     {
         Logger.recordOutput("Indexer/State", this.state.name());
         io.periodic();
+        
+        
+        
     }
 
     private void setState(State state)

@@ -49,8 +49,11 @@ import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.FeetPerSecond;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -114,7 +117,7 @@ public class RobotContainer {
 
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
-
+        SmartDashboard.putNumber("io", indexer.getPosAlso().in(Radians));
         // Default - No Auto
         autoChooser.addDefaultOption("None", new NoneAuto());
 
@@ -161,7 +164,7 @@ public class RobotContainer {
                 .setPoses(auto.getAllPathPoses().stream()
                     .map(p -> FieldUtil.apply(p)).toArray(Pose2d[]::new));
         });
-
+        
         autoChooser.addOption("Drive Wheel Radius Characterization",
             new WheelCharacterizationAuto(drive));
 

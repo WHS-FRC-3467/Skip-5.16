@@ -17,6 +17,7 @@ package frc.lib.mechanisms.linear;
 
 import edu.wpi.first.units.measure.Angle;
 import frc.lib.io.motor.MotorIO;
+import frc.lib.mechanisms.MechanismConstant;
 
 /**
  * A real implementation of the LinearMechanism class that interacts with a physical motor
@@ -24,9 +25,9 @@ import frc.lib.io.motor.MotorIO;
  */
 public class LinearMechanismReal extends LinearMechanism<MotorIO> {
     public LinearMechanismReal(String name, MotorIO io,
-        LinearMechCharacteristics characteristics)
+        LinearMechCharacteristics characteristics, MechanismConstant mech)
     {
-        super(name, characteristics, io);
+        super(name, characteristics, io, mech);
     }
 
     // TODO: Verify operation works correctly on real TalonFX

@@ -12,19 +12,11 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
+package frc.lib.mechanisms;
 
-package frc.lib.mechanisms.flywheel;
-
-import frc.lib.io.motor.MotorIO;
-import frc.lib.mechanisms.MechanismConstant;
-
-/**
- * A real implementation of the FlywheelMechanism abstract class that interacts with a physical
- * motor through a MotorIO interface.
- */
-public class FlywheelMechanismReal extends FlywheelMechanism<MotorIO> {
-    public FlywheelMechanismReal(String name, MotorIO io, MechanismConstant mech)
-    {
-        super(name, io, mech);
+public class MechanismConstant {
+    public final double RADIUS;
+    public MechanismConstant(double radius) {
+        this.RADIUS = radius;
     }
 }

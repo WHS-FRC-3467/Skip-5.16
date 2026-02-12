@@ -7,6 +7,7 @@ package frc.lib.mechanisms.rotary;
 import java.util.Optional;
 import frc.lib.io.absoluteencoder.AbsoluteEncoderIO;
 import frc.lib.io.motor.MotorIO;
+import frc.lib.mechanisms.MechanismConstant;
 
 /**
  * A real implementation of the generic RotaryMechanism base class that interacts with a
@@ -14,8 +15,8 @@ import frc.lib.io.motor.MotorIO;
  */
 public class RotaryMechanismReal extends RotaryMechanism<MotorIO, AbsoluteEncoderIO> {
     public RotaryMechanismReal(String name, MotorIO io, RotaryMechCharacteristics characteristics,
-        Optional<AbsoluteEncoderIO> absoluteEncoder)
+        Optional<AbsoluteEncoderIO> absoluteEncoder, MechanismConstant mech)
     {
-        super(name, characteristics, io, absoluteEncoder);
+        super(name, characteristics, io, absoluteEncoder, mech);
     }
 }

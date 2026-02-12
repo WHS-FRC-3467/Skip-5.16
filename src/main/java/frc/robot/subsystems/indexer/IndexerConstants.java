@@ -20,6 +20,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.MechanismConstant;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
@@ -31,8 +32,9 @@ import frc.robot.Robot;
 /** Add your docs here. */
 public class IndexerConstants {
 
+    public static MechanismConstant mech = new MechanismConstant(1.0);
     public static String NAME = "Indexer";
-
+    
     public static final AngularVelocity MAX_VELOCITY =
         Units.RadiansPerSecond.of(2 * Math.PI);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
@@ -97,17 +99,17 @@ public class IndexerConstants {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
                     new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer,
-                        new TalonFXFollower(Ports.indexerCentering, true)));
+                        new TalonFXFollower(Ports.indexerCentering, true)), mech);
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer,
                         new TalonFXFollower(Ports.indexerCentering, true)),
                     DCMOTOR, MOI,
-                    TOLERANCE);
+                    TOLERANCE, mech);
                 break;
             case REPLAY:
-                mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}) {};
+                mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}, new MechanismConstant(1.0)) {};
                 break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");

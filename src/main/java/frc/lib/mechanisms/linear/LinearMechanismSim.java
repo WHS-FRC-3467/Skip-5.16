@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.lib.io.motor.MotorIOSim;
+import frc.lib.mechanisms.MechanismConstant;
 
 /**
  * A simulated implementation of the LinearMechanism interface that uses ElevatorSim to simulate the
@@ -48,11 +49,12 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
      * @param mass The mass of the carriage
      * @param constraints The mechanism characteristics including orientation
      * @param useGravity Whether to simulate gravity effects (applies when orientation is vertical)
+     * @param mech 
      */
     public LinearMechanismSim(String name, MotorIOSim io, DCMotor dcMotor, Mass mass,
-        LinearMechCharacteristics constraints, Boolean useGravity)
+        LinearMechCharacteristics constraints, Boolean useGravity, MechanismConstant mech)
     {
-        super(name, constraints, io);
+        super(name, constraints, io, mech);
 
         // ElevatorSim is used as the underlying physics simulation.
         // Note: ElevatorSim assumes vertical orientation for gravity simulation.

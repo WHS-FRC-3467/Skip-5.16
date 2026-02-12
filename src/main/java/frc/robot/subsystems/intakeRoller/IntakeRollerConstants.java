@@ -33,6 +33,7 @@ import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.MechanismConstant;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
@@ -46,6 +47,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class IntakeRollerConstants {
+    private static MechanismConstant mech = new MechanismConstant(1.0);
 
     public static final String NAME = "Intake Roller";
 
@@ -113,15 +115,15 @@ public class IntakeRollerConstants {
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeRoller));
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeRoller), mech);
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeRoller),
-                    DCMOTOR, MOI, TOLERANCE);
+                    DCMOTOR, MOI, TOLERANCE, mech);
                 break;
             case REPLAY:
-                mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}) {};
+                mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}, new MechanismConstant(0.0)) {};
                 break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");

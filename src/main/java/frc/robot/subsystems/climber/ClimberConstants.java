@@ -40,6 +40,7 @@ import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.MechanismConstant;
 import frc.lib.mechanisms.linear.*;
 import frc.lib.mechanisms.linear.LinearMechanism.LinearMechCharacteristics;
 import frc.lib.util.MechanismUtil.DistanceAngleConverter;
@@ -50,7 +51,7 @@ import frc.robot.Robot;
 
 public class ClimberConstants {
     public static String NAME = "Climber";
-
+    public static MechanismConstant mech = new MechanismConstant(1.0);
     public static final Distance TOLERANCE = Inches.of(2.0);
 
     public static final AngularVelocity CRUISE_VELOCITY =
@@ -141,15 +142,15 @@ public class ClimberConstants {
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new LinearMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.climber), CHARACTERISTICS);
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.climber), CHARACTERISTICS, mech);
                 break;
             case SIM:
                 mechanism = new LinearMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.climber),
-                    DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
+                    DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false, mech);
                 break;
             case REPLAY:
-                mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}) {};
+                mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}, mech) {};
                 break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");

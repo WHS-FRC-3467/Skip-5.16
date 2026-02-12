@@ -8,6 +8,7 @@ import frc.lib.io.absoluteencoder.AbsoluteEncoderIO;
 import frc.lib.io.absoluteencoder.AbsoluteEncoderInputsAutoLogged;
 import frc.lib.io.motor.MotorIO.ControlType;
 import frc.lib.mechanisms.Mechanism;
+import frc.lib.mechanisms.MechanismConstant;
 import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
@@ -48,9 +49,9 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     private final RotaryVisualizer visualizer;
 
     public RotaryMechanism(String name, RotaryMechCharacteristics characteristics, T io,
-        Optional<E> absoluteEncoder)
+        Optional<E> absoluteEncoder, MechanismConstant mech)
     {
-        super(name, io);
+        super(name, io, mech);
         this.absoluteEncoder = absoluteEncoder;
         visualizer = new RotaryVisualizer(name, characteristics);
     }

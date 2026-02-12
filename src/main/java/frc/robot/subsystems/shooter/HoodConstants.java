@@ -30,6 +30,7 @@ import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.MechanismConstant;
 import frc.lib.mechanisms.rotary.*;
 import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryAxis;
 import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryMechCharacteristics;
@@ -46,6 +47,7 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HoodConstants {
+    static MechanismConstant mech = new MechanismConstant(1.0);
     public static final String NAME = "Hood";
 
     public static final Angle TOLERANCE = Degrees.of(1.0);
@@ -139,17 +141,17 @@ public class HoodConstants {
                 mechanism = new RotaryMechanismReal(NAME,
                     new MotorIOTalonFX(NAME, getFXConfig(), Ports.hood),
                     CONSTANTS,
-                    Optional.empty());
+                    Optional.empty(), mech);
                 break;
             case SIM:
                 mechanism = new RotaryMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.hood),
                     DCMOTOR, MOI, false, CONSTANTS,
-                    Optional.empty());
+                    Optional.empty(), mech);
                 break;
             case REPLAY:
                 mechanism = new RotaryMechanism<>(NAME, CONSTANTS, new MotorIO() {},
-                    Optional.empty()) {};
+                    Optional.empty(), mech) {};
                 break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");

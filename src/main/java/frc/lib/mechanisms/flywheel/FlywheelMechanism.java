@@ -18,6 +18,7 @@ package frc.lib.mechanisms.flywheel;
 import edu.wpi.first.units.measure.Current;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.mechanisms.Mechanism;
+import frc.lib.mechanisms.MechanismConstant;
 
 /**
  * Abstract base class for flywheel mechanisms.
@@ -28,9 +29,10 @@ import frc.lib.mechanisms.Mechanism;
  */
 public abstract class FlywheelMechanism<T extends MotorIO> extends Mechanism<T> {
 
-    public FlywheelMechanism(String name, T io)
+    public FlywheelMechanism(String name, T io, MechanismConstant mech)
     {
-        super(name, io);
+        super(name, io, mech);
+    
     }
 
     @Override

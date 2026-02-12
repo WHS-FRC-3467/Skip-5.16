@@ -12,19 +12,30 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
+package frc.lib.mechanisms;
 
-package frc.lib.mechanisms.flywheel;
-
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO;
-import frc.lib.mechanisms.MechanismConstant;
+import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import lombok.Getter;
+import lombok.Setter;
 
-/**
- * A real implementation of the FlywheelMechanism abstract class that interacts with a physical
- * motor through a MotorIO interface.
- */
-public class FlywheelMechanismReal extends FlywheelMechanism<MotorIO> {
-    public FlywheelMechanismReal(String name, MotorIO io, MechanismConstant mech)
-    {
-        super(name, io, mech);
+public class MechanismSubsystem extends SubsystemBase {
+  
+    protected Mechanism<?> io;
+
+    
+   
+protected MechanismSubsystem(Mechanism<?> io) {
+    this.io = io;
+}
+   public LinearVelocity getLinearVelocity() {
+        return io.getLinearVelocity();
+    }
+    public Angle getPosAlso() {
+        return io.getPosition();
     }
 }

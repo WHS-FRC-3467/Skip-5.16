@@ -14,6 +14,7 @@ import edu.wpi.first.units.measure.Distance;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.ControlType;
 import frc.lib.mechanisms.Mechanism;
+import frc.lib.mechanisms.MechanismConstant;
 import frc.lib.util.MechanismUtil.DistanceAngleConverter;
 
 /**
@@ -51,9 +52,9 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
 
     private final LinearMechanismVisualizer visualizer;
 
-    public LinearMechanism(String name, LinearMechCharacteristics characteristics, T io)
+    public LinearMechanism(String name, LinearMechCharacteristics characteristics, T io, MechanismConstant mech)
     {
-        super(name, io);
+        super(name, io, mech);
         visualizer = new LinearMechanismVisualizer(name, characteristics);
         converter = characteristics.converter();
     }

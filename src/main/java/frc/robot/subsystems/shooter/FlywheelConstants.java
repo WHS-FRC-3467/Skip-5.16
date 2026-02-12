@@ -22,6 +22,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.MechanismConstant;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
@@ -33,6 +34,7 @@ import frc.robot.Robot;
 /** Add your docs here. */
 public class FlywheelConstants {
 
+     private static MechanismConstant mech = new MechanismConstant(1.0);
     public static String NAME = "Flywheel";
 
     public static final AngularVelocity MAX_VELOCITY =
@@ -108,17 +110,17 @@ public class FlywheelConstants {
             case REAL:
                 mechanism = new FlywheelMechanismReal("Left " + NAME,
                     new MotorIOTalonFX("Left " + NAME, getFXConfig(false), Ports.leftFlywheelMain,
-                        new TalonFXFollower(Ports.leftFlywheelFollower, false)));
+                        new TalonFXFollower(Ports.leftFlywheelFollower, false)), mech);
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim("Left " + NAME,
                     new MotorIOTalonFXSim("Left " + NAME, getFXConfig(false),
                         Ports.leftFlywheelMain,
                         new TalonFXFollower(Ports.leftFlywheelFollower, false)),
-                    DCMOTOR, MOI, TOLERANCE);
+                    DCMOTOR, MOI, TOLERANCE, mech);
                 break;
             case REPLAY:
-                mechanism = new FlywheelMechanism<>("Left " + NAME, new MotorIO() {}) {};
+                mechanism = new FlywheelMechanism<>("Left " + NAME, new MotorIO() {}, new MechanismConstant(1.0)) {};
                 break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
@@ -140,17 +142,17 @@ public class FlywheelConstants {
             case REAL:
                 mechanism = new FlywheelMechanismReal("Right " + NAME,
                     new MotorIOTalonFX("Right " + NAME, getFXConfig(true), Ports.rightFlywheelMain,
-                        new TalonFXFollower(Ports.rightFlywheelFollower, false)));
+                        new TalonFXFollower(Ports.rightFlywheelFollower, false)), mech);
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim("Right " + NAME,
                     new MotorIOTalonFXSim("Right " + NAME, getFXConfig(true),
                         Ports.rightFlywheelMain,
                         new TalonFXFollower(Ports.rightFlywheelFollower, false)),
-                    DCMOTOR, MOI, TOLERANCE);
+                    DCMOTOR, MOI, TOLERANCE, mech);
                 break;
             case REPLAY:
-                mechanism = new FlywheelMechanism<>("Right " + NAME, new MotorIO() {}) {};
+                mechanism = new FlywheelMechanism<>("Right " + NAME, new MotorIO() {}, new MechanismConstant(1.0)) {};
                 break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");

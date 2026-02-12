@@ -15,6 +15,8 @@
 
 package frc.lib.mechanisms;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +27,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
@@ -46,10 +49,13 @@ public abstract class Mechanism<T extends MotorIO> {
     protected final T io;
     private final List<TunablePidConfig> tunablePidConfigs = new ArrayList<>();
 
-    protected Mechanism(String name, T io)
+    protected final MechanismConstant mech;
+    protected Mechanism(String name, T io, MechanismConstant mech)
     {
         this.name = name;
         this.io = io;
+        this.mech = mech;
+
     }
 
     private static final class TunablePidConfig {
@@ -270,6 +276,11 @@ public abstract class Mechanism<T extends MotorIO> {
     {
         return inputs.velocity;
     }
+
+    public LinearVelocity getLinearVelocity() {
+        return MetersPerSecond.of(inputs.velocity.in(RadiansPerSecond) * this.mech.RADIUS);
+    }
+
 
     /**
      * Closes the mechanism and releases resources.

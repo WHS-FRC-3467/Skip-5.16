@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.lib.io.motor.MotorIOSim;
+import frc.lib.mechanisms.MechanismConstant;
 
 /**
  * A simulated implementation of the FlywheelMechanism abstract class that uses FlywheelSim to
@@ -44,9 +45,9 @@ public class FlywheelMechanismSim extends FlywheelMechanism<MotorIOSim> {
     private Time lastTime = Seconds.zero();
 
     public FlywheelMechanismSim(String name, MotorIOSim io, DCMotor characteristics,
-        MomentOfInertia momentOfInertia, AngularVelocity tolerance)
+        MomentOfInertia momentOfInertia, AngularVelocity tolerance, MechanismConstant mech)
     {
-        super(name, io);
+        super(name, io, mech);
 
         if (momentOfInertia.isEquivalent(KilogramSquareMeters.zero()))
             throw new IllegalArgumentException(
