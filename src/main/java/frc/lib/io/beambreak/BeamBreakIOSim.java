@@ -17,10 +17,8 @@ package frc.lib.io.beambreak;
 
 import frc.lib.util.LoggedTunableBoolean;
 
-/** A simulated implementation that uses a togglable button on the dashboard */
+/** A simulated implementation that uses a toggle button on the dashboard */
 public class BeamBreakIOSim implements BeamBreakIO {
-
-    private final String name;
 
     private final LoggedTunableBoolean button;
 
@@ -31,8 +29,6 @@ public class BeamBreakIOSim implements BeamBreakIO {
      */
     public BeamBreakIOSim(String name)
     {
-        this.name = name;
-
         this.button = new LoggedTunableBoolean(name, false);
     }
 

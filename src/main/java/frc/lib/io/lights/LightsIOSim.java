@@ -18,26 +18,20 @@ package frc.lib.io.lights;
 import java.util.Map;
 import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.controls.ControlRequest;
-import lombok.Getter;
 
 /**
  * A simulated lights implementation
  */
 public class LightsIOSim implements LightsIO {
-    @Getter
-    private final String name;
 
     private Map<String, String> requestInfo;
 
     /**
-     * Constructs a {@link LightsIOSim} object with the specified name.
+     * Constructs a {@link LightsIOSim} object.
      *
-     * @param name A human-readable name for this sensor instance.
      */
-    public LightsIOSim(String name)
-    {
-        this.name = name;
-    }
+    public LightsIOSim()
+    {}
 
     @Override
     public void setAnimation(ControlRequest request)

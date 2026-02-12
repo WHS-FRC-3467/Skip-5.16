@@ -31,8 +31,12 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
 
     private Time lastTime = Seconds.zero();
 
-    public RotaryMechanismSim(String name, MotorIOSim io, DCMotor dcMotor,
-        MomentOfInertia momentOfInertia, Boolean useGravity,
+    public RotaryMechanismSim(
+        String name,
+        MotorIOSim io,
+        DCMotor motor,
+        MomentOfInertia momentOfInertia,
+        Boolean useGravity,
         RotaryMechCharacteristics characteristics,
         Optional<AbsoluteEncoderIOSim> absoluteEncoder,
         String encoderName)
@@ -44,7 +48,7 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
                 "momentOfInertia must be greater than zero!");
 
         sim = new SingleJointedArmSim(
-            dcMotor,
+            motor,
             io.getRotorToSensorRatio() * io.getSensorToMechanismRatio(),
             momentOfInertia.in(KilogramSquareMeters),
             characteristics.armLength().in(Meters),
@@ -74,9 +78,6 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
         absoluteEncoder.ifPresent(encoderSim -> {
             encoderSim
                 .setAngle(Radians.of(sim.getAngleRads()).times(io.getSensorToMechanismRatio()));
-            encoderSim
-                .setAngularVelocity(RadiansPerSecond.of(sim.getVelocityRadPerSec())
-                    .times(io.getSensorToMechanismRatio()));
         });
 
         super.periodic();
