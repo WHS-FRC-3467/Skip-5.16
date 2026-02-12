@@ -34,14 +34,12 @@ public class LightsIOSim implements LightsIO {
      *
      * @param name A human-readable name for this sensor instance.
      */
-    public LightsIOSim(String name)
-    {
+    public LightsIOSim(String name) {
         this.name = name;
     }
 
     @Override
-    public void setAnimation(ControlRequest request)
-    {
+    public void setAnimation(ControlRequest request) {
         this.requestInfo = request.getControlInfo();
         if (requestInfo.containsKey("Slot")) {
             // Logs control request data for each slot

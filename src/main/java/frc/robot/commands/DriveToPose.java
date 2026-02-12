@@ -43,8 +43,7 @@ public class DriveToPose extends DriveToPoseBase {
      */
     public DriveToPose(
         Drive drive,
-        Supplier<Pose2d> targetPose)
-    {
+        Supplier<Pose2d> targetPose) {
         super(
             drive,
             targetPose,

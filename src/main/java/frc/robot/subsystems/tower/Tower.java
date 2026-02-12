@@ -68,20 +68,17 @@ public class Tower extends SubsystemBase {
      *
      * @param io the flywheel mechanism IO implementation for the tower
      */
-    public Tower(FlywheelMechanism<?> io)
-    {
+    public Tower(FlywheelMechanism<?> io) {
         this.io = io;
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Logger.recordOutput(TowerConstants.NAME + "/State", this.state.name());
         io.periodic();
     }
 
-    private void setState(State state)
-    {
+    private void setState(State state) {
         this.state = state;
         io.runVelocity(state.stateVelocity.get(),
             TowerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
@@ -96,8 +93,7 @@ public class Tower extends SubsystemBase {
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command setStateCommand(State state)
-    {
+    public Command setStateCommand(State state) {
         return this.runOnce(() -> setState(state))
             .withName(state.name());
     }
@@ -111,8 +107,7 @@ public class Tower extends SubsystemBase {
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command holdStateUntilInterrupted(State state)
-    {
+    public Command holdStateUntilInterrupted(State state) {
         return this.startEnd(() -> setState(state), () -> setState(State.IDLE))
             .withName(state.name() + " Until Interrupted");
     }
@@ -122,8 +117,7 @@ public class Tower extends SubsystemBase {
      *
      * @return true if the tower velocity is within tolerance of the setpoint
      */
-    public boolean nearSetpoint()
-    {
+    public boolean nearSetpoint() {
         return MathUtil.isNear(
             state.stateVelocity.get().in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
@@ -133,8 +127,7 @@ public class Tower extends SubsystemBase {
     /**
      * Closes the underlying flywheel mechanism and releases resources.
      */
-    public void close()
-    {
+    public void close() {
         io.close();
     }
 
@@ -143,8 +136,7 @@ public class Tower extends SubsystemBase {
      *
      * @return the tower's current velocity in rotations per second
      */
-    public double getSpeed()
-    {
+    public double getSpeed() {
         return io.getVelocity().in(RotationsPerSecond);
     }
 }

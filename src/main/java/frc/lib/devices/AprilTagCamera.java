@@ -90,8 +90,7 @@ public class AprilTagCamera {
      * @param properties the camera properties
      * @param io the VisionIO interface for this camera
      */
-    public AprilTagCamera(CameraProperties properties, VisionIO io)
-    {
+    public AprilTagCamera(CameraProperties properties, VisionIO io) {
         mismatchedIntrinsicsAlert = new Alert(
             "Camera "
                 + properties.name()
@@ -138,8 +137,7 @@ public class AprilTagCamera {
      * @return an {@link Optional} containing an array of {@link PhotonPipelineResult} if available,
      *         or {@link Optional#empty()} if the camera is disconnected
      */
-    public Optional<PhotonPipelineResult[]> getUnreadResults()
-    {
+    public Optional<PhotonPipelineResult[]> getUnreadResults() {
         io.updateInputs(inputs);
         Logger.processInputs(properties.name(), inputs);
 

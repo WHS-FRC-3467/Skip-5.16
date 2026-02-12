@@ -24,15 +24,13 @@ import frc.lib.io.motor.MotorIO;
  */
 public class LinearMechanismReal extends LinearMechanism<MotorIO> {
     public LinearMechanismReal(String name, MotorIO io,
-        LinearMechCharacteristics characteristics)
-    {
+        LinearMechCharacteristics characteristics) {
         super(name, characteristics, io);
     }
 
     // TODO: Verify operation works correctly on real TalonFX
     @Override
-    public void setEncoderPosition(Angle position)
-    {
+    public void setEncoderPosition(Angle position) {
         io.setEncoderPosition(position);
     }
 }

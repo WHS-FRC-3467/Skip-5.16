@@ -31,8 +31,7 @@ import frc.robot.util.RobotSim;
 public class BasicNeutralAuto extends AutoRoutine {
 
     public BasicNeutralAuto(Drive drive, IntakeSuperstructure intake,
-        Indexer indexer, Tower tower, ShooterSuperstructure shooter, StartPosition start)
-    {
+        Indexer indexer, Tower tower, ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {

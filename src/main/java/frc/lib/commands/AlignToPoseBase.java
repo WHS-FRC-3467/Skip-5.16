@@ -52,8 +52,7 @@ public abstract class AlignToPoseBase extends Command {
         AlignMode mode,
         DoubleSupplier joystickInput,
         LoggedTuneableProfiledPID linearController,
-        LoggedTuneableProfiledPID angularController)
-    {
+        LoggedTuneableProfiledPID angularController) {
         this.drive = drive;
         this.targetPose = targetPose;
         this.mode = mode;
@@ -67,8 +66,7 @@ public abstract class AlignToPoseBase extends Command {
 
     // Called when the command is initially scheduled.
     @Override
-    public void initialize()
-    {
+    public void initialize() {
         ChassisSpeeds fieldVelocity =
             ChassisSpeeds.fromRobotRelativeSpeeds(drive.getChassisSpeeds(),
                 robotState.getEstimatedPose().getRotation());
@@ -82,8 +80,7 @@ public abstract class AlignToPoseBase extends Command {
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
-    public void execute()
-    {
+    public void execute() {
         // Checks if tunable values for PID have changed and updates them if so
         linearController.updatePID();
         angularController.updatePID();
@@ -139,13 +136,11 @@ public abstract class AlignToPoseBase extends Command {
 
     // Returns true when the command should end.
     @Override
-    public boolean isFinished()
-    {
+    public boolean isFinished() {
         return false;
     }
 
-    private static Translation2d getLinearVelocityFromJoysticks(double x, double y)
-    {
+    private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
         double linearMagnitude = Math.pow(Math.hypot(x, y), 2);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
@@ -160,8 +155,7 @@ public abstract class AlignToPoseBase extends Command {
      *
      * @return The distance error in meters
      */
-    public Distance getDistanceError()
-    {
+    public Distance getDistanceError() {
         return Meters.of(linearController.getPositionError());
     }
 
@@ -170,8 +164,7 @@ public abstract class AlignToPoseBase extends Command {
      *
      * @return The angular error in radians
      */
-    public Angle getAngularError()
-    {
+    public Angle getAngularError() {
         return Radians.of(angularController.getPositionError());
     }
 }

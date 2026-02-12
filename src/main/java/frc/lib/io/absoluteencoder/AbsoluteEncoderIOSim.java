@@ -31,14 +31,12 @@ public interface AbsoluteEncoderIOSim extends AbsoluteEncoderIO {
      *
      * @param angle The angle to simulate
      */
-    public default void setAngle(Angle angle)
-    {}
+    public default void setAngle(Angle angle) {}
 
     /**
      * Sets the simulated encoder angular velocity.
      *
      * @param velocity The angular velocity to simulate
      */
-    public default void setAngularVelocity(AngularVelocity velocity)
-    {}
+    public default void setAngularVelocity(AngularVelocity velocity) {}
 }

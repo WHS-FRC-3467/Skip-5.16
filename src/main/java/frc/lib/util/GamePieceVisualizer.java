@@ -47,8 +47,7 @@ public class GamePieceVisualizer {
      * @param name Unique identifier for this game piece (used in logging)
      * @param pose3d Initial 3D pose of the game piece
      */
-    public GamePieceVisualizer(String name, Pose3d pose3d)
-    {
+    public GamePieceVisualizer(String name, Pose3d pose3d) {
         this.name = name;
         this.gamePiecePose = pose3d;
         Logger.recordOutput(name + " Visualizer", this.gamePiecePose);
@@ -60,8 +59,7 @@ public class GamePieceVisualizer {
      *
      * @param pose The new 3D pose of the game piece
      */
-    public void setPose(Pose3d pose)
-    {
+    public void setPose(Pose3d pose) {
         this.gamePiecePose = pose;
         Logger.recordOutput(name + " Visualizer", this.gamePiecePose);
     }
@@ -69,8 +67,7 @@ public class GamePieceVisualizer {
     /**
      * Hides the game piece by setting its pose to the origin.
      */
-    public void hide()
-    {
+    public void hide() {
         this.gamePiecePose = new Pose3d();
         Logger.recordOutput(name + " Visualizer", this.gamePiecePose);
     }

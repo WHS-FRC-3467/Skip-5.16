@@ -34,14 +34,12 @@ public class VisionIOPhotonVision implements VisionIO {
      *
      * @param cameraProperties Camera configuration including name and calibration
      */
-    public VisionIOPhotonVision(CameraProperties cameraProperties)
-    {
+    public VisionIOPhotonVision(CameraProperties cameraProperties) {
         this.photonCamera = new PhotonCamera(cameraProperties.name());
     }
 
     @Override
-    public void updateInputs(VisionIOInputs inputs)
-    {
+    public void updateInputs(VisionIOInputs inputs) {
         inputs.connected = photonCamera.isConnected();
 
         if (!inputs.connected) {

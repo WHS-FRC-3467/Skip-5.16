@@ -52,8 +52,7 @@ public class IndexerConstants {
      *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -89,8 +88,7 @@ public class IndexerConstants {
      *
      * @return A fully configured Indexer subsystem
      */
-    public static Indexer get()
-    {
+    public static Indexer get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

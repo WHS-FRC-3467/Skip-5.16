@@ -29,8 +29,7 @@ public class ClimberTest {
     Climber climber;
 
     @BeforeEach // this method will run before each test
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
         climber = ClimberConstants.get();
@@ -44,8 +43,7 @@ public class ClimberTest {
     }
 
     @AfterEach // this method will run after each test
-    void shutdown() throws Exception
-    {
+    void shutdown() throws Exception {
         try {
             climber.close();
         } catch (Exception e) {
@@ -54,8 +52,7 @@ public class ClimberTest {
     }
 
     @Test // marks this method as a test
-    void home()
-    {
+    void home() {
         TestUtil.runTest(climber.homeCommand(), 0.1, climber);
         try {
             // Check position to check if it is homed, and within tolerance of the default STOW
@@ -67,8 +64,7 @@ public class ClimberTest {
     }
 
     @Test
-    void goToGoal()
-    {
+    void goToGoal() {
         TestUtil.runTest(climber.setGoal(Climber.State.RAISED), 1.5, climber);
         try {
             // Check to see if climber subsystem is within tolerance of RAISED State.

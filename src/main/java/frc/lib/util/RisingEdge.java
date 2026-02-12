@@ -31,8 +31,7 @@ public class RisingEdge implements BooleanSupplier {
      *
      * @param source The boolean supplier to detect rising edges from
      */
-    public RisingEdge(BooleanSupplier source)
-    {
+    public RisingEdge(BooleanSupplier source) {
         this.source = source;
     }
 
@@ -42,14 +41,12 @@ public class RisingEdge implements BooleanSupplier {
      * @param source The boolean supplier to detect rising edges from
      * @return A new RisingEdge instance
      */
-    public static RisingEdge of(BooleanSupplier source)
-    {
+    public static RisingEdge of(BooleanSupplier source) {
         return new RisingEdge(source);
     }
 
     @Override
-    public boolean getAsBoolean()
-    {
+    public boolean getAsBoolean() {
         boolean currentState = source.getAsBoolean();
         boolean risingEdge = currentState && !previousState;
         previousState = currentState;

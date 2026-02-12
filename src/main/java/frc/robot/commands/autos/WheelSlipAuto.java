@@ -27,8 +27,7 @@ public class WheelSlipAuto extends AutoRoutine {
      *
      * @param drive the drive subsystem to test
      */
-    public WheelSlipAuto(Drive drive)
-    {
+    public WheelSlipAuto(Drive drive) {
         loadCommands(Commands.sequence(
             Commands.run(() -> drive.runCharacterization(0.0)).withTimeout(2),
             rampUntilVelocity(drive, 0.2, RotationsPerSecond.of(1))));
@@ -40,8 +39,7 @@ public class WheelSlipAuto extends AutoRoutine {
      * @return the current estimated pose of the robot
      */
     @Override
-    public Pose2d getStartingPose()
-    {
+    public Pose2d getStartingPose() {
         return robotState.getEstimatedPose();
     }
 
@@ -55,8 +53,7 @@ public class WheelSlipAuto extends AutoRoutine {
      * @return a command that ramps voltage until the speed limit is reached
      */
     private static Command rampUntilVelocity(Drive drive, double rampRate,
-        AngularVelocity speedLimit)
-    {
+        AngularVelocity speedLimit) {
         Timer timer = new Timer();
 
         return Commands.sequence(

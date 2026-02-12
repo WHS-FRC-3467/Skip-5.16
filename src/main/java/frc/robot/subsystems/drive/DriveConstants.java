@@ -267,8 +267,7 @@ public class DriveConstants {
          */
         public TunerSwerveDrivetrain(
             SwerveDrivetrainConstants drivetrainConstants,
-            SwerveModuleConstants<?, ?, ?>... modules)
-        {
+            SwerveModuleConstants<?, ?, ?>... modules) {
             super(TalonFX::new, TalonFX::new, CANcoder::new, drivetrainConstants, modules);
         }
 
@@ -288,8 +287,7 @@ public class DriveConstants {
         public TunerSwerveDrivetrain(
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
-            SwerveModuleConstants<?, ?, ?>... modules)
-        {
+            SwerveModuleConstants<?, ?, ?>... modules) {
             super(
                 TalonFX::new,
                 TalonFX::new,
@@ -321,8 +319,7 @@ public class DriveConstants {
             double odometryUpdateFrequency,
             Matrix<N3, N1> odometryStandardDeviation,
             Matrix<N3, N1> visionStandardDeviation,
-            SwerveModuleConstants<?, ?, ?>... modules)
-        {
+            SwerveModuleConstants<?, ?, ?>... modules) {
             super(
                 TalonFX::new,
                 TalonFX::new,
@@ -340,8 +337,7 @@ public class DriveConstants {
      *
      * @return Drive subsystem instance with appropriate IO implementations
      */
-    public static Drive get()
-    {
+    public static Drive get() {
         switch (Constants.currentMode) {
             case REAL:
                 return new Drive(

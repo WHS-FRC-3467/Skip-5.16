@@ -75,8 +75,7 @@ public class DriveCommands {
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
-    private DriveCommands()
-    {}
+    private DriveCommands() {}
 
     /**
      * Converts joystick inputs to a linear velocity vector.
@@ -85,8 +84,7 @@ public class DriveCommands {
      * @param y the y-axis joystick input
      * @return the calculated linear velocity as a Translation2d
      */
-    public static Translation2d getLinearVelocityFromJoysticks(double x, double y)
-    {
+    public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
         double linearMagnitude = Math.pow(Math.hypot(x, y), 2);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
@@ -109,8 +107,7 @@ public class DriveCommands {
         Drive drive,
         DoubleSupplier xSupplier,
         DoubleSupplier ySupplier,
-        DoubleSupplier omegaSupplier)
-    {
+        DoubleSupplier omegaSupplier) {
         RobotState robotState = RobotState.getInstance();
         return Commands.run(
             () -> {
@@ -159,8 +156,7 @@ public class DriveCommands {
         Drive drive,
         DoubleSupplier xSupplier,
         DoubleSupplier ySupplier,
-        Supplier<Rotation2d> rotationSupplier)
-    {
+        Supplier<Rotation2d> rotationSupplier) {
         RobotState robotState = RobotState.getInstance();
 
         // Create PID controller
@@ -219,8 +215,7 @@ public class DriveCommands {
     public static Command joystickDriveFacingTarget(
         Drive drive,
         DoubleSupplier xSupplier,
-        DoubleSupplier ySupplier)
-    {
+        DoubleSupplier ySupplier) {
         RobotState robotState = RobotState.getInstance();
         return joystickDriveAtAngle(drive, xSupplier, ySupplier, robotState::getAngleToTarget);
     }
@@ -232,8 +227,7 @@ public class DriveCommands {
      * @param drive the drive subsystem
      * @return the static aim towards target command
      */
-    public static Command staticAimTowardsTarget(Drive drive)
-    {
+    public static Command staticAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
         return Commands.repeatingSequence(
             joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget)
@@ -252,8 +246,7 @@ public class DriveCommands {
      * @param drive the drive subsystem
      * @return the feedforward characterization command
      */
-    public static Command feedforwardCharacterization(Drive drive)
-    {
+    public static Command feedforwardCharacterization(Drive drive) {
         List<Double> velocitySamples = new ArrayList<>();
         List<Double> voltageSamples = new ArrayList<>();
         Timer timer = new Timer();
@@ -319,8 +312,7 @@ public class DriveCommands {
      * @param drive the drive subsystem
      * @return the wheel radius characterization command
      */
-    public static Command wheelRadiusCharacterization(Drive drive)
-    {
+    public static Command wheelRadiusCharacterization(Drive drive) {
         RobotState robotState = RobotState.getInstance();
 
         SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
@@ -403,8 +395,7 @@ public class DriveCommands {
      * @return the pathfinding command
      */
     public static Command pathFindToPose(Supplier<Pose2d> currentPose, Pose2d targetPose,
-        PathConstraints constraints, LinearVelocity goalEndVelocity, Distance tolerance)
-    {
+        PathConstraints constraints, LinearVelocity goalEndVelocity, Distance tolerance) {
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
         return AutoBuilder.pathfindToPose(

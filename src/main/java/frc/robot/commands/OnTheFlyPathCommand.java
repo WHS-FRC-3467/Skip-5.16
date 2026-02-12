@@ -71,8 +71,7 @@ public class OnTheFlyPathCommand extends Command {
     public OnTheFlyPathCommand(Drive drive, Supplier<Pose2d> currentPose,
         List<Pose2d> waypointPoses, Pose2d targetPose,
         PathConstraints constraints, LinearVelocity goalEndVelocity, boolean shouldMirrorPath,
-        Distance tolerance, Angle rotTolerance)
-    {
+        Distance tolerance, Angle rotTolerance) {
         addRequirements(drive);
         this.currentPose = currentPose;
         this.waypointPoses = waypointPoses;
@@ -92,8 +91,7 @@ public class OnTheFlyPathCommand extends Command {
      * mirroring if enabled and creates waypoints from the current and target poses.
      */
     @Override
-    public void initialize()
-    {
+    public void initialize() {
         if (shouldMirrorPath) {
             final double FIELD_WIDTH = FieldConstants.FIELD_WIDTH;
             if (waypointPoses != null) {
@@ -161,8 +159,7 @@ public class OnTheFlyPathCommand extends Command {
      * current path poses for display in AdvantageScope.
      */
     @Override
-    public void execute()
-    {
+    public void execute() {
         command.execute();
 
         pathGenerationTrajectory.setRobotPose(currentPose.get());
@@ -182,8 +179,7 @@ public class OnTheFlyPathCommand extends Command {
      *         target pose, false otherwise.
      */
     @Override
-    public boolean isFinished()
-    {
+    public boolean isFinished() {
         // Is the magnitude of the difference between the current pose and the target pose (last
         // pose of the path) less than the tolerance?
         // Check rotation as well
@@ -200,8 +196,7 @@ public class OnTheFlyPathCommand extends Command {
      * @param interrupted true if the command was interrupted, false if it completed normally.
      */
     @Override
-    public void end(boolean interrupted)
-    {
+    public void end(boolean interrupted) {
         command.end(interrupted);
 
         // Clear the on-the-fly path poses from the Field2d widget

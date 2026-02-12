@@ -67,8 +67,7 @@ public class IntakeRollerConstants {
      *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -107,8 +106,7 @@ public class IntakeRollerConstants {
      *
      * @return A configured FlywheelMechanism instance
      */
-    public static FlywheelMechanism<?> getMechanism()
-    {
+    public static FlywheelMechanism<?> getMechanism() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

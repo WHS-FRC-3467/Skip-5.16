@@ -36,8 +36,7 @@ public class AutoCommands {
      * @param path the PathPlanner path containing the starting pose
      * @return a command that resets the robot's pose to the path's starting position
      */
-    public static Command resetSimOdom(Drive drive, PathPlannerPath path)
-    {
+    public static Command resetSimOdom(Drive drive, PathPlannerPath path) {
         if (RobotBase.isSimulation()) {
             final RobotState robotState = RobotState.getInstance();
             return drive.runOnce(
@@ -74,8 +73,7 @@ public class AutoCommands {
      *         duration
      */
     public static Command shootFuel(Indexer indexer, Tower tower,
-        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration)
-    {
+        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration) {
         return Commands.sequence(
             // Defensively gate shooting until ready (5 scans max)
             new ParallelDeadlineGroup(
@@ -114,8 +112,7 @@ public class AutoCommands {
      * @return a command that aligns the robot to the target and shoots for up to the given duration
      */
     public static Command alignAndShoot(Drive drive, Indexer indexer,
-        Tower tower, ShooterSuperstructure shooter, double duration)
-    {
+        Tower tower, ShooterSuperstructure shooter, double duration) {
         final var robotState = RobotState.getInstance();
         return Commands.deadline(
             shootFuel(indexer, tower, shooter,
@@ -132,8 +129,7 @@ public class AutoCommands {
      * @param intake the intake subsystem
      * @return a command that runs the intake and stops it when finished
      */
-    public static Command deployIntake(IntakeSuperstructure intake)
-    {
+    public static Command deployIntake(IntakeSuperstructure intake) {
         return Commands.sequence(
             intake.extend(),
             intake.holdStateUntilInterrupted(IntakeSuperstructure.State.INTAKE))
@@ -148,8 +144,7 @@ public class AutoCommands {
      * @param intake the linear intake subsystem
      * @return a command that retracts the intake and keeps it retracted when finished
      */
-    public static Command extendIntake(IntakeSuperstructure intake)
-    {
+    public static Command extendIntake(IntakeSuperstructure intake) {
         return Commands.sequence(
             intake.extend(),
             Commands.waitUntil(intake.isExtended).withTimeout(2.0)); // Wait until slam or max
@@ -163,8 +158,7 @@ public class AutoCommands {
      * @param intake the linear intake subsystem
      * @return a command that retracts the intake and keeps it retracted when finished
      */
-    public static Command retractIntake(IntakeSuperstructure intake)
-    {
+    public static Command retractIntake(IntakeSuperstructure intake) {
         return Commands.sequence(
             intake.retract(),
             Commands.waitUntil(intake.isRetracted).withTimeout(2.0)
@@ -185,8 +179,7 @@ public class AutoCommands {
      * @return a blocking command that agitates the balls in the hopper and stops when finished
      */
     public static Command agitateHopper(IntakeSuperstructure intake, Tower tower, Indexer indexer,
-        HopperAgitation state)
-    {
+        HopperAgitation state) {
         switch (state) {
             case INTAKE_CYCLE:
                 return intake.cycle();
@@ -215,8 +208,7 @@ public class AutoCommands {
      * @return a command that prepares the shooter to shoot THE HUB from the end of the provided
      *         path
      */
-    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter)
-    {
+    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter) {
         // All paths blue canonical, so flip end translation if red alliance
         return shooter.spinUpShooterToHubDistance(
             Meters.of(

@@ -45,8 +45,7 @@ public class DepotAuto extends AutoRoutine {
      */
     public DepotAuto(Drive drive, IntakeSuperstructure intake, Indexer indexer,
         Tower tower,
-        ShooterSuperstructure shooter, StartPosition start)
-    {
+        ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {

@@ -63,8 +63,7 @@ public class LEDs extends SubsystemBase {
      *
      * @param io The lights IO interface for controlling the LED hardware
      */
-    public LEDs(LightsIO io)
-    {
+    public LEDs(LightsIO io) {
         lights = new Lights(io);
 
         stateQueue = new TreeSet<>((a, b) -> Integer.compare(a.getPriority(), b.getPriority()));
@@ -72,16 +71,14 @@ public class LEDs extends SubsystemBase {
         lights.setAnimations(currentState.getAnimation());
     }
 
-    private Optional<State> getCurrentStateFromQueue()
-    {
+    private Optional<State> getCurrentStateFromQueue() {
 
         State currentState = stateQueue.isEmpty() ? null : stateQueue.first();
 
         return Optional.ofNullable(currentState);
     }
 
-    private boolean updateCurrentState()
-    {
+    private boolean updateCurrentState() {
         Optional<State> newState = getCurrentStateFromQueue();
 
         boolean hasChanged = !this.currentState.equals(newState.orElse(null));
@@ -90,8 +87,7 @@ public class LEDs extends SubsystemBase {
         return hasChanged;
     }
 
-    private void updateState()
-    {
+    private void updateState() {
         boolean hasChanged = updateCurrentState();
         if (hasChanged) {
             lights.setAnimations(currentState.getAnimation());
@@ -99,8 +95,7 @@ public class LEDs extends SubsystemBase {
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         updateState();
 
 
@@ -113,13 +108,11 @@ public class LEDs extends SubsystemBase {
                 .toArray(String[]::new));
     }
 
-    public Command scheduleStateCommand(State state)
-    {
+    public Command scheduleStateCommand(State state) {
         return this.runOnce(() -> stateQueue.add(state));
     }
 
-    public Command unscheduleStateCommand(State state)
-    {
+    public Command unscheduleStateCommand(State state) {
         return this.runOnce(() -> stateQueue.remove(state));
     }
 }

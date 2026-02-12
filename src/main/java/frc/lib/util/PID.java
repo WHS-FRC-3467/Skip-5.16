@@ -39,16 +39,14 @@ public record PID(double P, double I, double D, double A, double V, double G, do
      * @param I Integral gain
      * @param D Derivative gain
      */
-    public PID(double P, double I, double D)
-    {
+    public PID(double P, double I, double D) {
         this(P, I, D, 0.0, 0.0, 0.0, 0.0);
     }
 
     /**
      * Constructs a PID record with all gains set to 0.0. Useful as a default starting point.
      */
-    public PID()
-    {
+    public PID() {
         this(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     }
 
@@ -57,8 +55,7 @@ public record PID(double P, double I, double D, double A, double V, double G, do
      *
      * @return a SlotConfigs object with the gains from this PID
      */
-    public SlotConfigs toSlotConfigs()
-    {
+    public SlotConfigs toSlotConfigs() {
         return new SlotConfigs()
             .withKP(P)
             .withKI(I)

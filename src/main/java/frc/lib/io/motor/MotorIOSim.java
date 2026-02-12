@@ -26,8 +26,7 @@ public interface MotorIOSim extends MotorIO {
      *
      * @param position The new mechanism position
      */
-    public default void setPosition(Angle position)
-    {}
+    public default void setPosition(Angle position) {}
 
     /**
      * Setter for the simulated mechanism velocity, typically taken from a WPILib mechanism
@@ -35,8 +34,7 @@ public interface MotorIOSim extends MotorIO {
      *
      * @param velocity The new mechanism velocity
      */
-    public default void setRotorVelocity(AngularVelocity velocity)
-    {}
+    public default void setRotorVelocity(AngularVelocity velocity) {}
 
     /**
      * Setter for the simulated mechanism acceleration, typically taken from a WPILib mechanism
@@ -44,16 +42,14 @@ public interface MotorIOSim extends MotorIO {
      *
      * @param acceleration The new mechanism acceleration
      */
-    public default void setRotorAcceleration(AngularAcceleration acceleration)
-    {}
+    public default void setRotorAcceleration(AngularAcceleration acceleration) {}
 
     /**
      * Getter for the gear ratio to the sensor
      *
      * @return The gear ratio to the sensor
      */
-    public default double getRotorToSensorRatio()
-    {
+    public default double getRotorToSensorRatio() {
         return 0.0;
     }
 
@@ -62,8 +58,7 @@ public interface MotorIOSim extends MotorIO {
      *
      * @return The gear ratio from the sensor to the mechanism
      */
-    public default double getSensorToMechanismRatio()
-    {
+    public default double getSensorToMechanismRatio() {
         return 0.0;
     }
 }

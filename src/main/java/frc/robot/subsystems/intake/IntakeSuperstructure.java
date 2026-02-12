@@ -65,8 +65,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     public IntakeSuperstructure(
         LinearMechanism<?> intakeLinearIO,
-        FlywheelMechanism<?> intakeRollerIO)
-    {
+        FlywheelMechanism<?> intakeRollerIO) {
         this.intakeLinearIO = intakeLinearIO;
         this.intakeRollerIO = intakeRollerIO;
 
@@ -82,8 +81,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     }
 
 
-    private void setState(State state)
-    {
+    private void setState(State state) {
         this.state = state;
         intakeRollerIO.runVelocity(state.angularVelocity.get(),
             IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
@@ -98,8 +96,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command setStateCommand(State state)
-    {
+    public Command setStateCommand(State state) {
         return this.runOnce(() -> setState(state))
             .withName(state.name());
     }
@@ -113,8 +110,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command holdStateUntilInterrupted(State state)
-    {
+    public Command holdStateUntilInterrupted(State state) {
         return this.startEnd(() -> setState(state), () -> setState(State.STOP))
             .withName(state.name() + " Until Interrupted");
     }
@@ -128,8 +124,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command holdStateUntilInterruptedAndExtend(State state)
-    {
+    public Command holdStateUntilInterruptedAndExtend(State state) {
         return this.startEnd(
             () -> {
                 setState(state);
@@ -144,8 +139,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command that extends the intake
      */
-    public Command extend()
-    {
+    public Command extend() {
         return this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(INTAKE_CURRENT.get())));
     }
 
@@ -154,8 +148,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command that retracts the intake
      */
-    public Command retract()
-    {
+    public Command retract() {
         return this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(-INTAKE_CURRENT.get())));
     }
 
@@ -165,8 +158,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A repeating command that cycles the intake
      */
-    public Command cycle()
-    {
+    public Command cycle() {
         return Commands.repeatingSequence(
             this.extend(),
             Commands.deadline(Commands.waitSeconds(1), Commands.waitUntil(linearStopped)),
@@ -179,8 +171,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command that stops the linear motion
      */
-    public Command stopIntake()
-    {
+    public Command stopIntake() {
         return this.runOnce(() -> intakeLinearIO.runBrake());
     }
 
@@ -189,8 +180,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command that stops the linear motion
      */
-    public Command stopRoller()
-    {
+    public Command stopRoller() {
         return this.runOnce(() -> intakeRollerIO.runBrake())
             .andThen(this.runOnce(() -> this.state = State.STOP)).withName("STOP");
     }
@@ -201,8 +191,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @param state The state whose setpoint to check against
      * @return true if the roller is within tolerance of the state's setpoint, false otherwise
      */
-    public boolean nearSetpoint(State state)
-    {
+    public boolean nearSetpoint(State state) {
         return MathUtil.isNear(
             state.angularVelocity.get().in(RotationsPerSecond),
             intakeRollerIO.getVelocity().in(RotationsPerSecond),
@@ -214,8 +203,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return The current angular velocity
      */
-    public AngularVelocity getVelocity()
-    {
+    public AngularVelocity getVelocity() {
         return intakeRollerIO.getVelocity();
     }
 
@@ -224,13 +212,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return a command to set the intake linear mechanism to coast mode.
      */
-    public Command coast()
-    {
+    public Command coast() {
         return this.runOnce(() -> intakeLinearIO.runCoast());
     }
 
-    private boolean isLinearStopped()
-    {
+    private boolean isLinearStopped() {
         return Math.abs(intakeLinearIO.getVelocity().in(RotationsPerSecond)) < 2.0;
     }
 
@@ -239,14 +225,12 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return The estimated linear extension of the subsystem
      */
-    public Distance getExtension()
-    {
+    public Distance getExtension() {
         return IntakeLinearConstants.CONVERTER.toDistance(intakeLinearIO.getPosition());
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Logger.recordOutput(this.getName() + "/State",
             this.isExtended.getAsBoolean() ? "EXTENDED"
                 : this.isRetracted.getAsBoolean() ? "RETRACTED" : "MOVING");
@@ -259,8 +243,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
 
     @Override
-    public void close()
-    {
+    public void close() {
         intakeRollerIO.close();
         intakeLinearIO.close();
     }

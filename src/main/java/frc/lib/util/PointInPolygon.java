@@ -32,8 +32,7 @@ public class PointInPolygon {
      * @param polygon List of vertices defining the polygon
      * @return True if the point is inside the polygon, false otherwise
      */
-    public static boolean pointInPolygon(Translation2d point, List<Translation2d> polygon)
-    {
+    public static boolean pointInPolygon(Translation2d point, List<Translation2d> polygon) {
         Path2D path = new Path2D.Double();
 
         // Move to the first point in the polygon

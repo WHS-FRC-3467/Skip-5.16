@@ -28,8 +28,7 @@ public class AlignToPose extends AlignToPoseBase {
      * @param joystickInput a DoubleSupplier providing driver input for translational movement
      */
     public AlignToPose(Drive drive, Supplier<Pose2d> targetPose, AlignMode mode,
-        DoubleSupplier joystickInput)
-    {
+        DoubleSupplier joystickInput) {
         super(drive,
             targetPose,
             mode,

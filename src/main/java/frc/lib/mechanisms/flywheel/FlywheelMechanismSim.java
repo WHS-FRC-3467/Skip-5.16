@@ -44,8 +44,7 @@ public class FlywheelMechanismSim extends FlywheelMechanism<MotorIOSim> {
     private Time lastTime = Seconds.zero();
 
     public FlywheelMechanismSim(String name, MotorIOSim io, DCMotor characteristics,
-        MomentOfInertia momentOfInertia, AngularVelocity tolerance)
-    {
+        MomentOfInertia momentOfInertia, AngularVelocity tolerance) {
         super(name, io);
 
         if (momentOfInertia.isEquivalent(KilogramSquareMeters.zero()))
@@ -61,8 +60,7 @@ public class FlywheelMechanismSim extends FlywheelMechanism<MotorIOSim> {
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Time currentTime = RobotController.getMeasureTime();
         double deltaTime = currentTime.minus(lastTime).in(Seconds);
 

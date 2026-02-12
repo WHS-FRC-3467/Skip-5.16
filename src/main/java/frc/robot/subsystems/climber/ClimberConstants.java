@@ -89,8 +89,7 @@ public class ClimberConstants {
      *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -133,8 +132,7 @@ public class ClimberConstants {
      *
      * @return A configured Climber instance
      */
-    public static Climber get()
-    {
+    public static Climber get() {
         LinearMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

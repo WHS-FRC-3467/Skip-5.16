@@ -45,20 +45,17 @@ public class Indexer extends SubsystemBase {
      *
      * @param io The flywheel mechanism for controlling the indexer motor
      */
-    public Indexer(FlywheelMechanism<?> io)
-    {
+    public Indexer(FlywheelMechanism<?> io) {
         this.io = io;
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Logger.recordOutput("Indexer/State", this.state.name());
         io.periodic();
     }
 
-    private void setState(State state)
-    {
+    private void setState(State state) {
         this.state = state;
         io.runVelocity(state.stateVelocity,
             IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
@@ -73,8 +70,7 @@ public class Indexer extends SubsystemBase {
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command setStateCommand(State state)
-    {
+    public Command setStateCommand(State state) {
         return this.runOnce(() -> setState(state))
             .withName(state.name());
     }
@@ -88,8 +84,7 @@ public class Indexer extends SubsystemBase {
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command holdStateUntilInterrupted(State state)
-    {
+    public Command holdStateUntilInterrupted(State state) {
         return this.startEnd(() -> setState(state), () -> setState(State.STOP))
             .withName(state.name() + " Until Interrupted");
     }
@@ -99,8 +94,7 @@ public class Indexer extends SubsystemBase {
      *
      * @return true if the indexer is within tolerance of the setpoint, false otherwise
      */
-    public boolean nearSetpoint()
-    {
+    public boolean nearSetpoint() {
         return MathUtil.isNear(
             state.stateVelocity.in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
@@ -110,8 +104,7 @@ public class Indexer extends SubsystemBase {
     /**
      * Closes the indexer mechanism and releases resources.
      */
-    public void close()
-    {
+    public void close() {
         io.close();
     }
 
@@ -120,8 +113,7 @@ public class Indexer extends SubsystemBase {
      *
      * @return The velocity in rotations per second
      */
-    public double getSpeed()
-    {
+    public double getSpeed() {
         return io.getVelocity().in(RotationsPerSecond);
     }
 }

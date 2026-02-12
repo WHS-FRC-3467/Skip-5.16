@@ -55,8 +55,7 @@ public class AutoSegments {
      */
     public static Command makePreloadShot(Drive drive, Indexer indexer,
         Tower tower,
-        ShooterSuperstructure shooter, PathPlannerPath path)
-    {
+        ShooterSuperstructure shooter, PathPlannerPath path) {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
@@ -80,8 +79,7 @@ public class AutoSegments {
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
     public static Command makeFullShot(Drive drive, IntakeSuperstructure intake, Indexer indexer,
-        Tower tower, ShooterSuperstructure shooter, PathPlannerPath path)
-    {
+        Tower tower, ShooterSuperstructure shooter, PathPlannerPath path) {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
@@ -102,8 +100,7 @@ public class AutoSegments {
      *        intake
      */
     public static Command driveAndIntake(IntakeSuperstructure intake, Command pathCommand,
-        Time afterPathWait)
-    {
+        Time afterPathWait) {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
@@ -123,8 +120,7 @@ public class AutoSegments {
      * @param intake the intake subsystem
      * @return a command that initializes the intake.
      */
-    public static Command initializeIntake(IntakeSuperstructure intake)
-    {
+    public static Command initializeIntake(IntakeSuperstructure intake) {
         return Commands.sequence(
             intake.setStateCommand(State.STOP),
             AutoCommands.retractIntake(intake));

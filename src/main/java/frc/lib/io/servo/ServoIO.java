@@ -29,13 +29,11 @@ public interface ServoIO {
      *
      * @param position the target angle for the servo
      */
-    public default void setAngle(Angle position)
-    {}
+    public default void setAngle(Angle position) {}
 
     /**
      * Disables PWM output until told to run to a position again.
      */
-    public default void stop()
-    {}
+    public default void stop() {}
 
 }

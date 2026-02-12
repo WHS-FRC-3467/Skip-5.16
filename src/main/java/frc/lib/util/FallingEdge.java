@@ -31,8 +31,7 @@ public class FallingEdge implements BooleanSupplier {
      *
      * @param source The boolean supplier to detect falling edges from
      */
-    public FallingEdge(BooleanSupplier source)
-    {
+    public FallingEdge(BooleanSupplier source) {
         this.source = source;
     }
 
@@ -42,14 +41,12 @@ public class FallingEdge implements BooleanSupplier {
      * @param source The boolean supplier to detect falling edges from
      * @return A new FallingEdge instance
      */
-    public static FallingEdge of(BooleanSupplier source)
-    {
+    public static FallingEdge of(BooleanSupplier source) {
         return new FallingEdge(source);
     }
 
     @Override
-    public boolean getAsBoolean()
-    {
+    public boolean getAsBoolean() {
         boolean currentState = source.getAsBoolean();
         boolean fallingEdge = previousState && !currentState;
         previousState = currentState;

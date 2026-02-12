@@ -73,8 +73,7 @@ public class Climber extends SubsystemBase {
 
         private final Distance state;
 
-        public Angle getAngle()
-        {
+        public Angle getAngle() {
             return ClimberConstants.CONVERTER.toAngle(state);
         }
     }
@@ -82,8 +81,7 @@ public class Climber extends SubsystemBase {
     // Current desired state of the climber
     private State state = State.STOW;
 
-    public Climber(LinearMechanism<?> io)
-    {
+    public Climber(LinearMechanism<?> io) {
         this.io = io;
         homedTrigger =
             new LoggedTrigger(ClimberConstants.NAME + "/homed",
@@ -100,8 +98,7 @@ public class Climber extends SubsystemBase {
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command setGoal(State state)
-    {
+    public Command setGoal(State state) {
         this.state = state;
         return this
             .runOnce(() -> io.runPosition(state.getAngle(), PIDSlot.SLOT_0))
@@ -113,8 +110,7 @@ public class Climber extends SubsystemBase {
      *
      * @return True if the climber is near the specified goal position, within a tolerance.
      */
-    public boolean nearGoal()
-    {
+    public boolean nearGoal() {
         return MathUtil.isNear(
             state.getAngle().in(Rotations),
             io.getPosition().in(Rotations),
@@ -128,8 +124,7 @@ public class Climber extends SubsystemBase {
      * @return a command that sets the climber to a specific position and ends when the climber is
      *         near the goal.
      */
-    public Command waitUntilGoalCommand(Distance position)
-    {
+    public Command waitUntilGoalCommand(Distance position) {
         return Commands.waitUntil(() -> {
             return nearGoal();
         });
@@ -141,8 +136,7 @@ public class Climber extends SubsystemBase {
      * @return a command that runs the homing routine for the climber. Ends then the climber is
      *         homed and zeroed.
      */
-    public Command homeCommand()
-    {
+    public Command homeCommand() {
         return Commands.sequence(
             this.runOnce(() -> io.runVoltage(Volts.of(-2))),
             Commands.waitUntil(homedTrigger),
@@ -156,15 +150,13 @@ public class Climber extends SubsystemBase {
      *
      * @return The estimated linear extension of the subsystem
      */
-    public Distance getPosition()
-    {
+    public Distance getPosition() {
         return ClimberConstants.CONVERTER.toDistance(io.getPosition());
 
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Logger.recordOutput(ClimberConstants.NAME + "/State", state.name());
         io.periodic();
     }
@@ -172,8 +164,7 @@ public class Climber extends SubsystemBase {
     /**
      * Closes the climber subsystem, releasing any resources.
      */
-    public void close()
-    {
+    public void close() {
         io.close();
     }
 }

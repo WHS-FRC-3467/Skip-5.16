@@ -35,8 +35,7 @@ public class BeamBreak {
      * @param name the name to use for logging
      * @param io the IO to interact with.
      */
-    public BeamBreak(String name, BeamBreakIO io)
-    {
+    public BeamBreak(String name, BeamBreakIO io) {
         this.name = name;
         this.io = io;
     }
@@ -44,8 +43,7 @@ public class BeamBreak {
     /**
      * Call this method periodically to update sensor readings and log data.
      */
-    public void periodic()
-    {
+    public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs(name, inputs);
     }
@@ -55,8 +53,7 @@ public class BeamBreak {
      *
      * @return Whether the beam is broken
      */
-    public boolean isBroken()
-    {
+    public boolean isBroken() {
         return inputs.isBroken;
     }
 

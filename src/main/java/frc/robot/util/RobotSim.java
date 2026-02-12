@@ -38,8 +38,7 @@ public class RobotSim {
         Drive drive,
         ShooterSuperstructure shooter,
         Indexer indexer,
-        IntakeSuperstructure intake)
-    {
+        IntakeSuperstructure intake) {
         Trigger shootSimFuel = new Trigger(() -> (shooter.readyToShoot.getAsBoolean()
             && (indexer.getSpeed() > 0.1) && (fuelSim.getHeldFuel() > 0)));
 
@@ -103,20 +102,17 @@ public class RobotSim {
         Drive drive,
         ShooterSuperstructure shooter,
         Indexer indexer,
-        IntakeSuperstructure intake)
-    {
+        IntakeSuperstructure intake) {
         registerFuelSimMechanisms(drive, shooter, indexer, intake);
         posePublisher = new MechanismPosePublisher(intake, shooter);
     }
 
-    public FuelSim getFuelSim()
-    {
+    public FuelSim getFuelSim() {
         return fuelSim;
     }
 
     /** Updates all data that only matters in sim/replay. Should be called periodically */
-    public void updateSim()
-    {
+    public void updateSim() {
         fuelSim.updateSim();
         posePublisher.update();
     }

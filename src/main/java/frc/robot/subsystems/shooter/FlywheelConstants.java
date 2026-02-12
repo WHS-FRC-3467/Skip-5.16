@@ -59,8 +59,7 @@ public class FlywheelConstants {
      * @param invert whether to invert the motor direction
      * @return configured TalonFXConfiguration for the flywheel motor
      */
-    public static TalonFXConfiguration getFXConfig(boolean invert)
-    {
+    public static TalonFXConfiguration getFXConfig(boolean invert) {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -101,8 +100,7 @@ public class FlywheelConstants {
      *
      * @return configured left flywheel mechanism
      */
-    public static FlywheelMechanism<?> getLeft()
-    {
+    public static FlywheelMechanism<?> getLeft() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -133,8 +131,7 @@ public class FlywheelConstants {
      *
      * @return configured right flywheel mechanism
      */
-    public static FlywheelMechanism<?> getRight()
-    {
+    public static FlywheelMechanism<?> getRight() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

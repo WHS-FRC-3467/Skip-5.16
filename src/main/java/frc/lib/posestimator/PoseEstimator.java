@@ -54,8 +54,7 @@ public class PoseEstimator {
         SwerveDriveKinematics kinematics,
         Time odometryBufferSize,
         double linearOdometryStdDev,
-        double angularOdometryStdDev)
-    {
+        double angularOdometryStdDev) {
         double linearOdometryVariance = Math.pow(linearOdometryStdDev, 2);
         double angularOdometryVariance = Math.pow(angularOdometryStdDev, 2);
 
@@ -71,8 +70,7 @@ public class PoseEstimator {
     public PoseEstimator(
         SwerveDriveKinematics kinematics,
         double linearOdometryStdDev,
-        double angularOdometryStdDev)
-    {
+        double angularOdometryStdDev) {
         this(
             kinematics,
             Seconds.of(DEFAULT_ODOMETRY_BUFFER_SIZE_SECONDS),
@@ -80,8 +78,7 @@ public class PoseEstimator {
             angularOdometryStdDev);
     }
 
-    public Pose2d odometryPose()
-    {
+    public Pose2d odometryPose() {
         return odometry.odometryPose();
     }
 
@@ -95,8 +92,7 @@ public class PoseEstimator {
      * @param observation The new odometry observation to be added. This observation typically
      *        contains information about the robot's movement such as displacement and rotation.
      */
-    public void addOdometryObservation(OdometryObservation observation)
-    {
+    public void addOdometryObservation(OdometryObservation observation) {
         Pose2d lastOdometryPose = odometry.odometryPose();
         odometry.addOdometryObservation(observation);
         Pose2d newOdometryPose = odometry.odometryPose();
@@ -115,8 +111,7 @@ public class PoseEstimator {
      *         the odometry pose at the given timestamp exists; otherwise, an empty
      *         {@link Optional}.
      */
-    public Optional<Transform2d> getPoseDeltaThenToNow(double timestampSeconds)
-    {
+    public Optional<Transform2d> getPoseDeltaThenToNow(double timestampSeconds) {
         var optionalOdometryPoseAtTime = odometry.odometryBuffer().getSample(timestampSeconds);
         if (optionalOdometryPoseAtTime.isEmpty()) {
             return Optional.empty();
@@ -138,8 +133,7 @@ public class PoseEstimator {
      * @return An {@code Optional<Pose2d>} containing the estimated pose at the specified timestamp,
      *         or an empty {@code Optional} if the pose cannot be determined.
      */
-    public Optional<Pose2d> getPoseAtTime(double timestampSeconds)
-    {
+    public Optional<Pose2d> getPoseAtTime(double timestampSeconds) {
         return getPoseDeltaThenToNow(timestampSeconds)
             .map(thenToNow -> estimatedPose.plus(thenToNow.inverse()));
     }
@@ -151,8 +145,7 @@ public class PoseEstimator {
      *
      * @param observation The vision pose observation
      */
-    public void addVisionObservation(VisionPoseObservation observation)
-    {
+    public void addVisionObservation(VisionPoseObservation observation) {
         // Attempt to get heading. Fails if the odometer has not recorded
         // a measurement near this timestamp
         Transform2d poseDeltaThenToNow =
@@ -221,8 +214,7 @@ public class PoseEstimator {
      *
      * @param pose the known {@link Pose2d} representing the robot’s field-relative position
      */
-    public void resetPose(Pose2d pose)
-    {
+    public void resetPose(Pose2d pose) {
         odometry.resetPose(pose);
         estimatedPose = pose;
     }

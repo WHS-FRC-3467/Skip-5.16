@@ -61,8 +61,7 @@ public class TowerConstants {
      *
      * @return configured TalonFXConfiguration for the tower motor
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -98,8 +97,7 @@ public class TowerConstants {
      *
      * @return configured Tower instance
      */
-    public static Tower get()
-    {
+    public static Tower get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

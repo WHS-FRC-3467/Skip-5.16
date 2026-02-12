@@ -31,8 +31,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 public record MechanismPosePublisher(IntakeSuperstructure intake, ShooterSuperstructure shooter) {
     private static final double DOOHICKEY_MAX_ROTATION_DEGREES = 60;
 
-    public void update()
-    {
+    public void update() {
         var hood =
             new Pose3d(
                 // Offset from origin (inverse of 1st component in

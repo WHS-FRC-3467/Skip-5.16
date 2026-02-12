@@ -30,8 +30,7 @@ public class Servo {
      *
      * @param io the servo IO interface implementation
      */
-    public Servo(ServoIO io)
-    {
+    public Servo(ServoIO io) {
         this.io = io;
     }
 
@@ -41,16 +40,14 @@ public class Servo {
      * @param angle position, where an angle with measure 0 corresponds to the leftmost position of
      *        the servo.
      */
-    public void setAngle(Angle angle)
-    {
+    public void setAngle(Angle angle) {
         io.setAngle(angle);
     }
 
     /**
      * If servo is real, this method disables the PWM output until told to run to a position again.
      */
-    public void stop()
-    {
+    public void stop() {
         io.stop();
     }
 }

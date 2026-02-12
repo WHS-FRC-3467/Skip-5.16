@@ -19,8 +19,7 @@ public class ShooterSuperstructureConstants {
      *
      * @return configured ShooterSuperstructure instance
      */
-    public static ShooterSuperstructure get()
-    {
+    public static ShooterSuperstructure get() {
         return new ShooterSuperstructure(
             HoodConstants.get(),
             FlywheelConstants.getLeft(),

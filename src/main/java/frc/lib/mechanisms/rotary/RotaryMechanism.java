@@ -49,16 +49,14 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     private final RotaryVisualizer visualizer;
 
     public RotaryMechanism(String name, RotaryMechCharacteristics characteristics, T io,
-        Optional<E> absoluteEncoder, String encoderName)
-    {
+        Optional<E> absoluteEncoder, String encoderName) {
         super(name, io);
         this.absoluteEncoder = absoluteEncoder;
         this.encoderName = encoderName;
         visualizer = new RotaryVisualizer(name, characteristics);
     }
 
-    private Optional<Angle> getTrajectoryAngle()
-    {
+    private Optional<Angle> getTrajectoryAngle() {
         if (inputs.controlType != ControlType.POSITION || inputs.positionError == null) {
             return Optional.empty();
         }
@@ -66,8 +64,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
         return Optional.of(inputs.activeTrajectoryPosition);
     }
 
-    private Optional<Angle> getGoalAngle()
-    {
+    private Optional<Angle> getGoalAngle() {
         if (inputs.controlType != ControlType.POSITION || inputs.positionError == null) {
             return Optional.empty();
         }
@@ -76,8 +73,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     }
 
     // Checks if mechanism is near a goal position within a specified tolerance
-    public boolean nearGoal(Angle goalAngle, Angle tolerance)
-    {
+    public boolean nearGoal(Angle goalAngle, Angle tolerance) {
         return MathUtil.isNear(
             getPosition().in(BaseUnits.AngleUnit),
             goalAngle.in(BaseUnits.AngleUnit),
@@ -85,8 +81,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         // First, refresh motor inputs from hardware in the base class.
         super.periodic();
 
@@ -103,8 +98,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         super.close();
         absoluteEncoder.ifPresent(AbsoluteEncoderIO::close);
     }

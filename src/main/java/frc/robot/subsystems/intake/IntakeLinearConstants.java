@@ -82,8 +82,7 @@ public class IntakeLinearConstants {
      *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -119,8 +118,7 @@ public class IntakeLinearConstants {
      *
      * @return A configured LinearMechanism instance
      */
-    public static LinearMechanism<?> getMechanism()
-    {
+    public static LinearMechanism<?> getMechanism() {
         LinearMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

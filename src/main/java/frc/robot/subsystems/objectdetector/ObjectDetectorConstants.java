@@ -150,8 +150,7 @@ public class ObjectDetectorConstants {
      *
      * @return a configured ObjectDetector instance
      */
-    public static ObjectDetector get()
-    {
+    public static ObjectDetector get() {
         RobotState robotState = RobotState.getInstance();
         switch (Constants.currentMode) {
             case REAL:

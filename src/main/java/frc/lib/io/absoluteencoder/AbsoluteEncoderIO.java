@@ -35,10 +35,8 @@ public interface AbsoluteEncoderIO extends AutoCloseable {
      *
      * @param inputs The structure to populate with updated sensor values.
      */
-    public default void updateInputs(AbsoluteEncoderInputs inputs)
-    {}
+    public default void updateInputs(AbsoluteEncoderInputs inputs) {}
 
     @Override
-    public default void close()
-    {}
+    public default void close() {}
 }

@@ -27,14 +27,12 @@ import frc.lib.mechanisms.Mechanism;
  */
 public abstract class FlywheelMechanism<T extends MotorIO> extends Mechanism<T> {
 
-    public FlywheelMechanism(String name, T io)
-    {
+    public FlywheelMechanism(String name, T io) {
         super(name, io);
     }
 
     @Override
-    public Current getTorqueCurrent()
-    {
+    public Current getTorqueCurrent() {
         return inputs.torqueCurrent;
     }
 }

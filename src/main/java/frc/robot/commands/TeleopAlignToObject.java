@@ -51,8 +51,7 @@ public class TeleopAlignToObject extends Command {
      */
     public TeleopAlignToObject(Drive drive, ObjectDetector objectDetector,
         ContourSelectionMode mode, DoubleSupplier xSupplier,
-        DoubleSupplier ySupplier, DoubleSupplier rotSupplier)
-    {
+        DoubleSupplier ySupplier, DoubleSupplier rotSupplier) {
         this.drive = drive;
         this.xSupplier = xSupplier;
         this.ySupplier = ySupplier;
@@ -67,8 +66,7 @@ public class TeleopAlignToObject extends Command {
      * Initializes the command by resetting the angular controller to ensure a clean start.
      */
     @Override
-    public void initialize()
-    {
+    public void initialize() {
         // Conservatively reset upon initialization
         strategy.getAngularController().reset(0.0);
     }
@@ -79,8 +77,7 @@ public class TeleopAlignToObject extends Command {
      * object is detected.
      */
     @Override
-    public void execute()
-    {
+    public void execute() {
         // Take translation inputs from joystick
         // Apply linear velocity shaping
         Translation2d linearVelocity = DriveCommands
@@ -120,8 +117,7 @@ public class TeleopAlignToObject extends Command {
      * @return false; this is a continuous teleop command that runs until interrupted.
      */
     @Override
-    public boolean isFinished()
-    {
+    public boolean isFinished() {
         return false;
     }
 }

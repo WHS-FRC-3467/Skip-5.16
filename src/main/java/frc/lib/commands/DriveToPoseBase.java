@@ -68,8 +68,7 @@ public abstract class DriveToPoseBase extends Command {
         LoggedTuneableProfiledPID linearController,
         LoggedTuneableProfiledPID angularController,
         LoggedTunableNumber maxLinearSpeed,
-        LoggedTunableNumber maxAngularSpeed)
-    {
+        LoggedTunableNumber maxAngularSpeed) {
         this.drive = drive;
         this.targetPose = targetPose;
         this.linearController = linearController;
@@ -86,8 +85,7 @@ public abstract class DriveToPoseBase extends Command {
      *
      * @param tolerance Allowable distance to target pose
      */
-    public DriveToPoseBase withDistanceTolerance(Distance tolerance)
-    {
+    public DriveToPoseBase withDistanceTolerance(Distance tolerance) {
         distanceTolerance = Optional.of(tolerance.in(Meters));
         return this;
     }
@@ -97,8 +95,7 @@ public abstract class DriveToPoseBase extends Command {
      *
      * @param tolerance Allowable angle to target pose
      */
-    public DriveToPoseBase withAngularTolerance(Angle tolerance)
-    {
+    public DriveToPoseBase withAngularTolerance(Angle tolerance) {
         angleTolerance = Optional.of(tolerance.in(Radians));
         return this;
     }
@@ -109,16 +106,14 @@ public abstract class DriveToPoseBase extends Command {
      * @param distanceTolerance Allowable distance to target pose
      * @param angleTolerance Allowable angle to target pose
      */
-    public DriveToPoseBase withTolerance(Distance distanceTolerance, Angle angleTolerance)
-    {
+    public DriveToPoseBase withTolerance(Distance distanceTolerance, Angle angleTolerance) {
         this.distanceTolerance = Optional.of(distanceTolerance.in(Meters));
         this.angleTolerance = Optional.of(angleTolerance.in(Radians));
         return this;
     }
 
     @Override
-    public void initialize()
-    {
+    public void initialize() {
         ChassisSpeeds fieldVelocity =
             ChassisSpeeds.fromRobotRelativeSpeeds(drive.getChassisSpeeds(),
                 robotState.getEstimatedPose().getRotation());
@@ -132,8 +127,7 @@ public abstract class DriveToPoseBase extends Command {
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
-    public void execute()
-    {
+    public void execute() {
         // Checks if tunable values for PID have changed and updates them if so
         linearController.updatePID();
         angularController.updatePID();
@@ -185,8 +179,7 @@ public abstract class DriveToPoseBase extends Command {
 
     // Returns true when the command should end.
     @Override
-    public boolean isFinished()
-    {
+    public boolean isFinished() {
         boolean withinDistanceTolerance = distanceTolerance
             .map(tolerance -> Math.abs(linearController.getPositionError()) < tolerance)
             .orElse(true);
@@ -215,8 +208,7 @@ public abstract class DriveToPoseBase extends Command {
      *
      * @return The distance error in meters
      */
-    public Distance getDistanceError()
-    {
+    public Distance getDistanceError() {
         return Meters.of(linearController.getPositionError());
     }
 
@@ -225,8 +217,7 @@ public abstract class DriveToPoseBase extends Command {
      *
      * @return The angular error in radians
      */
-    public Angle getAngularError()
-    {
+    public Angle getAngularError() {
         return Radians.of(angularController.getPositionError());
     }
 }

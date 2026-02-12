@@ -39,8 +39,7 @@ public class FlywheelVisualizer {
     private static double HEIGHT = .50; // Controls the height of the mech2d SmartDashboard
     private static double WIDTH = .50; // Controls width of the mech2d SmartDashboard
 
-    public FlywheelVisualizer(String name)
-    {
+    public FlywheelVisualizer(String name) {
         this.name = name;
         mechanism = new LoggedMechanism2d(WIDTH, HEIGHT);
 
@@ -88,8 +87,7 @@ public class FlywheelVisualizer {
      *
      * @param angle The angle to display
      */
-    public void setAngle(Angle angle)
-    {
+    public void setAngle(Angle angle) {
         roller.setAngle(angle.in(Degrees));
         SmartDashboard.putData(name + " Visualizer", mechanism); // Creates mech2d in SmartDashboard
     }
@@ -99,8 +97,7 @@ public class FlywheelVisualizer {
      *
      * @param color The background color to use
      */
-    public void setColor(Color color)
-    {
+    public void setColor(Color color) {
         mechanism.setBackgroundColor(new Color8Bit(color));
     }
 }

@@ -89,8 +89,7 @@ public class VisionSubsystem extends SubsystemBase {
      * @param result the pipeline result to pre-filter
      * @return {@code true} if the result passes preliminary checks, {@code false} otherwise
      */
-    public static boolean preFilter(PhotonPipelineResult result)
-    {
+    public static boolean preFilter(PhotonPipelineResult result) {
         if (!result.hasTargets()) {
             return false;
         }
@@ -117,8 +116,7 @@ public class VisionSubsystem extends SubsystemBase {
      * @param pose the pose to validate
      * @return {@code true} if the pose is valid, {@code false} otherwise
      */
-    public static boolean postFilter(Pose3d pose)
-    {
+    public static boolean postFilter(Pose3d pose) {
         double x = pose.getX();
         double y = pose.getY();
         double z = pose.getZ();
@@ -134,8 +132,7 @@ public class VisionSubsystem extends SubsystemBase {
      *
      * @param cameras the cameras to use for vision processing
      */
-    public VisionSubsystem(AprilTagCamera... cameras)
-    {
+    public VisionSubsystem(AprilTagCamera... cameras) {
         this.cameras = cameras;
         this.poseEstimators = new PhotonPoseEstimator[cameras.length];
         for (int i = 0; i < cameras.length; i++) {
@@ -150,8 +147,7 @@ public class VisionSubsystem extends SubsystemBase {
      * observations to RobotState for localization.
      */
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         for (int c = 0; c < cameras.length; c++) {
             String cameraLogPrefix = LOG_PREFIX + cameras[c].getProperties().name() + "/";
 
@@ -276,15 +272,13 @@ public class VisionSubsystem extends SubsystemBase {
         }
     }
 
-    private double getAvgDistanceMeters(List<PhotonTrackedTarget> targets)
-    {
+    private double getAvgDistanceMeters(List<PhotonTrackedTarget> targets) {
         return targets.stream()
             .mapToDouble(target -> target.getBestCameraToTarget().getTranslation().getNorm())
             .average().orElse(0.0);
     }
 
-    private List<Integer> getTagsUsed(List<PhotonTrackedTarget> targets)
-    {
+    private List<Integer> getTagsUsed(List<PhotonTrackedTarget> targets) {
         List<Integer> tagsUsed = new ArrayList<>(targets.size());
         for (var target : targets) {
             tagsUsed.add(target.getFiducialId());
@@ -292,8 +286,7 @@ public class VisionSubsystem extends SubsystemBase {
         return tagsUsed;
     }
 
-    private Optional<Pose3d> getTagPose(int id)
-    {
+    private Optional<Pose3d> getTagPose(int id) {
         return AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(id);
     }
 }

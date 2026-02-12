@@ -82,8 +82,7 @@ public class ObjectDetection {
      *
      * @param io The ObjectDetectionIO implementation to use
      */
-    public ObjectDetection(String cameraName, ObjectDetectionIO io)
-    {
+    public ObjectDetection(String cameraName, ObjectDetectionIO io) {
         this.cameraName = cameraName;
         this.io = io;
     }
@@ -91,8 +90,7 @@ public class ObjectDetection {
     /**
      * Periodically retrieve most recent ObjectDetection pipeline results and populate into inputs.
      */
-    public void periodic()
-    {
+    public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs(cameraName, inputs);
     }
@@ -102,8 +100,7 @@ public class ObjectDetection {
      *
      * @return Array of object information from latest pipeline result
      */
-    public PhotonTrackedTarget[] getTargets()
-    {
+    public PhotonTrackedTarget[] getTargets() {
         return inputs.latestTargets;
     }
 
@@ -120,8 +117,7 @@ public class ObjectDetection {
      * @return The estimated range to the object in meters.
      */
     public double rangeToTarget_SingleFactorArea(PhotonTrackedTarget target,
-        float a, float b, float c, float d)
-    {
+        float a, float b, float c, float d) {
         return (a * Math.pow(target.getArea(), 3)
             + b * Math.pow(target.getArea(), 2) + c * target.getArea() + d);
     }
@@ -142,8 +138,7 @@ public class ObjectDetection {
      * @return The estimated range to the object in meters.
      */
     public double rangeToTarget_FocalLength(PhotonTrackedTarget target,
-        double objectPhysicalHeightMeters, double cameraFocalLengthPixels, double cameraCalFactor)
-    {
+        double objectPhysicalHeightMeters, double cameraFocalLengthPixels, double cameraCalFactor) {
         // Return & sort corners to estimate detected object's digital height in pixels.
         double[] objectDigitalCorners_px =
             {target.getDetectedCorners().get(0).y, target.getDetectedCorners().get(1).y,
@@ -188,8 +183,7 @@ public class ObjectDetection {
      */
     private double rangeToTarget_Pitch(PhotonTrackedTarget target,
         Transform3d cameraTransform, double targetHeightMeters, double cameraCalFactor,
-        double cameraOffset)
-    {
+        double cameraOffset) {
         // Empirically-determined tolerance (m)
         // Below which, height differential is too small for algorithm to be reliable.
         double tolerance = 0.175;
@@ -253,8 +247,7 @@ public class ObjectDetection {
      */
     private double headingToTarget_Yaw(PhotonTrackedTarget target,
         Transform3d cameraTransform, double targetRangeMeters, double cameraCalFactor,
-        double cameraOffset)
-    {
+        double cameraOffset) {
         // Salient camera transform parameters
         // Camera's range to target (math utilizes camera's range, not robot's).
         double cameraRangeMeters = targetRangeMeters - cameraTransform.getX();
@@ -276,8 +269,7 @@ public class ObjectDetection {
      * @param targetHeadingMeters Robot's heading to the target in meters.
      * @return The estimated 2d distance from the robot to the target in meters.
      */
-    private double distanceToTarget2d(double targetRangeMeters, double targetHeadingMeters)
-    {
+    private double distanceToTarget2d(double targetRangeMeters, double targetHeadingMeters) {
         // Distance from robot to target
         return Math.sqrt((Math.pow(targetRangeMeters, 2) + Math.pow(targetHeadingMeters, 2)));
     }
@@ -297,8 +289,7 @@ public class ObjectDetection {
      * @return A Translation2d of the detected object in field coordinates.
      */
     private Translation2d estimateTargetToField(double targetRangeMeters,
-        double targetHeadingMeters, Pose2d robotPose)
-    {
+        double targetHeadingMeters, Pose2d robotPose) {
         Translation2d fieldToTargetTranslation = robotPose
             .transformBy(new Transform2d(targetRangeMeters, targetHeadingMeters, new Rotation2d()))
             .getTranslation();
@@ -321,8 +312,7 @@ public class ObjectDetection {
      */
     public void updateObservationPoseBuffer(int N,
         List<Translation2d> lastNDetections, double toleranceMeters,
-        Translation2d targetTranslation)
-    {
+        Translation2d targetTranslation) {
         Translation2d currentTranslation;
         boolean isNewDetection = true;
         double repeatIndex = 0;
@@ -382,8 +372,7 @@ public class ObjectDetection {
         Transform3d robotToCamera,
         double objectPhysicalHeightMeters, double rangeCalFactor, double rangeCalOffset,
         double headingCalFactor, double headingCalOffset,
-        Pose2d robotPose)
-    {
+        Pose2d robotPose) {
         // Robot-local range to target
         double range =
             rangeToTarget_Pitch(target,
@@ -444,8 +433,7 @@ public class ObjectDetection {
      * @return An optional {@link ObjectDetectionObservation}.
      */
     public Optional<ObjectDetectionObservation> getContourObservation(PhotonTrackedTarget[] targets,
-        ContourSelectionMode selection)
-    {
+        ContourSelectionMode selection) {
         if (targets == null || targets.length == 0) {
             return Optional.empty();
         }
@@ -487,8 +475,7 @@ public class ObjectDetection {
     }
 
     // Private helper for getContourObservation(). Finds blob with largest area.
-    private PhotonTrackedTarget getLargestContour(PhotonTrackedTarget[] result)
-    {
+    private PhotonTrackedTarget getLargestContour(PhotonTrackedTarget[] result) {
         PhotonTrackedTarget largestTarget = null;
         double maxArea = 0.0;
 
@@ -502,8 +489,7 @@ public class ObjectDetection {
     }
 
     // Private helper for getContourObservation(). Finds blob with smallest pitch.
-    private PhotonTrackedTarget getLowestContour(PhotonTrackedTarget[] result)
-    {
+    private PhotonTrackedTarget getLowestContour(PhotonTrackedTarget[] result) {
         PhotonTrackedTarget lowestTarget = null;
         double smallestPitch = 90.0;
 
@@ -521,8 +507,7 @@ public class ObjectDetection {
      *
      * @return True if the camera is connected, false otherwise
      */
-    public boolean isConnected()
-    {
+    public boolean isConnected() {
         return inputs.connected;
     }
 }

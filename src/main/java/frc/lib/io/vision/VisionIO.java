@@ -54,15 +54,13 @@ public interface VisionIO {
          * @param cameraMatrix 3x3 camera intrinsic matrix
          * @param distCoeffs 8x1 distortion coefficients
          */
-        public VisionIOInputs(Matrix<N3, N3> cameraMatrix, Matrix<N8, N1> distCoeffs)
-        {
+        public VisionIOInputs(Matrix<N3, N3> cameraMatrix, Matrix<N8, N1> distCoeffs) {
             this.cameraMatrix = cameraMatrix.getData();
             this.distCoeffs = distCoeffs.getData();
         }
 
         @Override
-        public void toLog(LogTable table)
-        {
+        public void toLog(LogTable table) {
             if (!hasLoggedIntrinsics) {
                 table.put("CameraMatrix", cameraMatrix);
                 table.put("DistCoeffs", distCoeffs);
@@ -82,8 +80,7 @@ public interface VisionIO {
         }
 
         @Override
-        public void fromLog(LogTable table)
-        {
+        public void fromLog(LogTable table) {
             if (!hasLoggedIntrinsics) {
                 cameraMatrix = table.get("CameraMatrix", (double[]) null);
                 distCoeffs = table.get("DistCoeffs", (double[]) null);
@@ -111,6 +108,5 @@ public interface VisionIO {
      *
      * @param inputs The input object to populate with sensor data
      */
-    public default void updateInputs(VisionIOInputs inputs)
-    {}
+    public default void updateInputs(VisionIOInputs inputs) {}
 }
