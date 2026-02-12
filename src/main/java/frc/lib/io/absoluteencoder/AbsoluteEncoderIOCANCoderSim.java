@@ -18,7 +18,6 @@ package frc.lib.io.absoluteencoder;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.sim.CANcoderSimState;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.lib.util.Device.CAN;
 
@@ -44,11 +43,5 @@ public class AbsoluteEncoderIOCANCoderSim extends AbsoluteEncoderIOCANCoder
     public void setAngle(Angle angle)
     {
         simState.setRawPosition(angle);
-    }
-
-    @Override
-    public void setAngularVelocity(AngularVelocity velocity)
-    {
-        simState.setVelocity(velocity);
     }
 }

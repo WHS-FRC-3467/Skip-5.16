@@ -72,12 +72,12 @@ public class LEDsConstants {
      */
     public static final LightsIOSim getLightsIOSim()
     {
-        return new LightsIOSim(NAME);
+        return new LightsIOSim();
     }
 
     /**
-     * Creates a replay lights IO implementation that does nothing.
-     * Used when replaying logs without hardware.
+     * Creates a replay lights IO implementation that does nothing. Used when replaying logs without
+     * hardware.
      * 
      * @return An empty LightsIO implementation for replay mode
      */
@@ -87,8 +87,8 @@ public class LEDsConstants {
     }
 
     /**
-     * Factory method to create an LEDs subsystem instance.
-     * Creates the appropriate lights IO based on the current robot mode (REAL, SIM, or REPLAY).
+     * Factory method to create an LEDs subsystem instance. Creates the appropriate lights IO based
+     * on the current robot mode (REAL, SIM, or REPLAY).
      * 
      * @return A fully configured LEDs subsystem
      */
@@ -96,9 +96,9 @@ public class LEDsConstants {
     {
         switch (Constants.currentMode) {
             case REAL:
-                return new LEDs(new LightsIOCandle(NAME, Ports.lights, CANDLE_CONFIG));
+                return new LEDs(new LightsIOCandle(Ports.lights, CANDLE_CONFIG));
             case SIM:
-                return new LEDs(new LightsIOSim(NAME));
+                return new LEDs(new LightsIOSim());
             case REPLAY:
                 return new LEDs(new LightsIO() {});
             default:
