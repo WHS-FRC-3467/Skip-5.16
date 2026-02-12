@@ -44,13 +44,18 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
      *
      * @param name The name of the mechanism
      * @param io The motor IO simulation
-     * @param dcMotor The DC motor characteristics
+     * @param motor The DC motor characteristics
      * @param mass The mass of the carriage
      * @param constraints The mechanism characteristics including orientation
      * @param useGravity Whether to simulate gravity effects (applies when orientation is vertical)
      */
-    public LinearMechanismSim(String name, MotorIOSim io, DCMotor dcMotor, Mass mass,
-        LinearMechCharacteristics constraints, Boolean useGravity)
+    public LinearMechanismSim(
+        String name,
+        MotorIOSim io,
+        DCMotor motor,
+        Mass mass,
+        Boolean useGravity,
+        LinearMechCharacteristics constraints)
     {
         super(name, constraints, io);
 
@@ -61,7 +66,7 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
         // is vertical (pitch = -90° for upward, 90° for downward), or when useGravity=false for
         // horizontal mechanisms.
         sim = new ElevatorSim(
-            dcMotor,
+            motor,
             io.getRotorToSensorRatio() * io.getSensorToMechanismRatio(),
             mass.in(Kilograms),
             constraints.converter().getDrumRadius().in(Meters),
@@ -93,7 +98,6 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
         lastTime = currentTime;
 
         io.setPosition(converter.toAngle(Meters.of(sim.getPositionMeters())));
-
         io.setRotorVelocity(
             converter.toAngle(Meters.of(sim.getVelocityMetersPerSecond())).per(Seconds));
 

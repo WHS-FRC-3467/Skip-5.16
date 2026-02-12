@@ -30,14 +30,14 @@ import frc.lib.util.Device;
  * Real hardware implementation of AbsoluteEncoderIO using CTRE CANcoder.
  * 
  * <p>
- * Interfaces with a CTRE CANcoder absolute magnetic encoder over the CAN bus.
- * Provides high-resolution absolute position sensing for mechanisms like swerve modules,
- * arms, and turrets. Uses Phoenix 6 API with signal-based updates.
+ * Interfaces with a CTRE CANcoder absolute magnetic encoder over the CAN bus. Provides
+ * high-resolution absolute position sensing for mechanisms like swerve modules, arms, and turrets.
+ * Uses Phoenix 6 API with signal-based updates.
  */
 public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
-    private static final Logger LOGGER = Logger.getLogger(AbsoluteEncoderIOCANCoder.class.getName());
+    private static final Logger LOGGER =
+        Logger.getLogger(AbsoluteEncoderIOCANCoder.class.getName());
 
-    private final String name;
     protected final CANcoder CANCoder;
 
     private final StatusSignal<Angle> angle;
@@ -48,15 +48,12 @@ public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
      * Constructs a CANcoder interface with the specified configuration.
      *
      * @param id CAN device identifier (ID and bus name)
-     * @param name Human-readable name for logging
      * @param configuration CANcoder configuration including magnet offset and sensor direction
      */
     public AbsoluteEncoderIOCANCoder(
         Device.CAN id,
-        String name,
         CANcoderConfiguration configuration)
     {
-        this.name = name;
         CANCoder = new CANcoder(id.id(), new CANBus(id.bus()));
 
         updateThread.CTRECheckErrorAndRetry(() -> CANCoder.getConfigurator().apply(configuration))
