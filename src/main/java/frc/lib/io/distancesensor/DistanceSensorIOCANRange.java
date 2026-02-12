@@ -25,7 +25,6 @@ import com.ctre.phoenix6.hardware.CANrange;
 import edu.wpi.first.units.measure.Distance;
 import frc.lib.util.Device;
 import frc.lib.util.CANUpdateThread;
-import lombok.Getter;
 
 /**
  * A distance sensor implementation that uses a CANRange
@@ -33,7 +32,6 @@ import lombok.Getter;
 public class DistanceSensorIOCANRange implements DistanceSensorIO {
     private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
 
-    @Getter
     private final String name;
     private final CANrange CANRange;
 

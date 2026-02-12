@@ -34,14 +34,15 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.intake.IntakeLinearConstants;
 import frc.robot.subsystems.intake.IntakeRollerConstants;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
+import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerConstants;
-import frc.robot.subsystems.intake.IntakeSuperstructure;
-import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
+import frc.robot.subsystems.shooter.HoodConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
@@ -54,8 +55,6 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.Distance;
 
 /**
@@ -106,7 +105,7 @@ public class RobotContainer {
         leds = LEDsConstants.get();
 
         if (RobotBase.isSimulation()) {
-            RobotSim.getInstance().addMechanismData(drive, shooter, indexer, 
+            RobotSim.getInstance().addMechanismData(drive, shooter, indexer,
                 intake);
         }
 
@@ -117,41 +116,41 @@ public class RobotContainer {
         autoChooser.addDefaultOption("None", new NoneAuto());
 
         // Preload Autos
-        autoChooser.addOption("PreloadAuto-Left", new PreloadAuto(drive, intake, 
+        autoChooser.addOption("PreloadAuto-Left", new PreloadAuto(drive, intake,
             indexer, tower, shooter, StartPosition.LEFT));
         autoChooser.addOption("PreloadAuto-Center",
-            new PreloadAuto(drive, intake, 
+            new PreloadAuto(drive, intake,
                 indexer, tower, shooter, StartPosition.CENTER));
         autoChooser.addOption("PreloadAuto-Right",
-            new PreloadAuto(drive, intake, 
+            new PreloadAuto(drive, intake,
                 indexer, tower, shooter, StartPosition.RIGHT));
 
         // Basic Neutral Autos
         autoChooser.addOption("BasicNeutralAuto-Left", new BasicNeutralAuto(drive, intake,
-             indexer, tower, shooter, StartPosition.LEFT));
+            indexer, tower, shooter, StartPosition.LEFT));
         autoChooser.addOption("BasicNeutralAuto-Right", new BasicNeutralAuto(drive, intake,
-             indexer, tower, shooter, StartPosition.RIGHT));
+            indexer, tower, shooter, StartPosition.RIGHT));
 
         // Depot Auto
         autoChooser.addOption("DepotAuto-Left",
-            new DepotAuto(drive, intake,  indexer, tower, shooter,
+            new DepotAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.LEFT));
         autoChooser.addOption("DepotAuto-Center",
-            new DepotAuto(drive, intake,  indexer, tower, shooter,
+            new DepotAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.CENTER));
         autoChooser.addOption("DepotAuto-Right",
-            new DepotAuto(drive, intake,  indexer, tower, shooter,
+            new DepotAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.RIGHT));
 
         // Outpost Autos
         autoChooser.addOption("OutpostAuto-Left",
-            new OutpostAuto(drive, intake,  indexer, tower, shooter,
+            new OutpostAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.LEFT));
         autoChooser.addOption("OutpostAuto-Center",
-            new OutpostAuto(drive, intake,  indexer, tower, shooter,
+            new OutpostAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.CENTER));
         autoChooser.addOption("OutpostAuto-Right",
-            new OutpostAuto(drive, intake,  indexer, tower, shooter,
+            new OutpostAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.RIGHT));
 
         autoChooser.onChange(auto -> {
@@ -191,10 +190,7 @@ public class RobotContainer {
         controller.rightTrigger().whileTrue(
             Commands.parallel(
                 // Aim towards target
-                DriveCommands.joystickDriveFacingTarget(
-                    drive,
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX()),
+                DriveCommands.staticAimTowardsTarget(drive),
                 // Prepare shooter superstructure
                 shooter.prepareShot(
                     // While shooter superstructure is prepared,
@@ -204,10 +200,7 @@ public class RobotContainer {
                         indexer.holdStateUntilInterrupted(Indexer.State.PULL),
                         tower.holdStateUntilInterrupted(Tower.State.SHOOT),
                         intake.cycle())
-                        .onlyWhile(
-                            () -> Math.abs(robotState.getAngleToTarget()
-                                .minus(robotState.getEstimatedPose().getRotation())
-                                .getDegrees()) < 1.0)
+                        .onlyWhile(robotState.facingTarget)
                         .repeatedly())))
             .onFalse(Commands.parallel(
                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
@@ -261,6 +254,9 @@ public class RobotContainer {
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
 
         SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
+        SmartDashboard.putData("Hood angle", Commands.runOnce(() -> System.out.println(
+            Degrees.of(90).minus(HoodConstants.MIN_ANGLE_OFFSET).minus(shooter.getHoodAngle())
+                .in(Degrees))));
 
         SmartDashboard.putData("Intake Roller/Eject",
             intake.setStateCommand(IntakeSuperstructure.State.EJECT));
@@ -285,18 +281,16 @@ public class RobotContainer {
             SmartDashboard.putData("Shoot Fuel", Commands.runOnce(() -> {
                 fuelSim.spawnFuel(
                     new Pose3d(robotState.getEstimatedPose())
-                        .plus(new Transform3d(Inches.of(-10), Inches.of(-3.6),
-                            Inches.of(21), Rotation3d.kZero))
+                        .plus(Constants.LEFT_SHOOTER_EXIT_TRANSFORM)
                         .getTranslation(),
                     fuelSim.launchVel(shooter.getAverageLinearVelocity(),
-                        Degrees.of(75.0).minus(shooter.getHoodAngle())));
+                        shooter.getExitAngle()));
                 fuelSim.spawnFuel(
                     new Pose3d(robotState.getEstimatedPose())
-                        .plus(new Transform3d(Inches.of(-10), Inches.of(3.6),
-                            Inches.of(21), Rotation3d.kZero))
+                        .plus(Constants.RIGHT_SHOOTER_EXIT_TRANSFORM)
                         .getTranslation(),
                     fuelSim.launchVel(shooter.getAverageLinearVelocity(),
-                        Degrees.of(75.0).minus(shooter.getHoodAngle())));
+                        shooter.getExitAngle()));
 
                 SmartDashboard.putData("Toggle Tip Drivebase",
                     Commands.run(

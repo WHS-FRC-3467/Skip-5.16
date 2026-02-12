@@ -84,12 +84,6 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
         super.updateInputs(inputs);
     }
 
-    @Override
-    public String getCamera()
-    {
-        return cameraName;
-    }
-
     // Private helper for simulating moving game pieces. Calls can have performance impact.
     @SuppressWarnings("unused")
     private void updateTargetPoses()

@@ -16,13 +16,13 @@
 package frc.robot.subsystems.tower;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -41,16 +41,14 @@ import frc.robot.Robot;
 public class TowerConstants {
     public static String NAME = "Tower";
 
-    public static final AngularVelocity MAX_VELOCITY =
-        Units.RadiansPerSecond.of(2 * Math.PI);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(2 * Math.PI);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
 
-
-    private static final double GEARING = (2.0 / 1.0);
+    private static final double GEARING = (36.0 / 12.0);
 
     public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.2);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
+    private static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
@@ -58,8 +56,8 @@ public class TowerConstants {
         .withV(10.0);
 
     /**
-     * Creates a TalonFX motor controller configuration for the tower mechanism.
-     * Configures current limits, voltage limits, neutral mode, gearing ratios, and PID gains.
+     * Creates a TalonFX motor controller configuration for the tower mechanism. Configures current
+     * limits, voltage limits, neutral mode, gearing ratios, and PID gains.
      * 
      * @return configured TalonFXConfiguration for the tower motor
      */
@@ -95,8 +93,8 @@ public class TowerConstants {
     }
 
     /**
-     * Creates and configures a Tower subsystem based on the current robot mode.
-     * Selects the appropriate flywheel mechanism implementation (real, sim, or replay).
+     * Creates and configures a Tower subsystem based on the current robot mode. Selects the
+     * appropriate flywheel mechanism implementation (real, sim, or replay).
      * 
      * @return configured Tower instance
      */

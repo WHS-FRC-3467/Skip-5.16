@@ -49,17 +49,17 @@ public class IntakeLinearConstants {
 
     public static final String NAME = "Intake Linear";
 
-    public static final double GEARING = (2.0 / 1.0);
+    public static final double GEARING = (42.0 / 12.0);
 
     public static final Distance MIN_DISTANCE = Inches.of(0.0);
-    public static final Distance MAX_DISTANCE = Inches.of(11.4);
+    public static final Distance MAX_DISTANCE = Inches.of(11.375);
     public static final Distance STARTING_DISTANCE = Inches.of(0.0);
 
-    public static final Distance DRUM_RADIUS = Inches.of(1.0);
-    public static final Mass CARRIAGE_MASS = Kilograms.of(.01);
+    public static final Distance DRUM_RADIUS = Inches.of(0.5);
+    public static final Mass CARRIAGE_MASS = Kilograms.of(.1);
     public static final DistanceAngleConverter CONVERTER = new DistanceAngleConverter(DRUM_RADIUS);
 
-    public static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
+    public static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
 
     // Orientation for the linear mechanism.
     // Uses WPILib's counter-clockwise positive convention around Y-axis:
