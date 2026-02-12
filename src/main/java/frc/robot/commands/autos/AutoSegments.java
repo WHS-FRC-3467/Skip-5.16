@@ -107,9 +107,8 @@ public class AutoSegments {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
-            Commands.parallel(
-                pathCommand.deadlineFor(
-                    intake.holdStateUntilInterruptedAndExtend(IntakeSuperstructure.State.INTAKE))),
+            pathCommand.deadlineFor(
+                intake.holdStateUntilInterruptedAndExtend(IntakeSuperstructure.State.INTAKE)),
             Commands.waitSeconds(afterPathWait.in(Seconds)),
             // Spin down intake
             intake.retract(),
