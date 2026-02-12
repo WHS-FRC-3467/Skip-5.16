@@ -167,9 +167,7 @@ public class AutoCommands {
     {
         return Commands.sequence(
             intake.retract(),
-            Commands.waitUntil(intake.isRetracted).withTimeout(2.0)
-        
-        ); // Wait until slam or max
+            Commands.waitUntil(intake.isRetracted).withTimeout(2.0)); // Wait until slam or max
     }
 
     /**
