@@ -17,10 +17,10 @@ package frc.robot.subsystems.intake;
 
 public class IntakeSuperstructureConstants {
      /**
-     * Creates and configures a IntakeSuperstructure I subsystem.
-     * Combines hood and both flywheel mechanisms into a unified shooter system.
-     * 
-     * @return configured intakeSuperstructure instance
+     * Creates and configures an {@link IntakeSuperstructure} subsystem.
+     * Combines the linear intake and roller intake mechanisms into a unified intake system.
+     *
+     * @return a configured {@link IntakeSuperstructure} instance
      */
     public static IntakeSuperstructure get()
     {
