@@ -32,7 +32,6 @@ import frc.lib.util.CANUpdateThread;
 public class DistanceSensorIOCANRange implements DistanceSensorIO {
     private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOCANRange.class.getName());
 
-    private final String name;
     private final CANrange CANRange;
 
     private final CANUpdateThread updateThread = new CANUpdateThread();
@@ -45,13 +44,10 @@ public class DistanceSensorIOCANRange implements DistanceSensorIO {
      * configuration.
      *
      * @param id The CANDevice identifying the bus and device ID for this sensor.
-     * @param name A human-readable name for this sensor instance.
      * @param config The CANrangeConfiguration to apply to the sensor upon initialization.
      */
-    public DistanceSensorIOCANRange(Device.CAN id, String name, CANrangeConfiguration config)
+    public DistanceSensorIOCANRange(Device.CAN id, CANrangeConfiguration config)
     {
-        this.name = name;
-
         CANRange = new CANrange(id.id(), new CANBus(id.bus()));
 
         updateThread.CTRECheckErrorAndRetry(() -> CANRange.getConfigurator().apply(config))

@@ -25,9 +25,9 @@ import frc.lib.io.distancesensor.DistanceSensorInputsAutoLogged;
  * Class for simplified DistanceSensorIO implementation
  */
 public class DistanceSensor {
+    private final String name;
     private final DistanceSensorIO io;
     private final DistanceSensorInputsAutoLogged inputs = new DistanceSensorInputsAutoLogged();
-    private final String name;
 
     /**
      * Constructs a Distance Sensor.
@@ -78,4 +78,21 @@ public class DistanceSensor {
         return inputs.ambientSignal;
     }
 
+    /**
+     * Whether the current measured reading is between a specified min and max distance
+     * 
+     * @param min minimum distance to compare to
+     * @param max maximum distance to compare to
+     * @return boolean specifying whether current distance reading is contained [min, max]
+     */
+    public boolean betweenDistance(Distance min, Distance max)
+    {
+        Optional<Distance> distanceOpt = getDistance();
+        if (distanceOpt.isEmpty()) {
+            return false;
+        }
+
+        Distance distance = distanceOpt.get();
+        return distance.gte(min) && distance.lte(max);
+    }
 }
