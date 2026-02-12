@@ -18,8 +18,8 @@ package frc.lib.util;
 import java.util.function.BooleanSupplier;
 
 /**
- * Detects rising edges (transitions from false to true) in a boolean signal.
- * Useful for triggering one-time actions when a condition becomes true.
+ * Detects rising edges (transitions from false to true) in a boolean signal. Useful for triggering
+ * one-time actions when a condition becomes true.
  */
 public class RisingEdge implements BooleanSupplier {
     private final BooleanSupplier source;

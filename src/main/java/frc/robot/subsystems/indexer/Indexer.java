@@ -17,9 +17,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Subsystem that controls the indexer mechanism for moving game pieces within the robot.
- * The indexer can pull game pieces in, expel them, or stop.
- * Uses a flywheel mechanism for velocity control.
+ * Subsystem that controls the indexer mechanism for moving game pieces within the robot. The
+ * indexer can pull game pieces in, expel them, or stop. Uses a flywheel mechanism for velocity
+ * control.
  */
 public class Indexer extends SubsystemBase {
     private final FlywheelMechanism<?> io;
@@ -42,7 +42,7 @@ public class Indexer extends SubsystemBase {
 
     /**
      * Constructs an Indexer subsystem.
-     * 
+     *
      * @param io The flywheel mechanism for controlling the indexer motor
      */
     public Indexer(FlywheelMechanism<?> io)
@@ -66,10 +66,10 @@ public class Indexer extends SubsystemBase {
 
     /**
      * Sets the subsystem's state
-     * 
+     *
      * In a sequence, this command is non-blocking (finishes instantly), but still requires the
      * subsystem (you cannot set the subsystem's state twice in a {@link ParallelCommandGroup}))
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
@@ -82,9 +82,9 @@ public class Indexer extends SubsystemBase {
     /**
      * Holds a state until the command is interrupted. Once the command is interrupted, its state
      * will automatically be set to {@link State#STOP}
-     * 
+     *
      * In a sequence, this command is blocking and requires this subsystem
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
@@ -96,7 +96,7 @@ public class Indexer extends SubsystemBase {
 
     /**
      * Checks if the indexer velocity is near the current state's setpoint.
-     * 
+     *
      * @return true if the indexer is within tolerance of the setpoint, false otherwise
      */
     public boolean nearSetpoint()
@@ -117,7 +117,7 @@ public class Indexer extends SubsystemBase {
 
     /**
      * Gets the current velocity of the indexer motor.
-     * 
+     *
      * @return The velocity in rotations per second
      */
     public double getSpeed()

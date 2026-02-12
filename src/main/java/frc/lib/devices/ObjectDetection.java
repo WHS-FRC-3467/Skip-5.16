@@ -35,7 +35,7 @@ import edu.wpi.first.units.measure.Distance;
 
 /**
  * Represents a single Object Detection camera on the robot.
- * 
+ *
  * <p>
  * Handles interfacing with the {@link ObjectDetectionIO} hardware layer. While the IO (hardware)
  * layer is responsible for defining the variables of interest coming from our camera, this device
@@ -53,12 +53,12 @@ public class ObjectDetection {
 
     /**
      * Represents an Object Detection observation.
-     * 
+     *
      * <p>
      * These values are a combination of baseline return values from the camera and device-level
      * calculations using those basic values. This structure can represent essential observations
      * from an ML or HSV Color Detection pipeline.
-     * 
+     *
      * @param objID Object ID (ML pipeline only, negative sentinel value otherwise).
      * @param confidence Object ID confidence (ML pipeline only, negative sentinel value otherwise).
      * @param pitch Pitch of the object relative to the centerline of the camera.
@@ -79,6 +79,7 @@ public class ObjectDetection {
      * Currently factored for PhotonVision only.
      *
      * @param cameraName The name of the camera for logging purposes
+     *
      * @param io The ObjectDetectionIO implementation to use
      */
     public ObjectDetection(String cameraName, ObjectDetectionIO io)
@@ -110,7 +111,7 @@ public class ObjectDetection {
      * Uses an empirical curve fit of area to estimate distance (in.). deltaS = a*area^3 + b*area^2
      * + c*area + d. Cubic fit required to better match governing physics (tan(x) based). Determine
      * fit coefficients from calibration procedure.
-     * 
+     *
      * @param target A data type containing vision pipeline results for a single object.
      * @param a Coefficient for cubic term in curve fit equation.
      * @param b Coefficient for quadratic term in curve fit equation.
@@ -126,12 +127,12 @@ public class ObjectDetection {
     }
 
     /**
-     * Uses the camera's focal length &amp; trig to estimate range from target; requires no measurement
-     * of pitch. Utilizes pinhole model of a camera. Note that camera focal length in pixels = (P *
-     * D) / H, where P = perceived width of known object (px), D = known distance from camera (in.),
-     * H = known height of object (in.). For unreliable corner detection or object digital height
-     * calculation, use rangeToTarget_SingleFactorArea.
-     * 
+     * Uses the camera's focal length &amp; trig to estimate range from target; requires no
+     * measurement of pitch. Utilizes pinhole model of a camera. Note that camera focal length in
+     * pixels = (P * D) / H, where P = perceived width of known object (px), D = known distance from
+     * camera (in.), H = known height of object (in.). For unreliable corner detection or object
+     * digital height calculation, use rangeToTarget_SingleFactorArea.
+     *
      * @param target A data type containing vision pipeline results for a single object.
      * @param objectPhysicalHeightMeters The physical height of the object being targeted in meters.
      * @param cameraFocalLengthPixels The camera focal length in pixels as determined by a
@@ -310,7 +311,7 @@ public class ObjectDetection {
      * recent detection (i.e. end of the list). If a detection is deemed a repeat (according to the
      * passed Translation2D tolerance), it is removed from its current location in robot memory and
      * re-added to the end of the list.
-     * 
+     *
      * @param N The number of last detections to store in memory.
      * @param lastNDetections The list of Translation2d objects representing the camera's memory of
      *        last N detections.
@@ -356,14 +357,14 @@ public class ObjectDetection {
 
     /**
      * Returns the latest Object observation.
-     * 
+     *
      * <p>
      * This function returns a full record representing the detected Object -- Object ID,
      * confidence, pitch, yaw, area, robot distance to target, and target's field pose -- usually
      * requiring a functional ML pipeline. A PhotonVision ML detection that fails to identify the
-     * Object will return object ID &amp; confidence as -1. Failed pose estimation will return relevant
-     * fields as empty.
-     * 
+     * Object will return object ID &amp; confidence as -1. Failed pose estimation will return
+     * relevant fields as empty.
+     *
      * @param target A single PhotonTrackedTarget representing the detected object of interest,
      *        likely from objectDetection.getTargets()[i].
      * @param robotToCamera robotToCamera transform.
@@ -427,15 +428,16 @@ public class ObjectDetection {
 
     /**
      * Returns the latest Contour (i.e. Color or Blob) observation.
-     * 
+     *
      * <p>
      * This function returns a partial record representing the detected Blob (i.e Color or Contour)
-     * containing pitch, yaw, &amp; area. These are baseline PhotonVision results relevant to multiple
-     * pipelines (Color, ML, etc.). Blob observations don't attempt to generate poses, object IDs,
-     * or confidence. Therefore, fields relevant to pose estimation are returned empty and object ID
-     * / confidence are assigned assigned -2 to differentiate this result from an ML detection that
-     * failed to generate both an ID &amp; a pose (-1). See {@link #getObjectObservation}.
-     * 
+     * containing pitch, yaw, &amp; area. These are baseline PhotonVision results relevant to
+     * multiple pipelines (Color, ML, etc.). Blob observations don't attempt to generate poses,
+     * object IDs, or confidence. Therefore, fields relevant to pose estimation are returned empty
+     * and object ID / confidence are assigned assigned -2 to differentiate this result from an ML
+     * detection that failed to generate both an ID &amp; a pose (-1). See
+     * {@link #getObjectObservation}.
+     *
      * @param targets An array of PhotonTrackedTargets, likely from objectDetection.getTargets().
      * @param selection An enum representing the two selection modes: LARGEST or LOWEST. LARGEST
      *        returns Blob with greatest area, LOWEST returns Blob with smallest pitch.

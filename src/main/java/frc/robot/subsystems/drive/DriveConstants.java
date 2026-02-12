@@ -16,7 +16,7 @@ import frc.robot.Ports;
 
 /**
  * Configuration constants for the swerve drivetrain.
- * 
+ *
  * <p>
  * This class contains all hardware configuration for the swerve drive system, including:
  * <ul>
@@ -25,11 +25,11 @@ import frc.robot.Ports;
  * <li>Module-specific configurations (encoder offsets, motor IDs, inversions)</li>
  * <li>Simulation parameters (inertia, friction voltages)</li>
  * </ul>
- * 
+ *
  * <p>
  * Generated using CTRE Tuner X Swerve Project Generator. Module encoder offsets should be
  * re-calibrated when encoders are changed or modules are rebuilt.
- * 
+ *
  * @see <a href="https://v6.docs.ctr-electronics.com/en/stable/docs/tuner/tuner-swerve/index.html">
  *      CTRE Tuner X Swerve Documentation</a>
  */
@@ -371,10 +371,10 @@ public class DriveConstants {
 
 
     /**
-     * Maximum absolute pitch/roll angle at which the drivetrain is still considered level.
-     * When the robot's pitch/roll exceeds this threshold, the drivetrain is treated as
-     * angled and vision-based pose updates are ignored to prevent inaccurate pose
-     * estimation while the robot is on an incline or bump.
+     * Maximum absolute pitch/roll angle at which the drivetrain is still considered level. When the
+     * robot's pitch/roll exceeds this threshold, the drivetrain is treated as angled and
+     * vision-based pose updates are ignored to prevent inaccurate pose estimation while the robot
+     * is on an incline or bump.
      */
     public static final Angle ANGLED_TOLERANCE = Degrees.of(2.0);
 

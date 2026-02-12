@@ -80,7 +80,7 @@ public class GyroIOPigeon2 implements GyroIO {
             .toArray(Rotation2d[]::new);
         yawTimestampQueue.clear();
         yawPositionQueue.clear();
-        
+
     }
 
     @Override
@@ -100,7 +100,7 @@ public class GyroIOPigeon2 implements GyroIO {
     {
         return pitch.getValueAsDouble();
     }
-    
+
     @Override
     public double getRoll()
     {

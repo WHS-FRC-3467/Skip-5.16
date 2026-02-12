@@ -167,7 +167,7 @@ public interface MotorIO extends AutoCloseable {
 
     /**
      * Sets the position of the motor's internal encoder
-     * 
+     *
      * @param position Desired position to set encoder to
      */
     public default void setEncoderPosition(Angle position)
@@ -175,7 +175,7 @@ public interface MotorIO extends AutoCloseable {
 
     /**
      * Updates one PID slot on the motor
-     * 
+     *
      * @param slot The slot to update
      * @param pid The PID to set
      */

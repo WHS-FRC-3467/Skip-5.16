@@ -25,16 +25,16 @@ import edu.wpi.first.math.numbers.N8;
 
 /**
  * Hardware interface for vision cameras that detect AprilTags for robot localization.
- * 
+ *
  * <p>
- * This interface defines the contract for vision camera hardware, allowing the robot to read
- * camera results for pose estimation. Implementations handle vendor-specific camera APIs
- * (PhotonVision, Limelight, etc.) while the rest of the robot code remains hardware-agnostic.
+ * This interface defines the contract for vision camera hardware, allowing the robot to read camera
+ * results for pose estimation. Implementations handle vendor-specific camera APIs (PhotonVision,
+ * Limelight, etc.) while the rest of the robot code remains hardware-agnostic.
  */
 public interface VisionIO {
     /**
-     * Container for vision camera sensor readings and camera intrinsics.
-     * Logged automatically by AdvantageKit for replay and analysis.
+     * Container for vision camera sensor readings and camera intrinsics. Logged automatically by
+     * AdvantageKit for replay and analysis.
      */
     public static class VisionIOInputs implements LoggableInputs {
         /** Whether the camera is connected and responding */
@@ -106,8 +106,8 @@ public interface VisionIO {
     }
 
     /**
-     * Updates the vision inputs with the latest readings from the camera.
-     * Called periodically by the vision device layer.
+     * Updates the vision inputs with the latest readings from the camera. Called periodically by
+     * the vision device layer.
      *
      * @param inputs The input object to populate with sensor data
      */

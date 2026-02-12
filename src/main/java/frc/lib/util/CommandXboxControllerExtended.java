@@ -26,19 +26,20 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /**
  * Extended Xbox controller with additional functionality for FRC use.
- * 
+ *
  * <p>
- * This class extends WPILib's CommandXboxController to add configurable deadbands,
- * input curves, and rumble commands. These features help improve driver control
- * precision and provide tactile feedback during matches.
- * 
+ * This class extends WPILib's CommandXboxController to add configurable deadbands, input curves,
+ * and rumble commands. These features help improve driver control precision and provide tactile
+ * feedback during matches.
+ *
  * <p>
  * Example usage:
+ *
  * <pre>{@code
  * CommandXboxControllerExtended driver = new CommandXboxControllerExtended(0)
- *     .withDeadband(0.1)  // Add 10% deadband to all sticks
- *     .applyCurve(true);  // Square inputs for finer control at low speeds
- * 
+ *     .withDeadband(0.1) // Add 10% deadband to all sticks
+ *     .applyCurve(true); // Square inputs for finer control at low speeds
+ *
  * // Use rumble for feedback
  * Command scoreSignal = driver.rumbleForTime(RumbleType.kBothRumble, 0.5, Seconds.of(0.3));
  * }</pre>
@@ -61,7 +62,7 @@ public class CommandXboxControllerExtended extends CommandXboxController {
 
     /**
      * Apply a deadband to all sticks
-     * 
+     *
      * @param deadband The percent deadband to apply
      * @return this
      */
@@ -73,7 +74,7 @@ public class CommandXboxControllerExtended extends CommandXboxController {
 
     /**
      * Square the output of the controllers to provide precise control
-     * 
+     *
      * @param applyCurve Whether or not to apply the curve
      * @return this
      */
@@ -85,7 +86,7 @@ public class CommandXboxControllerExtended extends CommandXboxController {
 
     /**
      * Rumble controller until command ends
-     * 
+     *
      * @param side Which motor to rumble
      * @param intensity Percentage for rumble intensity
      * @return Command to rumble the controller
@@ -98,7 +99,7 @@ public class CommandXboxControllerExtended extends CommandXboxController {
 
     /**
      * Rumble controller for a set amount of time
-     * 
+     *
      * @param side Which motor to rumble
      * @param intensity Percentage for rumble intensity
      * @param time Length of time to rumble

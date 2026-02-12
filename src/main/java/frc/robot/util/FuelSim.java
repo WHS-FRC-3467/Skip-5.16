@@ -358,7 +358,7 @@ public class FuelSim {
 
     /**
      * Creates a new instance of FuelSim
-     * 
+     *
      * @param tableKey NetworkTable to log fuel positions to as an array of {@link Translation3d}
      *        structs.
      */
@@ -472,7 +472,7 @@ public class FuelSim {
 
     /**
      * Sets the number of physics iterations per loop (0.02s)
-     * 
+     *
      * @param subticks the number of physics iterations per loop
      */
     public void setSubticks(int subticks)
@@ -482,7 +482,7 @@ public class FuelSim {
 
     /**
      * Registers a robot with the fuel simulator
-     * 
+     *
      * @param width from left to right (y-axis)
      * @param length from front to back (x-axis)
      * @param bumperHeight the height of the bumper
@@ -537,7 +537,7 @@ public class FuelSim {
 
     /**
      * Adds a fuel onto the field
-     * 
+     *
      * @param pos Position to spawn at
      * @param vel Initial velocity vector
      */
@@ -549,7 +549,7 @@ public class FuelSim {
     /**
      * Spawns a fuel onto the field with a specified launch velocity and angles, accounting for
      * robot movement
-     * 
+     *
      * @param launchVelocity Initial launch velocity
      * @param hoodAngle Hood angle where 0 is launching horizontally and 90 degrees is launching
      *        straight up
@@ -704,7 +704,7 @@ public class FuelSim {
     /**
      * Registers an intake with the fuel simulator. This intake will remove fuel from the field
      * based on the `ableToIntake` parameter.
-     * 
+     *
      * @param xMin Minimum x position for the bounding box
      * @param xMax Maximum x position for the bounding box
      * @param yMin Minimum y position for the bounding box
@@ -722,7 +722,7 @@ public class FuelSim {
     /**
      * Registers an intake with the fuel simulator. This intake will remove fuel from the field
      * based on the `ableToIntake` parameter.
-     * 
+     *
      * @param xMin Minimum x position for the bounding box
      * @param xMax Maximum x position for the bounding box
      * @param yMin Minimum y position for the bounding box
@@ -739,7 +739,7 @@ public class FuelSim {
     /**
      * Registers an intake with the fuel simulator. This intake will always remove fuel from the
      * field.
-     * 
+     *
      * @param xMin Minimum x position for the bounding box
      * @param xMax Maximum x position for the bounding box
      * @param yMin Minimum y position for the bounding box
@@ -755,7 +755,7 @@ public class FuelSim {
     /**
      * Registers an intake with the fuel simulator. This intake will always remove fuel from the
      * field.
-     * 
+     *
      * @param xMin Minimum x position for the bounding box
      * @param xMax Maximum x position for the bounding box
      * @param yMin Minimum y position for the bounding box
@@ -831,7 +831,7 @@ public class FuelSim {
 
         /**
          * Get the current count of fuel scored in this hub
-         * 
+         *
          * @return The current count of fuel scored in this hub
          */
         public int getScore()
@@ -908,7 +908,7 @@ public class FuelSim {
 
     /**
      * Calculates the launch velocity vector for fuel based on shooter parameters and robot state
-     * 
+     *
      * @param vel Linear velocity of the shooter
      * @param angle Launch angle of the shooter
      * @return 3D velocity vector in field coordinates

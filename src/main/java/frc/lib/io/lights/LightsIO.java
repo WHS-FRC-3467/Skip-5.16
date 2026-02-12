@@ -22,7 +22,7 @@ public interface LightsIO {
 
     /**
      * Getter for the name of the lights
-     * 
+     *
      * @return The name of the lights
      */
     public default String getName()

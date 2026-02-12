@@ -33,10 +33,10 @@ import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.PID;
 
 /**
- * Abstract base class for all robot mechanisms that use motors.
- * Provides common functionality for motor control, PID tuning, logging, and visualization.
- * Mechanisms include flywheels, linear actuators, and rotary arms.
- * 
+ * Abstract base class for all robot mechanisms that use motors. Provides common functionality for
+ * motor control, PID tuning, logging, and visualization. Mechanisms include flywheels, linear
+ * actuators, and rotary arms.
+ *
  * @param <T> the type of MotorIO implementation used by this mechanism
  */
 public abstract class Mechanism<T extends MotorIO> {
@@ -88,7 +88,7 @@ public abstract class Mechanism<T extends MotorIO> {
 
     /**
      * Enables tunable PID for a slot using this mechanism's name as the logging prefix.
-     * 
+     *
      * @param slot The slot to update
      * @param defaultPid The default PID values
      */
@@ -212,7 +212,7 @@ public abstract class Mechanism<T extends MotorIO> {
 
     /**
      * Updates one PID slot on the motor
-     * 
+     *
      * @param slot The slot to update
      * @param pid The PID to set
      */
@@ -223,7 +223,7 @@ public abstract class Mechanism<T extends MotorIO> {
 
     /**
      * Sets the position of the motor's internal encoder
-     * 
+     *
      * @param position Desired position to set encoder to
      */
     public void setEncoderPosition(Angle position)
@@ -243,7 +243,7 @@ public abstract class Mechanism<T extends MotorIO> {
 
     /**
      * Getter for angle of the motor
-     * 
+     *
      * @return Angle of the motor or fused encoder
      */
     public Angle getPosition()
@@ -281,7 +281,7 @@ public abstract class Mechanism<T extends MotorIO> {
 
     /**
      * Supplier for the Pose3d of the mechanism
-     * 
+     *
      * @return Supplier for the Pose3d
      */
     public Supplier<Pose3d> getPoseSupplier()

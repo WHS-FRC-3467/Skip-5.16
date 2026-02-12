@@ -91,7 +91,7 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
     /**
      * Gets all poses from all loaded paths, mirroring from left to right side within an alliance,
      * as necessary.
-     * 
+     *
      * @return List of all path poses, or empty list if any paths failed to load
      */
     public List<Pose2d> getAllPathPoses()

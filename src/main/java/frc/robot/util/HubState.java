@@ -115,7 +115,7 @@ public class HubState {
 
     /**
      * Find the next time that the hub will change based on the current match time
-     * 
+     *
      * @param matchTime the current match time in seconds
      * @return the next hub change time, or 0.0 if no hub changes are scheduled
      */

@@ -12,24 +12,24 @@ import lombok.Getter;
 
 /**
  * Utility for tracking and visualizing game piece positions in simulation.
- * 
+ *
  * <p>
- * This class helps visualize game pieces (balls, cones, cubes) in AdvantageScope
- * during simulation and testing. It tracks a 3D pose and logs it for visualization,
- * making it easier to debug intake, scoring, and game piece manipulation mechanisms.
- * 
+ * This class helps visualize game pieces (balls, cones, cubes) in AdvantageScope during simulation
+ * and testing. It tracks a 3D pose and logs it for visualization, making it easier to debug intake,
+ * scoring, and game piece manipulation mechanisms.
+ *
  * <p>
  * Example usage:
+ *
  * <pre>{@code
  * // Create a visualizer for a note
  * GamePieceVisualizer note = new GamePieceVisualizer(
  *     "Note",
- *     new Pose3d(5.0, 3.0, 0.5, new Rotation3d())
- * );
- * 
+ *     new Pose3d(5.0, 3.0, 0.5, new Rotation3d()));
+ *
  * // Update position when intaked
  * note.setPose(robot.getIntakePose());
- * 
+ *
  * // Hide when scored
  * note.hide();
  * }</pre>
@@ -43,7 +43,7 @@ public class GamePieceVisualizer {
 
     /**
      * Creates a new game piece visualizer at the specified pose.
-     * 
+     *
      * @param name Unique identifier for this game piece (used in logging)
      * @param pose3d Initial 3D pose of the game piece
      */

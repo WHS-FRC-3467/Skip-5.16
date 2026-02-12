@@ -144,7 +144,7 @@ public class AutoCommands {
      * Creates a command to extend the intake linearly. This command is blocking (2s max) until the
      * extension is complete. The intake will remain extended and energized at the conclusion of
      * this command.
-     * 
+     *
      * @param intake the linear intake subsystem
      * @return a command that retracts the intake and keeps it retracted when finished
      */
@@ -159,7 +159,7 @@ public class AutoCommands {
      * Creates a command to retract the intake linearly. This command is blocking (2s max) until the
      * retraction is complete. The intake will remain retracted and energized at the conclusion of
      * this command.
-     * 
+     *
      * @param intake the linear intake subsystem
      * @return a command that retracts the intake and keeps it retracted when finished
      */
@@ -168,7 +168,7 @@ public class AutoCommands {
         return Commands.sequence(
             intake.retract(),
             Commands.waitUntil(intake.isRetracted).withTimeout(2.0)
-        
+
         ); // Wait until slam or max
     }
 
@@ -178,7 +178,7 @@ public class AutoCommands {
      * shootFuel() commands within an AutoSegment to prepare the hopper for game piece transport.
      * Subsystems end up in unguaranteed state; be sure to decorate or sequence this call with a
      * known state control command.
-     * 
+     *
      * @param intake the linear intake subsystem
      * @param tower the tower subsystem
      * @param indexer the indexer subsystem
@@ -209,7 +209,7 @@ public class AutoCommands {
      * Prepares the shooter for shooting at THE HUB at the end of the provided path. Only valid to
      * prepare shots for THE HUB. Perpetual command -- never spins down. Therefore, to end, this
      * should be interrupted by a parent command group or timed-out. Primarily for use in autos.
-     * 
+     *
      * @param path the path to drive, the shooter will prepare to shoot at the end of this path.
      * @param shooter the shooter subsystem
      * @return a command that prepares the shooter to shoot THE HUB from the end of the provided

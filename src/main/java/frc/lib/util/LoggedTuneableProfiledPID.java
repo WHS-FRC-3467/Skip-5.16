@@ -9,23 +9,24 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 /**
  * A ProfiledPIDController with tunable gains that can be adjusted from the dashboard.
- * 
+ *
  * <p>
- * This controller extends WPILib's ProfiledPIDController to add runtime tunability.
- * PID gains (kP, kI, kD) and motion profile constraints (max velocity and acceleration)
- * can be adjusted through NetworkTables when tuning mode is enabled.
- * 
+ * This controller extends WPILib's ProfiledPIDController to add runtime tunability. PID gains (kP,
+ * kI, kD) and motion profile constraints (max velocity and acceleration) can be adjusted through
+ * NetworkTables when tuning mode is enabled.
+ *
  * <p>
  * Call {@link #updatePID()} periodically to check for and apply updated values from the dashboard.
- * 
+ *
  * <p>
  * Example usage:
+ *
  * <pre>{@code
- * LoggedTuneableProfiledPID controller = 
+ * LoggedTuneableProfiledPID controller =
  *     new LoggedTuneableProfiledPID("Arm/PID", 2.0, 0.0, 0.1, 2.0, 5.0);
- * 
+ *
  * // In periodic():
- * controller.updatePID();  // Apply any changes from dashboard
+ * controller.updatePID(); // Apply any changes from dashboard
  * double output = controller.calculate(position, setpoint);
  * }</pre>
  */

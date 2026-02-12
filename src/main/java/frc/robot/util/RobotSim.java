@@ -93,7 +93,7 @@ public class RobotSim {
 
     /**
      * Adds mechanism data to the sim
-     * 
+     *
      * @param drive Drive subsystem for robot pose tracking
      * @param shooter Shooter superstructure
      * @param indexer Indexer subsystem

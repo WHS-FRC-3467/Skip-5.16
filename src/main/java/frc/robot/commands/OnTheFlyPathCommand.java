@@ -56,7 +56,7 @@ public class OnTheFlyPathCommand extends Command {
 
     /**
      * Automatically generates a PathPlanner path on-the-fly based on dynamic inputs.
-     * 
+     *
      * @param drive The Drive subsystem to get the current pose from
      * @param currentPose A Supplier that provides the current pose of the robot.
      * @param waypointPoses A list of Pose2d waypoints to include in the path.
@@ -177,7 +177,7 @@ public class OnTheFlyPathCommand extends Command {
 
     /**
      * Checks if the robot has reached the target pose within the specified tolerances.
-     * 
+     *
      * @return true if the robot is within both translational and rotational tolerances of the
      *         target pose, false otherwise.
      */
@@ -196,7 +196,7 @@ public class OnTheFlyPathCommand extends Command {
 
     /**
      * Ends the path following command and clears the path visualization from the Field2d widget.
-     * 
+     *
      * @param interrupted true if the command was interrupted, false if it completed normally.
      */
     @Override

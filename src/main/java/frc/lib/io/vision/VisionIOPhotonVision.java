@@ -21,10 +21,10 @@ import frc.lib.devices.AprilTagCamera.CameraProperties;
 
 /**
  * Real hardware implementation of VisionIO using PhotonVision.
- * 
+ *
  * <p>
- * Connects to a PhotonVision coprocessor running an AprilTag detection pipeline
- * and reads vision results over NetworkTables. Used for real robot operation.
+ * Connects to a PhotonVision coprocessor running an AprilTag detection pipeline and reads vision
+ * results over NetworkTables. Used for real robot operation.
  */
 public class VisionIOPhotonVision implements VisionIO {
     protected final PhotonCamera photonCamera;

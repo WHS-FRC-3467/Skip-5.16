@@ -45,7 +45,7 @@ public abstract class AlignToObjectBase {
 
     /**
      * Constructs an AlignToObjectBase with the given parameters.
-     * 
+     *
      * @param objectDetector the object detector subsystem
      * @param mode the contour selection mode (LARGEST or LOWEST)
      * @param maxAngularSpeed the maximum angular speed in rad/s
@@ -66,7 +66,7 @@ public abstract class AlignToObjectBase {
     /**
      * Generate angular velocity required to match the robot's heading to the centroid of the
      * detected object.
-     * 
+     *
      * @return Error-reduced angular velocity (rad/s).
      */
     protected OptionalDouble getVisionOmega()
@@ -127,7 +127,7 @@ public abstract class AlignToObjectBase {
 
     /**
      * Checks if the robot is aligned within the specified tolerance.
-     * 
+     *
      * @param tolRad the tolerance in radians
      * @return true if aligned within tolerance, false otherwise
      */

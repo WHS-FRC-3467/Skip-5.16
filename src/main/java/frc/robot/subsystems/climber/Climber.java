@@ -93,10 +93,10 @@ public class Climber extends SubsystemBase {
 
     /**
      * Sets the subsystem's state
-     * 
+     *
      * In a sequence, this command is non-blocking (finishes instantly), but still requires the
      * subsystem (you cannot set the subsystem's state twice in a {@link ParallelCommandGroup}))
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
@@ -110,7 +110,7 @@ public class Climber extends SubsystemBase {
 
     /**
      * Returns true if the climber is near the specified goal position, within a tolerance.
-     * 
+     *
      * @return True if the climber is near the specified goal position, within a tolerance.
      */
     public boolean nearGoal()
@@ -123,7 +123,7 @@ public class Climber extends SubsystemBase {
 
     /**
      * Sets the climber's position and waits until it reaches the goal.
-     * 
+     *
      * @param position The target/goal position.
      * @return a command that sets the climber to a specific position and ends when the climber is
      *         near the goal.
@@ -137,7 +137,7 @@ public class Climber extends SubsystemBase {
 
     /**
      * Homes the climber subsystem.
-     * 
+     *
      * @return a command that runs the homing routine for the climber. Ends then the climber is
      *         homed and zeroed.
      */
@@ -153,7 +153,7 @@ public class Climber extends SubsystemBase {
 
     /**
      * Gets the linear extension of the climber by converting the motor's rotation
-     * 
+     *
      * @return The estimated linear extension of the subsystem
      */
     public Distance getPosition()

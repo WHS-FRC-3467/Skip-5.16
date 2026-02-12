@@ -35,7 +35,7 @@ import lombok.Getter;
 
 /**
  * Represents a single AprilTag camera on the robot.
- * 
+ *
  * <p>
  * Handles interfacing with the {@link VisionIO} hardware layer, providing camera intrinsics,
  * mounting transforms, and reading vision results.
@@ -44,7 +44,7 @@ public class AprilTagCamera {
 
     /**
      * Intrinsic &amp; observed properties describing the camera.
-     * 
+     *
      * @param name Unique name for the camera
      * @param robotToCamera Transform from the robot frame to the camera frame
      * @param cameraMatrix Intrinsic camera matrix
@@ -54,8 +54,8 @@ public class AprilTagCamera {
      * @param stdDevFactor Standard deviation factor used in vision pose estimation
      * @param fov Estimated FOV of camera
      * @param fps Estimate FPS of camera
-     * @param latency Average latency of the camera (exposure -> network tables) 
-     * @param latencyStdDev Standard deviation of the camera latency 
+     * @param latency Average latency of the camera (exposure -> network tables)
+     * @param latencyStdDev Standard deviation of the camera latency
      */
     public record CameraProperties(
         String name,
@@ -66,10 +66,11 @@ public class AprilTagCamera {
         int resolutionHeight,
         double stdDevFactor,
         Angle fov,
-        double fps,  
-        Time latency,  
-        Time latencyStdDev) {  
-    }  
+        double fps,
+        Time latency,
+        Time latencyStdDev) {
+    }
+
     private final VisionIO io;
     private final VisionIOInputs inputs;
 

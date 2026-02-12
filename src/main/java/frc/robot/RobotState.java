@@ -74,7 +74,7 @@ public class RobotState {
 
     /**
      * Returns the robot's odometry-only pose (without vision corrections).
-     * 
+     *
      * @return the odometry-only pose
      */
     @AutoLogOutput(key = "Odometry/OdometryPose")
@@ -85,7 +85,7 @@ public class RobotState {
 
     /**
      * Returns the robot's estimated pose with vision corrections applied.
-     * 
+     *
      * @return the estimated pose
      */
     @AutoLogOutput(key = "Odometry/EstimatedPose")
@@ -96,7 +96,7 @@ public class RobotState {
 
     /**
      * Adds a new odometry observation to the pose estimator.
-     * 
+     *
      * @param observation the odometry observation to add
      */
     public void addOdometryObservation(OdometryObservation observation)
@@ -107,7 +107,7 @@ public class RobotState {
     /**
      * Adds a new vision observation to the pose estimator. Vision observations are ignored when the
      * drivetrain is tilted (e.g., going over a bump).
-     * 
+     *
      * @param observation the vision observation to add
      */
     public void addVisionObservation(VisionPoseObservation observation)
@@ -121,7 +121,7 @@ public class RobotState {
 
     /**
      * Returns the robot's estimated pose at a specific timestamp.
-     * 
+     *
      * @param timestampSeconds the timestamp in seconds
      * @return the estimated pose at the given timestamp, or empty if unavailable
      */
@@ -132,7 +132,7 @@ public class RobotState {
 
     /**
      * Returns the robot's field-relative velocity.
-     * 
+     *
      * @return the field-relative chassis speeds
      */
     public ChassisSpeeds getFieldRelativeVelocity()
@@ -146,7 +146,7 @@ public class RobotState {
 
     /**
      * Resets the robot's pose to the specified position.
-     * 
+     *
      * @param pose the new pose to set
      */
     public void resetPose(Pose2d pose)
@@ -367,7 +367,7 @@ public class RobotState {
 
     /**
      * Returns 2D distance from robot to target.
-     * 
+     *
      * @return the distance to the target
      */
     public Distance getDistanceToTarget()
@@ -379,7 +379,7 @@ public class RobotState {
 
     /**
      * Returns the angle from the robot to the current target.
-     * 
+     *
      * @return the angle to the target
      */
     public Rotation2d getAngleToTarget()

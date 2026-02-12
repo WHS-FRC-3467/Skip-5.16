@@ -185,7 +185,7 @@ public final class Elastic {
 
         /**
          * Gets the level of this notification
-         * 
+         *
          * @return the level of this notification
          */
         public NotificationLevel getLevel()

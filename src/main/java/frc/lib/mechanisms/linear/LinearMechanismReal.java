@@ -19,8 +19,8 @@ import edu.wpi.first.units.measure.Angle;
 import frc.lib.io.motor.MotorIO;
 
 /**
- * A real implementation of the LinearMechanism class that interacts with a physical motor
- * through a MotorIO interface.
+ * A real implementation of the LinearMechanism class that interacts with a physical motor through a
+ * MotorIO interface.
  */
 public class LinearMechanismReal extends LinearMechanism<MotorIO> {
     public LinearMechanismReal(String name, MotorIO io,

@@ -50,7 +50,7 @@ public class DistanceSensor {
 
     /**
      * Whether the sensor is connected.
-     * 
+     *
      * @return Whether the sensor is connected
      */
     public boolean isConnected()
@@ -60,7 +60,7 @@ public class DistanceSensor {
 
     /**
      * Getter for the distance read by the sensor
-     * 
+     *
      * @return The distance read by the sensor
      */
     public Optional<Distance> getDistance()
@@ -70,7 +70,7 @@ public class DistanceSensor {
 
     /**
      * Getter for the ambient light read by the sensor
-     * 
+     *
      * @return The ambient light read by the sensor
      */
     public double getAmbientSignal()

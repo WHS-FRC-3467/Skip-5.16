@@ -87,11 +87,11 @@ public class PoseEstimator {
 
     /**
      * Adds a new odometry observation to the pose estimator and updates the estimated pose.
-     * 
+     *
      * This method retrieves the last odometry pose, applies the new odometry observation, and
      * calculates the change in pose (twist) between the last and new odometry poses. The estimated
      * pose is then updated by applying the calculated twist.
-     * 
+     *
      * @param observation The new odometry observation to be added. This observation typically
      *        contains information about the robot's movement such as displacement and rotation.
      */

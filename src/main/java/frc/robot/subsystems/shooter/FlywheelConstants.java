@@ -55,7 +55,7 @@ public class FlywheelConstants {
     /**
      * Creates a TalonFX motor controller configuration for the flywheel mechanism. Configures
      * current limits, voltage limits, neutral mode, gearing ratios, and PID gains.
-     * 
+     *
      * @param invert whether to invert the motor direction
      * @return configured TalonFXConfiguration for the flywheel motor
      */
@@ -98,7 +98,7 @@ public class FlywheelConstants {
     /**
      * Creates and configures the left flywheel mechanism based on the current robot mode. Selects
      * the appropriate implementation (real, sim, or replay) and enables tunable PID.
-     * 
+     *
      * @return configured left flywheel mechanism
      */
     public static FlywheelMechanism<?> getLeft()
@@ -130,7 +130,7 @@ public class FlywheelConstants {
     /**
      * Creates and configures the right flywheel mechanism based on the current robot mode. Selects
      * the appropriate implementation (real, sim, or replay) and enables tunable PID.
-     * 
+     *
      * @return configured right flywheel mechanism
      */
     public static FlywheelMechanism<?> getRight()

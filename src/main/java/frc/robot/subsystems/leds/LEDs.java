@@ -60,7 +60,7 @@ public class LEDs extends SubsystemBase {
 
     /**
      * Constructs an LEDs subsystem.
-     * 
+     *
      * @param io The lights IO interface for controlling the LED hardware
      */
     public LEDs(LightsIO io)

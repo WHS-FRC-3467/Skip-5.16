@@ -75,10 +75,10 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 () -> isLinearStopped());
         this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8)
-                .and(this.linearStopped);
+            .and(this.linearStopped);
         this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8)
-                .and(this.linearStopped);
+            .and(this.linearStopped);
     }
 
 
@@ -91,10 +91,10 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Sets the subsystem's state
-     * 
+     *
      * In a sequence, this command is non-blocking (finishes instantly), but still requires the
      * subsystem (you cannot set the subsystem's state twice in a {@link ParallelCommandGroup}))
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
@@ -107,9 +107,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     /**
      * Holds a state until the command is interrupted. Once the command is interrupted, its state
      * will automatically be set to {@link State#STOP}
-     * 
+     *
      * In a sequence, this command is blocking and requires this subsystem
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
@@ -122,9 +122,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     /**
      * Holds a state until the command is interrupted. Once the command is interrupted, its state
      * will automatically be set to {@link State#STOP}
-     * 
+     *
      * In a sequence, this command is blocking and requires this subsystem
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
@@ -141,7 +141,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Creates a command to extend the intake.
-     * 
+     *
      * @return A command that extends the intake
      */
     public Command extend()
@@ -151,7 +151,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Creates a command to retract the intake.
-     * 
+     *
      * @return A command that retracts the intake
      */
     public Command retract()
@@ -162,7 +162,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     /**
      * Creates a command that repeatedly cycles the intake between extended and retracted positions.
      * Each cycle extends the intake, waits until stopped, retracts, then waits until stopped again.
-     * 
+     *
      * @return A repeating command that cycles the intake
      */
     public Command cycle()
@@ -176,7 +176,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Creates a command to stop the intake linear mechanism.
-     * 
+     *
      * @return A command that stops the linear motion
      */
     public Command stopIntake()
@@ -186,7 +186,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Creates a command to stop the intake linear mechanism.
-     * 
+     *
      * @return A command that stops the linear motion
      */
     public Command stopRoller()
@@ -197,7 +197,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Checks if the intake roller velocity is near the specified state's setpoint.
-     * 
+     *
      * @param state The state whose setpoint to check against
      * @return true if the roller is within tolerance of the state's setpoint, false otherwise
      */
@@ -211,7 +211,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Gets the current velocity of the intake roller motor.
-     * 
+     *
      * @return The current angular velocity
      */
     public AngularVelocity getVelocity()
@@ -221,7 +221,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Coast intake linear for pit testing.
-     * 
+     *
      * @return a command to set the intake linear mechanism to coast mode.
      */
     public Command coast()
@@ -236,7 +236,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Gets the linear extension of the subsystem by converting the motor's rotation
-     * 
+     *
      * @return The estimated linear extension of the subsystem
      */
     public Distance getExtension()

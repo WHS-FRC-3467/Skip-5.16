@@ -19,15 +19,15 @@ import edu.wpi.first.units.measure.Angle;
 import frc.lib.io.servo.ServoIO;
 
 /**
- * Wrapper class for servo motors that can rotate to specific angles.
- * Provides a simplified interface over ServoIO implementations for controlling PWM servos.
+ * Wrapper class for servo motors that can rotate to specific angles. Provides a simplified
+ * interface over ServoIO implementations for controlling PWM servos.
  */
 public class Servo {
     private final ServoIO io;
 
     /**
      * Constructs a Servo wrapper.
-     * 
+     *
      * @param io the servo IO interface implementation
      */
     public Servo(ServoIO io)

@@ -16,18 +16,19 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 /**
  * A tunable boolean value that can be adjusted from the dashboard during tuning.
- * 
+ *
  * <p>
  * When {@link frc.robot.Constants#tuningMode} is enabled, this class reads values from
- * NetworkTables, allowing real-time tuning without redeploying code. When tuning mode
- * is disabled, it returns the default value.
- * 
+ * NetworkTables, allowing real-time tuning without redeploying code. When tuning mode is disabled,
+ * it returns the default value.
+ *
  * <p>
  * Example usage:
+ *
  * <pre>{@code
- * private static final LoggedTunableBoolean enableAutoAlign = 
+ * private static final LoggedTunableBoolean enableAutoAlign =
  *     new LoggedTunableBoolean("Drive/EnableAutoAlign", true);
- * 
+ *
  * if (enableAutoAlign.get()) {
  *     // Auto-align is enabled
  * }

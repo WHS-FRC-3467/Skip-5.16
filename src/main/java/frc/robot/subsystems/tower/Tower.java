@@ -65,7 +65,7 @@ public class Tower extends SubsystemBase {
 
     /**
      * Constructs a new Tower subsystem with the specified flywheel mechanism.
-     * 
+     *
      * @param io the flywheel mechanism IO implementation for the tower
      */
     public Tower(FlywheelMechanism<?> io)
@@ -89,10 +89,10 @@ public class Tower extends SubsystemBase {
 
     /**
      * Sets the subsystem's state
-     * 
+     *
      * In a sequence, this command is non-blocking (finishes instantly), but still requires the
      * subsystem (you cannot set the subsystem's state twice in a {@link ParallelCommandGroup}))
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
@@ -105,9 +105,9 @@ public class Tower extends SubsystemBase {
     /**
      * Holds a state until the command is interrupted. Once the command is interrupted, its state
      * will automatically be set to {@link State#IDLE}
-     * 
+     *
      * In a sequence, this command is blocking and requires this subsystem
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
@@ -119,7 +119,7 @@ public class Tower extends SubsystemBase {
 
     /**
      * Checks if the tower is near its current velocity setpoint.
-     * 
+     *
      * @return true if the tower velocity is within tolerance of the setpoint
      */
     public boolean nearSetpoint()
@@ -140,7 +140,7 @@ public class Tower extends SubsystemBase {
 
     /**
      * Gets the current speed of the tower in rotations per second.
-     * 
+     *
      * @return the tower's current velocity in rotations per second
      */
     public double getSpeed()

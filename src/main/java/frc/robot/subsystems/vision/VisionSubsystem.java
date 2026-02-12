@@ -36,13 +36,13 @@ import frc.robot.RobotState;
 
 /**
  * The {@code VisionSubsystem} manages all vision-related processing for the robot.
- * 
+ *
  * <p>
  * It uses one or more {@link AprilTagCamera}s to detect field elements and estimate the robot's
  * pose on the field. Observations are processed through the MultiTagOnCoproc vision processor, with
  * a fallback to LowestAmbiguity if necessary. Valid observations are added to {@link RobotState}
  * for use in localization and navigation.
- * 
+ *
  * <p>
  * The subsystem periodically polls cameras for new results and logs both accepted and rejected
  * vision observations.

@@ -20,9 +20,9 @@ import frc.lib.io.beambreak.BeamBreakIO;
 import frc.lib.io.beambreak.BeamBreakInputsAutoLogged;
 
 /**
- * Wrapper class for beam break sensors that detect when an object breaks an infrared beam.
- * Commonly used for detecting game pieces in the robot.
- * Provides a simplified interface over BeamBreakIO implementations.
+ * Wrapper class for beam break sensors that detect when an object breaks an infrared beam. Commonly
+ * used for detecting game pieces in the robot. Provides a simplified interface over BeamBreakIO
+ * implementations.
  */
 public class BeamBreak {
     private final BeamBreakIO io;
@@ -52,7 +52,7 @@ public class BeamBreak {
 
     /**
      * Whether the beam is broken
-     * 
+     *
      * @return Whether the beam is broken
      */
     public boolean isBroken()

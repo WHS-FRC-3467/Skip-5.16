@@ -33,19 +33,19 @@ import lombok.NoArgsConstructor;
 
 /**
  * Configuration constants for the object detection subsystem.
- * 
+ *
  * <p>
- * Contains camera calibration data, mounting positions, and simulation targets for ML-based
- * object detection. Each camera has:
+ * Contains camera calibration data, mounting positions, and simulation targets for ML-based object
+ * detection. Each camera has:
  * <ul>
  * <li>Extrinsics: Physical mounting transform (position and orientation on robot)</li>
  * <li>Intrinsics: Camera matrix and distortion coefficients from calibration</li>
  * <li>Performance: Resolution, FPS, latency, and standard deviation factors</li>
  * </ul>
- * 
+ *
  * <p>
- * Used for detecting game pieces or other objects using PhotonVision's ML pipeline.
- * In simulation, uses configured target positions to test detection algorithms.
+ * Used for detecting game pieces or other objects using PhotonVision's ML pipeline. In simulation,
+ * uses configured target positions to test detection algorithms.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectDetectorConstants {
@@ -145,9 +145,9 @@ public class ObjectDetectorConstants {
         };
 
     /**
-     * Creates and configures an ObjectDetector subsystem based on the current robot mode.
-     * Selects the appropriate IO implementation (real hardware, simulation, or replay).
-     * 
+     * Creates and configures an ObjectDetector subsystem based on the current robot mode. Selects
+     * the appropriate IO implementation (real hardware, simulation, or replay).
+     *
      * @return a configured ObjectDetector instance
      */
     public static ObjectDetector get()
@@ -156,7 +156,8 @@ public class ObjectDetectorConstants {
         switch (Constants.currentMode) {
             case REAL:
                 // Real IO, inputs = PhotonVision implementation of ObjectDetectionIO
-                return new ObjectDetector(CAMERA0_NAME, new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
+                return new ObjectDetector(CAMERA0_NAME,
+                    new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
             case SIM:
                 // Sim IO, inputs = sim implementation of ObjectionDetectionIO
                 return new ObjectDetector(CAMERA0_NAME, new ObjectDetectionIOSim(CAMERA0,

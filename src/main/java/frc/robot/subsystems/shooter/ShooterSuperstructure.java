@@ -120,7 +120,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     /**
      * Constructs a new ShooterSuperstructure subsystem with the specified hood and flywheel
      * mechanisms.
-     * 
+     *
      * @param hoodIO the hood mechanism for adjusting shot angle
      * @param leftFlywheelIO the left flywheel mechanism for spinning up shots
      * @param rightFlywheelIO the right flywheel mechanism for spinning up shots
@@ -167,7 +167,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Gets the current angle of the hood.
-     * 
+     *
      * @return the hood's current position angle
      */
     public Angle getHoodAngle()
@@ -177,7 +177,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Gets the average angular velocity of both flywheels.
-     * 
+     *
      * @return the average velocity of left and right flywheels
      */
     public AngularVelocity getAverageFlywheelVelocity()
@@ -190,7 +190,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     /**
      * Gets the average linear velocity at the edge of both flywheels. Converts angular velocity to
      * linear velocity using the flywheel radius.
-     * 
+     *
      * @return the average linear velocity at the flywheel edge in meters per second
      */
     public LinearVelocity getAverageLinearVelocity()
@@ -235,7 +235,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * a provided distance. ONLY valid for HUB shots. Perpetual command -- never spins down.
      * Therefore, to end, this should be interrupted by a parent command group or timed-out.
      * Primarily for use in autos.
-     * 
+     *
      * @param distance the distance from the desired robot shot position to the HUB.
      * @return Static non-updating HUB only shooter spin-up command.
      */
@@ -252,7 +252,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * given current field-relative robot pose. Valid for ANY target. Perpetual command -- never
      * spins down. Therefore, to end, this should be interrupted by a parent command group or
      * timed-out.
-     * 
+     *
      * @return Dynamically-updating ALL TARGET shooter spin-up command.
      */
     public Command spinUpShooter()
@@ -265,7 +265,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Prepares the subsystem to shoot, and runs a command while it is ready
-     * 
+     *
      * @param whileAtPosition A command that runs while the shooter is ready to shoot. If the
      *        shooter's setpoint changes or otherwise is no longer at position, the command will be
      *        canceled, and started again once it has caught up. This is usually used for starting
@@ -289,7 +289,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Creates a command to set the hood to a specific angle.
-     * 
+     *
      * @param angle the target angle for the hood
      * @return command that sets the hood angle
      */
@@ -300,7 +300,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Creates a command to set the flywheel velocity (alternate spelling).
-     * 
+     *
      * @param velocity the target angular velocity for both flywheels
      * @return command that sets the flywheel speed
      */

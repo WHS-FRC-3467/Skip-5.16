@@ -49,9 +49,9 @@ public class ObjectDetector extends SubsystemBase {
     private ArrayList<Translation2d> objectPoseBuffer = new ArrayList<>(10);
 
     /**
-     * Constructs a new ObjectDetector subsystem with the specified IO implementation.
-     * Creates an Object Detection device that can periodically update its inputs field.
-     * 
+     * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
+     * Object Detection device that can periodically update its inputs field.
+     *
      * @param cameraName the name of the camera for logging purposes
      * @param io the IO implementation for object detection (real, sim, or replay)
      */

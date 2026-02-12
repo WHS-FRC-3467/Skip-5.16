@@ -102,8 +102,8 @@ public abstract class AlignToPoseBase extends Command {
                 linearVelocity =
                     getLinearVelocityFromJoysticks(0,
                         -joystickInput.getAsDouble()).times(drive.getMaxLinearSpeedMetersPerSec())
-                            .plus(offsetVector)
-                            .rotateBy(targetRotation2d);
+                        .plus(offsetVector)
+                        .rotateBy(targetRotation2d);
                 break;
 
             case APPROACH:
@@ -114,8 +114,8 @@ public abstract class AlignToPoseBase extends Command {
                 linearVelocity =
                     getLinearVelocityFromJoysticks(-joystickInput.getAsDouble(),
                         0).times(drive.getMaxLinearSpeedMetersPerSec())
-                            .plus(offsetVector)
-                            .rotateBy(targetRotation2d);
+                        .plus(offsetVector)
+                        .rotateBy(targetRotation2d);
                 break;
 
             default:

@@ -68,9 +68,9 @@ public interface ObjectDetectionIO {
     }
 
     /**
-     * Updates the provided ObjectDetectionIOInputs with the latest camera readings.
-     * If the camera is not connected, the ObjectDetectionIOInput fields remain empty.
-     * 
+     * Updates the provided ObjectDetectionIOInputs with the latest camera readings. If the camera
+     * is not connected, the ObjectDetectionIOInput fields remain empty.
+     *
      * @param inputs The structure to populate with updated target detection data
      */
     public default void updateInputs(ObjectDetectionIOInputs inputs)

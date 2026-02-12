@@ -44,7 +44,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * Configuration constants for the vision subsystem.
- * 
+ *
  * <p>
  * Contains camera calibration data, mounting positions, and factory methods for creating vision
  * cameras. Each camera has:
@@ -53,7 +53,7 @@ import lombok.NoArgsConstructor;
  * <li>Intrinsics: Camera matrix and distortion coefficients from calibration</li>
  * <li>Performance: Resolution, FPS, latency, and standard deviation factors</li>
  * </ul>
- * 
+ *
  * <p>
  * Camera intrinsics should be recalibrated when cameras are changed or remounted. Use
  * PhotonVision's calibration tool to generate new intrinsic matrices.

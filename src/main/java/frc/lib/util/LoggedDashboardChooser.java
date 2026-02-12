@@ -19,21 +19,22 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
 
 /**
  * A dashboard chooser that integrates with AdvantageKit's logging system.
- * 
+ *
  * <p>
- * This class wraps WPILib's SendableChooser to provide automatic logging of selected
- * values. Unlike the standard SendableChooser, this version works correctly with
- * AdvantageKit's replay functionality, allowing you to replay autonomous selections
- * and other dashboard choices from log files.
- * 
+ * This class wraps WPILib's SendableChooser to provide automatic logging of selected values. Unlike
+ * the standard SendableChooser, this version works correctly with AdvantageKit's replay
+ * functionality, allowing you to replay autonomous selections and other dashboard choices from log
+ * files.
+ *
  * <p>
  * Example usage:
+ *
  * <pre>{@code
  * LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Auto Mode");
  * autoChooser.addDefaultOption("Do Nothing", Commands.none());
  * autoChooser.addOption("Simple Auto", simpleAuto());
  * autoChooser.addOption("Complex Auto", complexAuto());
- * 
+ *
  * // Get selected command
  * Command selectedAuto = autoChooser.get();
  * }</pre>
@@ -64,8 +65,8 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
     /**
      * Creates a new LoggedDashboardChooser.
      *
-     * @param key The SmartDashboard key, published to "/SmartDashboard/{key}" for NT 
-     *            or "/DashboardInputs/{key}" when logged
+     * @param key The SmartDashboard key, published to "/SmartDashboard/{key}" for NT or
+     *        "/DashboardInputs/{key}" when logged
      */
     public LoggedDashboardChooser(String key)
     {
@@ -148,8 +149,8 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
     }
 
     /**
-     * Returns the currently selected option value.
-     * If no option is selected, returns the default. If no default exists, returns null.
+     * Returns the currently selected option value. If no option is selected, returns the default.
+     * If no default exists, returns null.
      *
      * @return The selected value, or null if nothing is selected
      */
@@ -159,8 +160,8 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
     }
 
     /**
-     * Returns the internal SendableChooser for dashboard layout configuration.
-     * Do not read data from this directly - use {@link #get()} instead.
+     * Returns the internal SendableChooser for dashboard layout configuration. Do not read data
+     * from this directly - use {@link #get()} instead.
      *
      * @return The internal SendableChooser object
      */

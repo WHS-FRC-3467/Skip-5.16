@@ -128,7 +128,7 @@ public class LocalADStarAK implements Pathfinder {
 
         /**
          * Serializes the pathfinding state to a log table for AdvantageKit logging
-         * 
+         *
          * @param table Log table to write state data to
          */
         @Override
@@ -149,7 +149,7 @@ public class LocalADStarAK implements Pathfinder {
 
         /**
          * Deserializes the pathfinding state from a log table for AdvantageKit replay
-         * 
+         *
          * @param table Log table to read state data from
          */
         @Override

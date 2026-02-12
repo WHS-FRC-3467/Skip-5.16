@@ -43,7 +43,7 @@ public class AutoSegments {
      * confirmation of shooter-ready PVs, bring up the tower and indexer to begin shooting. Shoot
      * the PRELOADED FUEL for 1.5s. Bring down shooter, tower, and indexer to finish. If path
      * doesn't complete in 2.75s, attempt a shot anyway.
-     * 
+     *
      * @param drive The Drive subsystem
      * @param indexer The Indexer subsystem
      * @param tower The Tower subsystem
@@ -70,7 +70,7 @@ public class AutoSegments {
      * confirmation of shooter-ready PVs, bring up the tower and indexer to begin shooting. Shoot
      * all FUEL for 5s. Bring down shooter, tower, and indexer to finish. If path doesn't complete
      * in 3.5s, attempt a shot anyway.
-     * 
+     *
      * @param drive The Drive subsystem
      * @param indexer The Indexer subsystem
      * @param tower The Tower subsystem
@@ -95,7 +95,7 @@ public class AutoSegments {
      * Drive to the end of the drive path, extend the intake, and drive into the FUEL with rollers
      * running. Once the intaking path is complete, stop the intake. This AutoSegment only linearly
      * actuates the intake while the robot is stationary. Non-blocking command.
-     * 
+     *
      * @param intake Intake subsystem
      * @param pathCommand The command that follows the desired path
      * @param afterPathWait The time to wait after the intaking path is complete before stopping the
@@ -119,7 +119,7 @@ public class AutoSegments {
     /**
      * A non-blocking command that initializes the intake by stopping the rollers and retracting the
      * linear stage. Timeout after 1.5s.
-     * 
+     *
      * @param intake the intake subsystem
      * @return a command that initializes the intake.
      */

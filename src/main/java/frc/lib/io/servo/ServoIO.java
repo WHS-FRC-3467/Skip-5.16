@@ -18,15 +18,15 @@ package frc.lib.io.servo;
 import edu.wpi.first.units.measure.Angle;
 
 /**
- * Hardware abstraction interface for servo motors.
- * Provides methods for controlling servo position and stopping output.
+ * Hardware abstraction interface for servo motors. Provides methods for controlling servo position
+ * and stopping output.
  */
 public interface ServoIO {
 
     /**
      * Runs the servo to position using an {@link Angle} value. The value should not exceed the
      * lower and upper limits of the servo.
-     * 
+     *
      * @param position the target angle for the servo
      */
     public default void setAngle(Angle position)

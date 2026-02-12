@@ -16,8 +16,8 @@ import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 
 /**
- * Autonomous routine for testing wheel slip characteristics by ramping motor voltage until
- * a target velocity is reached. Useful for understanding traction limits.
+ * Autonomous routine for testing wheel slip characteristics by ramping motor voltage until a target
+ * velocity is reached. Useful for understanding traction limits.
  */
 public class WheelSlipAuto extends AutoRoutine {
     private final RobotState robotState = RobotState.getInstance();
@@ -46,8 +46,8 @@ public class WheelSlipAuto extends AutoRoutine {
     }
 
     /**
-     * Creates a command that ramps motor voltage linearly until the drivetrain reaches a target velocity.
-     * Logs the applied voltage to help analyze wheel slip characteristics.
+     * Creates a command that ramps motor voltage linearly until the drivetrain reaches a target
+     * velocity. Logs the applied voltage to help analyze wheel slip characteristics.
      *
      * @param drive the drive subsystem to ramp
      * @param rampRate the rate of voltage increase per second (volts/second)

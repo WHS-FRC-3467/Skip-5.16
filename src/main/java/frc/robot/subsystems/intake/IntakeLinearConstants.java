@@ -79,7 +79,7 @@ public class IntakeLinearConstants {
     /**
      * Creates and configures a TalonFX motor controller configuration for the intake linear
      * mechanism.
-     * 
+     *
      * @return The configured TalonFX configuration
      */
     public static TalonFXConfiguration getFXConfig()
@@ -116,7 +116,7 @@ public class IntakeLinearConstants {
     /**
      * Factory method to create a LinearMechanism instance for the intake linear subsystem. Creates
      * the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
-     * 
+     *
      * @return A configured LinearMechanism instance
      */
     public static LinearMechanism<?> getMechanism()
