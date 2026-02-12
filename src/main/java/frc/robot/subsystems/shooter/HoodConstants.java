@@ -139,17 +139,19 @@ public class HoodConstants {
                 mechanism = new RotaryMechanismReal(NAME,
                     new MotorIOTalonFX(NAME, getFXConfig(), Ports.hood),
                     CONSTANTS,
-                    Optional.empty());
+                    Optional.empty(),
+                    "");
                 break;
             case SIM:
                 mechanism = new RotaryMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.hood),
                     DCMOTOR, MOI, false, CONSTANTS,
-                    Optional.empty());
+                    Optional.empty(),
+                    "");
                 break;
             case REPLAY:
                 mechanism = new RotaryMechanism<>(NAME, CONSTANTS, new MotorIO() {},
-                    Optional.empty()) {};
+                    Optional.empty(), "") {};
                 break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");

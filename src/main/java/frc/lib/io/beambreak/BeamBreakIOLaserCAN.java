@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.util.Device;
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.LaserCANConfigurator;
-import lombok.Getter;
 
 /**
  * A beam break sensor implementation that uses a LaserCAN
@@ -37,7 +36,6 @@ import lombok.Getter;
 public class BeamBreakIOLaserCAN implements BeamBreakIO {
     private static final Logger LOGGER = Logger.getLogger(BeamBreakIOLaserCAN.class.getName());
 
-    @Getter
     private final String name;
     private final LaserCANConfigurator laserCAN;
     private final Distance triggerDistance;

@@ -27,14 +27,17 @@ import frc.lib.io.distancesensor.DistanceSensorInputsAutoLogged;
 public class DistanceSensor {
     private final DistanceSensorIO io;
     private final DistanceSensorInputsAutoLogged inputs = new DistanceSensorInputsAutoLogged();
+    private final String name;
 
     /**
      * Constructs a Distance Sensor.
      *
+     * @param name the name to use for logging
      * @param io the IO to interact with.
      */
-    public DistanceSensor(DistanceSensorIO io)
+    public DistanceSensor(String name, DistanceSensorIO io)
     {
+        this.name = name;
         this.io = io;
     }
 
@@ -42,7 +45,7 @@ public class DistanceSensor {
     public void periodic()
     {
         io.updateInputs(inputs);
-        Logger.processInputs(io.getName(), inputs);
+        Logger.processInputs(name, inputs);
     }
 
     /**
