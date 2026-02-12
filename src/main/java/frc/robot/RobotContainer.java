@@ -117,7 +117,6 @@ public class RobotContainer {
 
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
-        SmartDashboard.putNumber("io", indexer.getPosAlso().in(Radians));
         // Default - No Auto
         autoChooser.addDefaultOption("None", new NoneAuto());
 

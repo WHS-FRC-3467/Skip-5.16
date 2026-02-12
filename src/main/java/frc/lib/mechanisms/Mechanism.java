@@ -16,6 +16,7 @@
 package frc.lib.mechanisms;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import java.util.ArrayList;
 import java.util.List;
@@ -216,6 +217,8 @@ public abstract class Mechanism<T extends MotorIO> {
         io.runVelocity(velocity, acceleration, slot);
     }
 
+    
+
     /**
      * Updates one PID slot on the motor
      * 
@@ -279,6 +282,10 @@ public abstract class Mechanism<T extends MotorIO> {
 
     public LinearVelocity getLinearVelocity() {
         return MetersPerSecond.of(inputs.velocity.in(RadiansPerSecond) * this.mech.RADIUS);
+    }
+
+     public double getLinearPosition() {
+        return getPosition().in(Radians);
     }
 
 

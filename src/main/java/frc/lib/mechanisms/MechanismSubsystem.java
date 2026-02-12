@@ -14,14 +14,11 @@
  */
 package frc.lib.mechanisms;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.io.motor.MotorIO;
-import frc.lib.mechanisms.flywheel.FlywheelMechanism;
-import lombok.Getter;
-import lombok.Setter;
+
 
 public class MechanismSubsystem extends SubsystemBase {
   
@@ -32,10 +29,20 @@ public class MechanismSubsystem extends SubsystemBase {
 protected MechanismSubsystem(Mechanism<?> io) {
     this.io = io;
 }
-   public LinearVelocity getLinearVelocity() {
-        return io.getLinearVelocity();
+   public double getLinearVelocity() {
+        return io.getLinearVelocity().in(MetersPerSecond);
     }
-    public Angle getPosAlso() {
-        return io.getPosition();
+
+    public void setLinearVelocity(LinearVelocity velocity) {
+        // TODO
     }
+     public void setLinearPosition( AngleUnit angle) {
+        // TODO
+    }
+
+    public double getLinearPosition() {
+        return io.getLinearPosition();
+    }
+
+    
 }

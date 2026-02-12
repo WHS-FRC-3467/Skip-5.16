@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.InchesPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
@@ -54,6 +56,7 @@ public class Indexer extends MechanismSubsystem {
     public void periodic()
     {
         Logger.recordOutput("Indexer/State", this.state.name());
+       
         io.periodic();
         
         
