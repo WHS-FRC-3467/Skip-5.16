@@ -79,7 +79,7 @@ public class DistanceSensor {
     }
 
     /**
-     * Whether the current measured reading is between a specified min & max distance
+     * Whether the current measured reading is between a specified min and max distance
      * 
      * @param min minimum distance to compare to
      * @param max maximum distance to compare to
