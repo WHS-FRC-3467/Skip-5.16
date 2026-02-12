@@ -5,6 +5,8 @@
 
 package frc.robot.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +16,8 @@ import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringTopic;
 
 public final class Elastic {
+    private static final Logger LOGGER = Logger.getLogger(Elastic.class.getName());
+
     private static final StringTopic notificationTopic =
         NetworkTableInstance.getDefault().getStringTopic("/Elastic/RobotNotifications");
     private static final StringPublisher notificationPublisher =
@@ -35,7 +39,7 @@ public final class Elastic {
         try {
             notificationPublisher.set(objectMapper.writeValueAsString(notification));
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         }
     }
 
@@ -180,6 +184,8 @@ public final class Elastic {
         }
 
         /**
+         * Gets the level of this notification
+         * 
          * @return the level of this notification
          */
         public NotificationLevel getLevel()

@@ -47,6 +47,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
     private final RobotState robotState = RobotState.getInstance();
 
+
     private Command autonomousCommand;
     private RobotContainer robotContainer;
     private boolean checkedHubGameData = false; // whether we've checked for hub game data at the
