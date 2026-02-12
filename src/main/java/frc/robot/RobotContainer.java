@@ -28,6 +28,7 @@ import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.robot.Constants.Mode;
 import frc.robot.Constants.PathConstants;
+import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
@@ -236,6 +237,31 @@ public class RobotContainer {
             intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.EJECT),
             indexer.holdStateUntilInterrupted(Indexer.State.EXPEL),
             tower.holdStateUntilInterrupted(Tower.State.EJECT)));
+
+        // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
+        controller.povRight()
+            .onTrue(
+                shooter.spinUpShooterToHubDistance(
+                    Meters.of((Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0)));
+
+        // D-Pad Left: Take the Hub Shot, wind down flywheel, indexer, and tower on release
+        // No vision fallback - do not trust the robot's pose (no automatic shoot when ready)
+        controller.povLeft()
+            .whileTrue(
+                // Shoot while superstructure is at the flywheel and hood setpoints
+                Commands.parallel(
+                        indexer.holdStateUntilInterrupted(Indexer.State.PULL),
+                        tower.holdStateUntilInterrupted(Tower.State.SHOOT),
+                        intakeLinear.cycle(),
+                        Commands.runOnce(() -> drive.stopWithX()))
+                        .onlyWhile(shooter.atHubSetpoints)
+                        .repeatedly()
+            )
+            .onFalse(Commands.parallel(
+                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                indexer.setStateCommand(Indexer.State.STOP),
+                tower.setStateCommand(Tower.State.IDLE),
+                intakeLinear.extend()));
     }
 
     /**
