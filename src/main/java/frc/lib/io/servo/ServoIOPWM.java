@@ -20,7 +20,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Servo;
 import frc.lib.util.Device;
-import lombok.Getter;
 
 /**
  * ServoIOPWM is an abstraction for WPILib's Servo class with Pulse Width Modulation signal control
@@ -29,7 +28,6 @@ import lombok.Getter;
  */
 public class ServoIOPWM implements ServoIO {
 
-    @Getter
     private final String name;
     private final Servo servo;
 

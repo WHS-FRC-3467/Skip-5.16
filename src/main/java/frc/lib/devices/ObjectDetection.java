@@ -49,6 +49,7 @@ public class ObjectDetection {
         new ObjectDetectionIOInputs();
     // IO implementation of ObjectDetectionIO (how inputs data structure is populated)
     private final ObjectDetectionIO io;
+    private final String cameraName;
 
     /**
      * Represents an Object Detection observation.
@@ -77,10 +78,12 @@ public class ObjectDetection {
      * ObjectDetectionIO (e.g. ObjectDetectionIOPhotonVision or ObjectDetectionIOLimelight).
      * Currently factored for PhotonVision only.
      *
+     * @param cameraName The name of the camera for logging purposes
      * @param io The ObjectDetectionIO implementation to use
      */
-    public ObjectDetection(ObjectDetectionIO io)
+    public ObjectDetection(String cameraName, ObjectDetectionIO io)
     {
+        this.cameraName = cameraName;
         this.io = io;
     }
 
@@ -90,7 +93,7 @@ public class ObjectDetection {
     public void periodic()
     {
         io.updateInputs(inputs);
-        Logger.processInputs(io.getCamera(), inputs);
+        Logger.processInputs(cameraName, inputs);
     }
 
     /**

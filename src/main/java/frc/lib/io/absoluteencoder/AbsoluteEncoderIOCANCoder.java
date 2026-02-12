@@ -25,7 +25,6 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import edu.wpi.first.units.measure.Angle;
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.Device;
-import lombok.Getter;
 
 /**
  * Real hardware implementation of AbsoluteEncoderIO using CTRE CANcoder.
@@ -38,7 +37,6 @@ import lombok.Getter;
 public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
     private static final Logger LOGGER = Logger.getLogger(AbsoluteEncoderIOCANCoder.class.getName());
 
-    @Getter
     private final String name;
     protected final CANcoder CANCoder;
 

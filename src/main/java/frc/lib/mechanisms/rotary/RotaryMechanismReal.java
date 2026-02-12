@@ -14,8 +14,8 @@ import frc.lib.io.motor.MotorIO;
  */
 public class RotaryMechanismReal extends RotaryMechanism<MotorIO, AbsoluteEncoderIO> {
     public RotaryMechanismReal(String name, MotorIO io, RotaryMechCharacteristics characteristics,
-        Optional<AbsoluteEncoderIO> absoluteEncoder)
+        Optional<AbsoluteEncoderIO> absoluteEncoder, String encoderName)
     {
-        super(name, characteristics, io, absoluteEncoder);
+        super(name, characteristics, io, absoluteEncoder, encoderName);
     }
 }
