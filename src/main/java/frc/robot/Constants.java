@@ -58,8 +58,8 @@ public final class Constants {
 
         // TODO: Fill in with real serial number prefixes. Figure out by displaying/logging String
         // serial.
-        public static final String compSerial = "0001";
-        public static final String alphaSerial = "0000";
+        public static final String COMP_SERIAL = "0001";
+        public static final String ALPHA_SERIAL = "0000";
 
         static {
             if (Robot.isReal()) {
@@ -68,8 +68,8 @@ public final class Constants {
             } else {
                 serial = "3467";
             }
-            RobotConstants.isComp = serial.startsWith(RobotConstants.compSerial);
-            RobotConstants.isAlpha = serial.startsWith(RobotConstants.alphaSerial);
+            RobotConstants.isComp = serial.startsWith(RobotConstants.COMP_SERIAL);
+            RobotConstants.isAlpha = serial.startsWith(RobotConstants.ALPHA_SERIAL);
         }
     }
 
