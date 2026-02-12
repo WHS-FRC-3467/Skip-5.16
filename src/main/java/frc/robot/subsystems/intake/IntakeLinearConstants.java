@@ -141,11 +141,4 @@ public class IntakeLinearConstants {
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
     }
-
-    /**
-     * Factory method to create an IntakeLinear subsystem instance.
-     * 
-     * @return A fully configured IntakeLinear subsystem
-     */
-  
 }

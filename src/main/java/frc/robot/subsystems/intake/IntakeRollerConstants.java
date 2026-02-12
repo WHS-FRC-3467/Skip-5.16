@@ -129,11 +129,4 @@ public class IntakeRollerConstants {
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
     }
-
-    /**
-     * Factory method to create an IntakeRoller subsystem instance.
-     * 
-     * @return A fully configured IntakeRoller subsystem
-     */
-    
 }

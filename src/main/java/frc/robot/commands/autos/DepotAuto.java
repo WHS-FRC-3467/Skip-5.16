@@ -37,8 +37,7 @@ public class DepotAuto extends AutoRoutine {
      * fuel. Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
      *
      * @param drive the drive subsystem
-     * @param intakeLinear the intake linear subsystem for deploying/retracting intake
-     * @param intake the intake roller subsystem for collecting fuel
+     * @param intake the intake subsystem
      * @param indexer the indexer subsystem for managing fuel flow
      * @param tower the tower subsystem for moving fuel to shooter
      * @param shooter the shooter superstructure for launching fuel
@@ -66,7 +65,7 @@ public class DepotAuto extends AutoRoutine {
         // Load the named paths
         this.loadAllPaths(expectedPaths);
 
-        // Mirror necessary paths when starting on  RIGHT side so the dashboard shows correct poses
+        // Mirror necessary paths when starting on RIGHT side so the dashboard shows correct poses
         this.setMirrorFlags(Collections.nCopies(expectedPaths.size(), false), start);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
@@ -75,7 +74,7 @@ public class DepotAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                AutoSegments.initializeIntake( intake),
+                AutoSegments.initializeIntake(intake),
                 // Take preload shot
                 AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
@@ -85,7 +84,7 @@ public class DepotAuto extends AutoRoutine {
                 AutoCommands.extendIntake(intake),
                 Commands.waitSeconds(0.25),
                 // Run through depot while intaking FUEL
-                AutoSegments.driveAndIntake( intake,
+                AutoSegments.driveAndIntake(intake,
                     AutoBuilder.followPath(pathPlannerPaths.get(2)), Seconds.of(0.5)),
                 // Drive to shooting location and shoot all FUEL
                 AutoSegments.makeFullShot(drive, intake, indexer, tower, shooter,

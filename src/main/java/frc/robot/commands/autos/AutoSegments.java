@@ -120,8 +120,7 @@ public class AutoSegments {
      * A non-blocking command that initializes the intake by stopping the rollers and retracting the
      * linear stage. Timeout after 1.5s.
      * 
-     * @param intakeLinear the linear intake subsystem
-     * @param intakeRoller the roller intake subsystem
+     * @param intake the intake subsystem
      * @return a command that initializes the intake.
      */
     public static Command initializeIntake(IntakeSuperstructure intake)
