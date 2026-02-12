@@ -23,8 +23,6 @@ import frc.lib.util.LoggedTunableNumber;
  * A simulated distance sensor implementation
  */
 public class DistanceSensorIOSim implements DistanceSensorIO {
-    private final String name;
-
     private final LoggedTunableNumber tunableDistance;
     private Distance distance;
 
@@ -34,7 +32,6 @@ public class DistanceSensorIOSim implements DistanceSensorIO {
      * @param name A human-readable name for the sensor instance.
      */
     public DistanceSensorIOSim(String name) {
-        this.name = name;
         tunableDistance = new LoggedTunableNumber(name + "/Sim Measurement (Inches)", 0.0);
     }
 
