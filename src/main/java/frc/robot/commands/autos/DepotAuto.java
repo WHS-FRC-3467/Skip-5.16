@@ -18,8 +18,7 @@ package frc.robot.commands.autos;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import static edu.wpi.first.units.Units.Seconds;
@@ -45,7 +44,7 @@ public class DepotAuto extends AutoRoutine {
      * @param shooter the shooter superstructure for launching fuel
      * @param start the starting position on the field
      */
-    public DepotAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake, Indexer indexer,
+    public DepotAuto(Drive drive, IntakeSuperstructure intake, Indexer indexer,
         Tower tower,
         ShooterSuperstructure shooter, StartPosition start)
     {
@@ -76,20 +75,20 @@ public class DepotAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                AutoSegments.initializeIntake(intakeLinear, intake),
+                AutoSegments.initializeIntake( intake),
                 // Take preload shot
                 AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
                 // Drive to depot
                 AutoBuilder.followPath(pathPlannerPaths.get(1)),
                 // Pre-deploy intake before driving through depot
-                AutoCommands.extendIntake(intakeLinear),
+                AutoCommands.extendIntake(intake),
                 Commands.waitSeconds(0.25),
                 // Run through depot while intaking FUEL
-                AutoSegments.driveAndIntake(intakeLinear, intake,
+                AutoSegments.driveAndIntake( intake,
                     AutoBuilder.followPath(pathPlannerPaths.get(2)), Seconds.of(0.5)),
                 // Drive to shooting location and shoot all FUEL
-                AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
+                AutoSegments.makeFullShot(drive, intake, indexer, tower, shooter,
                     pathPlannerPaths.get(3)));
         }
     }

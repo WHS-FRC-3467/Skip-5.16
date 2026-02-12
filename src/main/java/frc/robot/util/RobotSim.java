@@ -18,8 +18,7 @@ import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -39,8 +38,7 @@ public class RobotSim {
         Drive drive,
         ShooterSuperstructure shooter,
         Indexer indexer,
-        IntakeRoller intakeRoller,
-        IntakeLinear intakeLinear)
+       IntakeSuperstructure intake)
     {
         Trigger shootSimFuel = new Trigger(() -> (shooter.readyToShoot.getAsBoolean()
             && (indexer.getSpeed() > 0.1) && (fuelSim.getHeldFuel() > 0)));
@@ -67,8 +65,8 @@ public class RobotSim {
                 })));
 
         Trigger intakeSimFuel =
-            new Trigger(() -> (intakeRoller.getVelocity().in(RotationsPerSecond) > 1.0)
-                && intakeLinear.isExtended.getAsBoolean());
+            new Trigger(() -> (intake.getVelocity().in(RotationsPerSecond) > 1.0)
+                && intake.isExtended.getAsBoolean());
 
         fuelSim.enableAirResistance();
         fuelSim.spawnStartingFuel();
@@ -106,11 +104,10 @@ public class RobotSim {
         Drive drive,
         ShooterSuperstructure shooter,
         Indexer indexer,
-        IntakeRoller intakeRoller,
-        IntakeLinear intakeLinear)
+        IntakeSuperstructure intake)
     {
-        registerFuelSimMechanisms(drive, shooter, indexer, intakeRoller, intakeLinear);
-        posePublisher = new MechanismPosePublisher(intakeLinear, shooter);
+        registerFuelSimMechanisms(drive, shooter, indexer, intake);
+        posePublisher = new MechanismPosePublisher(intake, shooter);
     }
 
     public FuelSim getFuelSim()

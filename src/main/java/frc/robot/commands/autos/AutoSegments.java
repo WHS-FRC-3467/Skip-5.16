@@ -24,9 +24,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
-import frc.robot.subsystems.intakeRoller.IntakeRoller.State;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
+import frc.robot.subsystems.intake.IntakeSuperstructure.State;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 
@@ -80,7 +79,7 @@ public class AutoSegments {
      *        end pose
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
-    public static Command makeFullShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer,
+    public static Command makeFullShot(Drive drive, IntakeSuperstructure intakeLinear, Indexer indexer,
         Tower tower, ShooterSuperstructure shooter, PathPlannerPath path)
     {
         return Commands.sequence(
@@ -103,21 +102,20 @@ public class AutoSegments {
      * @param afterPathWait The time to wait after the intaking path is complete before stopping the
      *        intake
      */
-    public static Command driveAndIntake(IntakeLinear intakeLinear,
-        IntakeRoller intakeRoller, Command pathCommand,
+    public static Command driveAndIntake(IntakeSuperstructure intake, Command pathCommand,
         Time afterPathWait)
     {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
-            new ParallelDeadlineGroup(
-                pathCommand,
-                intakeLinear.extend(),
-                intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.INTAKE)),
+            Commands.parallel(
+                pathCommand.deadlineFor(
+                intake.holdStateUntilInterruptedAndExtend(IntakeSuperstructure.State.INTAKE)) 
+                    ),
             Commands.waitSeconds(afterPathWait.in(Seconds)),
             // Spin down intake
-            intakeLinear.retract(),
-            intakeRoller.stop());
+            intake.retract(),
+            intake.stopRoller());
     }
 
     /**
@@ -128,10 +126,10 @@ public class AutoSegments {
      * @param intakeRoller the roller intake subsystem
      * @return a command that initializes the intake.
      */
-    public static Command initializeIntake(IntakeLinear intakeLinear, IntakeRoller intakeRoller)
+    public static Command initializeIntake(IntakeSuperstructure intake)
     {
         return Commands.sequence(
-            intakeRoller.setStateCommand(State.STOP),
-            AutoCommands.retractIntake(intakeLinear));
+            intake.setStateCommand(State.STOP),
+            AutoCommands.retractIntake(intake));
     }
 }

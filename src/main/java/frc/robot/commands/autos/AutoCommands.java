@@ -22,8 +22,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
 /**
@@ -141,12 +140,12 @@ public class AutoCommands {
      * @param linear the intake linear subsystem
      * @return a command that runs the intake and stops it when finished
      */
-    public static Command deployIntake(IntakeRoller intake, IntakeLinear linear)
+    public static Command deployIntake(IntakeSuperstructure intake)
     {
         return Commands.sequence(
-            linear.extend(),
-            intake.holdStateUntilInterrupted(IntakeRoller.State.INTAKE))
-            .finallyDo(() -> CommandScheduler.getInstance().schedule(linear.retract()));
+            intake.extend(),
+            intake.holdStateUntilInterrupted(IntakeSuperstructure.State.INTAKE))
+            .finallyDo(() -> CommandScheduler.getInstance().schedule(intake.retract()));
     }
 
     /**
@@ -157,7 +156,7 @@ public class AutoCommands {
      * @param intake the linear intake subsystem
      * @return a command that retracts the intake and keeps it retracted when finished
      */
-    public static Command extendIntake(IntakeLinear intake)
+    public static Command extendIntake(IntakeSuperstructure intake)
     {
         return Commands.sequence(
             intake.extend(),
@@ -172,11 +171,13 @@ public class AutoCommands {
      * @param intake the linear intake subsystem
      * @return a command that retracts the intake and keeps it retracted when finished
      */
-    public static Command retractIntake(IntakeLinear intake)
+    public static Command retractIntake(IntakeSuperstructure intake)
     {
         return Commands.sequence(
             intake.retract(),
-            Commands.waitUntil(intake.isRetracted).withTimeout(2.0)); // Wait until slam or max
+            Commands.waitUntil(intake.isRetracted).withTimeout(2.0)
+        
+        ); // Wait until slam or max
     }
 
     /**
@@ -191,7 +192,7 @@ public class AutoCommands {
      * @param indexer the indexer subsystem
      * @return a blocking command that agitates the balls in the hopper and stops when finished
      */
-    public static Command agitateHopper(IntakeLinear intake, Tower tower, Indexer indexer,
+    public static Command agitateHopper(IntakeSuperstructure intake, Tower tower, Indexer indexer,
         HopperAgitation state)
     {
         switch (state) {
