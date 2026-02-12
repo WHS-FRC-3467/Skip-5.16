@@ -32,6 +32,7 @@ public class DistanceSensor {
     /**
      * Constructs a Distance Sensor.
      *
+     * @param name the name to use for logging
      * @param io the IO to interact with.
      */
     public DistanceSensor(String name, DistanceSensorIO io)

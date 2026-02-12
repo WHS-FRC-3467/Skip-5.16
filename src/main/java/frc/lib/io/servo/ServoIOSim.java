@@ -22,7 +22,6 @@ import lombok.Getter;
 
 public class ServoIOSim implements ServoIO {
 
-    @Getter
     private final String name;
     private final double minAngle;
     private final double maxAngle;

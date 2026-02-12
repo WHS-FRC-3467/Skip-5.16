@@ -220,7 +220,14 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     robotState.getDistanceToTarget().in(Meters)));
         }
 
-        return Degrees.of(27.0);
+        return Degrees.of(0.0);
+    }
+
+    // Gets ball trajectory exit angle relative to horizontal, accounting for hood angle and
+    // physical offset of the hood from horizontal
+    public Angle getExitAngle()
+    {
+        return Degrees.of(90).minus(HoodConstants.MIN_ANGLE_OFFSET).minus(hoodIO.getPosition());
     }
 
     /**

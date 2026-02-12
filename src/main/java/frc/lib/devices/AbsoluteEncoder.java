@@ -26,14 +26,17 @@ import frc.lib.io.absoluteencoder.AbsoluteEncoderInputsAutoLogged;
 public class AbsoluteEncoder {
     private final AbsoluteEncoderIO io;
     private final AbsoluteEncoderInputsAutoLogged inputs = new AbsoluteEncoderInputsAutoLogged();
+    private final String name;
 
     /**
      * Constructs an Absolute Encoder.
      *
+     * @param name the name to use for logging
      * @param io the IO to interact with.
      */
-    public AbsoluteEncoder(AbsoluteEncoderIO io)
+    public AbsoluteEncoder(String name, AbsoluteEncoderIO io)
     {
+        this.name = name;
         this.io = io;
     }
 
@@ -41,7 +44,7 @@ public class AbsoluteEncoder {
     public void periodic()
     {
         io.updateInputs(inputs);
-        Logger.processInputs(io.getName(), inputs);
+        Logger.processInputs(name, inputs);
     }
 
     /**

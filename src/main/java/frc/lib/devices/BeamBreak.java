@@ -27,14 +27,17 @@ import frc.lib.io.beambreak.BeamBreakInputsAutoLogged;
 public class BeamBreak {
     private final BeamBreakIO io;
     private final BeamBreakInputsAutoLogged inputs = new BeamBreakInputsAutoLogged();
+    private final String name;
 
     /**
      * Constructs a Beam Break.
      *
+     * @param name the name to use for logging
      * @param io the IO to interact with.
      */
-    public BeamBreak(BeamBreakIO io)
+    public BeamBreak(String name, BeamBreakIO io)
     {
+        this.name = name;
         this.io = io;
     }
 
@@ -44,7 +47,7 @@ public class BeamBreak {
     public void periodic()
     {
         io.updateInputs(inputs);
-        Logger.processInputs(io.getName(), inputs);
+        Logger.processInputs(name, inputs);
     }
 
     /**
