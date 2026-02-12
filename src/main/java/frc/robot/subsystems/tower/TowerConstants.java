@@ -65,17 +65,17 @@ public class TowerConstants {
         .withV(10.0);
 
     // LaserCAN shared configs
-    private final static RangingMode LASERCAN_RANGING_MODE = RangingMode.SHORT;
-    private final static RegionOfInterest LASERCAN_ROI = new RegionOfInterest(8, 8, 4, 4);
-    private final static TimingBudget TIMING_BUDGET = TimingBudget.TIMING_BUDGET_20MS;
-    public final static Distance MINIMUM_TRIP_DISTANCE = Millimeters.of(0.0);
-    public final static Distance MAXIMUM_TRIP_DISTANCE = Millimeters.of(15);
+    private static final RangingMode LASERCAN_RANGING_MODE = RangingMode.SHORT;
+    private static final RegionOfInterest LASERCAN_ROI = new RegionOfInterest(8, 8, 4, 4);
+    private static final TimingBudget TIMING_BUDGET = TimingBudget.TIMING_BUDGET_20MS;
+    public static final Distance MINIMUM_TRIP_DISTANCE = Millimeters.of(0.0);
+    public static final Distance MAXIMUM_TRIP_DISTANCE = Millimeters.of(15);
 
     // LaserCAN #1
-    public final static String LASERCAN1_NAME = NAME + "/LaserCAN1";
+    public static final String LASERCAN1_NAME = NAME + "/LaserCAN1";
 
     // LaserCAN #2
-    public final static String LASERCAN2_NAME = NAME + "/LaserCAN2";
+    public static final String LASERCAN2_NAME = NAME + "/LaserCAN2";
 
     /**
      * Creates a TalonFX motor controller configuration for the tower mechanism. Configures current
@@ -143,8 +143,7 @@ public class TowerConstants {
         return new Tower(mechanism);
     }
 
-    // Return an IO implementation of distance sensor IO based on current robot state (lower &
-    // upper)
+    // Return an IO implementation of distance sensor IO based on current robot state
     public static DistanceSensor getLaserCAN1()
     {
         return new DistanceSensor(LASERCAN1_NAME, switch (Constants.currentMode) {
@@ -159,7 +158,7 @@ public class TowerConstants {
 
             case REPLAY -> new DistanceSensorIO() {};
 
-            default -> throw new IllegalArgumentException("Unrecognized Robot Mode.");
+            default -> throw new IllegalArgumentException("Unrecognized Robot Mode");
         });
     }
 
@@ -177,7 +176,7 @@ public class TowerConstants {
 
             case REPLAY -> new DistanceSensorIO() {};
 
-            default -> throw new IllegalArgumentException("Unrecognized Robot Mode.");
+            default -> throw new IllegalArgumentException("Unrecognized Robot Mode");
         });
     }
 }
