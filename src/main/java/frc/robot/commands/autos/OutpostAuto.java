@@ -40,7 +40,6 @@ public class OutpostAuto extends AutoRoutine {
      * CENTER, or RIGHT).
      *
      * @param drive the drive subsystem
-     * @param intakeLinear the intake linear subsystem for deploying/retracting intake
      * @param intake the intake roller subsystem for collecting fuel
      * @param indexer the indexer subsystem for managing fuel flow
      * @param tower the tower subsystem for moving fuel to shooter

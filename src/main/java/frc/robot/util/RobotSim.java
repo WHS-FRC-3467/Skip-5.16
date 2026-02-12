@@ -38,7 +38,7 @@ public class RobotSim {
         Drive drive,
         ShooterSuperstructure shooter,
         Indexer indexer,
-       IntakeSuperstructure intake)
+        IntakeSuperstructure intake)
     {
         Trigger shootSimFuel = new Trigger(() -> (shooter.readyToShoot.getAsBoolean()
             && (indexer.getSpeed() > 0.1) && (fuelSim.getHeldFuel() > 0)));
@@ -97,8 +97,7 @@ public class RobotSim {
      * @param drive Drive subsystem for robot pose tracking
      * @param shooter Shooter superstructure
      * @param indexer Indexer subsystem
-     * @param intakeRoller Intake roller subsystem
-     * @param intakeLinear Linear intake subsystem
+     * @param intake Intake subsystem
      */
     public void addMechanismData(
         Drive drive,

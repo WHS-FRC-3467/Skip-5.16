@@ -79,7 +79,7 @@ public class AutoSegments {
      *        end pose
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
-    public static Command makeFullShot(Drive drive, IntakeSuperstructure intakeLinear, Indexer indexer,
+    public static Command makeFullShot(Drive drive, IntakeSuperstructure intake, Indexer indexer,
         Tower tower, ShooterSuperstructure shooter, PathPlannerPath path)
     {
         return Commands.sequence(
@@ -88,7 +88,7 @@ public class AutoSegments {
                 AutoCommands.prepareHubShot(path, shooter)),
             new ParallelDeadlineGroup(
                 AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 5.0), // ~ 10 bps
-                AutoCommands.agitateHopper(intakeLinear, tower, indexer, HopperAgitation.NONE)));
+                AutoCommands.agitateHopper(intake, tower, indexer, HopperAgitation.NONE)));
     }
 
     /**
@@ -96,8 +96,7 @@ public class AutoSegments {
      * running. Once the intaking path is complete, stop the intake. This AutoSegment only linearly
      * actuates the intake while the robot is stationary. Non-blocking command.
      * 
-     * @param intakeLinear The IntakeLinear subsystem
-     * @param intakeRoller The IntakeRoller subsystem
+     * @param intake Intake subsystem
      * @param pathCommand The command that follows the desired path
      * @param afterPathWait The time to wait after the intaking path is complete before stopping the
      *        intake
@@ -110,8 +109,7 @@ public class AutoSegments {
         return Commands.sequence(
             Commands.parallel(
                 pathCommand.deadlineFor(
-                intake.holdStateUntilInterruptedAndExtend(IntakeSuperstructure.State.INTAKE)) 
-                    ),
+                    intake.holdStateUntilInterruptedAndExtend(IntakeSuperstructure.State.INTAKE))),
             Commands.waitSeconds(afterPathWait.in(Seconds)),
             // Spin down intake
             intake.retract(),
