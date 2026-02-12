@@ -137,7 +137,6 @@ public class AutoCommands {
      * will stop and retract automatically when the command ends.
      *
      * @param intake the intake subsystem
-     * @param linear the intake linear subsystem
      * @return a command that runs the intake and stops it when finished
      */
     public static Command deployIntake(IntakeSuperstructure intake)
