@@ -25,7 +25,7 @@ import frc.lib.io.distancesensor.DistanceSensorInputsAutoLogged;
  * Class for simplified DistanceSensorIO implementation
  */
 public class DistanceSensor {
-    private String name;
+    private final String name;
     private final DistanceSensorIO io;
     private final DistanceSensorInputsAutoLogged inputs = new DistanceSensorInputsAutoLogged();
 
