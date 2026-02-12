@@ -49,7 +49,7 @@ public interface MotorIO {
         public AngularVelocity velocity = RadiansPerSecond.of(0.0);
         // ... other sensor readings
     }
-    
+
     void updateInputs(MotorInputs inputs);
     void runVoltage(Voltage volts);
     void runVelocity(AngularVelocity velocity, ...);
@@ -120,19 +120,19 @@ High-level robot logic that extends WPILib's `SubsystemBase`:
 ```java
 public class Intake extends SubsystemBase {
     private final FlywheelMechanism<?> io; // Wildcard - accepts any MotorIO implementation
-    
+
     public Intake(FlywheelMechanism<?> intakeIO) {
         this.io = intakeIO;
     }
-    
+
     public Command runIntake(AngularVelocity velocity) {
-        return this.runOnce(() -> 
-            io.runVelocity(velocity, 
-                          IntakeConstants.MAX_ACCELERATION, 
+        return this.runOnce(() ->
+            io.runVelocity(velocity,
+                          IntakeConstants.MAX_ACCELERATION,
                           PIDSlot.SLOT_0))
             .withName("Run Intake");
     }
-    
+
     @Override
     public void periodic() {
         io.periodic(); // Updates inputs via MotorIO

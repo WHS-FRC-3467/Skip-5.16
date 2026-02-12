@@ -35,16 +35,14 @@ public interface GyroIO {
      *
      * @param inputs Logged inputs object to update with current sensor readings
      */
-    public default void updateInputs(GyroIOInputs inputs)
-    {}
+    public default void updateInputs(GyroIOInputs inputs) {}
 
     /**
      * Returns the acceleration in the X direction.
      *
      * @return Acceleration in G's
      */
-    public default double getAccelerationX()
-    {
+    public default double getAccelerationX() {
         return 0.0;
     }
 
@@ -53,8 +51,7 @@ public interface GyroIO {
      *
      * @return Acceleration in G's
      */
-    public default double getAccelerationY()
-    {
+    public default double getAccelerationY() {
         return 0.0;
     }
 
@@ -63,8 +60,7 @@ public interface GyroIO {
      *
      * @return Pitch angle in degrees
      */
-    public default double getPitch()
-    {
+    public default double getPitch() {
         return 0.0;
     }
 
@@ -73,8 +69,7 @@ public interface GyroIO {
      *
      * @return Roll angle in degrees
      */
-    public default double getRoll()
-    {
+    public default double getRoll() {
         return 0.0;
     }
 }

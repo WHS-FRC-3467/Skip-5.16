@@ -22,11 +22,10 @@ public interface LightsIO {
 
     /**
      * Getter for the name of the lights
-     * 
+     *
      * @return The name of the lights
      */
-    public default String getName()
-    {
+    public default String getName() {
         return "";
     }
 
@@ -35,6 +34,5 @@ public interface LightsIO {
      *
      * @param request {@link ControlRequest}
      */
-    public default void setAnimation(ControlRequest request)
-    {}
+    public default void setAnimation(ControlRequest request) {}
 }

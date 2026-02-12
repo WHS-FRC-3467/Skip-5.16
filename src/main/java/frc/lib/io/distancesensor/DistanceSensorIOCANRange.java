@@ -48,8 +48,7 @@ public class DistanceSensorIOCANRange implements DistanceSensorIO {
      * @param name A human-readable name for this sensor instance.
      * @param config The CANrangeConfiguration to apply to the sensor upon initialization.
      */
-    public DistanceSensorIOCANRange(Device.CAN id, String name, CANrangeConfiguration config)
-    {
+    public DistanceSensorIOCANRange(Device.CAN id, String name, CANrangeConfiguration config) {
         this.name = name;
 
         CANRange = new CANrange(id.id(), new CANBus(id.bus()));
@@ -65,8 +64,7 @@ public class DistanceSensorIOCANRange implements DistanceSensorIO {
     }
 
     @Override
-    public void updateInputs(DistanceSensorInputs inputs)
-    {
+    public void updateInputs(DistanceSensorInputs inputs) {
         inputs.connected = BaseStatusSignal.refreshAll(ambientSignal, distance).isOK();
 
         if (!inputs.connected) {

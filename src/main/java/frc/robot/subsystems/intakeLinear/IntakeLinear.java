@@ -44,11 +44,10 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     /**
      * Constructs an IntakeLinear subsystem.
-     * 
+     *
      * @param intakeLinearIO The linear mechanism for controlling the intake extension
      */
-    public IntakeLinear(LinearMechanism<?> intakeLinearIO)
-    {
+    public IntakeLinear(LinearMechanism<?> intakeLinearIO) {
         this.io = intakeLinearIO;
         this.linearStopped =
             new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearStopped",
@@ -61,32 +60,29 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     /**
      * Creates a command to extend the intake.
-     * 
+     *
      * @return A command that extends the intake
      */
-    public Command extend()
-    {
+    public Command extend() {
         return this.runOnce(() -> io.runCurrent(Amps.of(INTAKE_CURRENT.get())));
     }
 
     /**
      * Creates a command to retract the intake.
-     * 
+     *
      * @return A command that retracts the intake
      */
-    public Command retract()
-    {
+    public Command retract() {
         return this.runOnce(() -> io.runCurrent(Amps.of(-INTAKE_CURRENT.get())));
     }
 
     /**
      * Creates a command that repeatedly cycles the intake between extended and retracted positions.
      * Each cycle extends the intake, waits until stopped, retracts, then waits until stopped again.
-     * 
+     *
      * @return A repeating command that cycles the intake
      */
-    public Command cycle()
-    {
+    public Command cycle() {
         return Commands.repeatingSequence(
             this.extend(),
             Commands.deadline(Commands.waitSeconds(1), Commands.waitUntil(linearStopped)),
@@ -96,41 +92,37 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     /**
      * Creates a command to stop the intake linear mechanism.
-     * 
+     *
      * @return A command that stops the linear motion
      */
-    public Command stop()
-    {
+    public Command stop() {
         return this.runOnce(() -> io.runBrake());
     }
 
     /**
      * Coast intake linear for pit testing.
+     *
      * @return a command to set the intake linear mechanism to coast mode.
      */
-    public Command coast()
-    {
+    public Command coast() {
         return this.runOnce(() -> io.runCoast());
     }
 
-    private boolean isLinearStopped()
-    {
+    private boolean isLinearStopped() {
         return Math.abs(io.getVelocity().in(RotationsPerSecond)) < 2.0;
     }
 
     /**
      * Gets the linear extension of the subsystem by converting the motor's rotation
-     * 
+     *
      * @return The estimated linear extension of the subsystem
      */
-    public Distance getExtension()
-    {
+    public Distance getExtension() {
         return IntakeLinearConstants.CONVERTER.toDistance(io.getPosition());
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Logger.recordOutput(this.getName() + "/State",
             this.isExtended.getAsBoolean() ? "EXTENDED"
                 : this.isRetracted.getAsBoolean() ? "RETRACTED" : "MOVING");
@@ -138,8 +130,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         io.close();
     }
 }

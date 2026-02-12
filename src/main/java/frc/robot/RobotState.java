@@ -74,44 +74,40 @@ public class RobotState {
 
     /**
      * Returns the robot's odometry-only pose (without vision corrections).
-     * 
+     *
      * @return the odometry-only pose
      */
     @AutoLogOutput(key = "Odometry/OdometryPose")
-    public Pose2d getOdometryPose()
-    {
+    public Pose2d getOdometryPose() {
         return poseEstimator.odometryPose();
     }
 
     /**
      * Returns the robot's estimated pose with vision corrections applied.
-     * 
+     *
      * @return the estimated pose
      */
     @AutoLogOutput(key = "Odometry/EstimatedPose")
-    public Pose2d getEstimatedPose()
-    {
+    public Pose2d getEstimatedPose() {
         return poseEstimator.estimatedPose();
     }
 
     /**
      * Adds a new odometry observation to the pose estimator.
-     * 
+     *
      * @param observation the odometry observation to add
      */
-    public void addOdometryObservation(OdometryObservation observation)
-    {
+    public void addOdometryObservation(OdometryObservation observation) {
         poseEstimator.addOdometryObservation(observation);
     }
 
     /**
      * Adds a new vision observation to the pose estimator. Vision observations are ignored when the
      * drivetrain is tilted (e.g., going over a bump).
-     * 
+     *
      * @param observation the vision observation to add
      */
-    public void addVisionObservation(VisionPoseObservation observation)
-    {
+    public void addVisionObservation(VisionPoseObservation observation) {
         // Only add vision observation if robot is not angled (i.e. when going over a bump)
         if (drivetrainAngled) {
             return;
@@ -121,22 +117,20 @@ public class RobotState {
 
     /**
      * Returns the robot's estimated pose at a specific timestamp.
-     * 
+     *
      * @param timestampSeconds the timestamp in seconds
      * @return the estimated pose at the given timestamp, or empty if unavailable
      */
-    public Optional<Pose2d> getPoseAtTime(double timestampSeconds)
-    {
+    public Optional<Pose2d> getPoseAtTime(double timestampSeconds) {
         return poseEstimator.getPoseAtTime(timestampSeconds);
     }
 
     /**
      * Returns the robot's field-relative velocity.
-     * 
+     *
      * @return the field-relative chassis speeds
      */
-    public ChassisSpeeds getFieldRelativeVelocity()
-    {
+    public ChassisSpeeds getFieldRelativeVelocity() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(
             velocity.vxMetersPerSecond,
             velocity.vyMetersPerSecond,
@@ -146,11 +140,10 @@ public class RobotState {
 
     /**
      * Resets the robot's pose to the specified position.
-     * 
+     *
      * @param pose the new pose to set
      */
-    public void resetPose(Pose2d pose)
-    {
+    public void resetPose(Pose2d pose) {
         poseEstimator.resetPose(pose);
     }
 
@@ -180,8 +173,7 @@ public class RobotState {
      * Bump/trench lanes are checked first so they take precedence over the coarse X-based zone
      * classification.
      */
-    public FieldRegion getFieldRegion()
-    {
+    public FieldRegion getFieldRegion() {
         // Pose in blue-side field frame (i.e., "alliance side" is always the current alliance).
         Pose2d pose = FieldUtil.apply(getEstimatedPose());
         double x = pose.getX();
@@ -221,8 +213,7 @@ public class RobotState {
     /**
      * Returns the nearest cardinal angle (multiple of 90 degrees) to the current robot angle.
      */
-    private Rotation2d getNearestCardinalAngle()
-    {
+    private Rotation2d getNearestCardinalAngle() {
         double currentAngle = getEstimatedPose().getRotation().getDegrees();
         double nearestCardinalAngle = Math.round(currentAngle / 90.0) * 90.0;
         return Rotation2d.fromDegrees(nearestCardinalAngle);
@@ -341,15 +332,13 @@ public class RobotState {
          *
          * @return the target translation adjusted for the current alliance
          */
-        public Translation3d getAllianceTranslation()
-        {
+        public Translation3d getAllianceTranslation() {
             return FieldUtil.apply(blueTranslation);
         }
     }
 
     @AutoLogOutput(key = "Robot/CurrentTarget")
-    public Target getTarget()
-    {
+    public Target getTarget() {
         FieldRegion region = getFieldRegion();
 
         // Target the hub anywhere on our side *including* the near bump/trench lanes.
@@ -367,11 +356,10 @@ public class RobotState {
 
     /**
      * Returns 2D distance from robot to target.
-     * 
+     *
      * @return the distance to the target
      */
-    public Distance getDistanceToTarget()
-    {
+    public Distance getDistanceToTarget() {
         Translation2d robotTranslation = getEstimatedPose().getTranslation();
         Translation2d targetTranslation = getTarget().getAllianceTranslation().toTranslation2d();
         return Meters.of(robotTranslation.getDistance(targetTranslation));
@@ -379,11 +367,10 @@ public class RobotState {
 
     /**
      * Returns the angle from the robot to the current target.
-     * 
+     *
      * @return the angle to the target
      */
-    public Rotation2d getAngleToTarget()
-    {
+    public Rotation2d getAngleToTarget() {
         return getTarget().getAllianceTranslation().toTranslation2d()
             .minus(getEstimatedPose().getTranslation())
             .getAngle();

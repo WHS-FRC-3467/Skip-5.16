@@ -41,8 +41,7 @@ public interface ObjectDetectionIO {
         public PhotonTrackedTarget[] latestTargets = new PhotonTrackedTarget[0];
 
         @Override
-        public void toLog(LogTable table)
-        {
+        public void toLog(LogTable table) {
             int targetsLength = latestTargets.length;
             table.put("TargetsLength", targetsLength);
 
@@ -54,8 +53,7 @@ public interface ObjectDetectionIO {
         }
 
         @Override
-        public void fromLog(LogTable table)
-        {
+        public void fromLog(LogTable table) {
             int targetsLength = table.get("TargetsLength", 0);
             latestTargets = new PhotonTrackedTarget[targetsLength];
 
@@ -68,11 +66,10 @@ public interface ObjectDetectionIO {
     }
 
     /**
-     * Updates the provided ObjectDetectionIOInputs with the latest camera readings.
-     * If the camera is not connected, the ObjectDetectionIOInput fields remain empty.
-     * 
+     * Updates the provided ObjectDetectionIOInputs with the latest camera readings. If the camera
+     * is not connected, the ObjectDetectionIOInput fields remain empty.
+     *
      * @param inputs The structure to populate with updated target detection data
      */
-    public default void updateInputs(ObjectDetectionIOInputs inputs)
-    {}
+    public default void updateInputs(ObjectDetectionIOInputs inputs) {}
 }

@@ -28,49 +28,32 @@ import frc.robot.subsystems.intakeLinear.IntakeLinear;
 import frc.robot.subsystems.intakeLinear.IntakeLinearConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
-public record MechanismPosePublisher(IntakeLinear intake, ShooterSuperstructure shooter) {
-    private static final double DOOHICKEY_MAX_ROTATION_DEGREES = 60;
+public record MechanismPosePublisher(IntakeLinear intake,ShooterSuperstructure shooter){private static final double DOOHICKEY_MAX_ROTATION_DEGREES=60;
 
-    public void update()
-    {
-        var hood =
-            new Pose3d(
-                // Offset from origin (inverse of 1st component in
-                // ascope_assets/Robot_Alpha_2026/config.json)
-                new Translation3d(
-                    -0.1,
-                    0,
-                    0.48),
-                // Rotate by hood angle
-                new Rotation3d(Rotations.zero(), shooter.getHoodAngle(), Rotations.zero()));
+public void update(){var hood=new Pose3d(
+// Offset from origin (inverse of 1st component in
+// ascope_assets/Robot_Alpha_2026/config.json)
+new Translation3d(-0.1,0,0.48),
+// Rotate by hood angle
+new Rotation3d(Rotations.zero(),shooter.getHoodAngle(),Rotations.zero()));
 
 
-        var directionRot = new Rotation3d(Degrees.zero(), Degrees.of(8.3), Degrees.zero());
+var directionRot=new Rotation3d(Degrees.zero(),Degrees.of(8.3),Degrees.zero());
 
-        // Start with +X, scale by extension, then rotate that vector by 8.3 degrees.
-        var offset =
-            new Translation3d(intake.getExtension(), Meters.zero(), Meters.zero())
-                .rotateBy(directionRot);
+// Start with +X, scale by extension, then rotate that vector by 8.3 degrees.
+var offset=new Translation3d(intake.getExtension(),Meters.zero(),Meters.zero()).rotateBy(directionRot);
 
-        // Apply ONLY a translation (identity rotation), so pose orientation does not change.
-        var linearSlide = Pose3d.kZero.transformBy(new Transform3d(offset, new Rotation3d()));
+// Apply ONLY a translation (identity rotation), so pose orientation does not change.
+var linearSlide=Pose3d.kZero.transformBy(new Transform3d(offset,new Rotation3d()));
 
-        double linearExtensionPercent = (intake.getExtension().in(Inches)
-            / IntakeLinearConstants.MAX_DISTANCE.in(Inches));
+double linearExtensionPercent=(intake.getExtension().in(Inches)/IntakeLinearConstants.MAX_DISTANCE.in(Inches));
 
-        // Offset from origin (inverse of 3rd component in
-        // ascope_assets/Robot_Alpha_2026/config.json)
-        var doohickey = new Pose3d(0.192, 0, 0.246, Rotation3d.kZero)
-            .transformBy(
-                new Transform3d(
-                    // Move with linear slide
-                    offset,
-                    // Rotate along slide
-                    new Rotation3d(
-                        Degrees.zero(),
-                        Degrees.of(DOOHICKEY_MAX_ROTATION_DEGREES * linearExtensionPercent),
-                        Degrees.zero())));
+// Offset from origin (inverse of 3rd component in
+// ascope_assets/Robot_Alpha_2026/config.json)
+var doohickey=new Pose3d(0.192,0,0.246,Rotation3d.kZero).transformBy(new Transform3d(
+// Move with linear slide
+offset,
+// Rotate along slide
+new Rotation3d(Degrees.zero(),Degrees.of(DOOHICKEY_MAX_ROTATION_DEGREES*linearExtensionPercent),Degrees.zero())));
 
-        Logger.recordOutput("MechanismPoses", new Pose3d[] {hood, linearSlide, doohickey});
-    }
-}
+Logger.recordOutput("MechanismPoses",new Pose3d[]{hood,linearSlide,doohickey});}}

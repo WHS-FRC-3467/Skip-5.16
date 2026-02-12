@@ -21,15 +21,14 @@ public class AlignToPose extends AlignToPoseBase {
 
     /**
      * Creates a command to align the robot to a target pose while allowing translational movement.
-     * 
+     *
      * @param drive the Drive subsystem to control robot movement
      * @param targetPose a Supplier that provides the target pose to align to
      * @param mode the alignment mode (e.g., align translation, rotation, or both)
      * @param joystickInput a DoubleSupplier providing driver input for translational movement
      */
     public AlignToPose(Drive drive, Supplier<Pose2d> targetPose, AlignMode mode,
-        DoubleSupplier joystickInput)
-    {
+        DoubleSupplier joystickInput) {
         super(drive,
             targetPose,
             mode,

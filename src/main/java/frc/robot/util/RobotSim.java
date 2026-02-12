@@ -40,8 +40,7 @@ public class RobotSim {
         ShooterSuperstructure shooter,
         Indexer indexer,
         IntakeRoller intakeRoller,
-        IntakeLinear intakeLinear)
-    {
+        IntakeLinear intakeLinear) {
         Trigger shootSimFuel = new Trigger(() -> (shooter.readyToShoot.getAsBoolean()
             && (indexer.getSpeed() > 0.1) && (fuelSim.getHeldFuel() > 0)));
 
@@ -95,7 +94,7 @@ public class RobotSim {
 
     /**
      * Adds mechanism data to the sim
-     * 
+     *
      * @param drive Drive subsystem for robot pose tracking
      * @param shooter Shooter superstructure
      * @param indexer Indexer subsystem
@@ -107,20 +106,17 @@ public class RobotSim {
         ShooterSuperstructure shooter,
         Indexer indexer,
         IntakeRoller intakeRoller,
-        IntakeLinear intakeLinear)
-    {
+        IntakeLinear intakeLinear) {
         registerFuelSimMechanisms(drive, shooter, indexer, intakeRoller, intakeLinear);
         posePublisher = new MechanismPosePublisher(intakeLinear, shooter);
     }
 
-    public FuelSim getFuelSim()
-    {
+    public FuelSim getFuelSim() {
         return fuelSim;
     }
 
     /** Updates all data that only matters in sim/replay. Should be called periodically */
-    public void updateSim()
-    {
+    public void updateSim() {
         fuelSim.updateSim();
         posePublisher.update();
     }

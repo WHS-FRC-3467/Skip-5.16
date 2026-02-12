@@ -103,5 +103,3 @@ public class BasicNeutralAuto extends AutoRoutine {
                 AutoSegments.initializeIntake(intakeLinear, intakeRoller));
     }
 }
-
-

@@ -29,8 +29,7 @@ public class TowerTest {
     Tower tower;
 
     @BeforeEach // this method will run before each test
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
         tower = TowerConstants.get();
@@ -44,8 +43,7 @@ public class TowerTest {
     }
 
     @AfterEach // this method will run after each test
-    void shutdown()
-    {
+    void shutdown() {
         try {
             tower.close();
         } catch (Exception e) {
@@ -54,8 +52,7 @@ public class TowerTest {
     }
 
     @Test // marks this method as a test
-    void shoot()
-    {
+    void shoot() {
         TestUtil.runTest(
             tower.setStateCommand(Tower.State.SHOOT),
             2,
@@ -69,8 +66,7 @@ public class TowerTest {
     }
 
     @Test // marks this method as a test
-    void idle()
-    {
+    void idle() {
         TestUtil.runTest(
             tower.setStateCommand(Tower.State.IDLE),
             2,
@@ -84,8 +80,7 @@ public class TowerTest {
     }
 
     @Test
-    void stop()
-    {
+    void stop() {
         TestUtil.runTest(
             tower.setStateCommand(Tower.State.STOP),
             2,

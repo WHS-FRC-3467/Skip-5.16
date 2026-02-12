@@ -60,13 +60,11 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
     }
 
     /** Constructor for the Intake subsystem - accepts a FlywheelMechanism. */
-    public IntakeRoller(FlywheelMechanism<?> intakeIO)
-    {
+    public IntakeRoller(FlywheelMechanism<?> intakeIO) {
         this.io = intakeIO;
     }
 
-    private void setState(State state)
-    {
+    private void setState(State state) {
         this.state = state;
         io.runVelocity(state.angularVelocity.get(),
             IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
@@ -74,15 +72,14 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
 
     /**
      * Sets the subsystem's state
-     * 
+     *
      * In a sequence, this command is non-blocking (finishes instantly), but still requires the
      * subsystem (you cannot set the subsystem's state twice in a {@link ParallelCommandGroup}))
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command setStateCommand(State state)
-    {
+    public Command setStateCommand(State state) {
         return this.runOnce(() -> setState(state))
             .withName(state.name());
     }
@@ -90,37 +87,34 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
     /**
      * Holds a state until the command is interrupted. Once the command is interrupted, its state
      * will automatically be set to {@link State#STOP}
-     * 
+     *
      * In a sequence, this command is blocking and requires this subsystem
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command holdStateUntilInterrupted(State state)
-    {
+    public Command holdStateUntilInterrupted(State state) {
         return this.startEnd(() -> setState(state), () -> setState(State.STOP))
             .withName(state.name() + " Until Interrupted");
     }
 
     /**
      * Creates a command to stop the intake roller and set the state to STOP.
-     * 
+     *
      * @return A command that stops the roller
      */
-    public Command stop()
-    {
+    public Command stop() {
         return this.runOnce(() -> io.runBrake())
             .andThen(this.runOnce(() -> this.state = State.STOP)).withName("STOP");
     }
 
     /**
      * Checks if the intake roller velocity is near the specified state's setpoint.
-     * 
+     *
      * @param state The state whose setpoint to check against
      * @return true if the roller is within tolerance of the state's setpoint, false otherwise
      */
-    public boolean nearSetpoint(State state)
-    {
+    public boolean nearSetpoint(State state) {
         return MathUtil.isNear(
             state.angularVelocity.get().in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
@@ -129,24 +123,21 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
 
     /**
      * Gets the current velocity of the intake roller motor.
-     * 
+     *
      * @return The current angular velocity
      */
-    public AngularVelocity getVelocity()
-    {
+    public AngularVelocity getVelocity() {
         return io.getVelocity();
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Logger.recordOutput(IntakeRollerConstants.NAME + "/State", state.name());
         io.periodic();
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         io.close();
     }
 }

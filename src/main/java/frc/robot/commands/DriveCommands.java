@@ -47,7 +47,7 @@ import com.pathplanner.lib.path.PathConstraints;
 
 /**
  * Factory class for creating drive-related commands.
- * 
+ *
  * <p>
  * Provides factory methods for common drive operations including:
  * <ul>
@@ -56,7 +56,7 @@ import com.pathplanner.lib.path.PathConstraints;
  * <li>Pathfinding to specific field positions</li>
  * <li>System identification and characterization</li>
  * </ul>
- * 
+ *
  * <p>
  * All commands are designed to work with the {@link Drive} subsystem and integrate with PathPlanner
  * for autonomous path following.
@@ -75,18 +75,16 @@ public class DriveCommands {
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
-    private DriveCommands()
-    {}
+    private DriveCommands() {}
 
     /**
      * Converts joystick inputs to a linear velocity vector.
-     * 
+     *
      * @param x the x-axis joystick input
      * @param y the y-axis joystick input
      * @return the calculated linear velocity as a Translation2d
      */
-    public static Translation2d getLinearVelocityFromJoysticks(double x, double y)
-    {
+    public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
         double linearMagnitude = Math.pow(Math.hypot(x, y), 2);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
@@ -98,7 +96,7 @@ public class DriveCommands {
 
     /**
      * Field relative drive command using two joysticks (controlling linear and angular velocities).
-     * 
+     *
      * @param drive the drive subsystem
      * @param xSupplier supplier for x-axis joystick input
      * @param ySupplier supplier for y-axis joystick input
@@ -109,8 +107,7 @@ public class DriveCommands {
         Drive drive,
         DoubleSupplier xSupplier,
         DoubleSupplier ySupplier,
-        DoubleSupplier omegaSupplier)
-    {
+        DoubleSupplier omegaSupplier) {
         RobotState robotState = RobotState.getInstance();
         return Commands.run(
             () -> {
@@ -148,7 +145,7 @@ public class DriveCommands {
      * Field relative drive command using joystick for linear control and PID for angular control.
      * Possible use cases include snapping to an angle, aiming at a vision target, or controlling
      * absolute rotation with a joystick.
-     * 
+     *
      * @param drive the drive subsystem
      * @param xSupplier supplier for x-axis joystick input
      * @param ySupplier supplier for y-axis joystick input
@@ -159,8 +156,7 @@ public class DriveCommands {
         Drive drive,
         DoubleSupplier xSupplier,
         DoubleSupplier ySupplier,
-        Supplier<Rotation2d> rotationSupplier)
-    {
+        Supplier<Rotation2d> rotationSupplier) {
         RobotState robotState = RobotState.getInstance();
 
         // Create PID controller
@@ -210,7 +206,7 @@ public class DriveCommands {
     /**
      * Field relative drive command using joystick for linear control and PID for angular control.
      * Always faces the current target in RobotState
-     * 
+     *
      * @param drive the drive subsystem
      * @param xSupplier supplier for x-axis joystick input
      * @param ySupplier supplier for y-axis joystick input
@@ -219,21 +215,19 @@ public class DriveCommands {
     public static Command joystickDriveFacingTarget(
         Drive drive,
         DoubleSupplier xSupplier,
-        DoubleSupplier ySupplier)
-    {
+        DoubleSupplier ySupplier) {
         RobotState robotState = RobotState.getInstance();
         return joystickDriveAtAngle(drive, xSupplier, ySupplier, robotState::getAngleToTarget);
     }
 
     /**
-     * Stationary control command that prohibits motion while it aims towards the target, then
-     * holds the wheels in an X pattern once the robot is aligned with the target heading.
-     * 
+     * Stationary control command that prohibits motion while it aims towards the target, then holds
+     * the wheels in an X pattern once the robot is aligned with the target heading.
+     *
      * @param drive the drive subsystem
      * @return the static aim towards target command
      */
-    public static Command staticAimTowardsTarget(Drive drive)
-    {
+    public static Command staticAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
         return Commands.repeatingSequence(
             joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget)
@@ -245,15 +239,14 @@ public class DriveCommands {
 
     /**
      * Measures the velocity feedforward constants for the drive motors.
-     * 
+     *
      * <p>
      * This command should only be used in voltage control mode.
-     * 
+     *
      * @param drive the drive subsystem
      * @return the feedforward characterization command
      */
-    public static Command feedforwardCharacterization(Drive drive)
-    {
+    public static Command feedforwardCharacterization(Drive drive) {
         List<Double> velocitySamples = new ArrayList<>();
         List<Double> voltageSamples = new ArrayList<>();
         Timer timer = new Timer();
@@ -315,12 +308,11 @@ public class DriveCommands {
 
     /**
      * Measures the robot's wheel radius by spinning in a circle.
-     * 
+     *
      * @param drive the drive subsystem
      * @return the wheel radius characterization command
      */
-    public static Command wheelRadiusCharacterization(Drive drive)
-    {
+    public static Command wheelRadiusCharacterization(Drive drive) {
         RobotState robotState = RobotState.getInstance();
 
         SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
@@ -394,7 +386,7 @@ public class DriveCommands {
 
     /**
      * Pathfinding command that uses the AutoBuilder to generate a path to a target position.
-     * 
+     *
      * @param currentPose supplier for the robot's current pose
      * @param targetPose the target pose to pathfind to
      * @param constraints the path constraints to apply
@@ -403,8 +395,7 @@ public class DriveCommands {
      * @return the pathfinding command
      */
     public static Command pathFindToPose(Supplier<Pose2d> currentPose, Pose2d targetPose,
-        PathConstraints constraints, LinearVelocity goalEndVelocity, Distance tolerance)
-    {
+        PathConstraints constraints, LinearVelocity goalEndVelocity, Distance tolerance) {
 
         // Since AutoBuilder is configured, we can use it to build pathfinding commands
         return AutoBuilder.pathfindToPose(

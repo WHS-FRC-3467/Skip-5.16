@@ -20,22 +20,19 @@ import frc.lib.io.motor.MotorIO;
 import frc.lib.mechanisms.Mechanism;
 
 /**
- * Abstract base class for flywheel mechanisms.
- * Flywheels are rotating mechanisms used for intakes, indexers, and shooters.
- * Provides velocity control for spinning wheels at specific speeds.
- * 
+ * Abstract base class for flywheel mechanisms. Flywheels are rotating mechanisms used for intakes,
+ * indexers, and shooters. Provides velocity control for spinning wheels at specific speeds.
+ *
  * @param <T> the type of MotorIO implementation used by this flywheel
  */
 public abstract class FlywheelMechanism<T extends MotorIO> extends Mechanism<T> {
 
-    public FlywheelMechanism(String name, T io)
-    {
+    public FlywheelMechanism(String name, T io) {
         super(name, io);
     }
 
     @Override
-    public Current getTorqueCurrent()
-    {
+    public Current getTorqueCurrent() {
         return inputs.torqueCurrent;
     }
 }

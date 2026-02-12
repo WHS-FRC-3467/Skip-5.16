@@ -47,8 +47,7 @@ public class GyroIOPigeon2 implements GyroIO {
     /**
      * Constructs a new GyroIOPigeon2 instance and configures the Pigeon 2 gyro.
      */
-    public GyroIOPigeon2()
-    {
+    public GyroIOPigeon2() {
         pigeon.getConfigurator().apply(new Pigeon2Configuration());
         pigeon.getConfigurator().setYaw(0.0);
         yaw.setUpdateFrequency(Drive.ODOMETRY_FREQUENCY);
@@ -63,8 +62,7 @@ public class GyroIOPigeon2 implements GyroIO {
     }
 
     @Override
-    public void updateInputs(GyroIOInputs inputs)
-    {
+    public void updateInputs(GyroIOInputs inputs) {
         inputs.connected =
             BaseStatusSignal.refreshAll(yaw, yawVelocity, pitch, roll, accelerationX, accelerationY)
                 .equals(StatusCode.OK);
@@ -80,30 +78,26 @@ public class GyroIOPigeon2 implements GyroIO {
             .toArray(Rotation2d[]::new);
         yawTimestampQueue.clear();
         yawPositionQueue.clear();
-        
+
     }
 
     @Override
-    public double getAccelerationX()
-    {
+    public double getAccelerationX() {
         return pigeon.getAccelerationX().getValueAsDouble();
     }
 
     @Override
-    public double getAccelerationY()
-    {
+    public double getAccelerationY() {
         return pigeon.getAccelerationY().getValueAsDouble();
     }
 
     @Override
-    public double getPitch()
-    {
+    public double getPitch() {
         return pitch.getValueAsDouble();
     }
-    
+
     @Override
-    public double getRoll()
-    {
+    public double getRoll() {
         return roll.getValueAsDouble();
     }
 }

@@ -122,8 +122,7 @@ public class Robot extends LoggedRobot {
     }
 
     @Override
-    public void robotInit()
-    {
+    public void robotInit() {
         /*
          * Due to the nature of how Java works, the first run of a pathfinding command could have a
          * significantly higher delay compared with subsequent runs. To help alleviate this issue,
@@ -147,8 +146,7 @@ public class Robot extends LoggedRobot {
      * robot state.
      */
     @Override
-    public void robotPeriodic()
-    {
+    public void robotPeriodic() {
         // Optionally switch the thread to high priority to improve loop
         // timing (see the template project documentation for details)
         // Threads.setCurrentThreadPriority(true, 99);
@@ -169,8 +167,7 @@ public class Robot extends LoggedRobot {
 
     /** This function is called once when the robot is disabled. */
     @Override
-    public void disabledInit()
-    {
+    public void disabledInit() {
         // Switch to Autonomous tab in Elastic Dashboard
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(1);
@@ -184,8 +181,7 @@ public class Robot extends LoggedRobot {
      * pose for autonomous mode.
      */
     @Override
-    public void disabledPeriodic()
-    {
+    public void disabledPeriodic() {
         robotContainer.checkStartPose();
         robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
@@ -194,8 +190,7 @@ public class Robot extends LoggedRobot {
      * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
      */
     @Override
-    public void autonomousInit()
-    {
+    public void autonomousInit() {
         // Switch to Autonomous tab in Elastic Dashboard
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(1);
@@ -211,15 +206,13 @@ public class Robot extends LoggedRobot {
 
     /** This function is called periodically during autonomous. */
     @Override
-    public void autonomousPeriodic()
-    {
+    public void autonomousPeriodic() {
         robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
 
     /** This function is called once when teleop is enabled. */
     @Override
-    public void teleopInit()
-    {
+    public void teleopInit() {
         // This makes sure that the autonomous stops running when
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
@@ -239,8 +232,7 @@ public class Robot extends LoggedRobot {
      * game data updates during teleop.
      */
     @Override
-    public void teleopPeriodic()
-    {
+    public void teleopPeriodic() {
         // Hub State management
         double firstHubChangeTime = HubState.getHubChangeTimes()[0];
         if (!checkedHubGameData && DriverStation.getMatchTime() <= firstHubChangeTime
@@ -255,26 +247,22 @@ public class Robot extends LoggedRobot {
 
     /** This function is called once when test mode is enabled. */
     @Override
-    public void testInit()
-    {
+    public void testInit() {
         // Cancels all running commands at the start of test mode.
         CommandScheduler.getInstance().cancelAll();
     }
 
     /** This function is called periodically during test mode. */
     @Override
-    public void testPeriodic()
-    {}
+    public void testPeriodic() {}
 
     /** This function is called once when the robot is first started up. */
     @Override
-    public void simulationInit()
-    {}
+    public void simulationInit() {}
 
     /** This function is called periodically whilst in simulation. */
     @Override
-    public void simulationPeriodic()
-    {
+    public void simulationPeriodic() {
         RobotSim.getInstance().updateSim();
     }
 }
