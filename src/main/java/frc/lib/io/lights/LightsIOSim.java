@@ -27,9 +27,8 @@ public class LightsIOSim implements LightsIO {
     private Map<String, String> requestInfo;
 
     /**
-     * Constructs a {@link LightsIOSim} object with the specified name.
+     * Constructs a {@link LightsIOSim} object.
      *
-     * @param name A human-readable name for this sensor instance.
      */
     public LightsIOSim()
     {}
