@@ -35,13 +35,14 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
-private static final LoggedTunableNumber INTAKE_SETPOINT =
+    private static final LoggedTunableNumber INTAKE_SETPOINT =
         new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 10.0);
     private static final LoggedTunableNumber EJECT_SETPOINT =
-        new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);   
-     private static final LoggedTunableNumber INTAKE_CURRENT =
+        new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);
+    private static final LoggedTunableNumber INTAKE_CURRENT =
         new LoggedTunableNumber(IntakeLinearConstants.NAME + "/IntakeCurrentTorqueCurrent", 60.0);
- @RequiredArgsConstructor
+
+    @RequiredArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
     @Getter
     public enum State {
@@ -52,32 +53,36 @@ private static final LoggedTunableNumber INTAKE_SETPOINT =
         private final Supplier<AngularVelocity> angularVelocity;
 
     }
-         @Getter
+
+    @Getter
     private State state = State.STOP;
-public final LoggedTrigger linearStopped;
+    public final LoggedTrigger linearStopped;
     public final LoggedTrigger isExtended;
     public final LoggedTrigger isRetracted;
 
-   private final LinearMechanism<?> intakeLinearIO;
-       private final FlywheelMechanism<?> intakeRollerIO;
+    private final LinearMechanism<?> intakeLinearIO;
+    private final FlywheelMechanism<?> intakeRollerIO;
+
     public IntakeSuperstructure(
         LinearMechanism<?> intakeLinearIO,
-        FlywheelMechanism<?> intakeRollerIO
-    ) {
+        FlywheelMechanism<?> intakeRollerIO)
+    {
         this.intakeLinearIO = intakeLinearIO;
         this.intakeRollerIO = intakeRollerIO;
 
-  this.linearStopped =
-        new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearStopped",
+        this.linearStopped =
+            new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearStopped",
                 () -> isLinearStopped());
         this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
-            () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8).and(this.linearStopped);
+            () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8)
+                .and(this.linearStopped);
         this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
-            () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8).and(this.linearStopped);
+            () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8)
+                .and(this.linearStopped);
     }
-    
 
-     private void setState(State state)
+
+    private void setState(State state)
     {
         this.state = state;
         intakeRollerIO.runVelocity(state.angularVelocity.get(),
@@ -114,7 +119,7 @@ public final LoggedTrigger linearStopped;
             .withName(state.name() + " Until Interrupted");
     }
 
-     /**
+    /**
      * Holds a state until the command is interrupted. Once the command is interrupted, its state
      * will automatically be set to {@link State#STOP}
      * 
@@ -139,7 +144,8 @@ public final LoggedTrigger linearStopped;
      * 
      * @return A command that extends the intake
      */
-    public Command extend() {
+    public Command extend()
+    {
         return this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(INTAKE_CURRENT.get())));
     }
 
@@ -153,7 +159,7 @@ public final LoggedTrigger linearStopped;
         return this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(-INTAKE_CURRENT.get())));
     }
 
-     /**
+    /**
      * Creates a command that repeatedly cycles the intake between extended and retracted positions.
      * Each cycle extends the intake, waits until stopped, retracts, then waits until stopped again.
      * 
@@ -168,7 +174,7 @@ public final LoggedTrigger linearStopped;
             Commands.deadline(Commands.waitSeconds(1), Commands.waitUntil(linearStopped)));
     }
 
-     /**
+    /**
      * Creates a command to stop the intake linear mechanism.
      * 
      * @return A command that stops the linear motion
@@ -178,7 +184,7 @@ public final LoggedTrigger linearStopped;
         return this.runOnce(() -> intakeLinearIO.runBrake());
     }
 
-     /**
+    /**
      * Creates a command to stop the intake linear mechanism.
      * 
      * @return A command that stops the linear motion
@@ -189,7 +195,7 @@ public final LoggedTrigger linearStopped;
             .andThen(this.runOnce(() -> this.state = State.STOP)).withName("STOP");
     }
 
-     /**
+    /**
      * Checks if the intake roller velocity is near the specified state's setpoint.
      * 
      * @param state The state whose setpoint to check against
@@ -215,6 +221,7 @@ public final LoggedTrigger linearStopped;
 
     /**
      * Coast intake linear for pit testing.
+     * 
      * @return a command to set the intake linear mechanism to coast mode.
      */
     public Command coast()
@@ -227,7 +234,7 @@ public final LoggedTrigger linearStopped;
         return Math.abs(intakeLinearIO.getVelocity().in(RotationsPerSecond)) < 2.0;
     }
 
-     /**
+    /**
      * Gets the linear extension of the subsystem by converting the motor's rotation
      * 
      * @return The estimated linear extension of the subsystem
@@ -237,16 +244,16 @@ public final LoggedTrigger linearStopped;
         return IntakeLinearConstants.CONVERTER.toDistance(intakeLinearIO.getPosition());
     }
 
-      @Override
+    @Override
     public void periodic()
     {
         Logger.recordOutput(this.getName() + "/State",
             this.isExtended.getAsBoolean() ? "EXTENDED"
                 : this.isRetracted.getAsBoolean() ? "RETRACTED" : "MOVING");
 
-                 Logger.recordOutput(IntakeRollerConstants.NAME + "/State", state.name());
+        Logger.recordOutput(IntakeRollerConstants.NAME + "/State", state.name());
         intakeLinearIO.periodic();
-        
+
         intakeRollerIO.periodic();
     }
 
@@ -255,6 +262,6 @@ public final LoggedTrigger linearStopped;
     public void close()
     {
         intakeRollerIO.close();
-       intakeLinearIO.close();
+        intakeLinearIO.close();
     }
 }
