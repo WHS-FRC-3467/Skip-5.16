@@ -48,7 +48,7 @@ public class PreloadAuto extends AutoRoutine {
         // Load the named paths
         this.loadAllPaths(expectedPaths);
 
-        // Mirror necessary paths when starting on  RIGHT side so the dashboard shows correct poses
+        // Mirror necessary paths when starting on RIGHT side so the dashboard shows correct poses
         this.setMirrorFlags(List.of(false), start);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
@@ -57,7 +57,7 @@ public class PreloadAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                AutoSegments.initializeIntake(intake),
+                AutoCommands.initializeIntake(intake),
                 // Take preload shot
                 AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)));

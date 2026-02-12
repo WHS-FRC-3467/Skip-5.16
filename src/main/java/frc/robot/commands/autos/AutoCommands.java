@@ -10,7 +10,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.lib.util.FieldUtil;
@@ -134,40 +133,21 @@ public class AutoCommands {
      */
     public static Command deployIntake(IntakeSuperstructure intake)
     {
-        return Commands.sequence(
-            intake.extend(),
-            intake.holdStateUntilInterrupted(IntakeSuperstructure.State.INTAKE))
-            .finallyDo(() -> CommandScheduler.getInstance().schedule(intake.retract()));
+        return Commands.startEnd(() -> intake.extendIntake(), () -> intake.retractIntake(), intake);
     }
 
     /**
-     * Creates a command to extend the intake linearly. This command is blocking (2s max) until the
-     * extension is complete. The intake will remain extended and energized at the conclusion of
-     * this command.
+     * A non-blocking command that initializes the intake by stopping the rollers and retracting the
+     * linear stage
      * 
-     * @param intake the linear intake subsystem
-     * @return a command that retracts the intake and keeps it retracted when finished
+     * @param intake the intake subsystem
+     * @return a command that initializes the intake.
      */
-    public static Command extendIntake(IntakeSuperstructure intake)
+    public static Command initializeIntake(IntakeSuperstructure intake)
     {
         return Commands.sequence(
-            intake.extend(),
-            Commands.waitUntil(intake.isExtended).withTimeout(2.0)); // Wait until slam or max
-    }
-
-    /**
-     * Creates a command to retract the intake linearly. This command is blocking (2s max) until the
-     * retraction is complete. The intake will remain retracted and energized at the conclusion of
-     * this command.
-     * 
-     * @param intake the linear intake subsystem
-     * @return a command that retracts the intake and keeps it retracted when finished
-     */
-    public static Command retractIntake(IntakeSuperstructure intake)
-    {
-        return Commands.sequence(
-            intake.retract(),
-            Commands.waitUntil(intake.isRetracted).withTimeout(2.0)); // Wait until slam or max
+            intake.stopRoller(),
+            intake.retractLinear());
     }
 
     /**

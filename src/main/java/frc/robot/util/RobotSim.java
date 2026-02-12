@@ -7,7 +7,6 @@ package frc.robot.util;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -65,8 +64,7 @@ public class RobotSim {
                 })));
 
         Trigger intakeSimFuel =
-            new Trigger(() -> (intake.getVelocity().in(RotationsPerSecond) > 1.0)
-                && intake.isExtended.getAsBoolean());
+            new Trigger(intake::isIntaking);
 
         fuelSim.enableAirResistance();
         fuelSim.spawnStartingFuel();

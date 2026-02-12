@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
-import frc.robot.subsystems.intake.IntakeSuperstructure.State;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 
@@ -107,25 +106,8 @@ public class AutoSegments {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
-            pathCommand.deadlineFor(
-                intake.holdStateUntilInterruptedAndExtend(IntakeSuperstructure.State.INTAKE)),
+            pathCommand.deadlineFor(intake.extendIntake()),
             Commands.waitSeconds(afterPathWait.in(Seconds)),
-            // Spin down intake
-            intake.retract(),
-            intake.stopRoller());
-    }
-
-    /**
-     * A non-blocking command that initializes the intake by stopping the rollers and retracting the
-     * linear stage. Timeout after 1.5s.
-     * 
-     * @param intake the intake subsystem
-     * @return a command that initializes the intake.
-     */
-    public static Command initializeIntake(IntakeSuperstructure intake)
-    {
-        return Commands.sequence(
-            intake.setStateCommand(State.STOP),
-            AutoCommands.retractIntake(intake));
+            intake.retractIntake());
     }
 }

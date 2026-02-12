@@ -33,7 +33,6 @@ import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.intake.IntakeLinearConstants;
-import frc.robot.subsystems.intake.IntakeRollerConstants;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
 import frc.robot.subsystems.leds.LEDs;
@@ -206,13 +205,12 @@ public class RobotContainer {
                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                 indexer.setStateCommand(Indexer.State.STOP),
                 tower.setStateCommand(Tower.State.IDLE),
-                intake.extend()));
+                intake.extendLinear()));
 
         // Left Trigger: Intake
-        controller.leftTrigger().onTrue(
-            Commands.parallel(
-                intake.holdStateUntilInterruptedAndExtend(IntakeSuperstructure.State.INTAKE)))
-            .onFalse(intake.setStateCommand(IntakeSuperstructure.State.STOP));
+        controller.leftTrigger()
+            .onTrue(intake.extendIntake())
+            .onFalse(intake.stopRoller());
 
         // Right Bumper: Trench Align
         controller.rightBumper()
@@ -224,11 +222,11 @@ public class RobotContainer {
                     robotState::getTunnelAssistHeading));
 
         // D-Pad Up: Force Intake Linear Slide Back
-        controller.povUp().onTrue(intake.retract());
+        controller.povUp().onTrue(intake.retractIntake());
 
         // D-Pad Down: Unjam
         controller.povDown().whileTrue(Commands.parallel(
-            intake.holdStateUntilInterrupted(IntakeSuperstructure.State.EJECT),
+            intake.ejectRoller(),
             indexer.holdStateUntilInterrupted(Indexer.State.EXPEL),
             tower.holdStateUntilInterrupted(Tower.State.EJECT)));
     }
@@ -243,14 +241,8 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
-        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Eject",
-            intake.setStateCommand(IntakeSuperstructure.State.EJECT));
-        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Intake",
-            intake.setStateCommand(IntakeSuperstructure.State.INTAKE));
-        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Stop",
-            intake.setStateCommand(IntakeSuperstructure.State.STOP));
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extend());
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retract());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendLinear());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
 
         SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
@@ -258,16 +250,10 @@ public class RobotContainer {
             Degrees.of(90).minus(HoodConstants.MIN_ANGLE_OFFSET).minus(shooter.getHoodAngle())
                 .in(Degrees))));
 
-        SmartDashboard.putData("Intake Roller/Eject",
-            intake.setStateCommand(IntakeSuperstructure.State.EJECT));
-        SmartDashboard.putData("Intake Roller/Intake",
-            intake.setStateCommand(IntakeSuperstructure.State.INTAKE));
-        SmartDashboard.putData("Intake Roller/Stop",
-            intake.setStateCommand(IntakeSuperstructure.State.STOP));
-        SmartDashboard.putData("Intake Linear/Extend", intake.extend());
-        SmartDashboard.putData("Intake Linear/Retract", intake.retract());
+        SmartDashboard.putData("Intake Linear/Extend", intake.extendLinear());
+        SmartDashboard.putData("Intake Linear/Retract", intake.retractIntake());
         SmartDashboard.putData("Intake Linear/Cycle", intake.cycle());
-        SmartDashboard.putData("Intake Linear/Coast", intake.coast());
+        SmartDashboard.putData("Intake Linear/Coast", intake.linearCoast());
         SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
         SmartDashboard.putData("Run Indexer", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Face Target",
@@ -310,7 +296,7 @@ public class RobotContainer {
             .onTrue(leds.scheduleStateCommand(LEDs.State.READY_TO_SHOOT))
             .onFalse(leds.unscheduleStateCommand(LEDs.State.READY_TO_SHOOT));
 
-        new Trigger(() -> intake.getState() == IntakeSuperstructure.State.INTAKE)
+        new Trigger(() -> intake.isIntaking())
             .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_INTAKE))
             .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_INTAKE));
     }

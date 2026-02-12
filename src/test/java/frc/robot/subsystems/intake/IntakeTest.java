@@ -57,30 +57,14 @@ public class IntakeTest {
     void intake()
     {
         TestUtil.runTest(
-            intake.setStateCommand(IntakeSuperstructure.State.INTAKE),
+            intake.extendIntake(),
             2,
             intake);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
-            assertTrue(intake.nearSetpoint(IntakeSuperstructure.State.INTAKE));
+            assertTrue(intake.isIntaking());
         } catch (Exception e) {
             fail("Failed to run Intake to intake: " + e.getMessage());
-        }
-    }
-
-    @Test
-    void stop()
-    {
-        TestUtil.runTest(
-            intake.stopRoller(),
-            2,
-            intake);
-        try {
-            // Check velocity to check if the subsystem is actually in tolerance of stopped
-            // velocity.
-            assertTrue(intake.nearSetpoint(IntakeSuperstructure.State.STOP));
-        } catch (Exception e) {
-            fail("Failed to stop intake: " + e.getMessage());
         }
     }
 

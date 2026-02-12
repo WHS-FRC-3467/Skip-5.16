@@ -40,7 +40,8 @@ public class OutpostAuto extends AutoRoutine {
      * CENTER, or RIGHT).
      *
      * @param drive the drive subsystem
-     * @param intake the intake superstructure controlling both linear and roller intake for collecting fuel
+     * @param intake the intake superstructure controlling both linear and roller intake for
+     *        collecting fuel
      * @param indexer the indexer subsystem for managing fuel flow
      * @param tower the tower subsystem for moving fuel to shooter
      * @param shooter the shooter superstructure for launching fuel
@@ -77,7 +78,7 @@ public class OutpostAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                AutoSegments.initializeIntake(intake),
+                AutoCommands.initializeIntake(intake),
                 // Take preload shot
                 AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
