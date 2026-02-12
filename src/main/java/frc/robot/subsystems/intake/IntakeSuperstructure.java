@@ -125,9 +125,12 @@ public final LoggedTrigger linearStopped;
      */
     public Command holdStateUntilInterruptedAndExtend(State state)
     {
-        return this.startEnd(() -> Commands.sequence(this.runOnce(() -> setState(state)), 
-    this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(INTAKE_CURRENT.get()))))
-    , () -> setState(State.STOP))
+        return this.startEnd(
+            () -> {
+                setState(state);
+                intakeLinearIO.runCurrent(Amps.of(INTAKE_CURRENT.get()));
+            },
+            () -> setState(State.STOP))
             .withName(state.name() + " Until Interrupted And Extend");
     }
 
