@@ -32,16 +32,6 @@ public interface DistanceSensorIO {
     }
 
     /**
-     * Getter for the name of the sensor
-     * 
-     * @return The name of the sensor
-     */
-    public default String getName()
-    {
-        return "";
-    }
-
-    /**
      * Updates the provided {@link DistanceSensorInputs} instance with the latest sensor readings.
      * If the sensor is not connected, it populates the fields with default values.
      *

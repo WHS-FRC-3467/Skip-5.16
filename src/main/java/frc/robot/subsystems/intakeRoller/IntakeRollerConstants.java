@@ -51,15 +51,15 @@ public class IntakeRollerConstants {
 
     public static final String NAME = "Intake Roller";
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(10.0);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(75.0);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
 
-    private static final double GEARING = (2.0 / 1.0);
+    private static final double GEARING = (24.0 / 12.0);
 
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.5);
+    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
+    private static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.1);
 
     // Velocity PID
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);

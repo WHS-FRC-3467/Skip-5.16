@@ -156,14 +156,14 @@ public class ObjectDetectorConstants {
         switch (Constants.currentMode) {
             case REAL:
                 // Real IO, inputs = PhotonVision implementation of ObjectDetectionIO
-                return new ObjectDetector(new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
+                return new ObjectDetector(CAMERA0_NAME, new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
             case SIM:
                 // Sim IO, inputs = sim implementation of ObjectionDetectionIO
-                return new ObjectDetector(new ObjectDetectionIOSim(CAMERA0,
+                return new ObjectDetector(CAMERA0_NAME, new ObjectDetectionIOSim(CAMERA0,
                     () -> robotState.getEstimatedPose(), OBJECT0_NAME, visionTargetSimSupplier));
             case REPLAY:
                 // Replayed robot, use logged data for IO
-                return new ObjectDetector(new ObjectDetectionIO() {});
+                return new ObjectDetector(CAMERA0_NAME, new ObjectDetectionIO() {});
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }

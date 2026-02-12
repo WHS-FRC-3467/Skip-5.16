@@ -16,12 +16,10 @@
 package frc.lib.io.beambreak;
 
 import frc.lib.util.LoggedTunableBoolean;
-import lombok.Getter;
 
 /** A simulated implementation that uses a togglable button on the dashboard */
 public class BeamBreakIOSim implements BeamBreakIO {
 
-    @Getter
     private final String name;
 
     private final LoggedTunableBoolean button;

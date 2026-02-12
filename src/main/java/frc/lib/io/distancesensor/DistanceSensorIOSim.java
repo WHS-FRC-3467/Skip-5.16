@@ -18,15 +18,11 @@ package frc.lib.io.distancesensor;
 import static edu.wpi.first.units.Units.Inches;
 import edu.wpi.first.units.measure.Distance;
 import frc.lib.util.LoggedTunableNumber;
-import lombok.Getter;
 
 /**
  * A simulated distance sensor implementation
  */
 public class DistanceSensorIOSim implements DistanceSensorIO {
-    @Getter
-    private final String name;
-
     private final LoggedTunableNumber tunableDistance;
     private Distance distance;
 
@@ -37,7 +33,6 @@ public class DistanceSensorIOSim implements DistanceSensorIO {
      */
     public DistanceSensorIOSim(String name)
     {
-        this.name = name;
         tunableDistance = new LoggedTunableNumber(name + "/Sim Measurement (Inches)", 0.0);
     }
 

@@ -72,10 +72,4 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
             // Array of PhotonTrackedTargets from latest pipeline result.
             result.get(0).getTargets().toArray(PhotonTrackedTarget[]::new);
     }
-
-    @Override
-    public String getCamera()
-    {
-        return cameraName;
-    }
 }

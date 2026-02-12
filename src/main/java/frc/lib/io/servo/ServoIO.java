@@ -24,16 +24,6 @@ import edu.wpi.first.units.measure.Angle;
 public interface ServoIO {
 
     /**
-     * Getter for the name of the servo
-     * 
-     * @return The name of the servo
-     */
-    public default String getName()
-    {
-        return "";
-    }
-
-    /**
      * Runs the servo to position using an {@link Angle} value. The value should not exceed the
      * lower and upper limits of the servo.
      * 

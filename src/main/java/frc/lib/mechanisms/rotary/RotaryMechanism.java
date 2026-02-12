@@ -45,6 +45,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     protected final AbsoluteEncoderInputsAutoLogged absoluteEncoderInputs =
         new AbsoluteEncoderInputsAutoLogged();
     protected final Optional<E> absoluteEncoder;
+    private final String encoderName;
 
     private final RotaryVisualizer visualizer;
 
@@ -53,6 +54,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     {
         super(name, io, mech);
         this.absoluteEncoder = absoluteEncoder;
+        this.encoderName = encoderName;
         visualizer = new RotaryVisualizer(name, characteristics);
     }
 
@@ -97,7 +99,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
         // Finally, update and log absolute encoder inputs if present.
         absoluteEncoder.ifPresent(encoder -> {
             encoder.updateInputs(absoluteEncoderInputs);
-            Logger.processInputs(encoder.getName(), absoluteEncoderInputs);
+            Logger.processInputs(encoderName, absoluteEncoderInputs);
         });
     }
 

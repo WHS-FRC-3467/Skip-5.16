@@ -16,16 +16,25 @@
 package frc.robot.subsystems.tower;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Millimeters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
+import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
+import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import frc.lib.devices.DistanceSensor;
+import frc.lib.io.distancesensor.DistanceSensorIO;
+import frc.lib.io.distancesensor.DistanceSensorIOLaserCAN;
+import frc.lib.io.distancesensor.DistanceSensorIOSim;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
@@ -44,25 +53,36 @@ public class TowerConstants {
      private static MechanismConstant mech = new MechanismConstant(1.0);
     public static String NAME = "Tower";
 
-    public static final AngularVelocity MAX_VELOCITY =
-        Units.RadiansPerSecond.of(2 * Math.PI);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(2 * Math.PI);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
 
-
-    private static final double GEARING = (2.0 / 1.0);
+    private static final double GEARING = (36.0 / 12.0);
 
     public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.2);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
+    private static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0)
         .withV(10.0);
 
+    // LaserCAN shared configs
+    private static final RangingMode LASERCAN_RANGING_MODE = RangingMode.SHORT;
+    private static final RegionOfInterest LASERCAN_ROI = new RegionOfInterest(8, 8, 4, 4);
+    private static final TimingBudget TIMING_BUDGET = TimingBudget.TIMING_BUDGET_20MS;
+    public static final Distance MINIMUM_TRIP_DISTANCE = Millimeters.of(0.0);
+    public static final Distance MAXIMUM_TRIP_DISTANCE = Millimeters.of(15);
+
+    // LaserCAN #1
+    public static final String LASERCAN1_NAME = NAME + "/LaserCAN1";
+
+    // LaserCAN #2
+    public static final String LASERCAN2_NAME = NAME + "/LaserCAN2";
+
     /**
-     * Creates a TalonFX motor controller configuration for the tower mechanism.
-     * Configures current limits, voltage limits, neutral mode, gearing ratios, and PID gains.
+     * Creates a TalonFX motor controller configuration for the tower mechanism. Configures current
+     * limits, voltage limits, neutral mode, gearing ratios, and PID gains.
      * 
      * @return configured TalonFXConfiguration for the tower motor
      */
@@ -98,8 +118,8 @@ public class TowerConstants {
     }
 
     /**
-     * Creates and configures a Tower subsystem based on the current robot mode.
-     * Selects the appropriate flywheel mechanism implementation (real, sim, or replay).
+     * Creates and configures a Tower subsystem based on the current robot mode. Selects the
+     * appropriate flywheel mechanism implementation (real, sim, or replay).
      * 
      * @return configured Tower instance
      */
@@ -124,5 +144,42 @@ public class TowerConstants {
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return new Tower(mechanism);
+    }
+
+    // Return an IO implementation of distance sensor IO based on current robot state
+    public static DistanceSensor getLaserCAN1()
+    {
+        return new DistanceSensor(LASERCAN1_NAME, switch (Constants.currentMode) {
+            case REAL -> new DistanceSensorIOLaserCAN(
+                Ports.towerLaserCAN1,
+                LASERCAN1_NAME,
+                LASERCAN_RANGING_MODE,
+                LASERCAN_ROI,
+                TIMING_BUDGET);
+
+            case SIM -> new DistanceSensorIOSim(LASERCAN1_NAME);
+
+            case REPLAY -> new DistanceSensorIO() {};
+
+            default -> throw new IllegalArgumentException("Unrecognized Robot Mode");
+        });
+    }
+
+    public static DistanceSensor getLaserCAN2()
+    {
+        return new DistanceSensor(LASERCAN2_NAME, switch (Constants.currentMode) {
+            case REAL -> new DistanceSensorIOLaserCAN(
+                Ports.towerLaserCAN2,
+                LASERCAN2_NAME,
+                LASERCAN_RANGING_MODE,
+                LASERCAN_ROI,
+                TIMING_BUDGET);
+
+            case SIM -> new DistanceSensorIOSim(LASERCAN2_NAME);
+
+            case REPLAY -> new DistanceSensorIO() {};
+
+            default -> throw new IllegalArgumentException("Unrecognized Robot Mode");
+        });
     }
 }
