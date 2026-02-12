@@ -23,8 +23,10 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.devices.DistanceSensor;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +49,18 @@ public class Tower extends SubsystemBase {
 
     private final FlywheelMechanism<?> io;
     private State state = State.STOP;
+
+    private final DistanceSensor laserCAN1 = TowerConstants.getLaserCAN1();
+    private final DistanceSensor laserCAN2 = TowerConstants.getLaserCAN2();
+
+    public final LoggedTrigger laserCAN1Tripped =
+        new LoggedTrigger(TowerConstants.LASERCAN1_NAME,
+            () -> laserCAN1.betweenDistance(TowerConstants.MINIMUM_TRIP_DISTANCE,
+                TowerConstants.MAXIMUM_TRIP_DISTANCE));
+    public final LoggedTrigger laserCAN2Tripped =
+        new LoggedTrigger(TowerConstants.LASERCAN2_NAME,
+            () -> laserCAN2.betweenDistance(TowerConstants.MINIMUM_TRIP_DISTANCE,
+                TowerConstants.MAXIMUM_TRIP_DISTANCE));
 
     @RequiredArgsConstructor
     @SuppressWarnings("Immutable")
@@ -78,6 +92,8 @@ public class Tower extends SubsystemBase {
     {
         Logger.recordOutput(TowerConstants.NAME + "/State", this.state.name());
         io.periodic();
+        laserCAN1.periodic();
+        laserCAN2.periodic();
     }
 
     private void setState(State state)
