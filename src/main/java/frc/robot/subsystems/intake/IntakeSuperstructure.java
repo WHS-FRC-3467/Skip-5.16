@@ -31,14 +31,14 @@ import frc.lib.util.LoggedTunableMeasure;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
     private static final LoggedTunableMeasure<AngularVelocity> ROLLER_INTAKE_SETPOINT =
-        new LoggedTunableMeasure<>(IntakeRollerConstants.NAME + "/Roller Intake",
+        new LoggedTunableMeasure<>(IntakeRollerConstants.NAME + "/RollerIntake",
             RotationsPerSecond,
             10.0);
     private static final LoggedTunableMeasure<AngularVelocity> ROLLER_EJECT_SETPOINT =
-        new LoggedTunableMeasure<>(IntakeRollerConstants.NAME + "/Roller Eject", RotationsPerSecond,
+        new LoggedTunableMeasure<>(IntakeRollerConstants.NAME + "/RollerEject", RotationsPerSecond,
             -10.0);
     private static final LoggedTunableMeasure<Current> LINEAR_CURRENT =
-        new LoggedTunableMeasure<>(IntakeLinearConstants.NAME + "/Linear Setpoint", Amps, 60.0);
+        new LoggedTunableMeasure<>(IntakeLinearConstants.NAME + "/LinearSetpoint", Amps, 60.0);
 
     public final LoggedTrigger linearStopped;
     public final LoggedTrigger isExtended;
