@@ -21,20 +21,14 @@ import frc.lib.util.Device;
 /** A beam break implementation that uses any DIO input */
 public class BeamBreakIODIO implements BeamBreakIO {
 
-    private final String name;
-
     private final DigitalInput dio;
 
     /**
      * Constructs a {@link BeamBreakIODIO} object with the specified DIO ID
-     *
-     * @param id The CANDevice identifying the bus and device ID for this sensor.
-     * @param name A human readable name for this sensor
-     */
-    public BeamBreakIODIO(Device.DIO id, String name)
-    {
-        this.name = name;
 
+     */
+    public BeamBreakIODIO(Device.DIO id)
+    {
         dio = new DigitalInput(id.id());
     }
 
