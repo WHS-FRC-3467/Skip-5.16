@@ -18,6 +18,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.function.Supplier;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,15 +27,18 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
-import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggedTunableMeasure;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
-    private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
-        new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 10.0);
-    private static final LoggedTunableNumber ROLLER_EJECT_RPS =
-        new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);
-    private static final LoggedTunableNumber LINEAR_CURRENT =
-        new LoggedTunableNumber(IntakeLinearConstants.NAME + "/LinearTorqueCurrent", 60.0);
+    private static final LoggedTunableMeasure<AngularVelocity> ROLLER_INTAKE_SETPOINT =
+        new LoggedTunableMeasure<>(IntakeRollerConstants.NAME + "/Roller Intake",
+            RotationsPerSecond,
+            10.0);
+    private static final LoggedTunableMeasure<AngularVelocity> ROLLER_EJECT_SETPOINT =
+        new LoggedTunableMeasure<>(IntakeRollerConstants.NAME + "/Roller Eject", RotationsPerSecond,
+            -10.0);
+    private static final LoggedTunableMeasure<Current> LINEAR_CURRENT =
+        new LoggedTunableMeasure<>(IntakeLinearConstants.NAME + "/Linear Setpoint", Amps, 60.0);
 
     public final LoggedTrigger linearStopped;
     public final LoggedTrigger isExtended;
@@ -52,12 +56,13 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         this.linearStopped =
             new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearStopped",
                 () -> isLinearStopped());
-        this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
-            () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) > LINEAR_CURRENT.get() * 0.8)
-            .and(this.linearStopped);
-        this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
-            () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) < -LINEAR_CURRENT.get() * 0.8)
-            .and(this.linearStopped);
+        this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearExtended",
+            () -> this.intakeLinearIO.getTorqueCurrent().gte(LINEAR_CURRENT.get().times(0.8)))
+                .and(this.linearStopped);
+        this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearRetracted",
+            () -> this.intakeLinearIO.getTorqueCurrent()
+                .lte(LINEAR_CURRENT.get().unaryMinus().times(0.8)))
+                    .and(this.linearStopped);
     }
 
     /**
@@ -102,7 +107,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @return A command that extends the linear mechanism
      */
     public Command extendLinear() {
-        return this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(LINEAR_CURRENT.get())));
+        return this.runOnce(() -> intakeLinearIO.runCurrent(LINEAR_CURRENT.get()));
     }
 
     /**
@@ -111,7 +116,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @return A command that applies negative current to the linear mechanism
      */
     public Command retractLinear() {
-        return this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(-LINEAR_CURRENT.get())));
+        return this.runOnce(() -> intakeLinearIO.runCurrent(LINEAR_CURRENT.get().unaryMinus()));
     }
 
     /**
@@ -122,7 +127,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      */
     public Command retractIntake() {
         return Commands.sequence(
-            runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
+            runRoller(() -> ROLLER_INTAKE_SETPOINT.get()),
             retractLinear(),
             Commands.waitUntil(isRetracted),
             stopRoller());
@@ -136,7 +141,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      */
     public Command extendIntake() {
         return Commands.sequence(
-            runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
+            runRoller(() -> ROLLER_INTAKE_SETPOINT.get()),
             extendLinear(),
             Commands.waitUntil(isExtended));
     }
@@ -188,7 +193,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      */
     public Command ejectRoller() {
         return Commands.startEnd(
-            () -> runRoller(() -> RotationsPerSecond.of(-ROLLER_EJECT_RPS.get())),
+            () -> runRoller(() -> ROLLER_EJECT_SETPOINT.get()),
             this::stopRoller);
     }
 

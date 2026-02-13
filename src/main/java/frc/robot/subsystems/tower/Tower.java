@@ -28,7 +28,7 @@ import frc.lib.devices.DistanceSensor;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTrigger;
-import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggedTunableMeasure;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -38,14 +38,14 @@ import lombok.RequiredArgsConstructor;
  * Uses a flywheel mechanism for velocity control.
  */
 public class Tower extends SubsystemBase {
-    private static final LoggedTunableNumber STOP_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/StopRPS", 0.0);
-    private static final LoggedTunableNumber IDLE_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/IdleRPS", -0.1);
-    private static final LoggedTunableNumber Eject_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/EjectRPS", -0.5);
-    private static final LoggedTunableNumber SHOOT_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/ShootRPS",
+    private static final LoggedTunableMeasure<AngularVelocity> STOP_SETPOINT =
+        new LoggedTunableMeasure<>(TowerConstants.NAME + "/Stop", RotationsPerSecond, 0.0);
+    private static final LoggedTunableMeasure<AngularVelocity> IDLE_SETPOINT =
+        new LoggedTunableMeasure<>(TowerConstants.NAME + "/Idle", RotationsPerSecond, -0.1);
+    private static final LoggedTunableMeasure<AngularVelocity> EJECT_SETPOINT =
+        new LoggedTunableMeasure<>(TowerConstants.NAME + "/Eject", RotationsPerSecond, -0.5);
+    private static final LoggedTunableMeasure<AngularVelocity> SHOOT_SETPOINT =
+        new LoggedTunableMeasure<>(TowerConstants.NAME + "/Shoot", RotationsPerSecond,
             TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private final FlywheelMechanism<?> io;
@@ -67,13 +67,10 @@ public class Tower extends SubsystemBase {
     @SuppressWarnings("Immutable")
     @Getter
     public enum State {
-        STOP(() -> RotationsPerSecond.of(STOP_RPS.get())),
-        IDLE(
-            () -> RotationsPerSecond.of(IDLE_RPS.get())),
-        EJECT(
-            () -> RotationsPerSecond.of(Eject_RPS.get())),
-        SHOOT(
-            () -> RotationsPerSecond.of(SHOOT_RPS.get()));
+        STOP(() -> STOP_SETPOINT.get()),
+        IDLE(() -> IDLE_SETPOINT.get()),
+        EJECT(() -> EJECT_SETPOINT.get()),
+        SHOOT(() -> SHOOT_SETPOINT.get());
 
         private final Supplier<AngularVelocity> stateVelocity;
     }

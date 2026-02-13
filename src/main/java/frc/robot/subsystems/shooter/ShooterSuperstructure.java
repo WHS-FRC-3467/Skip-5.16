@@ -34,7 +34,7 @@ import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
-import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggedTunableMeasure;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
@@ -123,10 +123,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private final LoggedTunableBoolean tuningMode =
         new LoggedTunableBoolean(getName() + "/Tuning/Enable", false);
-    private final LoggedTunableNumber tuningFlywheelSpeedRPS =
-        new LoggedTunableNumber(getName() + "/Tuning/FlywheelSpeedRPS", 0.0);
-    private final LoggedTunableNumber tuningHoodAngleDegrees =
-        new LoggedTunableNumber(getName() + "/Tuning/HoodAngleDegrees", 0.0);
+    private final LoggedTunableMeasure<AngularVelocity> tuningFlywheelSpeedRPS =
+        new LoggedTunableMeasure<>(getName() + "/Tuning/FlywheelSpeedRPS", RotationsPerSecond, 0.0);
+    private final LoggedTunableMeasure<Angle> tuningHoodAngleDegrees =
+        new LoggedTunableMeasure<>(getName() + "/Tuning/HoodAngleDegrees", Degrees, 0.0);
 
     /**
      * Constructs a new ShooterSuperstructure subsystem with the specified hood and flywheel
@@ -203,8 +203,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
     }
 
-    private AngularVelocity getDesiredFlywheelVelocity()
-    {
+    private AngularVelocity getDesiredFlywheelVelocity() {
         InterpolatingDoubleTreeMap flywheelMap = switch (robotState.getTarget()) {
             case HUB -> hubFlywheelMap;
             case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
@@ -311,8 +310,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             if (tuningMode.hasChanged(hashCode())
                 || tuningFlywheelSpeedRPS.hasChanged(hashCode())
                 || tuningHoodAngleDegrees.hasChanged(hashCode())) {
-                spinFlywheel(RotationsPerSecond.of(tuningFlywheelSpeedRPS.get()));
-                setHoodPosition(Degrees.of(tuningHoodAngleDegrees.get()));
+                spinFlywheel(tuningFlywheelSpeedRPS.get());
+                setHoodPosition(tuningHoodAngleDegrees.get());
             }
 
             Logger.recordOutput(getName() + "/Tuning/DistanceToTargetMeters",
