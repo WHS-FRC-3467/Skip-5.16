@@ -26,7 +26,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
-import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggedTunableMeasure;
 import frc.robot.subsystems.indexer.IndexerConstants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -37,10 +37,15 @@ import lombok.RequiredArgsConstructor;
  */
 public class IntakeRoller extends SubsystemBase implements AutoCloseable {
 
-    private static final LoggedTunableNumber INTAKE_SETPOINT =
-        new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 10.0);
-    private static final LoggedTunableNumber EJECT_SETPOINT =
-        new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);
+    private static final LoggedTunableMeasure<AngularVelocity> INTAKE_SETPOINT =
+        new LoggedTunableMeasure<>(
+            IntakeRollerConstants.NAME + "/Intake VelocityRotationsPerSecond",
+            RotationsPerSecond,
+            10.0);
+    private static final LoggedTunableMeasure<AngularVelocity> EJECT_SETPOINT =
+        new LoggedTunableMeasure<>(
+            IntakeRollerConstants.NAME + "/Eject", RotationsPerSecond,
+            -10.0);
 
     private final FlywheelMechanism<?> io;
 
@@ -51,8 +56,8 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
     @SuppressWarnings("ImmutableEnumChecker")
     @Getter
     public enum State {
-        INTAKE(() -> RotationsPerSecond.of(INTAKE_SETPOINT.get())),
-        EJECT(() -> RotationsPerSecond.of(EJECT_SETPOINT.get())),
+        INTAKE(() -> INTAKE_SETPOINT.get()),
+        EJECT(() -> EJECT_SETPOINT.get()),
         STOP(() -> RotationsPerSecond.of(0.0));
 
         private final Supplier<AngularVelocity> angularVelocity;

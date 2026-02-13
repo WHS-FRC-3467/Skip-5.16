@@ -18,13 +18,14 @@ package frc.robot.subsystems.intakeLinear;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
-import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggedTunableMeasure;
 
 /**
  * Subsystem that controls the linear intake extension mechanism. The intake can extend outward to
@@ -33,8 +34,8 @@ import frc.lib.util.LoggedTunableNumber;
  */
 public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
-    private static final LoggedTunableNumber INTAKE_CURRENT =
-        new LoggedTunableNumber(IntakeLinearConstants.NAME + "/IntakeCurrentTorqueCurrent", 60.0);
+    private static final LoggedTunableMeasure<Current> INTAKE_CURRENT =
+        new LoggedTunableMeasure<>(IntakeLinearConstants.NAME + "/IntakeCurrent", Amps, 60.0);
 
     public final LoggedTrigger linearStopped;
     public final LoggedTrigger isExtended;
@@ -54,9 +55,11 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
             new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearStopped",
                 () -> isLinearStopped());
         this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
-            () -> io.getTorqueCurrent().in(Amps) > INTAKE_CURRENT.get() * 0.8).and(linearStopped);
+            () -> io.getTorqueCurrent().isNear(INTAKE_CURRENT.get(), Amps.of(10)))
+                .and(linearStopped);
         this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
-            () -> io.getTorqueCurrent().in(Amps) < -INTAKE_CURRENT.get() * 0.8).and(linearStopped);
+            () -> io.getTorqueCurrent().isNear(INTAKE_CURRENT.get().unaryMinus(), Amps.of(10)))
+                .and(linearStopped);
     }
 
     /**
@@ -66,7 +69,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
      */
     public Command extend()
     {
-        return this.runOnce(() -> io.runCurrent(Amps.of(INTAKE_CURRENT.get())));
+        return this.runOnce(() -> io.runCurrent(INTAKE_CURRENT.get()));
     }
 
     /**
@@ -76,7 +79,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
      */
     public Command retract()
     {
-        return this.runOnce(() -> io.runCurrent(Amps.of(-INTAKE_CURRENT.get())));
+        return this.runOnce(() -> io.runCurrent(Amps.of(-INTAKE_CURRENT.getMagnitude())));
     }
 
     /**
@@ -106,6 +109,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     /**
      * Coast intake linear for pit testing.
+     * 
      * @return a command to set the intake linear mechanism to coast mode.
      */
     public Command coast()
