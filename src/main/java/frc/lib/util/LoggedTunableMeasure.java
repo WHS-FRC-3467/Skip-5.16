@@ -50,7 +50,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      * @param unit The unit of measure (e.g., Units.Amps, Units.Meters)
      */
     public LoggedTunableMeasure(String dashboardKey, Unit unit) {
-        this.key = tableKey + "/" + dashboardKey + " " + unit.name();
+        this.key = String.format("%s/%s %s", tableKey, dashboardKey, unit.name());
         this.unit = unit;
     }
 
