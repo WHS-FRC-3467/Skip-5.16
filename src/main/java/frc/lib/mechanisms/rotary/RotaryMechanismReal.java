@@ -9,13 +9,12 @@ import frc.lib.io.absoluteencoder.AbsoluteEncoderIO;
 import frc.lib.io.motor.MotorIO;
 
 /**
- * A real implementation of the generic RotaryMechanism base class that interacts with a
- * physical motor through a MotorIO interface.
+ * A real implementation of the generic RotaryMechanism base class that interacts with a physical
+ * motor through a MotorIO interface.
  */
 public class RotaryMechanismReal extends RotaryMechanism<MotorIO, AbsoluteEncoderIO> {
     public RotaryMechanismReal(String name, MotorIO io, RotaryMechCharacteristics characteristics,
-        Optional<AbsoluteEncoderIO> absoluteEncoder, String encoderName)
-    {
+        Optional<AbsoluteEncoderIO> absoluteEncoder, String encoderName) {
         super(name, characteristics, io, absoluteEncoder, encoderName);
     }
 }

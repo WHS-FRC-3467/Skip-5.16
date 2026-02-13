@@ -16,6 +16,7 @@
 package frc.robot.subsystems.tower;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
@@ -79,25 +80,22 @@ public class Tower extends SubsystemBase {
 
     /**
      * Constructs a new Tower subsystem with the specified flywheel mechanism.
-     * 
+     *
      * @param io the flywheel mechanism IO implementation for the tower
      */
-    public Tower(FlywheelMechanism<?> io)
-    {
+    public Tower(FlywheelMechanism<?> io) {
         this.io = io;
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Logger.recordOutput(TowerConstants.NAME + "/State", this.state.name());
         io.periodic();
         laserCAN1.periodic();
         laserCAN2.periodic();
     }
 
-    private void setState(State state)
-    {
+    private void setState(State state) {
         this.state = state;
         io.runVelocity(state.stateVelocity.get(),
             TowerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
@@ -105,15 +103,14 @@ public class Tower extends SubsystemBase {
 
     /**
      * Sets the subsystem's state
-     * 
+     *
      * In a sequence, this command is non-blocking (finishes instantly), but still requires the
      * subsystem (you cannot set the subsystem's state twice in a {@link ParallelCommandGroup}))
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command setStateCommand(State state)
-    {
+    public Command setStateCommand(State state) {
         return this.runOnce(() -> setState(state))
             .withName(state.name());
     }
@@ -121,25 +118,23 @@ public class Tower extends SubsystemBase {
     /**
      * Holds a state until the command is interrupted. Once the command is interrupted, its state
      * will automatically be set to {@link State#IDLE}
-     * 
+     *
      * In a sequence, this command is blocking and requires this subsystem
-     * 
+     *
      * @param state The state to hold
      * @return The command sequence
      */
-    public Command holdStateUntilInterrupted(State state)
-    {
+    public Command holdStateUntilInterrupted(State state) {
         return this.startEnd(() -> setState(state), () -> setState(State.IDLE))
             .withName(state.name() + " Until Interrupted");
     }
 
     /**
      * Checks if the tower is near its current velocity setpoint.
-     * 
+     *
      * @return true if the tower velocity is within tolerance of the setpoint
      */
-    public boolean nearSetpoint()
-    {
+    public boolean nearSetpoint() {
         return MathUtil.isNear(
             state.stateVelocity.get().in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
@@ -149,18 +144,28 @@ public class Tower extends SubsystemBase {
     /**
      * Closes the underlying flywheel mechanism and releases resources.
      */
-    public void close()
-    {
+    public void close() {
         io.close();
     }
 
     /**
      * Gets the current speed of the tower in rotations per second.
-     * 
+     *
      * @return the tower's current velocity in rotations per second
      */
-    public double getSpeed()
-    {
+    public double getSpeed() {
         return io.getVelocity().in(RotationsPerSecond);
     }
+
+    /**
+     * Determines whether FUEL is fully staged in the tower. Fully staged FUEL likely represents a
+     * full hopper.
+     *
+     * @return BooleanSupplier for use in commands indicating whether FUEL is fully staged in the
+     *         tower.
+     */
+    public BooleanSupplier isStaged() {
+        return laserCAN1Tripped.or(laserCAN2Tripped);
+    }
+
 }

@@ -19,20 +19,18 @@ import edu.wpi.first.units.measure.Angle;
 import frc.lib.io.motor.MotorIO;
 
 /**
- * A real implementation of the LinearMechanism class that interacts with a physical motor
- * through a MotorIO interface.
+ * A real implementation of the LinearMechanism class that interacts with a physical motor through a
+ * MotorIO interface.
  */
 public class LinearMechanismReal extends LinearMechanism<MotorIO> {
     public LinearMechanismReal(String name, MotorIO io,
-        LinearMechCharacteristics characteristics)
-    {
+        LinearMechCharacteristics characteristics) {
         super(name, characteristics, io);
     }
 
     // TODO: Verify operation works correctly on real TalonFX
     @Override
-    public void setEncoderPosition(Angle position)
-    {
+    public void setEncoderPosition(Angle position) {
         io.setEncoderPosition(position);
     }
 }

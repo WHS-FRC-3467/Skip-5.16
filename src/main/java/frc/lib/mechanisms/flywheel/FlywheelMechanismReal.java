@@ -22,8 +22,7 @@ import frc.lib.io.motor.MotorIO;
  * motor through a MotorIO interface.
  */
 public class FlywheelMechanismReal extends FlywheelMechanism<MotorIO> {
-    public FlywheelMechanismReal(String name, MotorIO io)
-    {
+    public FlywheelMechanismReal(String name, MotorIO io) {
         super(name, io);
     }
 }

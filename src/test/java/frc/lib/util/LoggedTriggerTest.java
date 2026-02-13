@@ -28,20 +28,17 @@ class LoggedTriggerTest {
     private boolean conditionValue = false;
 
     @BeforeEach
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
     }
 
     @AfterEach
-    void shutdown()
-    {
+    void shutdown() {
         // Cleanup if needed
     }
 
     @Test
-    void testTriggerBehavior()
-    {
+    void testTriggerBehavior() {
         // Create a LoggedTrigger with a simple condition
         LoggedTrigger trigger = new LoggedTrigger("Test/Trigger", () -> conditionValue);
 
@@ -58,8 +55,7 @@ class LoggedTriggerTest {
     }
 
     @Test
-    void testMultiplePolls()
-    {
+    void testMultiplePolls() {
         // Create a LoggedTrigger
         LoggedTrigger trigger = new LoggedTrigger("Test/MultiPoll", () -> conditionValue);
 

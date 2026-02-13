@@ -41,38 +41,33 @@ public interface ModuleIO {
     }
 
     /** Updates the set of loggable inputs. */
-    public default void updateInputs(ModuleIOInputs inputs)
-    {}
+    public default void updateInputs(ModuleIOInputs inputs) {}
 
     /**
      * Run the drive motor at the specified open loop value.
      *
      * @param output Open loop output value (-12 to 12 volts)
      */
-    public default void setDriveOpenLoop(double output)
-    {}
+    public default void setDriveOpenLoop(double output) {}
 
     /**
      * Run the turn motor at the specified open loop value.
      *
      * @param output Open loop output value (-12 to 12 volts)
      */
-    public default void setTurnOpenLoop(double output)
-    {}
+    public default void setTurnOpenLoop(double output) {}
 
     /**
      * Run the drive motor at the specified velocity.
      *
      * @param velocityRadPerSec Target velocity in radians per second
      */
-    public default void setDriveVelocity(double velocityRadPerSec)
-    {}
+    public default void setDriveVelocity(double velocityRadPerSec) {}
 
     /**
      * Run the turn motor to the specified rotation.
      *
      * @param rotation Target rotation angle
      */
-    public default void setTurnPosition(Rotation2d rotation)
-    {}
+    public default void setTurnPosition(Rotation2d rotation) {}
 }

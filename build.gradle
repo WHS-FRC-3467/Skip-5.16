@@ -4,6 +4,7 @@ plugins {
     id "com.peterabeles.gversion" version "1.10"
     id "io.freefair.lombok" version "8.6"
     id "net.ltgt.errorprone" version "4.3.0"
+    id 'com.diffplug.spotless' version '8.2.1'
 }
 
 java {
@@ -155,6 +156,7 @@ tasks.withType(JavaCompile).configureEach {
 
 // Create version file
 project.compileJava.dependsOn(createVersionFile)
+project.compileJava.dependsOn("spotlessApply")
 gversion {
     srcDir       = "src/main/java/"
     classPackage = "frc.robot"
@@ -204,4 +206,35 @@ javadoc {
     options.addStringOption('Xdoclint:all,-missing', '-quiet')
     failOnError = true
     options.stylesheetFile = new File(projectDir, "theme.css")
+}
+}
+
+spotless {
+    // Configuration for Java files
+    java {
+        // Target all Java files
+        target '**/*.java'
+        eclipse().configFile(rootProject.file('style.xml'))
+        // Other common rules
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    // Configuration for Kotlin files (if applicable)
+    kotlin {
+        target '**/*.kt'
+        // Use KtLint or any other Kotlin formatter
+        ktlint()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    // Configuration for miscellaneous files (e.g., Gradle files, Markdown)
+    format 'misc', {
+        target '**/*.gradle', '**/*.md', '**/.gitignore'
+        indentWithSpaces()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }

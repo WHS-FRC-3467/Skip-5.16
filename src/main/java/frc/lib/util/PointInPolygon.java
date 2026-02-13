@@ -21,8 +21,8 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
- * Utility class for checking if a point lies within a polygon boundary.
- * Uses the ray casting algorithm for point-in-polygon testing.
+ * Utility class for checking if a point lies within a polygon boundary. Uses the ray casting
+ * algorithm for point-in-polygon testing.
  */
 public class PointInPolygon {
     /**
@@ -32,8 +32,7 @@ public class PointInPolygon {
      * @param polygon List of vertices defining the polygon
      * @return True if the point is inside the polygon, false otherwise
      */
-    public static boolean pointInPolygon(Translation2d point, List<Translation2d> polygon)
-    {
+    public static boolean pointInPolygon(Translation2d point, List<Translation2d> polygon) {
         Path2D path = new Path2D.Double();
 
         // Move to the first point in the polygon

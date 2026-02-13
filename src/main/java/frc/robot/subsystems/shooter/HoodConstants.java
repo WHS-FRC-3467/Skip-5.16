@@ -81,11 +81,10 @@ public class HoodConstants {
      * Creates a TalonFX motor controller configuration for the hood mechanism. Configures current
      * limits, voltage limits, neutral mode, soft limits, gearing ratios, feedback sensor source,
      * and motion magic parameters.
-     * 
+     *
      * @return configured TalonFXConfiguration for the hood motor
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = false;
@@ -120,11 +119,10 @@ public class HoodConstants {
     /**
      * Creates and configures the hood mechanism based on the current robot mode. Selects the
      * appropriate implementation (real, sim, or replay) and enables tunable PID.
-     * 
+     *
      * @return configured hood mechanism
      */
-    public static RotaryMechanism<?, ?> get()
-    {
+    public static RotaryMechanism<?, ?> get() {
         RotaryMechanism<?, ?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

@@ -8,8 +8,6 @@ import java.util.Optional;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.BaseUnits;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.ControlType;
@@ -44,22 +42,19 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
         Distance maxDistance,
         Distance startingDistance,
         DistanceAngleConverter converter,
-        Rotation3d orientation) {
-    }
+        Rotation3d orientation) {}
 
     protected final DistanceAngleConverter converter;
 
     private final LinearMechanismVisualizer visualizer;
 
-    public LinearMechanism(String name, LinearMechCharacteristics characteristics, T io)
-    {
+    public LinearMechanism(String name, LinearMechCharacteristics characteristics, T io) {
         super(name, io);
         visualizer = new LinearMechanismVisualizer(name, characteristics);
         converter = characteristics.converter();
     }
 
-    private Optional<Distance> getTrajectoryDistance()
-    {
+    private Optional<Distance> getTrajectoryDistance() {
         if (inputs.controlType != ControlType.POSITION || inputs.positionError == null) {
             return Optional.empty();
         }
@@ -67,8 +62,7 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
         return Optional.of(converter.toDistance(inputs.activeTrajectoryPosition));
     }
 
-    private Optional<Distance> getGoalDistance()
-    {
+    private Optional<Distance> getGoalDistance() {
         if (inputs.controlType != ControlType.POSITION || inputs.positionError == null) {
             return Optional.empty();
         }
@@ -77,8 +71,7 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
     }
 
     // Checks if mechanism is near a goal position within a specified tolerance
-    public boolean nearGoal(Distance goalPosition, Distance tolerance)
-    {
+    public boolean nearGoal(Distance goalPosition, Distance tolerance) {
         return MathUtil.isNear(
             converter.toDistance(getPosition()).in(BaseUnits.DistanceUnit),
             goalPosition.in(BaseUnits.DistanceUnit),
@@ -86,25 +79,12 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         super.periodic();
 
         visualizer.setMeasuredDistance(converter.toDistance(inputs.position));
         visualizer.setTrajectoryDistance(getTrajectoryDistance());
         visualizer.setGoalDistance(getGoalDistance());
-    }
-
-    @Override
-    public void setEncoderPosition(Angle position)
-    {
-        io.setEncoderPosition(position);
-    }
-
-    @Override
-    public Current getSupplyCurrent()
-    {
-        return inputs.supplyCurrent;
     }
 
     /**
@@ -113,8 +93,7 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
      *
      * @param orientation The new orientation of the mechanism
      */
-    public void setOrientation(Rotation3d orientation)
-    {
+    public void setOrientation(Rotation3d orientation) {
         visualizer.setOrientation(orientation);
     }
 
@@ -123,8 +102,7 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
      *
      * @return The current orientation
      */
-    public Rotation3d getOrientation()
-    {
+    public Rotation3d getOrientation() {
         return visualizer.getOrientation();
     }
 }
