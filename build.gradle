@@ -207,7 +207,6 @@ javadoc {
     failOnError = true
     options.stylesheetFile = new File(projectDir, "theme.css")
 }
-}
 
 spotless {
     // Configuration for Java files
