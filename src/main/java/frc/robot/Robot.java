@@ -22,6 +22,7 @@ import au.grapplerobotics.CanBridge;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -54,8 +55,7 @@ public class Robot extends LoggedRobot {
                                                 // start of the first alliance phase
     private Field2d fieldMap = new Field2d();
 
-    public Robot()
-    {
+    public Robot() {
         CanBridge.runTCP(); // Used for configuring LaserCANs via Grapplehook
 
         // Record metadata
@@ -149,7 +149,7 @@ public class Robot extends LoggedRobot {
     public void robotPeriodic() {
         // Optionally switch the thread to high priority to improve loop
         // timing (see the template project documentation for details)
-        // Threads.setCurrentThreadPriority(true, 99);
+        Threads.setCurrentThreadPriority(true, 99);
 
         // Runs the Scheduler. This is responsible for polling buttons, adding
         // newly-scheduled commands, running already-scheduled commands, removing
@@ -159,7 +159,7 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().run();
 
         // Return to non-RT thread priority (do not modify the first argument)
-        // Threads.setCurrentThreadPriority(false, 10);
+        Threads.setCurrentThreadPriority(false, 10);
 
         // Driver Elastic Dashboard - Update the robot's pose on the main fieldmap
         fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());

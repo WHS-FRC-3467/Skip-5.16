@@ -22,7 +22,6 @@ import lombok.Getter;
 
 public class ServoIOSim implements ServoIO {
 
-    private final String name;
     private final double minAngle;
     private final double maxAngle;
 
@@ -32,12 +31,10 @@ public class ServoIOSim implements ServoIO {
     /**
      * Constructs a {@link ServoIOSim} object with the specified name and limits.
      *
-     * @param name A human-readable name for this servo instance
      * @param minAngle The lower limit of the servo in degrees.
      * @param maxAngle The upper limit of the servo in degrees.
      */
-    public ServoIOSim(String name, Angle minAngle, Angle maxAngle) {
-        this.name = name;
+    public ServoIOSim(Angle minAngle, Angle maxAngle) {
         this.minAngle = minAngle.in(Degrees);
         this.maxAngle = maxAngle.in(Degrees);
     }

@@ -38,7 +38,6 @@ public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
     private static final Logger LOGGER =
         Logger.getLogger(AbsoluteEncoderIOCANCoder.class.getName());
 
-    private final String name;
     protected final CANcoder CANCoder;
 
     private final StatusSignal<Angle> angle;
@@ -49,14 +48,11 @@ public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
      * Constructs a CANcoder interface with the specified configuration.
      *
      * @param id CAN device identifier (ID and bus name)
-     * @param name Human-readable name for logging
      * @param configuration CANcoder configuration including magnet offset and sensor direction
      */
     public AbsoluteEncoderIOCANCoder(
         Device.CAN id,
-        String name,
         CANcoderConfiguration configuration) {
-        this.name = name;
         CANCoder = new CANcoder(id.id(), new CANBus(id.bus()));
 
         updateThread.CTRECheckErrorAndRetry(() -> CANCoder.getConfigurator().apply(configuration))

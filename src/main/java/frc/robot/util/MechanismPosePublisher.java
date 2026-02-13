@@ -24,11 +24,11 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeLinear.IntakeLinearConstants;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
+import frc.robot.subsystems.intake.IntakeLinearConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
-public record MechanismPosePublisher(IntakeLinear intake,ShooterSuperstructure shooter){private static final double DOOHICKEY_MAX_ROTATION_DEGREES=60;
+public record MechanismPosePublisher(IntakeSuperstructure intake,ShooterSuperstructure shooter){private static final double DOOHICKEY_MAX_ROTATION_DEGREES=60;
 
 public void update(){var hood=new Pose3d(
 // Offset from origin (inverse of 1st component in

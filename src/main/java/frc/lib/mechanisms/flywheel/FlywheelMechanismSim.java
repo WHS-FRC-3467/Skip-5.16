@@ -43,8 +43,12 @@ public class FlywheelMechanismSim extends FlywheelMechanism<MotorIOSim> {
 
     private Time lastTime = Seconds.zero();
 
-    public FlywheelMechanismSim(String name, MotorIOSim io, DCMotor characteristics,
-        MomentOfInertia momentOfInertia, AngularVelocity tolerance) {
+    public FlywheelMechanismSim(
+        String name,
+        MotorIOSim io,
+        DCMotor motor,
+        MomentOfInertia momentOfInertia,
+        AngularVelocity tolerance) {
         super(name, io);
 
         if (momentOfInertia.isEquivalent(KilogramSquareMeters.zero()))
@@ -52,9 +56,9 @@ public class FlywheelMechanismSim extends FlywheelMechanism<MotorIOSim> {
                 "momentOfInertia must be greater than zero!");
 
         this.tolerance = tolerance;
-        sim = new FlywheelSim(LinearSystemId.createFlywheelSystem(characteristics,
+        sim = new FlywheelSim(LinearSystemId.createFlywheelSystem(motor,
             momentOfInertia.in(KilogramSquareMeters),
-            io.getRotorToSensorRatio() * io.getSensorToMechanismRatio()), characteristics);
+            io.getRotorToSensorRatio() * io.getSensorToMechanismRatio()), motor);
 
         visualizer = new FlywheelVisualizer(name);
     }

@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.intakeLinear;
+package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
@@ -128,7 +128,7 @@ public class IntakeLinearConstants {
             case SIM:
                 mechanism = new LinearMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeLinear),
-                    DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
+                    DCMOTOR, CARRIAGE_MASS, false, CHARACTERISTICS);
                 break;
             case REPLAY:
                 mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}) {};
@@ -138,14 +138,5 @@ public class IntakeLinearConstants {
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
-    }
-
-    /**
-     * Factory method to create an IntakeLinear subsystem instance.
-     *
-     * @return A fully configured IntakeLinear subsystem
-     */
-    public static IntakeLinear get() {
-        return new IntakeLinear(getMechanism());
     }
 }

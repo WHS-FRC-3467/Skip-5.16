@@ -36,7 +36,6 @@ import frc.lib.util.LaserCANConfigurator;
 public class BeamBreakIOLaserCAN implements BeamBreakIO {
     private static final Logger LOGGER = Logger.getLogger(BeamBreakIOLaserCAN.class.getName());
 
-    private final String name;
     private final LaserCANConfigurator laserCAN;
     private final Distance triggerDistance;
 
@@ -57,7 +56,6 @@ public class BeamBreakIOLaserCAN implements BeamBreakIO {
     public BeamBreakIOLaserCAN(Device.CAN id, String name, Distance triggerDistance,
         RangingMode rangingMode,
         RegionOfInterest regionOfInterest, TimingBudget timingBudget) {
-        this.name = name;
         this.triggerDistance = triggerDistance;
 
         laserCANOnWrongBusAlert =

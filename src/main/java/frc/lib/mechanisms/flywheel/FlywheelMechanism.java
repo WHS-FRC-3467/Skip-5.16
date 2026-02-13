@@ -15,7 +15,6 @@
 
 package frc.lib.mechanisms.flywheel;
 
-import edu.wpi.first.units.measure.Current;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.mechanisms.Mechanism;
 
@@ -29,10 +28,5 @@ public abstract class FlywheelMechanism<T extends MotorIO> extends Mechanism<T> 
 
     public FlywheelMechanism(String name, T io) {
         super(name, io);
-    }
-
-    @Override
-    public Current getTorqueCurrent() {
-        return inputs.torqueCurrent;
     }
 }

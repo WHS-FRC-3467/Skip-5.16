@@ -28,14 +28,12 @@ import frc.lib.util.Device;
  */
 public class ServoIOPWM implements ServoIO {
 
-    private final String name;
     private final Servo servo;
 
     private double minAngle;
     private double maxAngle;
 
-    public ServoIOPWM(Device.PWM id, String name, Angle minAngle, Angle maxAngle) {
-        this.name = name;
+    public ServoIOPWM(Device.PWM id, Angle minAngle, Angle maxAngle) {
         servo = new Servo(id.id());
         this.minAngle = minAngle.in(Degrees);
         this.maxAngle = maxAngle.in(Degrees);

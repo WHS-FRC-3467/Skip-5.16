@@ -142,7 +142,7 @@ public class ClimberConstants {
             case SIM:
                 mechanism = new LinearMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.climber),
-                    DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
+                    DCMOTOR, CARRIAGE_MASS, false, CHARACTERISTICS);
                 break;
             case REPLAY:
                 mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}) {};

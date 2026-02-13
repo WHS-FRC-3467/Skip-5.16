@@ -5,6 +5,7 @@
 package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -13,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -26,18 +28,19 @@ public class Indexer extends SubsystemBase {
 
     private State state = State.STOP;
 
+    private static final LoggedTunableNumber IDLE_FRACTION =
+        new LoggedTunableNumber("Indexer/IdleFraction", 0.15);
+
     @RequiredArgsConstructor
     @SuppressWarnings("Immutable")
     @Getter
     public enum State {
-        STOP(
-            RotationsPerSecond.zero()),
-        PULL(
-            IndexerConstants.MAX_VELOCITY),
-        EXPEL(
-            IndexerConstants.MAX_VELOCITY.times(-1.0));
+        STOP(() -> RotationsPerSecond.zero()),
+        PULL(() -> IndexerConstants.MAX_VELOCITY),
+        IDLE(() -> IndexerConstants.MAX_VELOCITY.times(IDLE_FRACTION.getAsDouble())),
+        EXPEL(() -> IndexerConstants.MAX_VELOCITY.times(-1.0));
 
-        private final AngularVelocity stateVelocity;
+        private final Supplier<AngularVelocity> stateVelocity;
     }
 
     /**
@@ -57,7 +60,7 @@ public class Indexer extends SubsystemBase {
 
     private void setState(State state) {
         this.state = state;
-        io.runVelocity(state.stateVelocity,
+        io.runVelocity(state.stateVelocity.get(),
             IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
@@ -96,7 +99,7 @@ public class Indexer extends SubsystemBase {
      */
     public boolean nearSetpoint() {
         return MathUtil.isNear(
-            state.stateVelocity.in(RotationsPerSecond),
+            state.stateVelocity.get().in(RotationsPerSecond),
             io.getVelocity().in(RotationsPerSecond),
             IndexerConstants.TOLERANCE.in(RotationsPerSecond));
     }

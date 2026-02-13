@@ -16,6 +16,7 @@
 package frc.robot.subsystems.tower;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
@@ -155,4 +156,16 @@ public class Tower extends SubsystemBase {
     public double getSpeed() {
         return io.getVelocity().in(RotationsPerSecond);
     }
+
+    /**
+     * Determines whether FUEL is fully staged in the tower. Fully staged FUEL likely represents a
+     * full hopper.
+     *
+     * @return BooleanSupplier for use in commands indicating whether FUEL is fully staged in the
+     *         tower.
+     */
+    public BooleanSupplier isStaged() {
+        return laserCAN1Tripped.or(laserCAN2Tripped);
+    }
+
 }

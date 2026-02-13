@@ -40,7 +40,7 @@ import frc.robot.Constants;
 import frc.robot.Ports;
 
 public class LEDsConstants {
-    public static final String NAME = "MainLEDs";
+    public static final String NAME = "LEDs";
 
     public static final LEDSegment CANDLE_LEDS = new LEDSegment(0, 7, 0);
     public static final LEDSegment FRONT_STRIP = new LEDSegment(8, 10, 1);
@@ -56,34 +56,6 @@ public class LEDsConstants {
             .withLossOfSignalBehavior(LossOfSignalBehaviorValue.DisableLEDs));
 
     /**
-     * Creates a real hardware lights IO implementation for CANdle.
-     *
-     * @return A LightsIOCandle instance for real robot hardware
-     */
-    public static final LightsIOCandle getLightsIOReal() {
-        return new LightsIOCandle(NAME, Ports.lights, CANDLE_CONFIG);
-    }
-
-    /**
-     * Creates a simulated lights IO implementation.
-     *
-     * @return A LightsIOSim instance for simulation
-     */
-    public static final LightsIOSim getLightsIOSim() {
-        return new LightsIOSim(NAME);
-    }
-
-    /**
-     * Creates a replay lights IO implementation that does nothing. Used when replaying logs without
-     * hardware.
-     *
-     * @return An empty LightsIO implementation for replay mode
-     */
-    public static final LightsIO getLightsIOReplay() {
-        return new LightsIO() {};
-    }
-
-    /**
      * Factory method to create an LEDs subsystem instance. Creates the appropriate lights IO based
      * on the current robot mode (REAL, SIM, or REPLAY).
      *
@@ -92,9 +64,9 @@ public class LEDsConstants {
     public static LEDs get() {
         switch (Constants.currentMode) {
             case REAL:
-                return new LEDs(new LightsIOCandle(NAME, Ports.lights, CANDLE_CONFIG));
+                return new LEDs(new LightsIOCandle(Ports.lights, CANDLE_CONFIG));
             case SIM:
-                return new LEDs(new LightsIOSim(NAME));
+                return new LEDs(new LightsIOSim());
             case REPLAY:
                 return new LEDs(new LightsIO() {});
             default:

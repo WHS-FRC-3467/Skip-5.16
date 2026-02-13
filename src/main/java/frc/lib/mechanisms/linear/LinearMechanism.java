@@ -8,8 +8,6 @@ import java.util.Optional;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.BaseUnits;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.ControlType;
@@ -87,16 +85,6 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
         visualizer.setMeasuredDistance(converter.toDistance(inputs.position));
         visualizer.setTrajectoryDistance(getTrajectoryDistance());
         visualizer.setGoalDistance(getGoalDistance());
-    }
-
-    @Override
-    public void setEncoderPosition(Angle position) {
-        io.setEncoderPosition(position);
-    }
-
-    @Override
-    public Current getSupplyCurrent() {
-        return inputs.supplyCurrent;
     }
 
     /**
