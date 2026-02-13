@@ -35,6 +35,8 @@ import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
+import frc.robot.Constants;
+import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
 
@@ -106,6 +108,15 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         new LoggedTrigger(this.getName() + "/readyToShoot", () -> {
             double dist = robotState
                 .getDistanceToTarget().in(Meters);
+            return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
+                && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+        });
+
+    public final LoggedTrigger atHubSetpoints =
+        new LoggedTrigger(this.getName() + "/atHubSetpoints", () -> {
+            // Distance between robot and hub centers
+            // Assume the Robot is pressed against the Hub. Hardcoded as part of no vision fallback.
+            double dist = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0; 
             return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
         });
