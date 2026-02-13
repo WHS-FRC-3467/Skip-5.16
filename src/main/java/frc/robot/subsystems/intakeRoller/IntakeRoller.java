@@ -39,7 +39,7 @@ public class IntakeRoller extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableMeasure<AngularVelocity> INTAKE_SETPOINT =
         new LoggedTunableMeasure<>(
-            IntakeRollerConstants.NAME + "/Intake VelocityRotationsPerSecond",
+            IntakeRollerConstants.NAME + "/Intake",
             RotationsPerSecond,
             10.0);
     private static final LoggedTunableMeasure<AngularVelocity> EJECT_SETPOINT =
