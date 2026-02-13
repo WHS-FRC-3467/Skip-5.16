@@ -28,14 +28,14 @@ import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.robot.Constants.Mode;
 import frc.robot.Constants.PathConstants;
+import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeLinear.IntakeLinearConstants;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
-import frc.robot.subsystems.intakeRoller.IntakeRollerConstants;
+import frc.robot.subsystems.intake.IntakeLinearConstants;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
+import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
@@ -73,8 +73,7 @@ public class RobotContainer {
     // Subsystems
     public final Drive drive;
     private final ShooterSuperstructure shooter;
-    private final IntakeRoller intakeRoller;
-    private final IntakeLinear intakeLinear;
+    private final IntakeSuperstructure intake;
     private final Indexer indexer;
     private final Tower tower;
     private final ObjectDetector objectDetector;
@@ -93,13 +92,11 @@ public class RobotContainer {
     /**
      * The container for the robot. Contains subsystems, IO devices, and commands.
      */
-    public RobotContainer()
-    {
+    public RobotContainer() {
 
         drive = DriveConstants.get();
         shooter = ShooterSuperstructureConstants.get();
-        intakeRoller = IntakeRollerConstants.get();
-        intakeLinear = IntakeLinearConstants.get();
+        intake = IntakeSuperstructureConstants.get();
         indexer = IndexerConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
@@ -107,8 +104,8 @@ public class RobotContainer {
         leds = LEDsConstants.get();
 
         if (RobotBase.isSimulation()) {
-            RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intakeRoller,
-                intakeLinear);
+            RobotSim.getInstance().addMechanismData(drive, shooter, indexer,
+                intake);
         }
 
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
@@ -118,41 +115,41 @@ public class RobotContainer {
         autoChooser.addDefaultOption("None", new NoneAuto());
 
         // Preload Autos
-        autoChooser.addOption("PreloadAuto-Left", new PreloadAuto(drive, intakeLinear, intakeRoller,
+        autoChooser.addOption("PreloadAuto-Left", new PreloadAuto(drive, intake,
             indexer, tower, shooter, StartPosition.LEFT));
         autoChooser.addOption("PreloadAuto-Center",
-            new PreloadAuto(drive, intakeLinear, intakeRoller,
+            new PreloadAuto(drive, intake,
                 indexer, tower, shooter, StartPosition.CENTER));
         autoChooser.addOption("PreloadAuto-Right",
-            new PreloadAuto(drive, intakeLinear, intakeRoller,
+            new PreloadAuto(drive, intake,
                 indexer, tower, shooter, StartPosition.RIGHT));
 
         // Basic Neutral Autos
-        autoChooser.addOption("BasicNeutralAuto-Left", new BasicNeutralAuto(drive, intakeLinear,
-            intakeRoller, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption("BasicNeutralAuto-Right", new BasicNeutralAuto(drive, intakeLinear,
-            intakeRoller, indexer, tower, shooter, StartPosition.RIGHT));
+        autoChooser.addOption("BasicNeutralAuto-Left", new BasicNeutralAuto(drive, intake,
+            indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption("BasicNeutralAuto-Right", new BasicNeutralAuto(drive, intake,
+            indexer, tower, shooter, StartPosition.RIGHT));
 
         // Depot Auto
         autoChooser.addOption("DepotAuto-Left",
-            new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+            new DepotAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.LEFT));
         autoChooser.addOption("DepotAuto-Center",
-            new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+            new DepotAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.CENTER));
         autoChooser.addOption("DepotAuto-Right",
-            new DepotAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+            new DepotAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.RIGHT));
 
         // Outpost Autos
         autoChooser.addOption("OutpostAuto-Left",
-            new OutpostAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+            new OutpostAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.LEFT));
         autoChooser.addOption("OutpostAuto-Center",
-            new OutpostAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+            new OutpostAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.CENTER));
         autoChooser.addOption("OutpostAuto-Right",
-            new OutpostAuto(drive, intakeLinear, intakeRoller, indexer, tower, shooter,
+            new OutpostAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.RIGHT));
 
         autoChooser.onChange(auto -> {
@@ -178,8 +175,7 @@ public class RobotContainer {
      * Configures button bindings for the Xbox controller. Maps controller inputs to robot commands
      * for teleop control.
      */
-    private void configureButtonBindings()
-    {
+    private void configureButtonBindings() {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(
             DriveCommands.joystickDrive(
@@ -201,21 +197,19 @@ public class RobotContainer {
                     Commands.parallel(
                         indexer.holdStateUntilInterrupted(Indexer.State.PULL),
                         tower.holdStateUntilInterrupted(Tower.State.SHOOT),
-                        intakeLinear.cycle())
+                        intake.cycle())
                         .onlyWhile(robotState.facingTarget)
                         .repeatedly())))
             .onFalse(Commands.parallel(
                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                 indexer.setStateCommand(Indexer.State.STOP),
                 tower.setStateCommand(Tower.State.IDLE),
-                intakeLinear.extend()));
+                intake.extendLinear()));
 
         // Left Trigger: Intake
-        controller.leftTrigger().onTrue(
-            Commands.parallel(
-                intakeLinear.extend(),
-                intakeRoller.setStateCommand(IntakeRoller.State.INTAKE)))
-            .onFalse(intakeRoller.setStateCommand(IntakeRoller.State.STOP));
+        controller.leftTrigger()
+            .onTrue(intake.extendIntake())
+            .onFalse(intake.stopRoller());
 
         // Right Bumper: Trench Align
         controller.rightBumper()
@@ -227,50 +221,61 @@ public class RobotContainer {
                     robotState::getTunnelAssistHeading));
 
         // D-Pad Up: Force Intake Linear Slide Back
-        controller.povUp().onTrue(intakeLinear.retract());
+        controller.povUp().onTrue(intake.retractIntake());
 
         // D-Pad Down: Unjam
         controller.povDown().whileTrue(Commands.parallel(
-            intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.EJECT),
+            intake.ejectRoller(),
             indexer.holdStateUntilInterrupted(Indexer.State.EXPEL),
             tower.holdStateUntilInterrupted(Tower.State.EJECT)));
+
+        // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
+        controller.povRight()
+            .onTrue(
+                shooter.spinUpShooterToHubDistance(
+                    Meters.of((Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0)));
+
+        // D-Pad Left: Take the Hub Shot, wind down flywheel, indexer, and tower on release
+        // No vision fallback - do not trust the robot's pose (no automatic shoot when ready)
+        controller.povLeft()
+            .whileTrue(
+                // Shoot while superstructure is at the flywheel and hood setpoints
+                Commands.parallel(
+                    indexer.holdStateUntilInterrupted(Indexer.State.PULL),
+                    tower.holdStateUntilInterrupted(Tower.State.SHOOT),
+                    intake.cycle(),
+                    Commands.runOnce(() -> drive.stopWithX()))
+                    .onlyWhile(shooter.atHubSetpoints)
+                    .repeatedly())
+            .onFalse(Commands.parallel(
+                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                indexer.setStateCommand(Indexer.State.STOP),
+                tower.setStateCommand(Tower.State.IDLE),
+                intake.extendIntake()));
     }
 
     /**
      * Initializes SmartDashboard with test commands and controls for subsystems. Adds commands to
      * the dashboard for manual testing and debugging.
      */
-    private void initializeDashboard()
-    {
+    private void initializeDashboard() {
         SmartDashboard.putData("Indexer/Expel", indexer.setStateCommand(Indexer.State.EXPEL));
         SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
 
-        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Eject",
-            intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
-        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Intake",
-            intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
-        SmartDashboard.putData(IntakeRollerConstants.NAME + "/Stop",
-            intakeRoller.setStateCommand(IntakeRoller.State.STOP));
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intakeLinear.extend());
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intakeLinear.retract());
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intakeLinear.cycle());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendLinear());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
 
         SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
         SmartDashboard.putData("Hood angle", Commands.runOnce(() -> System.out.println(
             Degrees.of(90).minus(HoodConstants.MIN_ANGLE_OFFSET).minus(shooter.getHoodAngle())
                 .in(Degrees))));
 
-        SmartDashboard.putData("Intake Roller/Eject",
-            intakeRoller.setStateCommand(IntakeRoller.State.EJECT));
-        SmartDashboard.putData("Intake Roller/Intake",
-            intakeRoller.setStateCommand(IntakeRoller.State.INTAKE));
-        SmartDashboard.putData("Intake Roller/Stop",
-            intakeRoller.setStateCommand(IntakeRoller.State.STOP));
-        SmartDashboard.putData("Intake Linear/Extend", intakeLinear.extend());
-        SmartDashboard.putData("Intake Linear/Retract", intakeLinear.retract());
-        SmartDashboard.putData("Intake Linear/Cycle", intakeLinear.cycle());
-        SmartDashboard.putData("Intake Linear/Coast", intakeLinear.coast());
+        SmartDashboard.putData("Intake Linear/Extend", intake.extendLinear());
+        SmartDashboard.putData("Intake Linear/Retract", intake.retractIntake());
+        SmartDashboard.putData("Intake Linear/Cycle", intake.cycle());
+        SmartDashboard.putData("Intake Linear/Coast", intake.linearCoast());
         SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
         SmartDashboard.putData("Run Indexer", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Face Target",
@@ -303,8 +308,7 @@ public class RobotContainer {
     }
 
     /** Creates and/or binds triggers to LED states */
-    private void configureLEDTriggers()
-    {
+    private void configureLEDTriggers() {
         isAutonomous
             .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_AUTO))
             .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_AUTO));
@@ -313,18 +317,17 @@ public class RobotContainer {
             .onTrue(leds.scheduleStateCommand(LEDs.State.READY_TO_SHOOT))
             .onFalse(leds.unscheduleStateCommand(LEDs.State.READY_TO_SHOOT));
 
-        new Trigger(() -> intakeRoller.getState() == IntakeRoller.State.INTAKE)
+        new Trigger(() -> intake.isIntaking())
             .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_INTAKE))
             .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_INTAKE));
     }
 
     /**
      * Gets the selected autonomous command from the dashboard chooser.
-     * 
+     *
      * @return the autonomous command to run
      */
-    public Command getAutonomousCommand()
-    {
+    public Command getAutonomousCommand() {
         return autoChooser.get();
     }
 
@@ -332,8 +335,7 @@ public class RobotContainer {
      * Checks and displays the robot's starting pose accuracy relative to the selected autonomous
      * path. This function is called periodically by Robot.java when disabled.
      */
-    public void checkStartPose()
-    {
+    public void checkStartPose() {
 
         /* Starting pose checker for auto */
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());

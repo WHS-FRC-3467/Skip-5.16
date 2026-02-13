@@ -37,6 +37,5 @@ public interface DistanceSensorIO {
      *
      * @param inputs The structure to populate with updated sensor values.
      */
-    public default void updateInputs(DistanceSensorInputs inputs)
-    {}
+    public default void updateInputs(DistanceSensorInputs inputs) {}
 }

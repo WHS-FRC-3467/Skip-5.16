@@ -13,16 +13,15 @@ import frc.robot.subsystems.drive.Drive;
 
 /**
  * Command to autonomously drive the robot to a target pose on the field.
- * 
+ *
  * <p>
- * Uses profiled PID controllers for both linear (x, y) and angular (rotation) motion.
- * The controllers have tunable gains that can be adjusted through NetworkTables for
- * optimization. Maximum velocities are also tunable.
- * 
+ * Uses profiled PID controllers for both linear (x, y) and angular (rotation) motion. The
+ * controllers have tunable gains that can be adjusted through NetworkTables for optimization.
+ * Maximum velocities are also tunable.
+ *
  * <p>
- * This command extends {@link DriveToPoseBase} and provides the robot-specific
- * controller configuration. It's commonly used for autonomous positioning and
- * driver-assistance features.
+ * This command extends {@link DriveToPoseBase} and provides the robot-specific controller
+ * configuration. It's commonly used for autonomous positioning and driver-assistance features.
  */
 public class DriveToPose extends DriveToPoseBase {
 
@@ -38,14 +37,13 @@ public class DriveToPose extends DriveToPoseBase {
 
     /**
      * Creates a command to autonomously drive the robot to a target pose.
-     * 
+     *
      * @param drive the Drive subsystem to control robot movement
      * @param targetPose a Supplier that provides the target pose to drive to
      */
     public DriveToPose(
         Drive drive,
-        Supplier<Pose2d> targetPose)
-    {
+        Supplier<Pose2d> targetPose) {
         super(
             drive,
             targetPose,

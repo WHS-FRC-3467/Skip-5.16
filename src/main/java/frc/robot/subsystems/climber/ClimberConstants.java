@@ -86,11 +86,10 @@ public class ClimberConstants {
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the climber mechanism.
-     * 
+     *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -130,11 +129,10 @@ public class ClimberConstants {
     /**
      * Factory method to create a Climber instance for the climber subsystem. Creates the
      * appropriate subsystem based on the current robot mode (REAL, SIM, or REPLAY).
-     * 
+     *
      * @return A configured Climber instance
      */
-    public static Climber get()
-    {
+    public static Climber get() {
         LinearMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

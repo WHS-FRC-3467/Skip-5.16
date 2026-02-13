@@ -285,13 +285,11 @@ public class FieldConstants {
         private volatile AprilTagFieldLayout layout;
         private volatile String layoutString;
 
-        AprilTagLayoutType(String name)
-        {
+        AprilTagLayoutType(String name) {
             this.name = name;
         }
 
-        public AprilTagFieldLayout getLayout()
-        {
+        public AprilTagFieldLayout getLayout() {
             if (layout == null) {
                 synchronized (this) {
                     if (layout == null) {
@@ -321,8 +319,7 @@ public class FieldConstants {
             return layout;
         }
 
-        public String getLayoutString()
-        {
+        public String getLayoutString() {
             if (layoutString == null) {
                 getLayout();
             }

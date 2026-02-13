@@ -32,15 +32,13 @@ public class SteppableCommandGroup extends Command {
      * @param commands Commands to step through
      */
     public SteppableCommandGroup(
-        Trigger forwardTrigger, Trigger reverseTrigger, Command... commands)
-    {
+        Trigger forwardTrigger, Trigger reverseTrigger, Command... commands) {
         this.forwardTrigger = forwardTrigger;
         this.reverseTrigger = reverseTrigger;
         addCommands(commands);
     }
 
-    public final void addCommands(Command... commands)
-    {
+    public final void addCommands(Command... commands) {
         if (currentCommandIndex != -1) {
             throw new IllegalStateException(
                 "Commands cannot be added to a composition while it's running");
@@ -59,8 +57,7 @@ public class SteppableCommandGroup extends Command {
     }
 
     @Override
-    public final void initialize()
-    {
+    public final void initialize() {
         currentCommandIndex = 0;
         commandFinished = false;
         if (!commands.isEmpty()) {
@@ -72,8 +69,7 @@ public class SteppableCommandGroup extends Command {
     }
 
     @Override
-    public final void execute()
-    {
+    public final void execute() {
         if (commands.isEmpty()) {
             return;
         }
@@ -105,8 +101,7 @@ public class SteppableCommandGroup extends Command {
     }
 
     @Override
-    public final void end(boolean interrupted)
-    {
+    public final void end(boolean interrupted) {
         if (interrupted && !commandFinished && !commands.isEmpty() && currentCommandIndex > -1) {
             commands.get(currentCommandIndex).end(true);
         }
@@ -114,14 +109,12 @@ public class SteppableCommandGroup extends Command {
     }
 
     @Override
-    public boolean runsWhenDisabled()
-    {
+    public boolean runsWhenDisabled() {
         return runsWhenDisabled;
     }
 
     @Override
-    public InterruptionBehavior getInterruptionBehavior()
-    {
+    public InterruptionBehavior getInterruptionBehavior() {
         return interruptionBehavior;
     }
 
@@ -130,8 +123,7 @@ public class SteppableCommandGroup extends Command {
      *
      * @return OptionalInt containing the current command index, or empty if not running
      */
-    public OptionalInt getCurrentCommandIndex()
-    {
+    public OptionalInt getCurrentCommandIndex() {
         if (currentCommandIndex == -1) {
             return OptionalInt.empty();
         } else {

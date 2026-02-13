@@ -12,23 +12,20 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
+package frc.robot.subsystems.intake;
 
-package frc.lib.io.absoluteencoder;
 
-import edu.wpi.first.units.measure.Angle;
-
-/**
- * Simulation extension of AbsoluteEncoderIO for testing and simulation.
- *
- * <p>
- * Adds methods to programmatically set the encoder's simulated angle and velocity, allowing physics
- * simulation and test code to inject realistic encoder values without needing real hardware.
- */
-public interface AbsoluteEncoderIOSim extends AbsoluteEncoderIO {
+public class IntakeSuperstructureConstants {
     /**
-     * Sets the simulated encoder angle.
+     * Creates and configures an {@link IntakeSuperstructure} subsystem. Combines the linear intake
+     * and roller intake mechanisms into a unified intake system.
      *
-     * @param angle The angle to simulate
+     * @return a configured {@link IntakeSuperstructure} instance
      */
-    public default void setAngle(Angle angle) {}
+    public static IntakeSuperstructure get() {
+        return new IntakeSuperstructure(
+
+            IntakeLinearConstants.getMechanism(),
+            IntakeRollerConstants.getMechanism());
+    }
 }

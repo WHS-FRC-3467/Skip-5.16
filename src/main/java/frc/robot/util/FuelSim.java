@@ -114,19 +114,16 @@ public class FuelSim {
         protected Translation3d pos;
         protected Translation3d vel;
 
-        protected Fuel(Translation3d pos, Translation3d vel)
-        {
+        protected Fuel(Translation3d pos, Translation3d vel) {
             this.pos = pos;
             this.vel = vel;
         }
 
-        protected Fuel(Translation3d pos)
-        {
+        protected Fuel(Translation3d pos) {
             this(pos, new Translation3d());
         }
 
-        protected void update(boolean simulateAirResistance, int subticks)
-        {
+        protected void update(boolean simulateAirResistance, int subticks) {
             pos = pos.plus(vel.times(PERIOD / subticks));
             if (pos.getZ() > FUEL_RADIUS) {
                 Translation3d Fg = GRAVITY.times(FUEL_MASS);
@@ -150,8 +147,7 @@ public class FuelSim {
             handleFieldCollisions(subticks);
         }
 
-        protected void handleXZLineCollision(Translation3d lineStart, Translation3d lineEnd)
-        {
+        protected void handleXZLineCollision(Translation3d lineStart, Translation3d lineEnd) {
             if (pos.getY() < lineStart.getY() || pos.getY() > lineEnd.getY())
                 return; // not within y range
             // Convert into 2D
@@ -181,8 +177,7 @@ public class FuelSim {
             vel = vel.minus(normal.times((1 + FIELD_COR) * vel.dot(normal)));
         }
 
-        protected void handleFieldCollisions(int subticks)
-        {
+        protected void handleFieldCollisions(int subticks) {
             // floor and bumps
             for (int i = 0; i < FIELD_XZ_LINE_STARTS.length; i++) {
                 handleXZLineCollision(FIELD_XZ_LINE_STARTS[i], FIELD_XZ_LINE_ENDS[i]);
@@ -212,8 +207,7 @@ public class FuelSim {
             handleTrenchCollisions();
         }
 
-        protected void handleHubCollisions(Hub hub, int subticks)
-        {
+        protected void handleHubCollisions(Hub hub, int subticks) {
             hub.handleHubInteraction(this, subticks);
             hub.fuelCollideSide(this);
 
@@ -224,8 +218,7 @@ public class FuelSim {
             }
         }
 
-        protected void handleTrenchCollisions()
-        {
+        protected void handleTrenchCollisions() {
             fuelCollideRectangle(
                 this,
                 new Translation3d(3.96, TRENCH_WIDTH, 0),
@@ -273,14 +266,12 @@ public class FuelSim {
                     TRENCH_HEIGHT + TRENCH_BAR_HEIGHT));
         }
 
-        protected void addImpulse(Translation3d impulse)
-        {
+        protected void addImpulse(Translation3d impulse) {
             vel = vel.plus(impulse);
         }
     }
 
-    protected static void handleFuelCollision(Fuel a, Fuel b)
-    {
+    protected static void handleFuelCollision(Fuel a, Fuel b) {
         Translation3d normal = a.pos.minus(b.pos);
         double distance = normal.getNorm();
         if (distance == 0) {
@@ -303,8 +294,7 @@ public class FuelSim {
     @SuppressWarnings("unchecked")
     protected final ArrayList<Fuel>[][] grid = new ArrayList[GRID_COLS][GRID_ROWS];
 
-    protected void handleFuelCollisions(List<Fuel> fuels)
-    {
+    protected void handleFuelCollisions(List<Fuel> fuels) {
         // Clear grid
         for (int i = 0; i < GRID_COLS; i++) {
             for (int j = 0; j < GRID_ROWS; j++) {
@@ -358,12 +348,11 @@ public class FuelSim {
 
     /**
      * Creates a new instance of FuelSim
-     * 
+     *
      * @param tableKey NetworkTable to log fuel positions to as an array of {@link Translation3d}
      *        structs.
      */
-    public FuelSim(String tableKey)
-    {
+    public FuelSim(String tableKey) {
         // Initialize grid
         for (int i = 0; i < GRID_COLS; i++) {
             for (int j = 0; j < GRID_ROWS; j++) {
@@ -379,24 +368,21 @@ public class FuelSim {
     /**
      * Creates a new instance of FuelSim with log path "/Fuel Simulation"
      */
-    public FuelSim()
-    {
+    public FuelSim() {
         this("/Fuel Simulation");
     }
 
     /**
      * Clears the field of fuel
      */
-    public void clearFuel()
-    {
+    public void clearFuel() {
         fuels.clear();
     }
 
     /**
      * Spawns fuel in the neutral zone and depots
      */
-    public void spawnStartingFuel()
-    {
+    public void spawnStartingFuel() {
         // Center fuel
         Translation3d center = new Translation3d(FIELD_LENGTH / 2, FIELD_WIDTH / 2, FUEL_RADIUS);
         for (int i = 0; i < 15; i++) {
@@ -443,46 +429,41 @@ public class FuelSim {
     /**
      * Adds array of `Translation3d`'s to NetworkTables at tableKey + "/Fuels"
      */
-    public void logFuels()
-    {
+    public void logFuels() {
         fuelPublisher.set(fuels.stream().map((fuel) -> fuel.pos).toArray(Translation3d[]::new));
     }
 
     /**
      * Start the simulation. `updateSim` must still be called every loop
      */
-    public void start()
-    {
+    public void start() {
         running = true;
     }
 
     /**
      * Pause the simulation.
      */
-    public void stop()
-    {
+    public void stop() {
         running = false;
     }
 
     /** Enables accounting for drag force in physics step **/
-    public void enableAirResistance()
-    {
+    public void enableAirResistance() {
         simulateAirResistance = true;
     }
 
     /**
      * Sets the number of physics iterations per loop (0.02s)
-     * 
+     *
      * @param subticks the number of physics iterations per loop
      */
-    public void setSubticks(int subticks)
-    {
+    public void setSubticks(int subticks) {
         this.subticks = subticks;
     }
 
     /**
      * Registers a robot with the fuel simulator
-     * 
+     *
      * @param width from left to right (y-axis)
      * @param length from front to back (x-axis)
      * @param bumperHeight the height of the bumper
@@ -494,8 +475,7 @@ public class FuelSim {
         double length,
         double bumperHeight,
         Supplier<Pose2d> poseSupplier,
-        Supplier<ChassisSpeeds> fieldSpeedsSupplier)
-    {
+        Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
         this.robotPoseSupplier = poseSupplier;
         this.robotFieldSpeedsSupplier = fieldSpeedsSupplier;
         this.robotWidth = width;
@@ -506,8 +486,7 @@ public class FuelSim {
     /**
      * To be called periodically Will do nothing if sim is not running
      */
-    public void updateSim()
-    {
+    public void updateSim() {
         if (!running)
             return;
 
@@ -517,8 +496,7 @@ public class FuelSim {
     /**
      * Run the simulation forward 1 time step (0.02s)
      */
-    public void stepSim()
-    {
+    public void stepSim() {
         for (int i = 0; i < subticks; i++) {
             for (Fuel fuel : fuels) {
                 fuel.update(this.simulateAirResistance, this.subticks);
@@ -537,19 +515,18 @@ public class FuelSim {
 
     /**
      * Adds a fuel onto the field
-     * 
+     *
      * @param pos Position to spawn at
      * @param vel Initial velocity vector
      */
-    public void spawnFuel(Translation3d pos, Translation3d vel)
-    {
+    public void spawnFuel(Translation3d pos, Translation3d vel) {
         fuels.add(new Fuel(pos, vel));
     }
 
     /**
      * Spawns a fuel onto the field with a specified launch velocity and angles, accounting for
      * robot movement
-     * 
+     *
      * @param launchVelocity Initial launch velocity
      * @param hoodAngle Hood angle where 0 is launching horizontally and 90 degrees is launching
      *        straight up
@@ -559,8 +536,7 @@ public class FuelSim {
      * @throws IllegalStateException if robot is not registered
      */
     public void launchFuel(LinearVelocity launchVelocity, Angle hoodAngle, Angle turretYaw,
-        Distance launchHeight)
-    {
+        Distance launchHeight) {
         if (robotPoseSupplier == null || robotFieldSpeedsSupplier == null) {
             throw new IllegalStateException("Robot must be registered before launching fuel.");
         }
@@ -585,8 +561,7 @@ public class FuelSim {
         spawnFuel(launchPose.getTranslation(), new Translation3d(xVel, yVel, verticalVel));
     }
 
-    protected void handleRobotCollision(Fuel fuel, Pose2d robot, Translation2d robotVel)
-    {
+    protected void handleRobotCollision(Fuel fuel, Pose2d robot, Translation2d robotVel) {
         Translation2d relativePos = new Pose2d(fuel.pos.toTranslation2d(), Rotation2d.kZero)
             .relativeTo(robot)
             .getTranslation();
@@ -631,8 +606,7 @@ public class FuelSim {
             fuel.addImpulse(new Translation3d(normal.times(robotVel.dot(normal))));
     }
 
-    protected void handleRobotCollisions(List<Fuel> fuels)
-    {
+    protected void handleRobotCollisions(List<Fuel> fuels) {
         Pose2d robot = robotPoseSupplier.get();
         ChassisSpeeds speeds = robotFieldSpeedsSupplier.get();
         Translation2d robotVel =
@@ -643,8 +617,7 @@ public class FuelSim {
         }
     }
 
-    protected void handleIntakes(List<Fuel> fuels)
-    {
+    protected void handleIntakes(List<Fuel> fuels) {
         Pose2d robot = robotPoseSupplier.get();
         for (SimIntake intake : intakes) {
             for (int i = 0; i < fuels.size(); i++) {
@@ -657,8 +630,7 @@ public class FuelSim {
         }
     }
 
-    protected static void fuelCollideRectangle(Fuel fuel, Translation3d start, Translation3d end)
-    {
+    protected static void fuelCollideRectangle(Fuel fuel, Translation3d start, Translation3d end) {
         if (fuel.pos.getZ() > end.getZ() + FUEL_RADIUS
             || fuel.pos.getZ() < start.getZ() - FUEL_RADIUS)
             return; // above rectangle
@@ -704,7 +676,7 @@ public class FuelSim {
     /**
      * Registers an intake with the fuel simulator. This intake will remove fuel from the field
      * based on the `ableToIntake` parameter.
-     * 
+     *
      * @param xMin Minimum x position for the bounding box
      * @param xMax Maximum x position for the bounding box
      * @param yMin Minimum y position for the bounding box
@@ -714,15 +686,14 @@ public class FuelSim {
      */
     public void registerIntake(
         double xMin, double xMax, double yMin, double yMax, BooleanSupplier ableToIntake,
-        Runnable intakeCallback)
-    {
+        Runnable intakeCallback) {
         intakes.add(new SimIntake(xMin, xMax, yMin, yMax, ableToIntake, intakeCallback));
     }
 
     /**
      * Registers an intake with the fuel simulator. This intake will remove fuel from the field
      * based on the `ableToIntake` parameter.
-     * 
+     *
      * @param xMin Minimum x position for the bounding box
      * @param xMax Maximum x position for the bounding box
      * @param yMin Minimum y position for the bounding box
@@ -730,8 +701,7 @@ public class FuelSim {
      * @param ableToIntake Should a return a boolean whether the intake is active
      */
     public void registerIntake(double xMin, double xMax, double yMin, double yMax,
-        BooleanSupplier ableToIntake)
-    {
+        BooleanSupplier ableToIntake) {
         registerIntake(xMin, xMax, yMin, yMax, ableToIntake, () -> {
         });
     }
@@ -739,7 +709,7 @@ public class FuelSim {
     /**
      * Registers an intake with the fuel simulator. This intake will always remove fuel from the
      * field.
-     * 
+     *
      * @param xMin Minimum x position for the bounding box
      * @param xMax Maximum x position for the bounding box
      * @param yMin Minimum y position for the bounding box
@@ -747,22 +717,20 @@ public class FuelSim {
      * @param intakeCallback Function to call when a fuel is intaked
      */
     public void registerIntake(double xMin, double xMax, double yMin, double yMax,
-        Runnable intakeCallback)
-    {
+        Runnable intakeCallback) {
         registerIntake(xMin, xMax, yMin, yMax, () -> true, intakeCallback);
     }
 
     /**
      * Registers an intake with the fuel simulator. This intake will always remove fuel from the
      * field.
-     * 
+     *
      * @param xMin Minimum x position for the bounding box
      * @param xMax Maximum x position for the bounding box
      * @param yMin Minimum y position for the bounding box
      * @param yMax Maximum y position for the bounding box
      */
-    public void registerIntake(double xMin, double xMax, double yMin, double yMax)
-    {
+    public void registerIntake(double xMin, double xMax, double yMin, double yMax) {
         registerIntake(xMin, xMax, yMin, yMax, () -> true, () -> {
         });
     }
@@ -792,15 +760,13 @@ public class FuelSim {
 
         protected int score = 0;
 
-        protected Hub(Translation2d center, Translation3d exit, int exitVelXMult)
-        {
+        protected Hub(Translation2d center, Translation3d exit, int exitVelXMult) {
             this.center = center;
             this.exit = exit;
             this.exitVelXMult = exitVelXMult;
         }
 
-        protected void handleHubInteraction(Fuel fuel, int subticks)
-        {
+        protected void handleHubInteraction(Fuel fuel, int subticks) {
             if (didFuelScore(fuel, subticks)) {
                 fuel.pos = exit;
                 fuel.vel = getDispersalVelocity();
@@ -808,15 +774,13 @@ public class FuelSim {
             }
         }
 
-        protected boolean didFuelScore(Fuel fuel, int subticks)
-        {
+        protected boolean didFuelScore(Fuel fuel, int subticks) {
             return fuel.pos.toTranslation2d().getDistance(center) <= ENTRY_RADIUS
                 && fuel.pos.getZ() <= ENTRY_HEIGHT
                 && fuel.pos.minus(fuel.vel.times(PERIOD / subticks)).getZ() > ENTRY_HEIGHT;
         }
 
-        protected Translation3d getDispersalVelocity()
-        {
+        protected Translation3d getDispersalVelocity() {
             return new Translation3d(exitVelXMult * (Math.random() + 0.1) * 1.5,
                 Math.random() * 2 - 1, 0);
         }
@@ -824,23 +788,20 @@ public class FuelSim {
         /**
          * Reset this hub's score to 0
          */
-        public void resetScore()
-        {
+        public void resetScore() {
             score = 0;
         }
 
         /**
          * Get the current count of fuel scored in this hub
-         * 
+         *
          * @return The current count of fuel scored in this hub
          */
-        public int getScore()
-        {
+        public int getScore() {
             return score;
         }
 
-        protected void fuelCollideSide(Fuel fuel)
-        {
+        protected void fuelCollideSide(Fuel fuel) {
             fuelCollideRectangle(
                 fuel,
                 new Translation3d(center.getX() - SIDE / 2, center.getY() - SIDE / 2, 0),
@@ -848,8 +809,7 @@ public class FuelSim {
                     ENTRY_HEIGHT - 0.1));
         }
 
-        protected double fuelHitNet(Fuel fuel)
-        {
+        protected double fuelHitNet(Fuel fuel) {
             if (fuel.pos.getZ() > NET_HEIGHT_MAX || fuel.pos.getZ() < NET_HEIGHT_MIN)
                 return 0;
             if (fuel.pos.getY() > center.getY() + NET_WIDTH / 2
@@ -876,8 +836,7 @@ public class FuelSim {
             double yMin,
             double yMax,
             BooleanSupplier ableToIntake,
-            Runnable intakeCallback)
-        {
+            Runnable intakeCallback) {
             this.xMin = xMin;
             this.xMax = xMax;
             this.yMin = yMin;
@@ -886,8 +845,7 @@ public class FuelSim {
             this.callback = intakeCallback;
         }
 
-        protected boolean shouldIntake(Fuel fuel, Pose2d robotPose)
-        {
+        protected boolean shouldIntake(Fuel fuel, Pose2d robotPose) {
             if (!ableToIntake.getAsBoolean() || fuel.pos.getZ() > bumperHeight)
                 return false;
 
@@ -908,13 +866,12 @@ public class FuelSim {
 
     /**
      * Calculates the launch velocity vector for fuel based on shooter parameters and robot state
-     * 
+     *
      * @param vel Linear velocity of the shooter
      * @param angle Launch angle of the shooter
      * @return 3D velocity vector in field coordinates
      */
-    public Translation3d launchVel(LinearVelocity vel, Angle angle)
-    {
+    public Translation3d launchVel(LinearVelocity vel, Angle angle) {
         Pose3d robot = new Pose3d(RobotState.getInstance().getEstimatedPose());
         ChassisSpeeds fieldSpeeds = RobotState.getInstance().getFieldRelativeVelocity();
 

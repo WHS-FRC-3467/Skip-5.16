@@ -41,8 +41,7 @@ public class LightsIOCandle implements LightsIO {
      * @param id The Device identifying the bus and device ID for this sensor.
      * @param config The CANrangeConfiguration to apply to the sensor upon initialization.
      */
-    public LightsIOCandle(Device.CAN id, CANdleConfiguration config)
-    {
+    public LightsIOCandle(Device.CAN id, CANdleConfiguration config) {
 
         candle = new CANdle(id.id(), new CANBus(id.bus()));
 
@@ -54,8 +53,7 @@ public class LightsIOCandle implements LightsIO {
     }
 
     @Override
-    public void setAnimation(ControlRequest request)
-    {
+    public void setAnimation(ControlRequest request) {
         candle.setControl(request);
     }
 

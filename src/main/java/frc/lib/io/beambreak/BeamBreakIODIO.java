@@ -25,16 +25,14 @@ public class BeamBreakIODIO implements BeamBreakIO {
 
     /**
      * Constructs a {@link BeamBreakIODIO} object with the specified DIO ID
-
+     *
      */
-    public BeamBreakIODIO(Device.DIO id)
-    {
+    public BeamBreakIODIO(Device.DIO id) {
         dio = new DigitalInput(id.id());
     }
 
     @Override
-    public void updateInputs(BeamBreakInputs inputs)
-    {
+    public void updateInputs(BeamBreakInputs inputs) {
         inputs.isBroken = dio.get();
     }
 }

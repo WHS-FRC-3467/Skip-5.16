@@ -17,8 +17,7 @@ public class WheelCharacterizationAuto extends AutoRoutine {
      *
      * @param drive the drive subsystem to characterize
      */
-    public WheelCharacterizationAuto(Drive drive)
-    {
+    public WheelCharacterizationAuto(Drive drive) {
         loadCommands(DriveCommands.wheelRadiusCharacterization(drive));
     }
 }

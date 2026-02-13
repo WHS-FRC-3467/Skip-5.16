@@ -45,8 +45,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
         CameraProperties cameraProperties,
         VisionSystemSim system,
         Supplier<Pose2d> poseSupplier,
-        AprilTagFieldLayout fieldLayout)
-    {
+        AprilTagFieldLayout fieldLayout) {
         super(cameraProperties);
         this.poseSupplier = poseSupplier;
         this.system = system;
@@ -74,8 +73,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
     }
 
     @Override
-    public void updateInputs(VisionIOInputs inputs)
-    {
+    public void updateInputs(VisionIOInputs inputs) {
         system.update(poseSupplier.get());
         super.updateInputs(inputs);
     }

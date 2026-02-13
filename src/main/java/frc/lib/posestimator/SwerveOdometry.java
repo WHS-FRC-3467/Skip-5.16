@@ -59,8 +59,7 @@ public class SwerveOdometry {
     public static final record OdometryObservation(
         Time timestamp,
         SwerveModulePosition[] swervePositions,
-        Optional<Rotation2d> gyroAngle) {
-    }
+        Optional<Rotation2d> gyroAngle) {}
 
     /** The swerve drive kinematics used to compute motion deltas. */
     private final SwerveDriveKinematics kinematics;
@@ -91,8 +90,7 @@ public class SwerveOdometry {
      * @param odometryBufferSize the duration for which odometry poses are buffered for
      *        interpolation
      */
-    public SwerveOdometry(SwerveDriveKinematics kinematics, Time odometryBufferSize)
-    {
+    public SwerveOdometry(SwerveDriveKinematics kinematics, Time odometryBufferSize) {
         this.kinematics = kinematics;
         odometryBuffer = TimeInterpolatableBuffer.createBuffer(odometryBufferSize.in(Seconds));
     }
@@ -114,8 +112,7 @@ public class SwerveOdometry {
      * @param observation an {@link OdometryObservation} containing module positions, timestamp, and
      *        an optional gyro angle
      */
-    public void addOdometryObservation(OdometryObservation observation)
-    {
+    public void addOdometryObservation(OdometryObservation observation) {
 
         double timestampSeconds = observation.timestamp().in(Seconds);
         SwerveModulePosition[] currentPositions = observation.swervePositions();
@@ -147,8 +144,7 @@ public class SwerveOdometry {
      *
      * @param pose the new field-relative {@link Pose2d} representing the robot's known position
      */
-    public void resetPose(Pose2d pose)
-    {
+    public void resetPose(Pose2d pose) {
         gyroOffset = pose.getRotation().minus(odometryPose.getRotation().minus(gyroOffset));
         odometryPose = pose;
         odometryBuffer.clear();

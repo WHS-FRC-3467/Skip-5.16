@@ -31,8 +31,7 @@ public class DistanceSensorIOSim implements DistanceSensorIO {
      *
      * @param name A human-readable name for the sensor instance.
      */
-    public DistanceSensorIOSim(String name)
-    {
+    public DistanceSensorIOSim(String name) {
         tunableDistance = new LoggedTunableNumber(name + "/Sim Measurement (Inches)", 0.0);
     }
 
@@ -41,14 +40,12 @@ public class DistanceSensorIOSim implements DistanceSensorIO {
      *
      * @param distance The new distance readout
      */
-    public void setDistance(Distance distance)
-    {
+    public void setDistance(Distance distance) {
         this.distance = distance;
     }
 
     @Override
-    public void updateInputs(DistanceSensorInputs inputs)
-    {
+    public void updateInputs(DistanceSensorInputs inputs) {
         inputs.ambientSignal = 0.0;
         inputs.connected = true;
         if (tunableDistance.hasChanged(hashCode())) {

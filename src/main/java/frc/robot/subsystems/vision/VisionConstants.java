@@ -44,7 +44,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * Configuration constants for the vision subsystem.
- * 
+ *
  * <p>
  * Contains camera calibration data, mounting positions, and factory methods for creating vision
  * cameras. Each camera has:
@@ -53,7 +53,7 @@ import lombok.NoArgsConstructor;
  * <li>Intrinsics: Camera matrix and distortion coefficients from calibration</li>
  * <li>Performance: Resolution, FPS, latency, and standard deviation factors</li>
  * </ul>
- * 
+ *
  * <p>
  * Camera intrinsics should be recalibrated when cameras are changed or remounted. Use
  * PhotonVision's calibration tool to generate new intrinsic matrices.
@@ -269,13 +269,11 @@ public class VisionConstants {
 
     private static Optional<VisionSystemSim> visionSim = Optional.empty();
 
-    private static VisionIOPhotonVision getFrontIOReal()
-    {
+    private static VisionIOPhotonVision getFrontIOReal() {
         return new VisionIOPhotonVision(FRONT);
     }
 
-    private static VisionIOPhotonVisionSim getFrontIOSim()
-    {
+    private static VisionIOPhotonVisionSim getFrontIOSim() {
         if (visionSim.isEmpty()) {
             visionSim = Optional.of(new VisionSystemSim("main"));
             visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());
@@ -288,13 +286,11 @@ public class VisionConstants {
             AprilTagLayoutType.OFFICIAL.getLayout());
     }
 
-    private static VisionIOPhotonVision getLeftIOReal()
-    {
+    private static VisionIOPhotonVision getLeftIOReal() {
         return new VisionIOPhotonVision(LEFT);
     }
 
-    private static VisionIOPhotonVisionSim getLeftIOSim()
-    {
+    private static VisionIOPhotonVisionSim getLeftIOSim() {
         if (visionSim.isEmpty()) {
             visionSim = Optional.of(new VisionSystemSim("main"));
             visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());
@@ -307,14 +303,12 @@ public class VisionConstants {
             AprilTagLayoutType.OFFICIAL.getLayout());
     }
 
-    private static VisionIOPhotonVision getRightIOReal()
-    {
+    private static VisionIOPhotonVision getRightIOReal() {
         return new VisionIOPhotonVision(
             RIGHT);
     }
 
-    private static VisionIOPhotonVisionSim getRightIOSim()
-    {
+    private static VisionIOPhotonVisionSim getRightIOSim() {
         if (visionSim.isEmpty()) {
             visionSim = Optional.of(new VisionSystemSim("main"));
             visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());
@@ -327,13 +321,11 @@ public class VisionConstants {
             AprilTagLayoutType.OFFICIAL.getLayout());
     }
 
-    private static VisionIOPhotonVision getBackIOReal()
-    {
+    private static VisionIOPhotonVision getBackIOReal() {
         return new VisionIOPhotonVision(BACK);
     }
 
-    private static VisionIOPhotonVisionSim getBackIOSim()
-    {
+    private static VisionIOPhotonVisionSim getBackIOSim() {
         if (visionSim.isEmpty()) {
             visionSim = Optional.of(new VisionSystemSim("main"));
             visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());

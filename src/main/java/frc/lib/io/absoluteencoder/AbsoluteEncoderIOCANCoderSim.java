@@ -26,22 +26,19 @@ public class AbsoluteEncoderIOCANCoderSim extends AbsoluteEncoderIOCANCoder
 
     private final CANcoderSimState simState;
 
-    public AbsoluteEncoderIOCANCoderSim(CAN id, CANcoderConfiguration configuration)
-    {
+    public AbsoluteEncoderIOCANCoderSim(CAN id, CANcoderConfiguration configuration) {
         super(id, configuration);
         simState = CANCoder.getSimState();
     }
 
     @Override
-    public void updateInputs(AbsoluteEncoderInputs inputs)
-    {
+    public void updateInputs(AbsoluteEncoderInputs inputs) {
         simState.setSupplyVoltage(RobotController.getBatteryVoltage());
         super.updateInputs(inputs);
     }
 
     @Override
-    public void setAngle(Angle angle)
-    {
+    public void setAngle(Angle angle) {
         simState.setRawPosition(angle);
     }
 }
