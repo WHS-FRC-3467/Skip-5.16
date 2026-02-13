@@ -79,7 +79,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
      */
     public Command retract()
     {
-        return this.runOnce(() -> io.runCurrent(Amps.of(-INTAKE_CURRENT.getMagnitude())));
+        return this.runOnce(() -> io.runCurrent(INTAKE_CURRENT.get().unaryMinus()));
     }
 
     /**
@@ -109,7 +109,7 @@ public class IntakeLinear extends SubsystemBase implements AutoCloseable {
 
     /**
      * Coast intake linear for pit testing.
-     * 
+     *
      * @return a command to set the intake linear mechanism to coast mode.
      */
     public Command coast()

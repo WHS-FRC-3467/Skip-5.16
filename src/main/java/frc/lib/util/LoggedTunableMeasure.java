@@ -51,7 +51,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      */
     public LoggedTunableMeasure(String dashboardKey, Unit unit)
     {
-        this.key = tableKey + "/" + dashboardKey + " " + unit.name(); 
+        this.key = tableKey + "/" + dashboardKey + " " + unit.name();
         this.unit = unit;
     }
 
