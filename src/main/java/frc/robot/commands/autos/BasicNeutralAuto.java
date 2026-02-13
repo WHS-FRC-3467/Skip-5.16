@@ -102,5 +102,3 @@ public class BasicNeutralAuto extends AutoRoutine {
                 AutoCommands.initializeIntake(intake));
     }
 }
-
-

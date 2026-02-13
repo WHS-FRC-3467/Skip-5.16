@@ -55,8 +55,7 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
         DCMotor motor,
         Mass mass,
         Boolean useGravity,
-        LinearMechCharacteristics constraints)
-    {
+        LinearMechCharacteristics constraints) {
         super(name, constraints, io);
 
         // ElevatorSim is used as the underlying physics simulation.
@@ -77,8 +76,7 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Time currentTime = RobotController.getMeasureTime();
         double deltaTime = currentTime.minus(lastTime).in(Seconds);
 
@@ -105,8 +103,7 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
     }
 
     @Override
-    public void setEncoderPosition(Angle position)
-    {
+    public void setEncoderPosition(Angle position) {
         sim.setState(converter.toDistance(position).in(Meters), 0);
     }
 }

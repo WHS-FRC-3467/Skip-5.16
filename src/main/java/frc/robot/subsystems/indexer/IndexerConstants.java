@@ -49,11 +49,10 @@ public class IndexerConstants {
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the indexer.
-     * 
+     *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -86,11 +85,10 @@ public class IndexerConstants {
     /**
      * Factory method to create an Indexer subsystem instance. Creates the appropriate mechanism
      * based on the current robot mode (REAL, SIM, or REPLAY).
-     * 
+     *
      * @return A fully configured Indexer subsystem
      */
-    public static Indexer get()
-    {
+    public static Indexer get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

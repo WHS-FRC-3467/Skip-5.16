@@ -45,8 +45,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     public IntakeSuperstructure(
         LinearMechanism<?> intakeLinearIO,
-        FlywheelMechanism<?> intakeRollerIO)
-    {
+        FlywheelMechanism<?> intakeRollerIO) {
         this.intakeLinearIO = intakeLinearIO;
         this.intakeRollerIO = intakeRollerIO;
 
@@ -55,46 +54,42 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 () -> isLinearStopped());
         this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) > LINEAR_CURRENT.get() * 0.8)
-                .and(this.linearStopped);
+            .and(this.linearStopped);
         this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) < -LINEAR_CURRENT.get() * 0.8)
-                .and(this.linearStopped);
+            .and(this.linearStopped);
     }
 
     /**
      * Gets the linear extension of the subsystem by converting the motor's rotation.
-     * 
+     *
      * @return The estimated linear extension of the subsystem
      */
-    public Distance getExtension()
-    {
+    public Distance getExtension() {
         return IntakeLinearConstants.CONVERTER.toDistance(intakeLinearIO.getPosition());
     }
 
     /**
      * Checks if the linear mechanism has stopped moving.
-     * 
+     *
      * @return true if the linear velocity is less than 2.0 rotations per second, false otherwise
      */
-    private boolean isLinearStopped()
-    {
+    private boolean isLinearStopped() {
         return Math.abs(intakeLinearIO.getVelocity().in(RotationsPerSecond)) < 2.0;
     }
 
-    public boolean isIntaking()
-    {
+    public boolean isIntaking() {
         return intakeRollerIO.getVelocity().in(RotationsPerSecond) > 1.0
             && isExtended.getAsBoolean();
     }
 
     /**
      * Creates a command to run the intake roller at a specified angular velocity.
-     * 
+     *
      * @param angularVelocity A supplier that provides the desired angular velocity for the roller
      * @return A command that sets the roller to the specified velocity
      */
-    public Command runRoller(Supplier<AngularVelocity> angularVelocity)
-    {
+    public Command runRoller(Supplier<AngularVelocity> angularVelocity) {
         return Commands.runOnce(() -> intakeRollerIO.runVelocity(
             angularVelocity.get(),
             IntakeRollerConstants.MAX_ACCELERATION,
@@ -103,32 +98,29 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Creates a command to extend the intake linear mechanism by applying positive current.
-     * 
+     *
      * @return A command that extends the linear mechanism
      */
-    public Command extendLinear()
-    {
+    public Command extendLinear() {
         return this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(LINEAR_CURRENT.get())));
     }
 
     /**
      * Creates a command to extend the intake linear mechanism by applying negative current.
-     * 
+     *
      * @return A command that applies negative current to the linear mechanism
      */
-    public Command retractLinear()
-    {
+    public Command retractLinear() {
         return this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(-LINEAR_CURRENT.get())));
     }
 
     /**
      * Creates a command sequence to retract the intake. Starts the roller, applies negative current
      * to retract, waits until fully retracted, then stops the roller.
-     * 
+     *
      * @return A command sequence that retracts the intake
      */
-    public Command retractIntake()
-    {
+    public Command retractIntake() {
         return Commands.sequence(
             runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
             retractLinear(),
@@ -139,11 +131,10 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     /**
      * Creates a command sequence to extend the intake. Starts the roller, applies positive current
      * to extend, then waits until extended. - may need verification.
-     * 
+     *
      * @return A command sequence that extends the intake
      */
-    public Command extendIntake()
-    {
+    public Command extendIntake() {
         return Commands.sequence(
             runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
             extendLinear(),
@@ -153,11 +144,10 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     /**
      * Creates a command that repeatedly cycles the intake linear mechanism. Alternates between
      * extending and retracting with 3 second timeouts for each operation.
-     * 
+     *
      * @return A repeating command that cycles the linear mechanism
      */
-    public Command cycle()
-    {
+    public Command cycle() {
         return Commands.repeatingSequence(
             extendLinear().withTimeout(3.0),
             retractLinear().withTimeout(3.0));
@@ -165,58 +155,52 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Creates a command to stop the intake linear mechanism.
-     * 
+     *
      * @return A command that stops the linear motion
      */
-    public Command stopLinear()
-    {
+    public Command stopLinear() {
         return this.runOnce(() -> intakeLinearIO.runBrake());
     }
 
     /**
      * Creates a command to stop the intake roller flywheel by applying brake. Use
      * {@link #stopLinear()} to stop the linear mechanism.
-     * 
+     *
      * @return A command that stops the roller motion
      */
-    public Command stopRoller()
-    {
+    public Command stopRoller() {
         return this.runOnce(() -> intakeRollerIO.runBrake());
     }
 
     /**
      * Creates a command to coast the intake linear mechanism for pit testing.
-     * 
+     *
      * @return A command that sets the intake linear mechanism to coast mode
      */
-    public Command linearCoast()
-    {
+    public Command linearCoast() {
         return this.runOnce(() -> intakeLinearIO.runCoast());
     }
 
     /**
      * Creates a command to run the roller in reverse to eject game pieces.
-     * 
+     *
      * @return A command that runs the roller at negative velocity for ejection
      */
-    public Command ejectRoller()
-    {
+    public Command ejectRoller() {
         return Commands.startEnd(
             () -> runRoller(() -> RotationsPerSecond.of(-ROLLER_EJECT_RPS.get())),
             this::stopRoller);
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         intakeLinearIO.periodic();
         intakeRollerIO.periodic();
     }
 
 
     @Override
-    public void close()
-    {
+    public void close() {
         intakeRollerIO.close();
         intakeLinearIO.close();
     }

@@ -35,8 +35,7 @@ public class AutoCommands {
      * @param path the PathPlanner path containing the starting pose
      * @return a command that resets the robot's pose to the path's starting position
      */
-    public static Command resetSimOdom(Drive drive, PathPlannerPath path)
-    {
+    public static Command resetSimOdom(Drive drive, PathPlannerPath path) {
         if (RobotBase.isSimulation()) {
             final RobotState robotState = RobotState.getInstance();
             return drive.runOnce(
@@ -73,8 +72,7 @@ public class AutoCommands {
      *         duration
      */
     public static Command shootFuel(Indexer indexer, Tower tower,
-        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration)
-    {
+        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration) {
         return Commands.sequence(
             // Defensively gate shooting until ready (5 scans max)
             new ParallelDeadlineGroup(
@@ -113,8 +111,7 @@ public class AutoCommands {
      * @return a command that aligns the robot to the target and shoots for up to the given duration
      */
     public static Command alignAndShoot(Drive drive, Indexer indexer,
-        Tower tower, ShooterSuperstructure shooter, double duration)
-    {
+        Tower tower, ShooterSuperstructure shooter, double duration) {
         final var robotState = RobotState.getInstance();
         return Commands.deadline(
             shootFuel(indexer, tower, shooter,
@@ -131,20 +128,18 @@ public class AutoCommands {
      * @param intake the intake subsystem
      * @return a command that runs the intake and stops it when finished
      */
-    public static Command deployIntake(IntakeSuperstructure intake)
-    {
+    public static Command deployIntake(IntakeSuperstructure intake) {
         return Commands.startEnd(() -> intake.extendIntake(), () -> intake.retractIntake(), intake);
     }
 
     /**
      * A non-blocking command that initializes the intake by stopping the rollers and retracting the
      * linear stage
-     * 
+     *
      * @param intake the intake subsystem
      * @return a command that initializes the intake.
      */
-    public static Command initializeIntake(IntakeSuperstructure intake)
-    {
+    public static Command initializeIntake(IntakeSuperstructure intake) {
         return Commands.sequence(
             intake.stopRoller(),
             intake.retractLinear());
@@ -156,15 +151,14 @@ public class AutoCommands {
      * shootFuel() commands within an AutoSegment to prepare the hopper for game piece transport.
      * Subsystems end up in unguaranteed state; be sure to decorate or sequence this call with a
      * known state control command.
-     * 
+     *
      * @param intake the linear intake subsystem
      * @param tower the tower subsystem
      * @param indexer the indexer subsystem
      * @return a blocking command that agitates the balls in the hopper and stops when finished
      */
     public static Command agitateHopper(IntakeSuperstructure intake, Tower tower, Indexer indexer,
-        HopperAgitation state)
-    {
+        HopperAgitation state) {
         switch (state) {
             case INTAKE_CYCLE:
                 return intake.cycle();
@@ -187,14 +181,13 @@ public class AutoCommands {
      * Prepares the shooter for shooting at THE HUB at the end of the provided path. Only valid to
      * prepare shots for THE HUB. Perpetual command -- never spins down. Therefore, to end, this
      * should be interrupted by a parent command group or timed-out. Primarily for use in autos.
-     * 
+     *
      * @param path the path to drive, the shooter will prepare to shoot at the end of this path.
      * @param shooter the shooter subsystem
      * @return a command that prepares the shooter to shoot THE HUB from the end of the provided
      *         path
      */
-    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter)
-    {
+    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter) {
         // All paths blue canonical, so flip end translation if red alliance
         return shooter.spinUpShooterToHubDistance(
             Meters.of(

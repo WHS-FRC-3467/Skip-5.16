@@ -35,8 +35,7 @@ class DriveTest {
     Drive drive;
 
     @BeforeEach // this method will run before each test
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
         drive = new Drive(new GyroIO() {},
             new ModuleIOSim(DriveConstants.FrontLeft),
@@ -53,8 +52,7 @@ class DriveTest {
     }
 
     @Test
-    void robotIsEnabled()
-    {
+    void robotIsEnabled() {
         /* verify that the robot is enabled */
         try {
             assertTrue(DriverStation.isEnabled());
@@ -64,8 +62,7 @@ class DriveTest {
     }
 
     @Test // marks this method as a test
-    void testStop()
-    {
+    void testStop() {
         TestUtil.runTest(Commands.runOnce(() -> drive.stop()), 0.1, drive);
         try {
             assertEquals(0.0, drive.getFFCharacterizationVelocity(), DELTA); // make sure that the
@@ -77,8 +74,7 @@ class DriveTest {
     }
 
     @Test
-    void testDriveVelocity()
-    {
+    void testDriveVelocity() {
         TestUtil.runTest(Commands.run(() -> drive.runVelocity(new ChassisSpeeds(1.5, 1.5, 0.0))), 1,
             drive);
         try {
@@ -92,8 +88,7 @@ class DriveTest {
     }
 
     @Test
-    void testSteerVelocity()
-    {
+    void testSteerVelocity() {
         TestUtil.runTest(Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.0, 0.0, 1.5))), 1,
             drive);
         try {
@@ -104,8 +99,7 @@ class DriveTest {
     }
 
     @Test
-    void testX()
-    {
+    void testX() {
         TestUtil.runTest(drive.runOnce(() -> drive.stopWithX()), 0.1, drive);
         try {
             SwerveModulePosition[] swerveModulePositions = drive.getModulePositions();

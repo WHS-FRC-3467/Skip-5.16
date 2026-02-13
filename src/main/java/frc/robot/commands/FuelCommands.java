@@ -31,12 +31,11 @@ public class FuelCommands {
     /**
      * Returns a command that feeds the tower until one of the laserCANs is tripped to increase
      * hopper capacity. Does nothing if a laserCAN is already tripped.
-     * 
+     *
      * @param indexer the indexer subsystem
      * @return a command that feeds the tower until a laserCAN is tripped
      */
-    public static Command stageFuel(Indexer indexer, Tower tower)
-    {
+    public static Command stageFuel(Indexer indexer, Tower tower) {
         return Commands.parallel(
             indexer.holdStateUntilInterrupted(Indexer.State.IDLE),
             tower.holdStateUntilInterrupted(Tower.State.IDLE))

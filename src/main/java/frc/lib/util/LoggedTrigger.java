@@ -22,18 +22,18 @@ import org.littletonrobotics.junction.Logger;
 
 /**
  * A Trigger that automatically logs state changes to AdvantageKit.
- * 
+ *
  * <p>
  * This class extends WPILib's Trigger and adds automatic logging of the trigger's state whenever it
  * changes. The logging is handled internally without requiring external method calls.
- * 
+ *
  * <p>
  * Example usage:
- * 
+ *
  * <pre>{@code
  * // In a subsystem, create a logged trigger that tracks when a beam break is triggered
  * public final LoggedTrigger broken = new LoggedTrigger("BeamBreak/Broken", beamBreak::isBroken);
- * 
+ *
  * // The state will be automatically logged to "BeamBreak/Broken" whenever it changes
  * // Use it just like a normal Trigger
  * broken.onTrue(Commands.print("Beam is broken!"));
@@ -48,8 +48,7 @@ public class LoggedTrigger extends Trigger {
      * @param name The name to use as the log key for AdvantageKit logging
      * @param condition The condition to evaluate (typically a method reference or lambda)
      */
-    public LoggedTrigger(String name, BooleanSupplier condition)
-    {
+    public LoggedTrigger(String name, BooleanSupplier condition) {
         super(new LoggingBooleanSupplier(name, condition));
         this.name = name;
     }
@@ -64,15 +63,13 @@ public class LoggedTrigger extends Trigger {
         private boolean lastState = false;
         private boolean initialized = false;
 
-        public LoggingBooleanSupplier(String logKey, BooleanSupplier condition)
-        {
+        public LoggingBooleanSupplier(String logKey, BooleanSupplier condition) {
             this.logKey = logKey;
             this.condition = condition;
         }
 
         @Override
-        public boolean getAsBoolean()
-        {
+        public boolean getAsBoolean() {
             boolean currentState = condition.getAsBoolean();
 
             // Log on state change or first evaluation
@@ -97,8 +94,7 @@ public class LoggedTrigger extends Trigger {
      * @param trigger the condition to compose with
      * @return A trigger which is active when both component triggers are active.
      */
-    public LoggedTrigger and(LoggedTrigger trigger)
-    {
+    public LoggedTrigger and(LoggedTrigger trigger) {
         String combinedName = this.name + "_AND_" + trigger.name;
         return new LoggedTrigger(combinedName,
             () -> (this.getAsBoolean() && trigger.getAsBoolean()));
@@ -113,8 +109,7 @@ public class LoggedTrigger extends Trigger {
      * @return The debounced trigger (rising edges debounced only)
      */
     @Override
-    public LoggedTrigger debounce(double seconds)
-    {
+    public LoggedTrigger debounce(double seconds) {
         return debounce(seconds, Debouncer.DebounceType.kRising);
     }
 
@@ -127,8 +122,7 @@ public class LoggedTrigger extends Trigger {
      * @return The debounced trigger.
      */
     @Override
-    public LoggedTrigger debounce(double seconds, Debouncer.DebounceType type)
-    {
+    public LoggedTrigger debounce(double seconds, Debouncer.DebounceType type) {
         return new LoggedTrigger(name, super.debounce(seconds, type));
     }
 }

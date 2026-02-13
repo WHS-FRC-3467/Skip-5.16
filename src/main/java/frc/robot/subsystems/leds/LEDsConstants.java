@@ -58,11 +58,10 @@ public class LEDsConstants {
     /**
      * Factory method to create an LEDs subsystem instance. Creates the appropriate lights IO based
      * on the current robot mode (REAL, SIM, or REPLAY).
-     * 
+     *
      * @return A fully configured LEDs subsystem
      */
-    public static LEDs get()
-    {
+    public static LEDs get() {
         switch (Constants.currentMode) {
             case REAL:
                 return new LEDs(new LightsIOCandle(Ports.lights, CANDLE_CONFIG));
@@ -75,8 +74,7 @@ public class LEDsConstants {
         }
     }
 
-    public record LEDSegment(int startIndex, int endIndex, int animationSlot) {
-    };
+    public record LEDSegment(int startIndex, int endIndex, int animationSlot) {};
 
     // Animations
 

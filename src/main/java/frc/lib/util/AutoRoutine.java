@@ -42,8 +42,7 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      *
      * @param pathNames List of path file names to load
      */
-    public void loadAllPaths(List<String> pathNames)
-    {
+    public void loadAllPaths(List<String> pathNames) {
         // Load paths into a temporary list so we can initialize mirror flags to the
         // same size and keep things consistent even if loading fails.
         List<PathPlannerPath> loaded = pathNames.stream()
@@ -59,8 +58,7 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
         }
     }
 
-    private PathPlannerPath loadPath(String pathName)
-    {
+    private PathPlannerPath loadPath(String pathName) {
         PathPlannerPath path;
         try {
             path = PathPlannerPath.fromPathFile(pathName);
@@ -78,8 +76,7 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      *
      * @param commands Commands to add to the auto routine
      */
-    public void loadCommands(Command... commands)
-    {
+    public void loadCommands(Command... commands) {
         if (!pathPlannerPaths.contains(null)) {
             this.addCommands(commands);
         } else {
@@ -91,11 +88,10 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
     /**
      * Gets all poses from all loaded paths, mirroring from left to right side within an alliance,
      * as necessary.
-     * 
+     *
      * @return List of all path poses, or empty list if any paths failed to load
      */
-    public List<Pose2d> getAllPathPoses()
-    {
+    public List<Pose2d> getAllPathPoses() {
         // If any path failed to load, return an empty list to indicate problem to caller.
         if (pathPlannerPaths.contains(null)) {
             return List.of();
@@ -133,8 +129,7 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      *        RIGHT side autos.
      * @param start the starting side of the field - LEFT, CENTER, or RIGHT.
      */
-    public void setMirrorFlags(List<Boolean> mirrors, StartPosition start)
-    {
+    public void setMirrorFlags(List<Boolean> mirrors, StartPosition start) {
         if (mirrors == null) {
             return;
         }
@@ -166,8 +161,7 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      * @param index path index
      * @param mirror whether to mirror that path
      */
-    public void setShouldMirrorPath(int index, boolean mirror)
-    {
+    public void setShouldMirrorPath(int index, boolean mirror) {
         if (index < 0 || index >= pathPlannerPaths.size()) {
             return;
         }
@@ -185,8 +179,7 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      *
      * @return Starting pose of the first path, or zero pose if paths failed to load
      */
-    public Pose2d getStartingPose()
-    {
+    public Pose2d getStartingPose() {
         if (pathPlannerPaths.contains(null)) {
             return new Pose2d();
         } else {

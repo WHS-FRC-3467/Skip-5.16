@@ -24,8 +24,7 @@ public class GeomUtil {
      * @param translation The translation to create the transform with
      * @return The resulting transform
      */
-    public static Transform2d toTransform2d(Translation2d translation)
-    {
+    public static Transform2d toTransform2d(Translation2d translation) {
         return new Transform2d(translation, Rotation2d.kZero);
     }
 
@@ -36,8 +35,7 @@ public class GeomUtil {
      * @param y The y coordinate of the translation
      * @return The resulting transform
      */
-    public static Transform2d toTransform2d(double x, double y)
-    {
+    public static Transform2d toTransform2d(double x, double y) {
         return new Transform2d(x, y, Rotation2d.kZero);
     }
 
@@ -47,8 +45,7 @@ public class GeomUtil {
      * @param rotation The rotation to create the transform with
      * @return The resulting transform
      */
-    public static Transform2d toTransform2d(Rotation2d rotation)
-    {
+    public static Transform2d toTransform2d(Rotation2d rotation) {
         return new Transform2d(Translation2d.kZero, rotation);
     }
 
@@ -58,8 +55,7 @@ public class GeomUtil {
      * @param pose The pose that will represent the transform
      * @return The resulting transform
      */
-    public static Transform2d toTransform2d(Pose2d pose)
-    {
+    public static Transform2d toTransform2d(Pose2d pose) {
         return new Transform2d(pose.getTranslation(), pose.getRotation());
     }
 
@@ -69,8 +65,7 @@ public class GeomUtil {
      * @param pose The pose to invert
      * @return The inverted pose
      */
-    public static Pose2d inverse(Pose2d pose)
-    {
+    public static Pose2d inverse(Pose2d pose) {
         Rotation2d rotationInverse = pose.getRotation().unaryMinus();
         return new Pose2d(
             pose.getTranslation().unaryMinus().rotateBy(rotationInverse), rotationInverse);
@@ -83,8 +78,7 @@ public class GeomUtil {
      * @param transform The transform that will represent the pose
      * @return The resulting pose
      */
-    public static Pose2d toPose2d(Transform2d transform)
-    {
+    public static Pose2d toPose2d(Transform2d transform) {
         return new Pose2d(transform.getTranslation(), transform.getRotation());
     }
 
@@ -94,8 +88,7 @@ public class GeomUtil {
      * @param translation The translation to create the pose with
      * @return The resulting pose
      */
-    public static Pose2d toPose2d(Translation2d translation)
-    {
+    public static Pose2d toPose2d(Translation2d translation) {
         return new Pose2d(translation, Rotation2d.kZero);
     }
 
@@ -105,8 +98,7 @@ public class GeomUtil {
      * @param rotation The rotation to create the pose with
      * @return The resulting pose
      */
-    public static Pose2d toPose2d(Rotation2d rotation)
-    {
+    public static Pose2d toPose2d(Rotation2d rotation) {
         return new Pose2d(Translation2d.kZero, rotation);
     }
 
@@ -117,8 +109,7 @@ public class GeomUtil {
      * @param factor The scaling factor for the twist components
      * @return The new twist
      */
-    public static Twist2d multiply(Twist2d twist, double factor)
-    {
+    public static Twist2d multiply(Twist2d twist, double factor) {
         return new Twist2d(twist.dx * factor, twist.dy * factor, twist.dtheta * factor);
     }
 
@@ -128,8 +119,7 @@ public class GeomUtil {
      * @param pose The pose that will represent the transform
      * @return The resulting transform
      */
-    public static Transform3d toTransform3d(Pose3d pose)
-    {
+    public static Transform3d toTransform3d(Pose3d pose) {
         return new Transform3d(pose.getTranslation(), pose.getRotation());
     }
 
@@ -140,8 +130,7 @@ public class GeomUtil {
      * @param transform The transform that will represent the pose
      * @return The resulting pose
      */
-    public static Pose3d toPose3d(Transform3d transform)
-    {
+    public static Pose3d toPose3d(Transform3d transform) {
         return new Pose3d(transform.getTranslation(), transform.getRotation());
     }
 
@@ -151,8 +140,7 @@ public class GeomUtil {
      * @param speeds The original translation
      * @return The resulting translation
      */
-    public static Twist2d toTwist2d(ChassisSpeeds speeds)
-    {
+    public static Twist2d toTwist2d(ChassisSpeeds speeds) {
         return new Twist2d(
             speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
     }
@@ -164,8 +152,7 @@ public class GeomUtil {
      * @param translation The new translation to use
      * @return The new pose with the new translation and original rotation
      */
-    public static Pose2d withTranslation(Pose2d pose, Translation2d translation)
-    {
+    public static Pose2d withTranslation(Pose2d pose, Translation2d translation) {
         return new Pose2d(translation, pose.getRotation());
     }
 
@@ -176,8 +163,7 @@ public class GeomUtil {
      * @param rotation The new rotation to use
      * @return The new pose with the original translation and new rotation
      */
-    public static Pose2d withRotation(Pose2d pose, Rotation2d rotation)
-    {
+    public static Pose2d withRotation(Pose2d pose, Rotation2d rotation) {
         return new Pose2d(pose.getTranslation(), rotation);
     }
 }

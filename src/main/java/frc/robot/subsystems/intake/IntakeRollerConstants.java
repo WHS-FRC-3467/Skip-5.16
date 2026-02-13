@@ -64,11 +64,10 @@ public class IntakeRollerConstants {
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the intake roller.
-     * 
+     *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -104,11 +103,10 @@ public class IntakeRollerConstants {
     /**
      * Factory method to create a FlywheelMechanism instance for the intake roller subsystem.
      * Creates the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
-     * 
+     *
      * @return A configured FlywheelMechanism instance
      */
-    public static FlywheelMechanism<?> getMechanism()
-    {
+    public static FlywheelMechanism<?> getMechanism() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

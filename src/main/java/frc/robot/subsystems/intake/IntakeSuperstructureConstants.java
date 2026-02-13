@@ -22,8 +22,7 @@ public class IntakeSuperstructureConstants {
      *
      * @return a configured {@link IntakeSuperstructure} instance
      */
-    public static IntakeSuperstructure get()
-    {
+    public static IntakeSuperstructure get() {
         return new IntakeSuperstructure(
 
             IntakeLinearConstants.getMechanism(),

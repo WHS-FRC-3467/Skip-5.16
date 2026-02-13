@@ -92,8 +92,7 @@ public class RobotContainer {
     /**
      * The container for the robot. Contains subsystems, IO devices, and commands.
      */
-    public RobotContainer()
-    {
+    public RobotContainer() {
 
         drive = DriveConstants.get();
         shooter = ShooterSuperstructureConstants.get();
@@ -176,8 +175,7 @@ public class RobotContainer {
      * Configures button bindings for the Xbox controller. Maps controller inputs to robot commands
      * for teleop control.
      */
-    private void configureButtonBindings()
-    {
+    private void configureButtonBindings() {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(
             DriveCommands.joystickDrive(
@@ -243,26 +241,24 @@ public class RobotContainer {
             .whileTrue(
                 // Shoot while superstructure is at the flywheel and hood setpoints
                 Commands.parallel(
-                        indexer.holdStateUntilInterrupted(Indexer.State.PULL),
-                        tower.holdStateUntilInterrupted(Tower.State.SHOOT),
-                        intakeLinear.cycle(),
-                        Commands.runOnce(() -> drive.stopWithX()))
-                        .onlyWhile(shooter.atHubSetpoints)
-                        .repeatedly()
-            )
+                    indexer.holdStateUntilInterrupted(Indexer.State.PULL),
+                    tower.holdStateUntilInterrupted(Tower.State.SHOOT),
+                    intake.cycle(),
+                    Commands.runOnce(() -> drive.stopWithX()))
+                    .onlyWhile(shooter.atHubSetpoints)
+                    .repeatedly())
             .onFalse(Commands.parallel(
                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                 indexer.setStateCommand(Indexer.State.STOP),
                 tower.setStateCommand(Tower.State.IDLE),
-                intakeLinear.extend()));
+                intake.extendIntake()));
     }
 
     /**
      * Initializes SmartDashboard with test commands and controls for subsystems. Adds commands to
      * the dashboard for manual testing and debugging.
      */
-    private void initializeDashboard()
-    {
+    private void initializeDashboard() {
         SmartDashboard.putData("Indexer/Expel", indexer.setStateCommand(Indexer.State.EXPEL));
         SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
         SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
@@ -312,8 +308,7 @@ public class RobotContainer {
     }
 
     /** Creates and/or binds triggers to LED states */
-    private void configureLEDTriggers()
-    {
+    private void configureLEDTriggers() {
         isAutonomous
             .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_AUTO))
             .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_AUTO));
@@ -329,11 +324,10 @@ public class RobotContainer {
 
     /**
      * Gets the selected autonomous command from the dashboard chooser.
-     * 
+     *
      * @return the autonomous command to run
      */
-    public Command getAutonomousCommand()
-    {
+    public Command getAutonomousCommand() {
         return autoChooser.get();
     }
 
@@ -341,8 +335,7 @@ public class RobotContainer {
      * Checks and displays the robot's starting pose accuracy relative to the selected autonomous
      * path. This function is called periodically by Robot.java when disabled.
      */
-    public void checkStartPose()
-    {
+    public void checkStartPose() {
 
         /* Starting pose checker for auto */
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());

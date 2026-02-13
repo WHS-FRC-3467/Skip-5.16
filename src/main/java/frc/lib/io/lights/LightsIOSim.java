@@ -30,12 +30,10 @@ public class LightsIOSim implements LightsIO {
      * Constructs a {@link LightsIOSim} object.
      *
      */
-    public LightsIOSim()
-    {}
+    public LightsIOSim() {}
 
     @Override
-    public void setAnimation(ControlRequest request)
-    {
+    public void setAnimation(ControlRequest request) {
         this.requestInfo = request.getControlInfo();
         if (requestInfo.containsKey("Slot")) {
             // Logs control request data for each slot

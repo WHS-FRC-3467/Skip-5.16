@@ -25,6 +25,5 @@ public interface LightsIO {
      *
      * @param request {@link ControlRequest}
      */
-    public default void setAnimation(ControlRequest request)
-    {}
+    public default void setAnimation(ControlRequest request) {}
 }

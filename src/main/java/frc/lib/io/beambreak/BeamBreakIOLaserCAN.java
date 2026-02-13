@@ -55,8 +55,7 @@ public class BeamBreakIOLaserCAN implements BeamBreakIO {
      */
     public BeamBreakIOLaserCAN(Device.CAN id, String name, Distance triggerDistance,
         RangingMode rangingMode,
-        RegionOfInterest regionOfInterest, TimingBudget timingBudget)
-    {
+        RegionOfInterest regionOfInterest, TimingBudget timingBudget) {
         this.triggerDistance = triggerDistance;
 
         laserCANOnWrongBusAlert =
@@ -91,8 +90,7 @@ public class BeamBreakIOLaserCAN implements BeamBreakIO {
     }
 
     @Override
-    public void updateInputs(BeamBreakInputs inputs)
-    {
+    public void updateInputs(BeamBreakInputs inputs) {
         Measurement measure = laserCAN.getMeasurement();
 
         if (measure == null) {

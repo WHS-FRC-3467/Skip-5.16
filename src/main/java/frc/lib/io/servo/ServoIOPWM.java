@@ -33,8 +33,7 @@ public class ServoIOPWM implements ServoIO {
     private double minAngle;
     private double maxAngle;
 
-    public ServoIOPWM(Device.PWM id, Angle minAngle, Angle maxAngle)
-    {
+    public ServoIOPWM(Device.PWM id, Angle minAngle, Angle maxAngle) {
         servo = new Servo(id.id());
         this.minAngle = minAngle.in(Degrees);
         this.maxAngle = maxAngle.in(Degrees);
@@ -45,8 +44,7 @@ public class ServoIOPWM implements ServoIO {
      *
      * @param value Position from 0.0 to 1.0, corresponding to the range of full left to full right.
      */
-    public void setScaledPosition(double value)
-    {
+    public void setScaledPosition(double value) {
         servo.set(MathUtil.clamp(value, 0.0, 1.0));
     }
 
@@ -61,8 +59,7 @@ public class ServoIOPWM implements ServoIO {
      *
      * @param degrees The angle in degrees to set the servo.
      */
-    public void setAngle(double degrees)
-    {
+    public void setAngle(double degrees) {
         var servoAngleRange = maxAngle - minAngle;
         servo.set((MathUtil.clamp(degrees, minAngle, maxAngle) - minAngle) / servoAngleRange);
     }
@@ -79,8 +76,7 @@ public class ServoIOPWM implements ServoIO {
      * @param angle The Angle set the servo.
      */
     @Override
-    public void setAngle(Angle angle)
-    {
+    public void setAngle(Angle angle) {
         setAngle(angle.in(Degrees));
     }
 
@@ -88,8 +84,7 @@ public class ServoIOPWM implements ServoIO {
      * Disables the PWM output until told to run to a position again.
      */
     @Override
-    public void stop()
-    {
+    public void stop() {
         servo.setDisabled();
     }
 }

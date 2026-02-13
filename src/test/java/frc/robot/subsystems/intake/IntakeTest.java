@@ -29,8 +29,7 @@ public class IntakeTest {
     IntakeSuperstructure intake;
 
     @BeforeEach // this method will run before each test
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
         intake = IntakeSuperstructureConstants.get();
@@ -44,8 +43,7 @@ public class IntakeTest {
     }
 
     @AfterEach // this method will run after each test
-    void shutdown()
-    {
+    void shutdown() {
         try {
             intake.close();
         } catch (Exception e) {
@@ -54,8 +52,7 @@ public class IntakeTest {
     }
 
     @Test // marks this method as a test
-    void intake()
-    {
+    void intake() {
         TestUtil.runTest(
             intake.extendIntake(),
             2,

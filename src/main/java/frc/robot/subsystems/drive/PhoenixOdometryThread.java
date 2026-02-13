@@ -57,23 +57,20 @@ public class PhoenixOdometryThread extends Thread {
      *
      * @return The PhoenixOdometryThread instance
      */
-    public static PhoenixOdometryThread getInstance()
-    {
+    public static PhoenixOdometryThread getInstance() {
         if (instance == null) {
             instance = new PhoenixOdometryThread();
         }
         return instance;
     }
 
-    private PhoenixOdometryThread()
-    {
+    private PhoenixOdometryThread() {
         setName("PhoenixOdometryThread");
         setDaemon(true);
     }
 
     @Override
-    public synchronized void start()
-    {
+    public synchronized void start() {
         if (timestampQueues.size() > 0) {
             super.start();
         }
@@ -85,8 +82,7 @@ public class PhoenixOdometryThread extends Thread {
      * @param signal Phoenix status signal to register
      * @return Queue that will receive sampled values from the signal
      */
-    public Queue<Double> registerSignal(StatusSignal<Angle> signal)
-    {
+    public Queue<Double> registerSignal(StatusSignal<Angle> signal) {
         Queue<Double> queue = new ArrayBlockingQueue<>(20);
         signalsLock.lock();
         Drive.odometryLock.lock();
@@ -109,8 +105,7 @@ public class PhoenixOdometryThread extends Thread {
      * @param signal DoubleSupplier providing signal values
      * @return Queue that will receive sampled values from the signal
      */
-    public Queue<Double> registerSignal(DoubleSupplier signal)
-    {
+    public Queue<Double> registerSignal(DoubleSupplier signal) {
         Queue<Double> queue = new ArrayBlockingQueue<>(20);
         signalsLock.lock();
         Drive.odometryLock.lock();
@@ -129,8 +124,7 @@ public class PhoenixOdometryThread extends Thread {
      *
      * @return Queue that will receive timestamp values in seconds
      */
-    public Queue<Double> makeTimestampQueue()
-    {
+    public Queue<Double> makeTimestampQueue() {
         Queue<Double> queue = new ArrayBlockingQueue<>(20);
         Drive.odometryLock.lock();
         try {
@@ -143,8 +137,7 @@ public class PhoenixOdometryThread extends Thread {
 
     @Override
     @SuppressWarnings("CatchAndPrintStackTrace")
-    public void run()
-    {
+    public void run() {
         while (true) {
             // Wait for updates from all signals
             signalsLock.lock();
