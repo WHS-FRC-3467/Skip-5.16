@@ -20,16 +20,16 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
  *
  * <p>
  * Example usage:
- * 
+ *
  * <pre>{@code
  * // Create a tunable current with default of 30 Amps - no casting needed!
  * LoggedTunableMeasure<Current> intakeCurrent =
  *     new LoggedTunableMeasure<>("Intake/Current", Amps, 30.0);
- * 
+ *
  * // Use it in code - returns Current measure automatically
  * motor.runCurrent(intakeCurrent.get());
  * }</pre>
- * 
+ *
  * @param <M> The measure type (e.g., Current, Distance, Voltage)
  */
 @SuppressWarnings("UnusedVariable")
@@ -49,8 +49,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      * @param dashboardKey Key on dashboard
      * @param unit The unit of measure (e.g., Units.Amps, Units.Meters)
      */
-    public LoggedTunableMeasure(String dashboardKey, Unit unit)
-    {
+    public LoggedTunableMeasure(String dashboardKey, Unit unit) {
         this.key = tableKey + "/" + dashboardKey + " " + unit.name();
         this.unit = unit;
     }
@@ -62,8 +61,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      * @param unit The unit of measure (e.g., Units.Amps, Units.Meters)
      * @param defaultMagnitude Default magnitude value
      */
-    public LoggedTunableMeasure(String dashboardKey, Unit unit, double defaultMagnitude)
-    {
+    public LoggedTunableMeasure(String dashboardKey, Unit unit, double defaultMagnitude) {
         this(dashboardKey, unit);
         initDefault(defaultMagnitude);
     }
@@ -73,8 +71,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      *
      * @param defaultMagnitude The default magnitude value
      */
-    public void initDefault(double defaultMagnitude)
-    {
+    public void initDefault(double defaultMagnitude) {
         if (!hasDefault) {
             hasDefault = true;
             this.defaultMagnitude = defaultMagnitude;
@@ -91,8 +88,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public M get()
-    {
+    public M get() {
         if (!hasDefault) {
             return (M) unit.of(0.0);
         } else {
@@ -107,8 +103,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      *
      * @return The current magnitude value
      */
-    public double getMagnitude()
-    {
+    public double getMagnitude() {
         if (!hasDefault) {
             return 0.0;
         } else {
@@ -121,8 +116,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      *
      * @return The unit
      */
-    public Unit getUnit()
-    {
+    public Unit getUnit() {
         return unit;
     }
 
@@ -134,8 +128,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      * @return True if the measure has changed since the last time this method was called, false
      *         otherwise.
      */
-    public boolean hasChanged(int id)
-    {
+    public boolean hasChanged(int id) {
         double currentValue = getMagnitude();
         Double lastValue = lastHasChangedValues.get(id);
         if (lastValue == null || currentValue != lastValue) {
@@ -156,8 +149,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      * @param tunableMeasures All tunable measures to check
      */
     public static void ifChanged(
-        int id, Consumer<Measure<?>[]> action, LoggedTunableMeasure<?>... tunableMeasures)
-    {
+        int id, Consumer<Measure<?>[]> action, LoggedTunableMeasure<?>... tunableMeasures) {
         if (Arrays.stream(tunableMeasures)
             .anyMatch(tunableMeasure -> tunableMeasure.hasChanged(id))) {
             action.accept(
@@ -175,8 +167,7 @@ public class LoggedTunableMeasure<M> implements Supplier<M> {
      * @param tunableMeasures All tunable measures to check
      */
     public static void ifChanged(int id, Runnable action,
-        LoggedTunableMeasure<?>... tunableMeasures)
-    {
+        LoggedTunableMeasure<?>... tunableMeasures) {
         ifChanged(id, values -> action.run(), tunableMeasures);
     }
 }

@@ -123,10 +123,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private final LoggedTunableBoolean tuningMode =
         new LoggedTunableBoolean(getName() + "/Tuning/Enable", false);
-    private final LoggedTunableMeasure<AngularVelocity> tuningFlywheelSpeedRPS =
-        new LoggedTunableMeasure<>(getName() + "/Tuning/FlywheelSpeedRPS", RotationsPerSecond, 0.0);
-    private final LoggedTunableMeasure<Angle> tuningHoodAngleDegrees =
-        new LoggedTunableMeasure<>(getName() + "/Tuning/HoodAngleDegrees", Degrees, 0.0);
+    private final LoggedTunableMeasure<AngularVelocity> tuningFlywheelSpeed =
+        new LoggedTunableMeasure<>(getName() + "/Tuning/FlywheelSpeed", RotationsPerSecond, 0.0);
+    private final LoggedTunableMeasure<Angle> tuningHoodAngle =
+        new LoggedTunableMeasure<>(getName() + "/Tuning/HoodAngle", Degrees, 0.0);
 
     /**
      * Constructs a new ShooterSuperstructure subsystem with the specified hood and flywheel
@@ -308,10 +308,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public void periodic() {
         if (tuningMode.get()) {
             if (tuningMode.hasChanged(hashCode())
-                || tuningFlywheelSpeedRPS.hasChanged(hashCode())
-                || tuningHoodAngleDegrees.hasChanged(hashCode())) {
-                spinFlywheel(tuningFlywheelSpeedRPS.get());
-                setHoodPosition(tuningHoodAngleDegrees.get());
+                || tuningFlywheelSpeed.hasChanged(hashCode())
+                || tuningHoodAngle.hasChanged(hashCode())) {
+                spinFlywheel(tuningFlywheelSpeed.get());
+                setHoodPosition(tuningHoodAngle.get());
             }
 
             Logger.recordOutput(getName() + "/Tuning/DistanceToTargetMeters",
