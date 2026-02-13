@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.intakeRoller;
+package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -128,15 +128,5 @@ public class IntakeRollerConstants {
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
-    }
-
-    /**
-     * Factory method to create an IntakeRoller subsystem instance.
-     * 
-     * @return A fully configured IntakeRoller subsystem
-     */
-    public static IntakeRoller get()
-    {
-        return new IntakeRoller(getMechanism());
     }
 }

@@ -24,9 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
-import frc.robot.subsystems.intakeRoller.IntakeRoller.State;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 
@@ -80,7 +78,7 @@ public class AutoSegments {
      *        end pose
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
-    public static Command makeFullShot(Drive drive, IntakeLinear intakeLinear, Indexer indexer,
+    public static Command makeFullShot(Drive drive, IntakeSuperstructure intake, Indexer indexer,
         Tower tower, ShooterSuperstructure shooter, PathPlannerPath path)
     {
         return Commands.sequence(
@@ -89,7 +87,7 @@ public class AutoSegments {
                 AutoCommands.prepareHubShot(path, shooter)),
             new ParallelDeadlineGroup(
                 AutoCommands.shootFuel(indexer, tower, shooter, () -> true, 5.0), // ~ 10 bps
-                AutoCommands.agitateHopper(intakeLinear, tower, indexer, HopperAgitation.NONE)));
+                AutoCommands.agitateHopper(intake, tower, indexer, HopperAgitation.NONE)));
     }
 
     /**
@@ -97,41 +95,19 @@ public class AutoSegments {
      * running. Once the intaking path is complete, stop the intake. This AutoSegment only linearly
      * actuates the intake while the robot is stationary. Non-blocking command.
      * 
-     * @param intakeLinear The IntakeLinear subsystem
-     * @param intakeRoller The IntakeRoller subsystem
+     * @param intake Intake subsystem
      * @param pathCommand The command that follows the desired path
      * @param afterPathWait The time to wait after the intaking path is complete before stopping the
      *        intake
      */
-    public static Command driveAndIntake(IntakeLinear intakeLinear,
-        IntakeRoller intakeRoller, Command pathCommand,
+    public static Command driveAndIntake(IntakeSuperstructure intake, Command pathCommand,
         Time afterPathWait)
     {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
-            new ParallelDeadlineGroup(
-                pathCommand,
-                intakeLinear.extend(),
-                intakeRoller.holdStateUntilInterrupted(IntakeRoller.State.INTAKE)),
+            pathCommand.deadlineFor(intake.extendIntake()),
             Commands.waitSeconds(afterPathWait.in(Seconds)),
-            // Spin down intake
-            intakeLinear.retract(),
-            intakeRoller.stop());
-    }
-
-    /**
-     * A non-blocking command that initializes the intake by stopping the rollers and retracting the
-     * linear stage. Timeout after 1.5s.
-     * 
-     * @param intakeLinear the linear intake subsystem
-     * @param intakeRoller the roller intake subsystem
-     * @return a command that initializes the intake.
-     */
-    public static Command initializeIntake(IntakeLinear intakeLinear, IntakeRoller intakeRoller)
-    {
-        return Commands.sequence(
-            intakeRoller.setStateCommand(State.STOP),
-            AutoCommands.retractIntake(intakeLinear));
+            intake.retractIntake());
     }
 }

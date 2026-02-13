@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.intakeLinear;
+package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
@@ -140,15 +140,5 @@ public class IntakeLinearConstants {
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
-    }
-
-    /**
-     * Factory method to create an IntakeLinear subsystem instance.
-     * 
-     * @return A fully configured IntakeLinear subsystem
-     */
-    public static IntakeLinear get()
-    {
-        return new IntakeLinear(getMechanism());
     }
 }
