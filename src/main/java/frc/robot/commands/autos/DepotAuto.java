@@ -72,7 +72,7 @@ public class DepotAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                intake.retractIntake(),
+                intake.retractIntake().withTimeout(1.25),
                 // Take preload shot
                 AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
@@ -85,7 +85,7 @@ public class DepotAuto extends AutoRoutine {
                 AutoCommands.makeFullShot(drive, intake, indexer, tower, shooter,
                     pathPlannerPaths.get(3)),
                 // Re-initialize intake for tele-op
-                intake.retractIntake());
+                intake.retractIntake().withTimeout(1.25));
         }
     }
 }

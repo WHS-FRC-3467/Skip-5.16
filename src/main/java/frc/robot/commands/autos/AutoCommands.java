@@ -170,9 +170,9 @@ public class AutoCommands {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
-            intake.extendIntake(),
+            intake.extendIntake().withTimeout(1.25),
             pathCommand,
             Commands.waitSeconds(afterPathWait.in(Seconds)),
-            intake.retractIntake());
+            intake.retractIntake().withTimeout(1.25));
     }
 }

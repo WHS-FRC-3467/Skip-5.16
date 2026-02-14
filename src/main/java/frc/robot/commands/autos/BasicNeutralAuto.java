@@ -64,7 +64,7 @@ public class BasicNeutralAuto extends AutoRoutine {
                     ? AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0))
                     : AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0).mirrorPath()),
                 // Initialize intake to starting position
-                intake.retractIntake(),
+                intake.retractIntake().withTimeout(1.25),
                 // Drive to the neutral zone
                 start == StartPosition.LEFT ? AutoBuilder.followPath(pathPlannerPaths.get(0))
                     : AutoBuilder.followPath(pathPlannerPaths.get(0).mirrorPath()),
@@ -78,7 +78,7 @@ public class BasicNeutralAuto extends AutoRoutine {
                     start == StartPosition.LEFT ? pathPlannerPaths.get(2)
                         : pathPlannerPaths.get(2).mirrorPath()),
                 // Re-initialize intake for depot / outpost run
-                intake.retractIntake(),
+                intake.retractIntake().withTimeout(1.25),
                 // Run to depot / outpost
                 AutoBuilder.followPath(pathPlannerPaths.get(3)),
                 // Sweep through depot while intaking OR wait for FUEL to be dumped
@@ -98,6 +98,6 @@ public class BasicNeutralAuto extends AutoRoutine {
                     : AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                         pathPlannerPaths.get(4)),
                 // Re-initialize intake for tele-op
-                intake.retractIntake());
+                intake.retractIntake().withTimeout(1.25));
     }
 }

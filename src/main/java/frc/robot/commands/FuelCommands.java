@@ -50,7 +50,7 @@ public class FuelCommands {
      * the shooter, only pulls fuel through the feeder when ready (i.e. proper shooter state +
      * alignment), then stops indexer and tower after duration. Shooter remains spun-up. If shooting
      * is disrupted during duration because shooting readiness drops, attempt a flywheel/hood
-     * adjustment and, if successful, re-commence shooting within the remaining window. ALignment
+     * adjustment and, if successful, re-commence shooting within the remaining window. Alignment
      * correction must be handled by external means. Unconditionally stops shot attempts after
      * duration.
      *
@@ -58,7 +58,7 @@ public class FuelCommands {
      * @param tower the tower subsystem
      * @param shooter the shooter superstructure
      * @param canShoot secondary check on whether the robot is properly aligned to the target,
-     *        independent of whether the the shooter is at the proper state
+     *        independent of whether the shooter is at the proper state
      * @param duration the approximate duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer / tower after the given
      *         duration
