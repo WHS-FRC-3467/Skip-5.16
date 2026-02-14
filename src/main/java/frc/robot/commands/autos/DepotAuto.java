@@ -44,8 +44,7 @@ public class DepotAuto extends AutoRoutine {
      */
     public DepotAuto(Drive drive, IntakeSuperstructure intake, Indexer indexer,
         Tower tower,
-        ShooterSuperstructure shooter, StartPosition start)
-    {
+        ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
@@ -73,20 +72,20 @@ public class DepotAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                AutoCommands.initializeIntake(intake),
+                intake.retractIntake().withTimeout(1.25),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
                 // Drive to depot
                 AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                // Pre-deploy intake before driving through depot
-                intake.extendIntake(),
                 // Run through depot while intaking FUEL
-                AutoSegments.driveAndIntake(intake,
+                AutoCommands.driveAndIntake(intake,
                     AutoBuilder.followPath(pathPlannerPaths.get(2)), Seconds.of(0.5)),
                 // Drive to shooting location and shoot all FUEL
-                AutoSegments.makeFullShot(drive, intake, indexer, tower, shooter,
-                    pathPlannerPaths.get(3)));
+                AutoCommands.makeFullShot(drive, intake, indexer, tower, shooter,
+                    pathPlannerPaths.get(3)),
+                // Re-initialize intake for tele-op
+                intake.retractIntake().withTimeout(1.25));
         }
     }
 }

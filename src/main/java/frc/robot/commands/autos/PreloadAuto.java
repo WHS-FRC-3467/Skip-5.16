@@ -31,8 +31,7 @@ public class PreloadAuto extends AutoRoutine {
 
     public PreloadAuto(Drive drive, IntakeSuperstructure intake,
         Indexer indexer, Tower tower,
-        ShooterSuperstructure shooter, StartPosition start)
-    {
+        ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
@@ -57,9 +56,9 @@ public class PreloadAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                AutoCommands.initializeIntake(intake),
+                intake.retractIntake(),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)));
     }
 }
