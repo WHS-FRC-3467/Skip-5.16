@@ -54,7 +54,7 @@ public class TowerTest {
     @Test // marks this method as a test
     void shoot() {
         TestUtil.runTest(
-            tower.setStateCommand(Tower.State.SHOOT),
+            tower.shoot(),
             2,
             tower);
         try {
@@ -68,7 +68,7 @@ public class TowerTest {
     @Test // marks this method as a test
     void idle() {
         TestUtil.runTest(
-            tower.setStateCommand(Tower.State.IDLE),
+            tower.feed(),
             2,
             tower);
         try {
@@ -82,7 +82,7 @@ public class TowerTest {
     @Test
     void stop() {
         TestUtil.runTest(
-            tower.setStateCommand(Tower.State.STOP),
+            tower.stop(),
             2,
             tower);
         try {

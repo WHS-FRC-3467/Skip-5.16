@@ -9,20 +9,15 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableNumber;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Subsystem that controls the indexer mechanism for moving game pieces within the robot. The
@@ -32,22 +27,16 @@ import lombok.RequiredArgsConstructor;
 public class Indexer extends SubsystemBase {
     private final FlywheelMechanism<?> io;
 
-    private State state = State.STOP;
+    private static final LoggedTunableNumber SHOOT_RPS =
+        new LoggedTunableNumber(IndexerConstants.NAME + "/ShootRPS",
+            IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
-    private static final LoggedTunableNumber IDLE_FRACTION =
-        new LoggedTunableNumber("Indexer/IdleFraction", 0.15);
+    private static final LoggedTunableNumber Eject_RPS =
+        new LoggedTunableNumber(IndexerConstants.NAME + "/EjectRPS", -0.5);
 
-    @RequiredArgsConstructor
-    @SuppressWarnings("Immutable")
-    @Getter
-    public enum State {
-        STOP(() -> RotationsPerSecond.zero()),
-        PULL(() -> IndexerConstants.MAX_VELOCITY),
-        IDLE(() -> IndexerConstants.MAX_VELOCITY.times(IDLE_FRACTION.getAsDouble())),
-        EXPEL(() -> IndexerConstants.MAX_VELOCITY.times(-1.0));
-
-        private final Supplier<AngularVelocity> stateVelocity;
-    }
+    private static final LoggedTunableNumber FEED_RPS =
+        new LoggedTunableNumber(IndexerConstants.NAME + "/FeedRPS",
+            IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     /**
      * Constructs an Indexer subsystem.
@@ -60,42 +49,56 @@ public class Indexer extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Logger.recordOutput("Indexer/State", this.state.name());
         io.periodic();
     }
 
-    private void setState(State state) {
-        this.state = state;
-        io.runVelocity(state.stateVelocity.get(),
-            IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+    private void runVelocity(AngularVelocity velocity) {
+        io.runVelocity(velocity, IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
     /**
-     * Sets the subsystem's state
+     * Creates a command to stop the indexer by applying brake mode.
      *
-     * In a sequence, this command is non-blocking (finishes instantly), but still requires the
-     * subsystem (you cannot set the subsystem's state twice in a {@link ParallelCommandGroup}))
-     *
-     * @param state The state to hold
-     * @return The command sequence
+     * @return a command that stops the indexer
      */
-    public Command setStateCommand(State state) {
-        return this.runOnce(() -> setState(state))
-            .withName(state.name());
+    public Command stop() {
+        return Commands.runOnce(() -> io.runBrake());
     }
 
     /**
-     * Holds a state until the command is interrupted. Once the command is interrupted, its state
-     * will automatically be set to {@link State#STOP}
+     * Creates a command to run the indexer at shooting velocity. The indexer will stop when the
+     * command is interrupted or cancelled.
      *
-     * In a sequence, this command is blocking and requires this subsystem
-     *
-     * @param state The state to hold
-     * @return The command sequence
+     * @return a command that runs the indexer at shooting speed
      */
-    public Command holdStateUntilInterrupted(State state) {
-        return this.startEnd(() -> setState(state), () -> setState(State.STOP))
-            .withName(state.name() + " Until Interrupted");
+    public Command shoot() {
+        return Commands.startEnd(
+            () -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get())),
+            () -> stop());
+    }
+
+    /**
+     * Creates a command to run the indexer at feeding velocity to move game pieces through the
+     * robot. The indexer will stop when the command is interrupted or cancelled.
+     *
+     * @return a command that runs the indexer at feeding speed
+     */
+    public Command feed() {
+        return Commands.startEnd(
+            () -> runVelocity(RotationsPerSecond.of(FEED_RPS.get())),
+            () -> stop());
+    }
+
+    /**
+     * Creates a command to run the indexer in reverse to eject game pieces. The indexer will stop
+     * when the command is interrupted or cancelled.
+     *
+     * @return a command that runs the indexer in reverse
+     */
+    public Command eject() {
+        return Commands.startEnd(
+            () -> runVelocity(RotationsPerSecond.of(Eject_RPS.get())),
+            () -> stop());
     }
 
     /**
@@ -104,17 +107,7 @@ public class Indexer extends SubsystemBase {
      * @return true if the indexer is within tolerance of the setpoint, false otherwise
      */
     public boolean nearSetpoint() {
-        return MathUtil.isNear(
-            state.stateVelocity.get().in(RotationsPerSecond),
-            io.getVelocity().in(RotationsPerSecond),
-            IndexerConstants.TOLERANCE.in(RotationsPerSecond));
-    }
-
-    /**
-     * Closes the indexer mechanism and releases resources.
-     */
-    public void close() {
-        io.close();
+        return io.getVelocityError().lte(IndexerConstants.TOLERANCE);
     }
 
     /**
@@ -132,7 +125,7 @@ public class Indexer extends SubsystemBase {
      * @return The velocity in rotations per second multiplied by the radius
      */
     public double getLinearVelocity() {
-        return io.getVelocity().in(RadiansPerSecond) 
+        return io.getVelocity().in(RadiansPerSecond)
             * IndexerConstants.RADIUS.in(Meters);
     }
 
@@ -150,7 +143,7 @@ public class Indexer extends SubsystemBase {
      * @return The Position in radians multiplied by 2_PIr
      */
     public double getLinearPosition() {
-        return io.getPosition().in(Radians) 
+        return io.getPosition().in(Radians)
             * (2 * Math.PI * IndexerConstants.RADIUS.in(Meters));
     }
 
@@ -159,7 +152,15 @@ public class Indexer extends SubsystemBase {
      */
     public void setLinearPosition(Distance position) {
         io.runPosition(Radians.of(
-            position.in(Meters) 
-                / IndexerConstants.RADIUS.in(Meters)), PIDSlot.SLOT_0);
+            position.in(Meters)
+                / IndexerConstants.RADIUS.in(Meters)),
+            PIDSlot.SLOT_0);
+    }
+
+    /**
+     * Closes the indexer mechanism and releases resources.
+     */
+    public void close() {
+        io.close();
     }
 }

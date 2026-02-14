@@ -86,8 +86,8 @@ public class AutoCommands {
                     // Repeat shot attempts until duration timeout
                     Commands.waitUntil(shooter.readyToShoot.and(canShoot)),
                     Commands.parallel(
-                        indexer.holdStateUntilInterrupted(Indexer.State.PULL),
-                        tower.holdStateUntilInterrupted(Tower.State.SHOOT))
+                        indexer.shoot(),
+                        tower.shoot())
                         .until(shooter.readyToShoot.and(canShoot).negate()))))
             .finallyDo(() -> {
                 // Spin shooter down, non-blocking
@@ -159,22 +159,7 @@ public class AutoCommands {
      */
     public static Command agitateHopper(IntakeSuperstructure intake, Tower tower, Indexer indexer,
         HopperAgitation state) {
-        switch (state) {
-            case INTAKE_CYCLE:
-                return intake.cycle();
-            case TOWER_PULSE:
-                return Commands.repeatingSequence(
-                    tower.holdStateUntilInterrupted(Tower.State.SHOOT).withTimeout(0.1),
-                    tower.holdStateUntilInterrupted(Tower.State.STOP).withTimeout(0.05));
-            case INDEXER_PULSE:
-                return Commands.repeatingSequence(
-                    indexer.holdStateUntilInterrupted(Indexer.State.PULL).withTimeout(0.1),
-                    indexer.holdStateUntilInterrupted(Indexer.State.STOP).withTimeout(0.05));
-            case NONE:
-                return Commands.none();
-            default:
-                return Commands.none();
-        }
+        return intake.cycle();
     }
 
     /**

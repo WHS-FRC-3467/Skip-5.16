@@ -37,8 +37,8 @@ public class FuelCommands {
      */
     public static Command stageFuel(Indexer indexer, Tower tower) {
         return Commands.parallel(
-            indexer.holdStateUntilInterrupted(Indexer.State.IDLE),
-            tower.holdStateUntilInterrupted(Tower.State.IDLE))
+            indexer.feed(),
+            tower.feed())
             .until(tower.isStaged())
             .withName("StageFuel");
     }

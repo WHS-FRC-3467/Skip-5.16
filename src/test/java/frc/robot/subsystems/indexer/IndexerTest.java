@@ -54,7 +54,7 @@ public class IndexerTest {
     @Test // marks this method as a test
     void index() {
         TestUtil.runTest(
-            indexer.setStateCommand(Indexer.State.PULL),
+            indexer.shoot(),
             5,
             indexer);
         try {
@@ -68,7 +68,7 @@ public class IndexerTest {
     @Test
     void stop() {
         TestUtil.runTest(
-            indexer.setStateCommand(Indexer.State.STOP),
+            indexer.stop(),
             2,
             indexer);
         try {
