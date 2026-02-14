@@ -54,7 +54,7 @@ public class TowerTest {
     @Test // marks this method as a test
     void shoot() {
         TestUtil.runTest(
-            tower.setStateCommand(Tower.State.SHOOT),
+            tower.shoot(),
             2,
             tower);
         try {
@@ -66,9 +66,9 @@ public class TowerTest {
     }
 
     @Test // marks this method as a test
-    void idle() {
+    void feed() {
         TestUtil.runTest(
-            tower.setStateCommand(Tower.State.IDLE),
+            tower.feed(),
             2,
             tower);
         try {
@@ -82,13 +82,13 @@ public class TowerTest {
     @Test
     void stop() {
         TestUtil.runTest(
-            tower.setStateCommand(Tower.State.STOP),
+            tower.stopCommand(),
             2,
             tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
-            assertTrue(tower.nearSetpoint());
+            assertTrue(tower.getSpeed() < 0.1);
         } catch (Exception e) {
             fail("Failed to stop indexer: " + e.getMessage());
         }

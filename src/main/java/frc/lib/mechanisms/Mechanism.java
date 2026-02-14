@@ -239,6 +239,15 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
+     * Gets the error between the target position and current position of the motor.
+     *
+     * @return The position error in angle units
+     */
+    public Angle getPositionError() {
+        return inputs.positionError;
+    }
+
+    /**
      * Gets the torque-producing current of the mechanism.
      *
      * @return The torque current
@@ -254,6 +263,15 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public AngularVelocity getVelocity() {
         return inputs.velocity;
+    }
+
+    /**
+     * Gets the error between the target velocity and current velocity of the motor.
+     *
+     * @return The velocity error in angular velocity units
+     */
+    public AngularVelocity getVelocityError() {
+        return inputs.velocityError;
     }
 
     /**

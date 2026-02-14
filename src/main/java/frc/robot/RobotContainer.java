@@ -183,15 +183,15 @@ public class RobotContainer {
                     // and drivetrain is aiming towards the target,
                     // shoot
                     Commands.parallel(
-                        indexer.holdStateUntilInterrupted(Indexer.State.PULL),
-                        tower.holdStateUntilInterrupted(Tower.State.SHOOT),
+                        indexer.shoot(),
+                        tower.shoot(),
                         intake.cycle())
                         .onlyWhile(robotState.facingTarget)
                         .repeatedly())))
             .onFalse(Commands.parallel(
                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
-                indexer.setStateCommand(Indexer.State.STOP),
-                tower.setStateCommand(Tower.State.IDLE),
+                indexer.stopCommand(),
+                tower.stopCommand(),
                 intake.extendLinear()));
 
         // Left Trigger: Intake
@@ -214,8 +214,8 @@ public class RobotContainer {
         // D-Pad Down: Unjam
         controller.povDown().whileTrue(Commands.parallel(
             intake.ejectRoller(),
-            indexer.holdStateUntilInterrupted(Indexer.State.EXPEL),
-            tower.holdStateUntilInterrupted(Tower.State.EJECT)));
+            indexer.eject(),
+            tower.eject()));
 
         // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
         controller.povRight()
@@ -229,16 +229,16 @@ public class RobotContainer {
             .whileTrue(
                 // Shoot while superstructure is at the flywheel and hood setpoints
                 Commands.parallel(
-                    indexer.holdStateUntilInterrupted(Indexer.State.PULL),
-                    tower.holdStateUntilInterrupted(Tower.State.SHOOT),
+                    indexer.shoot(),
+                    tower.shoot(),
                     intake.cycle(),
                     Commands.runOnce(() -> drive.stopWithX()))
                     .onlyWhile(shooter.atHubSetpoints)
                     .repeatedly())
             .onFalse(Commands.parallel(
                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
-                indexer.setStateCommand(Indexer.State.STOP),
-                tower.setStateCommand(Tower.State.IDLE),
+                indexer.stopCommand(),
+                tower.stopCommand(),
                 intake.extendIntake()));
     }
 
@@ -247,9 +247,9 @@ public class RobotContainer {
      * the dashboard for manual testing and debugging.
      */
     private void initializeDashboard() {
-        SmartDashboard.putData("Indexer/Expel", indexer.setStateCommand(Indexer.State.EXPEL));
-        SmartDashboard.putData("Indexer/Intake", indexer.setStateCommand(Indexer.State.PULL));
-        SmartDashboard.putData("Indexer/Stop", indexer.setStateCommand(Indexer.State.STOP));
+        SmartDashboard.putData("Indexer/Expel", indexer.eject());
+        SmartDashboard.putData("Indexer/Feed", indexer.feed());
+        SmartDashboard.putData("Indexer/Stop", indexer.stopCommand());
 
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendLinear());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
@@ -265,7 +265,7 @@ public class RobotContainer {
         SmartDashboard.putData("Intake Linear/Cycle", intake.cycle());
         SmartDashboard.putData("Intake Linear/Coast", intake.linearCoast());
         SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
-        SmartDashboard.putData("Run Indexer", indexer.setStateCommand(Indexer.State.PULL));
+        SmartDashboard.putData("Indexer/Shoot", indexer.shoot());
         SmartDashboard.putData("Face Target",
             DriveCommands.joystickDriveFacingTarget(
                 drive,
