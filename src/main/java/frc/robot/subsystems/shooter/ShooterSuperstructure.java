@@ -290,8 +290,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Commands.sequence(
             Commands.parallel(
                 spinUpShooter(),
-                // Require this subsystem
-                Commands.idle(this),
                 Commands.repeatingSequence(
                     Commands.waitUntil(readyToShoot),
                     whileAtPosition.until(readyToShoot.negate()))));
