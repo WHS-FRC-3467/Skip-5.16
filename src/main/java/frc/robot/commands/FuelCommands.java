@@ -39,7 +39,7 @@ public class FuelCommands {
         return Commands.parallel(
             indexer.feed(),
             tower.feed())
-            .until(tower.isStaged())
+            .until(tower.isStaged)
             .withName("StageFuel");
     }
 }

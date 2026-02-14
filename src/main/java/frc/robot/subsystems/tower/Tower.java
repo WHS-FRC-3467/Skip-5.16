@@ -87,17 +87,6 @@ public class Tower extends SubsystemBase {
         return io.getVelocityError().lte(TowerConstants.TOLERANCE);
     }
 
-    /**
-     * Determines whether FUEL is fully staged in the tower. Fully staged FUEL likely represents a
-     * full hopper.
-     *
-     * @return BooleanSupplier for use in commands indicating whether FUEL is fully staged in the
-     *         tower.
-     */
-    public BooleanSupplier isStaged() {
-        return laserCAN1Tripped.or(laserCAN2Tripped);
-    }
-
     private void runVelocity(AngularVelocity velocity) {
         io.runVelocity(velocity, TowerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
