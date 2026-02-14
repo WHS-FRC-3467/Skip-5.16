@@ -68,7 +68,7 @@ public class IndexerTest {
     @Test
     void stop() {
         TestUtil.runTest(
-            indexer.stop(),
+            indexer.stopCommand(),
             2,
             indexer);
         try {

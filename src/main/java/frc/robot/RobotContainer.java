@@ -202,8 +202,8 @@ public class RobotContainer {
                         .repeatedly())))
             .onFalse(Commands.parallel(
                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
-                indexer.stop(),
-                tower.stop(),
+                indexer.stopCommand(),
+                tower.stopCommand(),
                 intake.extendLinear()));
 
         // Left Trigger: Intake
@@ -249,8 +249,8 @@ public class RobotContainer {
                     .repeatedly())
             .onFalse(Commands.parallel(
                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
-                indexer.stop(),
-                tower.stop(),
+                indexer.stopCommand(),
+                tower.stopCommand(),
                 intake.extendIntake()));
     }
 
@@ -261,7 +261,7 @@ public class RobotContainer {
     private void initializeDashboard() {
         SmartDashboard.putData("Indexer/Expel", indexer.eject());
         SmartDashboard.putData("Indexer/Intake", indexer.feed());
-        SmartDashboard.putData("Indexer/Stop", indexer.stop());
+        SmartDashboard.putData("Indexer/Stop", indexer.stopCommand());
 
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendLinear());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());

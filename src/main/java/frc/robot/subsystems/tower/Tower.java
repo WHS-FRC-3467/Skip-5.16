@@ -143,8 +143,12 @@ public class Tower extends SubsystemBase {
      *
      * @return a command that stops the tower
      */
-    public Command stop() {
-        return Commands.runOnce(() -> io.runBrake());
+    public Command stopCommand() {
+        return Commands.runOnce(() -> io.runBrake(), this);
+    }
+
+    private void stop() {
+        io.runBrake();
     }
 
     /**

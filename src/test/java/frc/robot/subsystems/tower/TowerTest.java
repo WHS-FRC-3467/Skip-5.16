@@ -82,7 +82,7 @@ public class TowerTest {
     @Test
     void stop() {
         TestUtil.runTest(
-            tower.stop(),
+            tower.stopCommand(),
             2,
             tower);
         try {

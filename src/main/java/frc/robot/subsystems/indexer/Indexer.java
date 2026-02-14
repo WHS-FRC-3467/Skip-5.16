@@ -61,8 +61,12 @@ public class Indexer extends SubsystemBase {
      *
      * @return a command that stops the indexer
      */
-    public Command stop() {
-        return Commands.runOnce(() -> io.runBrake());
+    public Command stopCommand() {
+        return Commands.runOnce(() -> io.runBrake(), this);
+    }
+
+    private void stop() {
+        io.runBrake();
     }
 
     /**
@@ -72,7 +76,7 @@ public class Indexer extends SubsystemBase {
      * @return a command that runs the indexer at shooting speed
      */
     public Command shoot() {
-        return Commands.startEnd(
+        return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get())),
             () -> stop());
     }
