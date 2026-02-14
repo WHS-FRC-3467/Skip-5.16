@@ -14,15 +14,17 @@
  */
 package frc.robot.commands;
 
+import java.util.function.BooleanSupplier;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Utility class for FUEL manipulation commands anticipated for use in teleop that require
+ * Utility class for FUEL manipulation commands anticipated for use in teleop or auto that require
  * coordination of multiple subsystems.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -41,5 +43,34 @@ public class FuelCommands {
             tower.holdStateUntilInterrupted(Tower.State.IDLE))
             .until(tower.isStaged())
             .withName("StageFuel");
+    }
+
+    /**
+     * Creates a command sequence that attempts to shoot fuel from the robot for duration. Spins up
+     * the shooter, only pulls fuel through the feeder when ready (i.e. proper shooter state +
+     * alignment), then stops indexer and tower after duration. Shooter remains spun-up. If shooting
+     * is disrupted during duration because shooting readiness drops, attempt a flywheel/hood
+     * adjustment and, if successful, re-commence shooting within the remaining window. Alignment
+     * correction must be handled by external means. Unconditionally stops shot attempts after
+     * duration.
+     *
+     * @param indexer the indexer subsystem
+     * @param tower the tower subsystem
+     * @param shooter the shooter superstructure
+     * @param canShoot secondary check on whether the robot is properly aligned to the target,
+     *        independent of whether the shooter is at the proper state
+     * @param duration the approximate duration in seconds to run the shooting sequence
+     * @return a command that shoots fuel and then stops the indexer / tower after the given
+     *         duration
+     */
+    public static Command shootFuel(Indexer indexer, Tower tower,
+        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration) {
+        Command feed = Commands.parallel(
+            indexer.holdStateUntilInterrupted(Indexer.State.PULL),
+            tower.holdStateUntilInterrupted(Tower.State.SHOOT))
+            .until(() -> !canShoot.getAsBoolean());
+
+        return shooter
+            .prepareShot(Commands.waitUntil(canShoot).andThen(feed)).withTimeout(duration);
     }
 }

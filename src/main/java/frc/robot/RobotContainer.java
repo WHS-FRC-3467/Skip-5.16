@@ -134,20 +134,8 @@ public class RobotContainer {
         autoChooser.addOption("DepotAuto-Left",
             new DepotAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.LEFT));
-        autoChooser.addOption("DepotAuto-Center",
-            new DepotAuto(drive, intake, indexer, tower, shooter,
-                StartPosition.CENTER));
-        autoChooser.addOption("DepotAuto-Right",
-            new DepotAuto(drive, intake, indexer, tower, shooter,
-                StartPosition.RIGHT));
 
         // Outpost Autos
-        autoChooser.addOption("OutpostAuto-Left",
-            new OutpostAuto(drive, intake, indexer, tower, shooter,
-                StartPosition.LEFT));
-        autoChooser.addOption("OutpostAuto-Center",
-            new OutpostAuto(drive, intake, indexer, tower, shooter,
-                StartPosition.CENTER));
         autoChooser.addOption("OutpostAuto-Right",
             new OutpostAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.RIGHT));

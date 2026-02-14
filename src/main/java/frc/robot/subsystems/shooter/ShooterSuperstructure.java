@@ -186,8 +186,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
     }
 
-    private AngularVelocity getDesiredFlywheelVelocity()
-    {
+    private AngularVelocity getDesiredFlywheelVelocity() {
         InterpolatingDoubleTreeMap flywheelMap = switch (robotState.getTarget()) {
             case HUB -> hubFlywheelMap;
             case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
@@ -246,26 +245,23 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Prepares the subsystem to shoot, and runs a command while it is ready
+     * Prepares the subsystem to shoot at the HUB, and runs a command while it is ready
      *
-     * @param whileAtPosition A command that runs while the shooter is ready to shoot. If the
-     *        shooter's setpoint changes or otherwise is no longer at position, the command will be
-     *        canceled, and started again once it has caught up. This is usually used for starting
-     *        and stopping the indexer to ensure balls are not shot unless we are confident we will
-     *        make the shot.
+     * @param whileAtPosition A command that runs while the shooter is ready to shoot at the HUB. If
+     *        shooting is disrupted because shooter readiness drops, attempt a flywheel/hood
+     *        adjustment and, if successful, re-commence shooting. Only valid for HUB shots. This is
+     *        usually used for starting and stopping the indexer to ensure balls are not shot unless
+     *        we are confident we will make the shot. Shooter remains spun-up at the end of this
+     *        command.
      * @return The command sequence
      */
     public Command prepareShot(Command whileAtPosition) {
         return Commands.sequence(
             Commands.parallel(
-                Commands.run(() -> spinFlywheel(getDesiredFlywheelVelocity())),
-                Commands.run(() -> setHoodPosition(getDesiredHoodAngle())),
-                // Require this subsystem
-                Commands.idle(this),
+                spinUpShooter(),
                 Commands.repeatingSequence(
                     Commands.waitUntil(readyToShoot),
-                    whileAtPosition.until(readyToShoot.negate()))),
-            this.runOnce(() -> spinFlywheel(RotationsPerSecond.zero())));
+                    whileAtPosition.until(readyToShoot.negate()))));
     }
 
     /**

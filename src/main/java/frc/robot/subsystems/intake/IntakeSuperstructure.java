@@ -54,10 +54,10 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 () -> isLinearStopped());
         this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) > LINEAR_CURRENT.get() * 0.8)
-            .and(this.linearStopped);
+                .and(this.linearStopped);
         this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) < -LINEAR_CURRENT.get() * 0.8)
-            .and(this.linearStopped);
+                .and(this.linearStopped);
     }
 
     /**
@@ -149,8 +149,10 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      */
     public Command cycle() {
         return Commands.repeatingSequence(
-            extendLinear().withTimeout(3.0),
-            retractLinear().withTimeout(3.0));
+            extendLinear(),
+            Commands.waitUntil(isExtended).withTimeout(1.25),
+            retractLinear(),
+            Commands.waitUntil(isRetracted).withTimeout(1.25));
     }
 
     /**
@@ -197,7 +199,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         intakeLinearIO.periodic();
         intakeRollerIO.periodic();
     }
-
 
     @Override
     public void close() {
