@@ -52,7 +52,7 @@ public class IndexerTest {
     }
 
     @Test // marks this method as a test
-    void index() {
+    void shoot() {
         TestUtil.runTest(
             indexer.shoot(),
             5,
