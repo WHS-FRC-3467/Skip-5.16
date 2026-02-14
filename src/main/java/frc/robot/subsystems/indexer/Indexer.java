@@ -4,11 +4,17 @@
 
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -118,5 +124,42 @@ public class Indexer extends SubsystemBase {
      */
     public double getSpeed() {
         return io.getVelocity().in(RotationsPerSecond);
+    }
+
+    /**
+     * Gets the current linear velocity of the indexer motor.
+     *
+     * @return The velocity in rotations per second multiplied by the radius
+     */
+    public double getLinearVelocity() {
+        return io.getVelocity().in(RadiansPerSecond) 
+            * IndexerConstants.RADIUS.in(Meters);
+    }
+
+    /**
+     * Sets the current linear velocity of the indexer motor.
+     */
+    public void setLinearVelocity(LinearVelocity velocity) {
+        io.runVelocity(RadiansPerSecond.of(velocity.in(MetersPerSecond)),
+            IndexerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+    }
+
+    /**
+     * Gets the current linear position of the indexer motor.
+     *
+     * @return The Position in radians multiplied by 2_PIr
+     */
+    public double getLinearPosition() {
+        return io.getPosition().in(Radians) 
+            * (2 * Math.PI * IndexerConstants.RADIUS.in(Meters));
+    }
+
+    /**
+     * Sets the current linear position of the indexer motor.
+     */
+    public void setLinearPosition(Distance position) {
+        io.runPosition(Radians.of(
+            position.in(Meters) 
+                / IndexerConstants.RADIUS.in(Meters)), PIDSlot.SLOT_0);
     }
 }

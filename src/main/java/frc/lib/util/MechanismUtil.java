@@ -59,7 +59,7 @@ public class MechanismUtil {
          * initialized with.
          *
          * @param angle to convert to distance.
-         * @return Distance agle is equivalent to.
+         * @return Distance angle is equivalent to.
          */
         public Distance toDistance(Angle angle) {
             return BaseUnits.DistanceUnit.of(angle.in(Radians) * radius.baseUnitMagnitude());
