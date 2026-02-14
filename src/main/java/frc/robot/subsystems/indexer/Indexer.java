@@ -31,7 +31,7 @@ public class Indexer extends SubsystemBase {
         new LoggedTunableNumber(IndexerConstants.NAME + "/ShootRPS",
             IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
-    private static final LoggedTunableNumber Eject_RPS =
+    private static final LoggedTunableNumber EJECT_RPS =
         new LoggedTunableNumber(IndexerConstants.NAME + "/EjectRPS", -0.5);
 
     private static final LoggedTunableNumber FEED_RPS =
@@ -101,7 +101,7 @@ public class Indexer extends SubsystemBase {
      */
     public Command eject() {
         return Commands.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(Eject_RPS.get())),
+            () -> runVelocity(RotationsPerSecond.of(EJECT_RPS.get())),
             () -> stop());
     }
 

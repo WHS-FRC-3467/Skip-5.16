@@ -103,6 +103,15 @@ public class Tower extends SubsystemBase {
     }
 
     /**
+     * Gets the current velocity of the tower motor.
+     *
+     * @return The velocity in rotations per second
+     */
+    public double getSpeed() {
+        return io.getVelocity().in(RotationsPerSecond);
+    }
+
+    /**
      * Creates a command to run the tower at shooting velocity to transfer game pieces to the
      * shooter. The tower will stop when the command is interrupted or cancelled.
      *

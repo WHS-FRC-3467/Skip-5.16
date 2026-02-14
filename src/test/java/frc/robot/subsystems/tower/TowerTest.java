@@ -66,7 +66,7 @@ public class TowerTest {
     }
 
     @Test // marks this method as a test
-    void idle() {
+    void feed() {
         TestUtil.runTest(
             tower.feed(),
             2,
@@ -88,7 +88,7 @@ public class TowerTest {
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
-            assertTrue(tower.nearSetpoint());
+            assertTrue(tower.getSpeed() < 0.1);
         } catch (Exception e) {
             fail("Failed to stop indexer: " + e.getMessage());
         }

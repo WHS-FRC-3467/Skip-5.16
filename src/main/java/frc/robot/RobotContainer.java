@@ -260,7 +260,7 @@ public class RobotContainer {
      */
     private void initializeDashboard() {
         SmartDashboard.putData("Indexer/Expel", indexer.eject());
-        SmartDashboard.putData("Indexer/Intake", indexer.feed());
+        SmartDashboard.putData("Indexer/Feed", indexer.feed());
         SmartDashboard.putData("Indexer/Stop", indexer.stopCommand());
 
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendLinear());
@@ -277,7 +277,7 @@ public class RobotContainer {
         SmartDashboard.putData("Intake Linear/Cycle", intake.cycle());
         SmartDashboard.putData("Intake Linear/Coast", intake.linearCoast());
         SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
-        SmartDashboard.putData("Run Indexer", indexer.shoot());
+        SmartDashboard.putData("Indexer/Shoot", indexer.shoot());
         SmartDashboard.putData("Face Target",
             DriveCommands.joystickDriveFacingTarget(
                 drive,

@@ -52,7 +52,7 @@ public class IndexerTest {
     }
 
     @Test // marks this method as a test
-    void index() {
+    void shoot() {
         TestUtil.runTest(
             indexer.shoot(),
             5,
@@ -74,7 +74,7 @@ public class IndexerTest {
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
-            assertTrue(indexer.nearSetpoint());
+            assertTrue(indexer.getSpeed() < 0.1);
         } catch (Exception e) {
             fail("Failed to stop indexer: " + e.getMessage());
         }
