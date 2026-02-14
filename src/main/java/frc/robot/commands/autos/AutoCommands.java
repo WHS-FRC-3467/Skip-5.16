@@ -35,7 +35,8 @@ public class AutoCommands {
      * @param path the PathPlanner path containing the starting pose
      * @return a command that resets the robot's pose to the path's starting position
      */
-    public static Command resetSimOdom(Drive drive, PathPlannerPath path) {
+    public static Command resetSimOdom(Drive drive, PathPlannerPath path)
+    {
         if (RobotBase.isSimulation()) {
             final RobotState robotState = RobotState.getInstance();
             return drive.runOnce(
@@ -57,10 +58,10 @@ public class AutoCommands {
 
     /**
      * Creates a command sequence that attempts to shoot fuel from the robot for duration. Spins up
-     * the shooter, only pulls fuel through the feeder when ready, then stops indexer and tower
-     * after duration. If shooting is disrupted during duration because shooter readiness drops,
-     * attempt a flywheel/hood adjustment and, if successful, re-commence shooting within the
-     * remaining window. Unconditionally stops shot attempts after duration.
+     * the shooter, only pulls fuel through the feeder when ready (shooter state + alignment), then
+     * stops indexer and tower after duration. If shooting is disrupted during duration because
+     * shooting readiness drops, attempt a flywheel/hood adjustment and, if successful, re-commence
+     * shooting within the remaining window. Unconditionally stops shot attempts after duration.
      *
      * @param indexer the indexer subsystem
      * @param tower the tower subsystem
@@ -72,28 +73,15 @@ public class AutoCommands {
      *         duration
      */
     public static Command shootFuel(Indexer indexer, Tower tower,
-        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration) {
-        return Commands.sequence(
-            // Defensively gate shooting until ready (5 scans max)
-            new ParallelDeadlineGroup(
-                Commands.waitUntil(shooter.readyToShoot.and(canShoot)),
-                shooter.spinUpShooter()).withTimeout(0.10),
-            // Shoot when ready. If readiness drops mid-cycle, adjust shooter, then resume
-            new ParallelDeadlineGroup(
-                Commands.waitSeconds(duration), // Unconditionally stop shooting after duration
-                shooter.spinUpShooter(), // Keep shooter scheduled and updating
-                Commands.repeatingSequence(
-                    // Repeat shot attempts until duration timeout
-                    Commands.waitUntil(shooter.readyToShoot.and(canShoot)),
-                    Commands.parallel(
-                        indexer.holdStateUntilInterrupted(Indexer.State.PULL),
-                        tower.holdStateUntilInterrupted(Tower.State.SHOOT))
-                        .until(shooter.readyToShoot.and(canShoot).negate()))))
-            .finallyDo(() -> {
-                // Spin shooter down, non-blocking
-                // CommandScheduler.getInstance()
-                // .schedule(shooter.setFlywheelSpeed(RadiansPerSecond.zero()));
-            });
+        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration)
+    {
+        Command feed = Commands.parallel(
+            indexer.holdStateUntilInterrupted(Indexer.State.PULL),
+            tower.holdStateUntilInterrupted(Tower.State.SHOOT))
+            .until(() -> !canShoot.getAsBoolean());
+
+        return shooter
+            .prepareShot(Commands.waitUntil(canShoot).andThen(feed)).withTimeout(duration);
     }
 
     /**
@@ -111,7 +99,8 @@ public class AutoCommands {
      * @return a command that aligns the robot to the target and shoots for up to the given duration
      */
     public static Command alignAndShoot(Drive drive, Indexer indexer,
-        Tower tower, ShooterSuperstructure shooter, double duration) {
+        Tower tower, ShooterSuperstructure shooter, double duration)
+    {
         final var robotState = RobotState.getInstance();
         return Commands.deadline(
             shootFuel(indexer, tower, shooter,
@@ -128,7 +117,8 @@ public class AutoCommands {
      * @param intake the intake subsystem
      * @return a command that runs the intake and stops it when finished
      */
-    public static Command deployIntake(IntakeSuperstructure intake) {
+    public static Command deployIntake(IntakeSuperstructure intake)
+    {
         return Commands.startEnd(() -> intake.extendIntake(), () -> intake.retractIntake(), intake);
     }
 
@@ -139,42 +129,11 @@ public class AutoCommands {
      * @param intake the intake subsystem
      * @return a command that initializes the intake.
      */
-    public static Command initializeIntake(IntakeSuperstructure intake) {
+    public static Command initializeIntake(IntakeSuperstructure intake)
+    {
         return Commands.sequence(
             intake.stopRoller(),
             intake.retractLinear());
-    }
-
-    /**
-     * Creates a blocking command to agitate the balls in the hopper to facilitate shooting. Should
-     * be externally interrupted / run in parallel with other commands. Can be used between
-     * shootFuel() commands within an AutoSegment to prepare the hopper for game piece transport.
-     * Subsystems end up in unguaranteed state; be sure to decorate or sequence this call with a
-     * known state control command.
-     *
-     * @param intake the linear intake subsystem
-     * @param tower the tower subsystem
-     * @param indexer the indexer subsystem
-     * @return a blocking command that agitates the balls in the hopper and stops when finished
-     */
-    public static Command agitateHopper(IntakeSuperstructure intake, Tower tower, Indexer indexer,
-        HopperAgitation state) {
-        switch (state) {
-            case INTAKE_CYCLE:
-                return intake.cycle();
-            case TOWER_PULSE:
-                return Commands.repeatingSequence(
-                    tower.holdStateUntilInterrupted(Tower.State.SHOOT).withTimeout(0.1),
-                    tower.holdStateUntilInterrupted(Tower.State.STOP).withTimeout(0.05));
-            case INDEXER_PULSE:
-                return Commands.repeatingSequence(
-                    indexer.holdStateUntilInterrupted(Indexer.State.PULL).withTimeout(0.1),
-                    indexer.holdStateUntilInterrupted(Indexer.State.STOP).withTimeout(0.05));
-            case NONE:
-                return Commands.none();
-            default:
-                return Commands.none();
-        }
     }
 
     /**
@@ -187,7 +146,8 @@ public class AutoCommands {
      * @return a command that prepares the shooter to shoot THE HUB from the end of the provided
      *         path
      */
-    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter) {
+    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter)
+    {
         // All paths blue canonical, so flip end translation if red alliance
         return shooter.spinUpShooterToHubDistance(
             Meters.of(
