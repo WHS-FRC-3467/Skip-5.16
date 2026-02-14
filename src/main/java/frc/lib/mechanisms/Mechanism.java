@@ -185,7 +185,9 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void runPosition(Angle position, PIDSlot slot) {
         io.runPosition(position, slot);
+
     }
+
 
     /**
      * Runs the mechanism at a target velocity.
