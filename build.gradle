@@ -205,6 +205,7 @@ javadoc {
     source = delombok
     options.addStringOption('Xdoclint:all,-missing', '-quiet')
     failOnError = true
+    options.stylesheetFile = new File(projectDir, "theme.css")
 }
 
 spotless {
