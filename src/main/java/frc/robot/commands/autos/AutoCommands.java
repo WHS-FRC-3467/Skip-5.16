@@ -58,10 +58,11 @@ public class AutoCommands {
 
     /**
      * Creates a command sequence that attempts to shoot fuel from the robot for duration. Spins up
-     * the shooter, only pulls fuel through the feeder when ready (shooter state + alignment), then
-     * stops indexer and tower after duration. If shooting is disrupted during duration because
-     * shooting readiness drops, attempt a flywheel/hood adjustment and, if successful, re-commence
-     * shooting within the remaining window. Unconditionally stops shot attempts after duration.
+     * the shooter, only pulls fuel through the feeder when ready (i.e. proper shooter state +
+     * alignment), then stops indexer and tower after duration. Shooter remains spun-up. If shooting
+     * is disrupted during duration because shooting readiness drops, attempt a flywheel/hood
+     * adjustment and, if successful, re-commence shooting within the remaining window.
+     * Unconditionally stops shot attempts after duration.
      *
      * @param indexer the indexer subsystem
      * @param tower the tower subsystem
