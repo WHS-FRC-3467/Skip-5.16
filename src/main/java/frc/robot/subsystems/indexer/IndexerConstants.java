@@ -97,12 +97,12 @@ public class IndexerConstants {
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer,
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexerFloor,
                         new TalonFXFollower(Ports.indexerCentering, true)));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer,
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexerFloor,
                         new TalonFXFollower(Ports.indexerCentering, true)),
                     DCMOTOR, MOI,
                     TOLERANCE);
