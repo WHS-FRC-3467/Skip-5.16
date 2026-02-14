@@ -45,41 +45,24 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     /** Distance from hub in meters -> hood angle in degrees */
     private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
     static {
-        hoodAngleMap.put(1.05, 2.0); // Lowest
-        hoodAngleMap.put(1.25, 4.0);
-        hoodAngleMap.put(1.45, 6.0);
-        hoodAngleMap.put(1.65, 9.0);
-        hoodAngleMap.put(1.85, 10.0);
-        hoodAngleMap.put(2.05, 15.0);
-        hoodAngleMap.put(2.25, 18.0);
-        hoodAngleMap.put(2.45, 19.0);
-        hoodAngleMap.put(2.65, 20.0);
-        hoodAngleMap.put(2.85, 21.0);
-        hoodAngleMap.put(3.05, 22.0);
-        hoodAngleMap.put(3.25, 24.0);
-        hoodAngleMap.put(3.45, 25.0);
-        hoodAngleMap.put(3.65, 27.0); // Highest
+        hoodAngleMap.put(1.05, 0.0);
+        hoodAngleMap.put(1.66, 14.0);
+        hoodAngleMap.put(2.09, 15.0);
+        hoodAngleMap.put(2.87, 18.0);
+        hoodAngleMap.put(3.83, 20.0);
+        hoodAngleMap.put(4.67, 24.0);
     }
 
     /** Distance from hub in meters -> flywheel speed in rotations per second */
     private static final InterpolatingDoubleTreeMap hubFlywheelMap =
         new InterpolatingDoubleTreeMap();
     static {
-        hubFlywheelMap.put(1.05, 18.0);
-        hubFlywheelMap.put(1.25, 18.0);
-        hubFlywheelMap.put(1.45, 18.0);
-        hubFlywheelMap.put(1.65, 19.0);
-        hubFlywheelMap.put(1.85, 19.0);
-        hubFlywheelMap.put(2.05, 19.5);
-        hubFlywheelMap.put(2.25, 20.0);
-        hubFlywheelMap.put(2.45, 20.5);
-        hubFlywheelMap.put(2.65, 20.5);
-        hubFlywheelMap.put(2.85, 21.0);
-        hubFlywheelMap.put(3.05, 21.5);
-        hubFlywheelMap.put(3.25, 22.0);
-        hubFlywheelMap.put(3.45, 22.5);
-        hubFlywheelMap.put(3.65, 23.0);
-        hubFlywheelMap.put(3.85, 23.5);
+        hubFlywheelMap.put(1.05, 25.0);
+        hubFlywheelMap.put(1.66, 25.0);
+        hubFlywheelMap.put(2.09, 27.0);
+        hubFlywheelMap.put(2.87, 30.0);
+        hubFlywheelMap.put(3.83, 32.0);
+        hubFlywheelMap.put(4.67, 35.5);
     }
 
     /** Distance from feed pose in meters -> flywheel speed in rotations per second */
