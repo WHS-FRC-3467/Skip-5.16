@@ -6,7 +6,6 @@ package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
-import java.util.function.BooleanSupplier;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -60,47 +59,6 @@ public class AutoCommands {
     }
 
     /**
-     * Creates a command sequence that attempts to shoot fuel from the robot for duration. Spins up
-     * the shooter, only pulls fuel through the feeder when ready, then stops indexer and tower
-     * after duration. If shooting is disrupted during duration because shooter readiness drops,
-     * attempt a flywheel/hood adjustment and, if successful, re-commence shooting within the
-     * remaining window. Unconditionally stops shot attempts after duration.
-     *
-     * @param indexer the indexer subsystem
-     * @param tower the tower subsystem
-     * @param shooter the shooter superstructure
-     * @param canShoot secondary check on whether the robot is properly aligned to the target,
-     *        independent of whether the the shooter is at the proper state
-     * @param duration the approximate duration in seconds to run the shooting sequence
-     * @return a command that shoots fuel and then stops the indexer / tower after the given
-     *         duration
-     */
-    public static Command shootFuel(Indexer indexer, Tower tower,
-        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration) {
-        return Commands.sequence(
-            // Defensively gate shooting until ready (5 scans max)
-            new ParallelDeadlineGroup(
-                Commands.waitUntil(shooter.readyToShoot.and(canShoot)),
-                shooter.spinUpShooter()).withTimeout(0.10),
-            // Shoot when ready. If readiness drops mid-cycle, adjust shooter, then resume
-            new ParallelDeadlineGroup(
-                Commands.waitSeconds(duration), // Unconditionally stop shooting after duration
-                shooter.spinUpShooter(), // Keep shooter scheduled and updating
-                Commands.repeatingSequence(
-                    // Repeat shot attempts until duration timeout
-                    Commands.waitUntil(shooter.readyToShoot.and(canShoot)),
-                    Commands.parallel(
-                        indexer.shoot(),
-                        tower.shoot())
-                        .until(shooter.readyToShoot.and(canShoot).negate()))))
-            .finallyDo(() -> {
-                // Spin shooter down, non-blocking
-                // CommandScheduler.getInstance()
-                // .schedule(shooter.setFlywheelSpeed(RadiansPerSecond.zero()));
-            });
-    }
-
-    /**
      * Creates a command that automatically aligns the robot to the target while executing the
      * shooting sequence. The drive will aim toward the target based on robot state, and shooting
      * will only occur when the robot is within a configured angular tolerance. The command ends
@@ -123,46 +81,6 @@ public class AutoCommands {
                 duration),
             DriveCommands.joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0,
                 robotState::getAngleToTarget));
-    }
-
-    /**
-     * Creates a command to deploy and run the intake mechanism to collect game pieces. The intake
-     * will stop and retract automatically when the command ends.
-     *
-     * @param intake the intake subsystem
-     * @return a command that runs the intake and stops it when finished
-     */
-    public static Command deployIntake(IntakeSuperstructure intake) {
-        return Commands.startEnd(() -> intake.extendIntake(), () -> intake.retractIntake(), intake);
-    }
-
-    /**
-     * A non-blocking command that initializes the intake by stopping the rollers and retracting the
-     * linear stage
-     *
-     * @param intake the intake subsystem
-     * @return a command that initializes the intake.
-     */
-    public static Command initializeIntake(IntakeSuperstructure intake) {
-        return Commands.sequence(
-            intake.stopRoller(),
-            intake.retractLinear());
-    }
-
-    /**
-     * Creates a blocking command to agitate the balls in the hopper to facilitate shooting. Should
-     * be externally interrupted / run in parallel with other commands. Can be used between
-     * shootFuel() commands within an AutoSegment to prepare the hopper for game piece transport.
-     * Subsystems end up in unguaranteed state; be sure to decorate or sequence this call with a
-     * known state control command.
-     *
-     * @param intake the linear intake subsystem
-     * @param tower the tower subsystem
-     * @param indexer the indexer subsystem
-     * @return a blocking command that agitates the balls in the hopper and stops when finished
-     */
-    public static Command agitateHopper(IntakeSuperstructure intake, Tower tower, Indexer indexer) {
-        return intake.cycle();
     }
 
     /**
