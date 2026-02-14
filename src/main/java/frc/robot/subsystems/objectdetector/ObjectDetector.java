@@ -23,14 +23,12 @@ import frc.robot.RobotState;
 import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Generates the Object Detection subsystem which consists of some number of Object Detection
@@ -42,13 +40,11 @@ public class ObjectDetector extends SubsystemBase {
     private final ObjectDetection objectDetection;
 
     @Getter
-    private ArrayList<Optional<ObjectDetectionObservation>> latestObjectObservation;
+    private List<Optional<ObjectDetectionObservation>> latestObjectObservation;
     @Getter
     private Optional<ObjectDetectionObservation> latestBigContourObservation;
     @Getter
     private Optional<ObjectDetectionObservation> latestLowContourObservation;
-    @Getter
-    private ArrayList<Translation2d> objectPoseBuffer = new ArrayList<>(10);
 
     /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
@@ -77,9 +73,6 @@ public class ObjectDetector extends SubsystemBase {
         if (observation.isEmpty() || observation.get().objectPose().isEmpty()) {
             return observation;
         }
-        // Pose generated: update object pose buffer of most-recently detected objects
-        objectDetection.updateObservationPoseBuffer(10, objectPoseBuffer, 0.4572,
-            observation.get().objectPose().get().getTranslation());
         // Return latest Object observation (full)
         return observation;
     }
@@ -112,15 +105,6 @@ public class ObjectDetector extends SubsystemBase {
 
             Logger.recordOutput("Detection/" + "ML:" + "Latest Detection's Calculated Distance",
                 observation.get().distance().get().in(Meters));
-
-            Logger.recordOutput("Detection/" + "ML:" + "Newest Coordinate Detection",
-                objectPoseBuffer.get(objectPoseBuffer.size() - 1));
-
-            Logger.recordOutput("Detection/" + "ML:" + "Oldest Coordinate Detection",
-                objectPoseBuffer.get(0));
-
-            Logger.recordOutput("Detection/" + "ML:" + "Detection List Size",
-                objectPoseBuffer.size());
 
             Logger.recordOutput("Detection/" + "ML:" + "Sim Target #0 True Range",
                 ObjectDetectorConstants.SIM_TARGETS[0].getPose().toPose2d().getTranslation()
@@ -173,8 +157,8 @@ public class ObjectDetector extends SubsystemBase {
         if (objectDetection.getTargets().length > 0) {
             // Generate latest ML Object observations
             latestObjectObservation =
-                Arrays.stream(objectDetection.getTargets()).map(this::generateObjectObservation)
-                    .collect(Collectors.toCollection(ArrayList::new));
+                Arrays.stream(objectDetection.getTargets())
+                    .map(this::generateObjectObservation).toList();
             // Generate latest Contour observations
             latestBigContourObservation = generateContourObservation(ContourSelectionMode.LARGEST);
             latestLowContourObservation = generateContourObservation(ContourSelectionMode.LOWEST);
@@ -182,8 +166,7 @@ public class ObjectDetector extends SubsystemBase {
 
         {
             // Prevent stale data from persisting
-            latestObjectObservation = new ArrayList<>();
-            latestObjectObservation.add(Optional.empty());
+            latestObjectObservation = List.of(Optional.empty());
             latestBigContourObservation = Optional.empty();
             latestLowContourObservation = Optional.empty();
         }
