@@ -56,7 +56,7 @@ public class PreloadAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                AutoCommands.initializeIntake(intake),
+                intake.retractIntake(),
                 // Take preload shot
                 AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)));

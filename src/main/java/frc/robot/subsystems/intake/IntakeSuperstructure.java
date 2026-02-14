@@ -150,7 +150,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     public Command cycle() {
         return Commands.repeatingSequence(
             extendLinear().withTimeout(3.0),
-            retractLinear().withTimeout(3.0));
+            Commands.waitUntil(isExtended),
+            retractLinear().withTimeout(3.0),
+            Commands.waitUntil(isRetracted));
     }
 
     /**
@@ -197,7 +199,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         intakeLinearIO.periodic();
         intakeRollerIO.periodic();
     }
-
 
     @Override
     public void close() {

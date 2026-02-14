@@ -77,7 +77,7 @@ public class OutpostAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                AutoCommands.initializeIntake(intake),
+                intake.retractIntake(),
                 // Take preload shot
                 AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
@@ -90,7 +90,9 @@ public class OutpostAuto extends AutoRoutine {
                     Commands.none(), RobotBase::isSimulation),
                 // Drive to shooting location and shoot all FUEL
                 AutoCommands.makeFullShot(drive, intake, indexer, tower, shooter,
-                    pathPlannerPaths.get(2)));
+                    pathPlannerPaths.get(2)),
+                // Re-initialize intake for tele-op
+                intake.retractIntake());
         }
     }
 }

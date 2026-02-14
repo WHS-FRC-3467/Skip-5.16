@@ -84,30 +84,6 @@ public class AutoCommands {
     }
 
     /**
-     * Creates a command to deploy and run the intake mechanism to collect game pieces. The intake
-     * will stop and retract automatically when the command ends.
-     *
-     * @param intake the intake subsystem
-     * @return a command that runs the intake and stops it when finished
-     */
-    public static Command deployIntake(IntakeSuperstructure intake) {
-        return Commands.startEnd(() -> intake.extendIntake(), () -> intake.retractIntake(), intake);
-    }
-
-    /**
-     * A non-blocking command that initializes the intake by stopping the rollers and retracting the
-     * linear stage
-     *
-     * @param intake the intake subsystem
-     * @return a command that initializes the intake.
-     */
-    public static Command initializeIntake(IntakeSuperstructure intake) {
-        return Commands.sequence(
-            intake.stopRoller(),
-            intake.retractLinear());
-    }
-
-    /**
      * Prepares the shooter for shooting at THE HUB at the end of the provided path. Only valid to
      * prepare shots for THE HUB. Perpetual command -- never spins down. Therefore, to end, this
      * should be interrupted by a parent command group or timed-out. Primarily for use in autos.
@@ -160,6 +136,7 @@ public class AutoCommands {
      * in 3.5s, attempt a shot anyway.
      *
      * @param drive The Drive subsystem
+     * @param intake The IntakeSuperStructure subsystem
      * @param indexer The Indexer subsystem
      * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
@@ -175,7 +152,7 @@ public class AutoCommands {
                 AutoCommands.prepareHubShot(path, shooter)),
             new ParallelDeadlineGroup(
                 FuelCommands.shootFuel(indexer, tower, shooter, () -> true, 5.0), // ~ 10 bps
-                intake.cycle()));
+                intake.cycle())); // TODO: more testing
     }
 
     /**
@@ -193,7 +170,8 @@ public class AutoCommands {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
-            pathCommand.deadlineFor(intake.extendIntake()),
+            intake.extendIntake(),
+            pathCommand,
             Commands.waitSeconds(afterPathWait.in(Seconds)),
             intake.retractIntake());
     }
