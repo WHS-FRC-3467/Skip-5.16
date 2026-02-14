@@ -31,8 +31,7 @@ import frc.robot.util.RobotSim;
 public class BasicNeutralAuto extends AutoRoutine {
 
     public BasicNeutralAuto(Drive drive, IntakeSuperstructure intake,
-        Indexer indexer, Tower tower, ShooterSuperstructure shooter, StartPosition start)
-    {
+        Indexer indexer, Tower tower, ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
@@ -70,12 +69,12 @@ public class BasicNeutralAuto extends AutoRoutine {
                 start == StartPosition.LEFT ? AutoBuilder.followPath(pathPlannerPaths.get(0))
                     : AutoBuilder.followPath(pathPlannerPaths.get(0).mirrorPath()),
                 // Sweep neutral zone while intaking
-                AutoSegments.driveAndIntake(intake,
+                AutoCommands.driveAndIntake(intake,
                     start == StartPosition.LEFT ? AutoBuilder.followPath(pathPlannerPaths.get(1))
                         : AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
                     Seconds.of(0.0)),
                 // Run back under the trench and shoot
-                AutoSegments.makeFullShot(drive, intake, indexer, tower, shooter,
+                AutoCommands.makeFullShot(drive, intake, indexer, tower, shooter,
                     start == StartPosition.LEFT ? pathPlannerPaths.get(2)
                         : pathPlannerPaths.get(2).mirrorPath()),
                 // Re-initialize intake for depot / outpost run
@@ -84,7 +83,7 @@ public class BasicNeutralAuto extends AutoRoutine {
                 AutoBuilder.followPath(pathPlannerPaths.get(3)),
                 // Sweep through depot while intaking OR wait for FUEL to be dumped
                 start == StartPosition.LEFT
-                    ? AutoSegments.driveAndIntake(intake,
+                    ? AutoCommands.driveAndIntake(intake,
                         AutoBuilder.followPath(pathPlannerPaths.get(4)), Seconds.of(0.0))
                     : Commands.sequence(
                         Commands.waitSeconds(3),
@@ -94,9 +93,9 @@ public class BasicNeutralAuto extends AutoRoutine {
                             Commands.none(), RobotBase::isSimulation)),
                 // Reverse back through depot / outpost to shooting location & shoot FUEL
                 start == StartPosition.LEFT
-                    ? AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                    ? AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                         pathPlannerPaths.get(5))
-                    : AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                    : AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                         pathPlannerPaths.get(4)),
                 // Re-initialize intake for tele-op
                 AutoCommands.initializeIntake(intake));

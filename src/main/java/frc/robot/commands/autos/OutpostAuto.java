@@ -49,8 +49,7 @@ public class OutpostAuto extends AutoRoutine {
      */
     public OutpostAuto(Drive drive, IntakeSuperstructure intake, Indexer indexer,
         Tower tower,
-        ShooterSuperstructure shooter, StartPosition start)
-    {
+        ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
@@ -80,7 +79,7 @@ public class OutpostAuto extends AutoRoutine {
                 // Initialize intake
                 AutoCommands.initializeIntake(intake),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
                 // Go to the OUTPOST and intake FUEL
                 AutoBuilder.followPath(pathPlannerPaths.get(1)),
@@ -90,7 +89,7 @@ public class OutpostAuto extends AutoRoutine {
                     Commands.runOnce(() -> RobotSim.getInstance().getFuelSim().setHeldFuel(20)),
                     Commands.none(), RobotBase::isSimulation),
                 // Drive to shooting location and shoot all FUEL
-                AutoSegments.makeFullShot(drive, intake, indexer, tower, shooter,
+                AutoCommands.makeFullShot(drive, intake, indexer, tower, shooter,
                     pathPlannerPaths.get(2)));
         }
     }

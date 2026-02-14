@@ -31,8 +31,7 @@ public class PreloadAuto extends AutoRoutine {
 
     public PreloadAuto(Drive drive, IntakeSuperstructure intake,
         Indexer indexer, Tower tower,
-        ShooterSuperstructure shooter, StartPosition start)
-    {
+        ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
@@ -59,7 +58,7 @@ public class PreloadAuto extends AutoRoutine {
                 // Initialize intake
                 AutoCommands.initializeIntake(intake),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)));
     }
 }
