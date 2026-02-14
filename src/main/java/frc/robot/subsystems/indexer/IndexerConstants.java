@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
@@ -14,6 +15,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
@@ -37,6 +39,8 @@ public class IndexerConstants {
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second).times(10);
 
     private static final double GEARING = (48.0 / 22.0) * (24.0 / 36.0) * (17.0 / 18.0);
+
+    public static final Distance RADIUS = Inches.of(0.5);
 
     public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
