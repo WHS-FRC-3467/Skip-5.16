@@ -13,7 +13,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -62,7 +61,7 @@ public class Indexer extends SubsystemBase {
      * @return a command that stops the indexer
      */
     public Command stopCommand() {
-        return Commands.runOnce(() -> io.runBrake(), this);
+        return this.runOnce(() -> io.runBrake());
     }
 
     private void stop() {
@@ -88,7 +87,7 @@ public class Indexer extends SubsystemBase {
      * @return a command that runs the indexer at feeding speed
      */
     public Command feed() {
-        return Commands.startEnd(
+        return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(FEED_RPS.get())),
             () -> stop());
     }
@@ -100,7 +99,7 @@ public class Indexer extends SubsystemBase {
      * @return a command that runs the indexer in reverse
      */
     public Command eject() {
-        return Commands.startEnd(
+        return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(EJECT_RPS.get())),
             () -> stop());
     }

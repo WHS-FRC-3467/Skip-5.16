@@ -16,10 +16,8 @@
 package frc.robot.subsystems.tower;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import java.util.function.BooleanSupplier;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.DistanceSensor;
 import frc.lib.io.motor.MotorIO.PIDSlot;
@@ -38,7 +36,7 @@ public class Tower extends SubsystemBase {
         new LoggedTunableNumber(TowerConstants.NAME + "/ShootRPS",
             TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
-    private static final LoggedTunableNumber Eject_RPS =
+    private static final LoggedTunableNumber EJECT_RPS =
         new LoggedTunableNumber(TowerConstants.NAME + "/EjectRPS", -0.5);
 
     private static final LoggedTunableNumber FEED_RPS =
@@ -107,7 +105,7 @@ public class Tower extends SubsystemBase {
      * @return a command that runs the tower at shooting speed
      */
     public Command shoot() {
-        return Commands.startEnd(
+        return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get())),
             () -> stop());
     }
@@ -119,7 +117,7 @@ public class Tower extends SubsystemBase {
      * @return a command that runs the tower at feeding speed
      */
     public Command feed() {
-        return Commands.startEnd(
+        return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(FEED_RPS.get())),
             () -> stop());
     }
@@ -131,8 +129,8 @@ public class Tower extends SubsystemBase {
      * @return a command that runs the tower in reverse
      */
     public Command eject() {
-        return Commands.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(Eject_RPS.get())),
+        return this.startEnd(
+            () -> runVelocity(RotationsPerSecond.of(EJECT_RPS.get())),
             () -> stop());
     }
 
@@ -142,7 +140,7 @@ public class Tower extends SubsystemBase {
      * @return a command that stops the tower
      */
     public Command stopCommand() {
-        return Commands.runOnce(() -> io.runBrake(), this);
+        return this.runOnce(() -> io.runBrake());
     }
 
     private void stop() {
