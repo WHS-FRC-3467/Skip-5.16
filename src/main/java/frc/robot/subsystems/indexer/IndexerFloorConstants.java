@@ -31,9 +31,9 @@ import frc.robot.Ports;
 import frc.robot.Robot;
 
 /** Add your docs here. */
-public class IndexerConstants {
+public class IndexerFloorConstants {
 
-    public static String NAME = "Indexer";
+    public static String NAME = "IndexerFloor";
 
     public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(60);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second).times(10);
@@ -87,23 +87,23 @@ public class IndexerConstants {
     }
 
     /**
-     * Factory method to create an Indexer subsystem instance. Creates the appropriate mechanism
-     * based on the current robot mode (REAL, SIM, or REPLAY).
+     * Factory method to create an IndexerSuperstructure subsystem instance. Creates the appropriate
+     * mechanism based on the current robot mode (REAL, SIM, or REPLAY).
      *
-     * @return A fully configured Indexer subsystem
+     * @return A fully configured IndexerSuperstructure subsystem
      */
-    public static Indexer get() {
+    public static FlywheelMechanism<?> get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer,
-                        new TalonFXFollower(Ports.indexerCentering, true)));
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexerFloor,
+                        new TalonFXFollower(Ports.indexerFloorFollower, true)));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer,
-                        new TalonFXFollower(Ports.indexerCentering, true)),
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexerFloor,
+                        new TalonFXFollower(Ports.indexerFloorFollower, true)),
                     DCMOTOR, MOI,
                     TOLERANCE);
                 break;
@@ -114,7 +114,7 @@ public class IndexerConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return new Indexer(mechanism);
+        return mechanism;
     }
 
 }
