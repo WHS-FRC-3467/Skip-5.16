@@ -63,11 +63,12 @@ public class FuelSim {
         0.5 * AIR_DENSITY * DRAG_COF * FUEL_CROSS_AREA;
 
     protected static final int HOPPER_CAPACITY = 50;
-    protected static final double HOPPER_FLOOR_HEIGHT = Units.inchesToMeters(7); 
-    // NOTE: HOPPER_FLOOR_HEIGHT is an approximate placeholder because the height varies with respect to distance from the shooter. 
-    // This is the vertical distance (in meters) from the carpet/field floor (z = 0 in this sim) to the  
-    // lowest point of the hopper interior where the centers of stored fuel rest. This value  
-    // should be measured from the robot CAD or by physically measuring the competition robot  
+    protected static final double HOPPER_FLOOR_HEIGHT = Units.inchesToMeters(7);
+    // NOTE: HOPPER_FLOOR_HEIGHT is an approximate placeholder because the height varies with
+    // respect to distance from the shooter. This is the vertical distance (in meters) from 
+    // the carpet/field floor (z = 0 in this sim) to the
+    // lowest point of the hopper interior where the centers of stored fuel rest. This value
+    // should be measured from the robot CAD or by physically measuring the competition robot
     // and then updated here.
 
     // Array of 3d positions of the fuel hopper
@@ -417,6 +418,9 @@ public class FuelSim {
         fuelPublisher = NetworkTableInstance.getDefault()
             .getStructArrayTopic(tableKey + "/Fuels", Translation3d.struct)
             .publish();
+        fuelInHopperPublisher = NetworkTableInstance.getDefault()
+            .getStructArrayTopic(tableKey + "/FuelsInHopper", Translation3d.struct)
+            .publish();
     }
 
     /**
@@ -481,12 +485,32 @@ public class FuelSim {
     }
 
     protected StructArrayPublisher<Translation3d> fuelPublisher;
+    protected StructArrayPublisher<Translation3d> fuelInHopperPublisher;
 
     /**
      * Adds array of `Translation3d`'s to NetworkTables at tableKey + "/Fuels"
      */
     public void logFuels() {
         fuelPublisher.set(fuels.stream().map((fuel) -> fuel.pos).toArray(Translation3d[]::new));
+        fuelInHopperPublisher.set(hopperFuel.stream().map((position) -> toFieldRelative(position))
+            .toArray(Translation3d[]::new));
+    }
+
+    /**
+     * Calculates the field-relative position based on its robot relative position
+     *
+     * @param position Position of a fuel, relative to the robot
+     * @return The position of a fuel, relative to the field.
+     */
+    public Translation3d toFieldRelative(Translation3d position) {
+        Pose2d robotPose = robotPoseSupplier.get();
+        // Rotate the robot-relative X/Y by the robot heading and translate into field
+        Translation2d fuelRotated = new Translation2d(position.getX(), position.getY())
+            .rotateBy(robotPose.getRotation());
+        double fieldX = robotPose.getX() + fuelRotated.getX();
+        double fieldY = robotPose.getY() + fuelRotated.getY();
+        double fieldZ = position.getZ();
+        return new Translation3d(fieldX, fieldY, fieldZ);
     }
 
     /**
