@@ -65,21 +65,18 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @param floorIO The flywheel mechanism for controlling the indexer floor motors
      * @param centerIO
      */
-    public IndexerSuperstructure(FlywheelMechanism<?> floorIO, FlywheelMechanism<?> centerIO)
-    {
+    public IndexerSuperstructure(FlywheelMechanism<?> floorIO, FlywheelMechanism<?> centerIO) {
         this.floorIO = floorIO;
         this.centerIO = centerIO;
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         floorIO.periodic();
         centerIO.periodic();
     }
 
-    private void runVelocity(AngularVelocity floorVelocity, AngularVelocity centeringVelocity)
-    {
+    private void runVelocity(AngularVelocity floorVelocity, AngularVelocity centeringVelocity) {
         floorIO.runVelocity(floorVelocity, IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
         centerIO.runVelocity(centeringVelocity, IndexerCenterConstants.MAX_ACCELERATION,
             PIDSlot.SLOT_0);
@@ -90,16 +87,14 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return a command that stops the indexer
      */
-    public Command stopCommand()
-    {
+    public Command stopCommand() {
         return this.runOnce(() -> {
             floorIO.runBrake();
             centerIO.runBrake();
         });
     }
 
-    private void stop()
-    {
+    private void stop() {
         floorIO.runBrake();
         centerIO.runBrake();
     }
@@ -110,8 +105,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return a command that runs the indexer at shooting speed
      */
-    public Command shoot()
-    {
+    public Command shoot() {
         return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(FLOOR_SHOOT_RPS.get()),
                 RotationsPerSecond.of(CENTER_SHOOT_RPS.get())),
@@ -124,8 +118,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return a command that runs the indexer at feeding speed
      */
-    public Command feed()
-    {
+    public Command feed() {
         return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(FLOOR_FEED_RPS.get()),
                 RotationsPerSecond.of(CENTER_FEED_RPS.get())),
@@ -138,8 +131,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return a command that runs the indexer in reverse
      */
-    public Command eject()
-    {
+    public Command eject() {
         return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(FLOOR_EJECT_RPS.get()),
                 RotationsPerSecond.of(CENTER_EJECT_RPS.get())),
@@ -151,8 +143,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return true if the indexer is within tolerance of the setpoint, false otherwise
      */
-    public boolean nearSetpoint()
-    {
+    public boolean nearSetpoint() {
         return floorIO.getVelocityError().lte(IndexerFloorConstants.TOLERANCE)
             && centerIO.getVelocityError().lte(IndexerCenterConstants.TOLERANCE);
     }
@@ -162,8 +153,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return The velocity in rotations per second
      */
-    public double getFloorSpeed()
-    {
+    public double getFloorSpeed() {
         return floorIO.getVelocity().in(RotationsPerSecond);
     }
 
@@ -172,8 +162,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return The velocity in rotations per second
      */
-    public double getCenteringSpeed()
-    {
+    public double getCenteringSpeed() {
         return centerIO.getVelocity().in(RotationsPerSecond);
     }
 
@@ -182,8 +171,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return The velocity in rotations per second multiplied by the radius
      */
-    public double getFloorLinearVelocity()
-    {
+    public double getFloorLinearVelocity() {
         return floorIO.getVelocity().in(RadiansPerSecond)
             * IndexerFloorConstants.RADIUS.in(Meters);
     }
@@ -193,8 +181,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return The velocity in rotations per second multiplied by the radius
      */
-    public double getCenteringLinearVelocity()
-    {
+    public double getCenteringLinearVelocity() {
         return centerIO.getVelocity().in(RadiansPerSecond)
             * IndexerFloorConstants.RADIUS.in(Meters);
     }
@@ -202,8 +189,7 @@ public class IndexerSuperstructure extends SubsystemBase {
     /**
      * Sets the current linear velocities of the indexer motors.
      */
-    public void setLinearVelocity(LinearVelocity floorVelocity, LinearVelocity centeringVelocity)
-    {
+    public void setLinearVelocity(LinearVelocity floorVelocity, LinearVelocity centeringVelocity) {
         floorIO.runVelocity(RadiansPerSecond.of(floorVelocity.in(MetersPerSecond)),
             IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
         centerIO.runVelocity(RadiansPerSecond.of(centeringVelocity.in(MetersPerSecond)),
@@ -215,8 +201,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return The Position in radians multiplied by 2_PIr
      */
-    public double getFloorLinearPosition()
-    {
+    public double getFloorLinearPosition() {
         return floorIO.getPosition().in(Radians)
             * (2 * Math.PI * IndexerFloorConstants.RADIUS.in(Meters));
     }
@@ -226,8 +211,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return The Position in radians multiplied by 2_PIr
      */
-    public double getCenterLinearPosition()
-    {
+    public double getCenterLinearPosition() {
         return centerIO.getPosition().in(Radians)
             * (2 * Math.PI * IndexerCenterConstants.RADIUS.in(Meters));
     }
@@ -235,8 +219,7 @@ public class IndexerSuperstructure extends SubsystemBase {
     /**
      * Sets the current linear position of the indexer motor.
      */
-    public void setLinearPosition(Distance floorPosition, Distance centeringPosition)
-    {
+    public void setLinearPosition(Distance floorPosition, Distance centeringPosition) {
         floorIO.runPosition(Radians.of(
             floorPosition.in(Meters)
                 / IndexerFloorConstants.RADIUS.in(Meters)),
@@ -250,8 +233,7 @@ public class IndexerSuperstructure extends SubsystemBase {
     /**
      * Closes the indexer mechanism and releases resources.
      */
-    public void close()
-    {
+    public void close() {
         floorIO.close();
         centerIO.close();
     }

@@ -38,8 +38,7 @@ public class AutoCommands {
      * @param path the PathPlanner path containing the starting pose
      * @return a command that resets the robot's pose to the path's starting position
      */
-    public static Command resetSimOdom(Drive drive, PathPlannerPath path)
-    {
+    public static Command resetSimOdom(Drive drive, PathPlannerPath path) {
         if (RobotBase.isSimulation()) {
             final RobotState robotState = RobotState.getInstance();
             return drive.runOnce(
@@ -74,8 +73,7 @@ public class AutoCommands {
      * @return a command that aligns the robot to the target and shoots for up to the given duration
      */
     public static Command alignAndShoot(Drive drive, IndexerSuperstructure indexer,
-        Tower tower, ShooterSuperstructure shooter, double duration)
-    {
+        Tower tower, ShooterSuperstructure shooter, double duration) {
         final var robotState = RobotState.getInstance();
         return Commands.deadline(
             FuelCommands.shootFuel(indexer, tower, shooter,
@@ -95,8 +93,7 @@ public class AutoCommands {
      * @return a command that prepares the shooter to shoot THE HUB from the end of the provided
      *         path
      */
-    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter)
-    {
+    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter) {
         // All paths blue canonical, so flip end translation if red alliance
         return shooter.spinUpShooterToHubDistance(
             Meters.of(
@@ -123,8 +120,7 @@ public class AutoCommands {
      */
     public static Command makePreloadShot(Drive drive, IndexerSuperstructure indexer,
         Tower tower,
-        ShooterSuperstructure shooter, PathPlannerPath path)
-    {
+        ShooterSuperstructure shooter, PathPlannerPath path) {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
@@ -150,8 +146,7 @@ public class AutoCommands {
      */
     public static Command makeFullShot(Drive drive, IntakeSuperstructure intake,
         IndexerSuperstructure indexer,
-        Tower tower, ShooterSuperstructure shooter, PathPlannerPath path)
-    {
+        Tower tower, ShooterSuperstructure shooter, PathPlannerPath path) {
         return Commands.sequence(
             new ParallelDeadlineGroup(
                 AutoBuilder.followPath(path),
@@ -172,8 +167,7 @@ public class AutoCommands {
      *        intake
      */
     public static Command driveAndIntake(IntakeSuperstructure intake, Command pathCommand,
-        Time afterPathWait)
-    {
+        Time afterPathWait) {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(

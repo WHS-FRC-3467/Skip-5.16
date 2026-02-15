@@ -29,8 +29,7 @@ public class IndexerTest {
     IndexerSuperstructure indexer;
 
     @BeforeEach // this method will run before each test
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
         indexer = IndexerSuperstructureConstants.get();
@@ -44,8 +43,7 @@ public class IndexerTest {
     }
 
     @AfterEach // this method will run after each test
-    void shutdown()
-    {
+    void shutdown() {
         try {
             indexer.close();
         } catch (Exception e) {
@@ -54,8 +52,7 @@ public class IndexerTest {
     }
 
     @Test // marks this method as a test
-    void shoot()
-    {
+    void shoot() {
         TestUtil.runTest(
             indexer.shoot(),
             5,
@@ -69,8 +66,7 @@ public class IndexerTest {
     }
 
     @Test
-    void stop()
-    {
+    void stop() {
         TestUtil.runTest(
             indexer.stopCommand(),
             2,

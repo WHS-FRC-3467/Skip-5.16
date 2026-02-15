@@ -54,10 +54,10 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 () -> isLinearStopped());
         this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) > LINEAR_CURRENT.get() * 0.8)
-                .and(this.linearStopped);
+            .and(this.linearStopped);
         this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) < -LINEAR_CURRENT.get() * 0.8)
-                .and(this.linearStopped);
+            .and(this.linearStopped);
     }
 
     /**

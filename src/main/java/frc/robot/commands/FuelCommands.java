@@ -37,8 +37,7 @@ public class FuelCommands {
      * @param indexer the indexer subsystem
      * @return a command that feeds the tower until a laserCAN is tripped
      */
-    public static Command stageFuel(IndexerSuperstructure indexer, Tower tower)
-    {
+    public static Command stageFuel(IndexerSuperstructure indexer, Tower tower) {
         return Commands.parallel(
             indexer.feed(),
             tower.feed())
@@ -65,8 +64,7 @@ public class FuelCommands {
      *         duration
      */
     public static Command shootFuel(IndexerSuperstructure indexer, Tower tower,
-        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration)
-    {
+        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration) {
         Command feed = Commands.parallel(
             indexer.shoot(),
             tower.shoot())

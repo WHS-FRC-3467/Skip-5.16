@@ -33,7 +33,7 @@ import frc.robot.Robot;
 /** Add your docs here. */
 public class IndexerFloorConstants {
 
-    public static String NAME = "Indexer";
+    public static String NAME = "IndexerFloor";
 
     public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(60);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second).times(10);
@@ -56,8 +56,7 @@ public class IndexerFloorConstants {
      *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -93,8 +92,7 @@ public class IndexerFloorConstants {
      *
      * @return A fully configured IndexerSuperstructure subsystem
      */
-    public static FlywheelMechanism<?> get()
-    {
+    public static FlywheelMechanism<?> get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
