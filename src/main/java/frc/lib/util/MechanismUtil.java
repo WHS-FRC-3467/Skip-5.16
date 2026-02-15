@@ -6,13 +6,18 @@
 
 package frc.lib.util;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 
 /**
  * Utility class for mechanism-related calculations and conversions.
@@ -96,11 +101,41 @@ public class MechanismUtil {
         }
 
         /**
+         * Converts a linear velocity measurement to an angular velocity measurement based on the
+         * radius initialized with.
+         *
+         * <p>
+         * Uses the relationship: angularVelocity = linearVelocity / radius
+         *
+         * @param linearVelocity The linear velocity to convert
+         * @return The equivalent angular velocity
+         */
+        public AngularVelocity toAngularVelocity(LinearVelocity linearVelocity) {
+            return RadiansPerSecond.of(
+                linearVelocity.in(MetersPerSecond) / radius.in(Meters));
+        }
+
+        /**
+         * Converts an angular velocity measurement to a linear velocity measurement based on the
+         * radius initialized with.
+         *
+         * <p>
+         * Uses the relationship: linearVelocity = angularVelocity * radius
+         *
+         * @param angularVelocity The angular velocity to convert
+         * @return The equivalent linear velocity
+         */
+        public LinearVelocity toLinearVelocity(AngularVelocity angularVelocity) {
+            return MetersPerSecond.of(
+                angularVelocity.in(RadiansPerSecond) * radius.in(Meters));
+        }
+
+        /**
          * Gets the radius used for distance/angle conversions.
          *
          * @return The drum radius
          */
-        public Distance getDrumRadius() {
+        public Distance getRadius() {
             return radius;
         }
     }

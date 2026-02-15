@@ -15,16 +15,21 @@
 
 package frc.lib.mechanisms;
 
+import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Voltage;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
@@ -236,6 +241,17 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public Angle getPosition() {
         return inputs.position;
+    }
+
+    /**
+     * Gets the linear position of the mechanism based on the angle and a given radius.
+     *
+     * @param radius The radius to convert angle to distance
+     * @return The linear position of the mechanism
+     */
+    public Distance getPosition(Distance radius) {
+        return Meters
+            .of(inputs.position.in(Radians) * radius.in(Meters));
     }
 
     /**
