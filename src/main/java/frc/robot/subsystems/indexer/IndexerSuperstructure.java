@@ -183,7 +183,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     public double getCenteringLinearVelocity() {
         return centerIO.getVelocity().in(RadiansPerSecond)
-            * IndexerFloorConstants.RADIUS.in(Meters);
+            * IndexerCenterConstants.RADIUS.in(Meters);
     }
 
     /**
