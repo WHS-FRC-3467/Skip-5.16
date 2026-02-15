@@ -17,7 +17,7 @@ package frc.robot.commands.autos;
 
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
@@ -42,7 +42,7 @@ public class DepotAuto extends AutoRoutine {
      * @param shooter the shooter superstructure for launching fuel
      * @param start the starting position on the field
      */
-    public DepotAuto(Drive drive, IntakeSuperstructure intake, Indexer indexer,
+    public DepotAuto(Drive drive, IntakeSuperstructure intake, IndexerSuperstructure indexer,
         Tower tower,
         ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
