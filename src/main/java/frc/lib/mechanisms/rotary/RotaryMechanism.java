@@ -17,10 +17,10 @@ import edu.wpi.first.units.measure.Distance;
 import frc.lib.io.motor.MotorIO;
 
 /**
- * Abstract base class for rotary mechanisms that pivot around an axis.
- * Examples include arms, hoods, and pivots. Supports position control with optional
- * absolute encoder feedback and 3D visualization.
- * 
+ * Abstract base class for rotary mechanisms that pivot around an axis. Examples include arms,
+ * hoods, and pivots. Supports position control with optional absolute encoder feedback and 3D
+ * visualization.
+ *
  * @param <T> the type of MotorIO implementation used by this mechanism
  * @param <E> the type of AbsoluteEncoderIO implementation (if used)
  */
@@ -38,25 +38,24 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
         Angle minAngle,
         Angle maxAngle,
         Angle startingAngle,
-        RotaryAxis axis) {
-    }
+        RotaryAxis axis) {}
 
     protected final AbsoluteEncoderInputsAutoLogged absoluteEncoderInputs =
         new AbsoluteEncoderInputsAutoLogged();
     protected final Optional<E> absoluteEncoder;
+    private final String encoderName;
 
     private final RotaryVisualizer visualizer;
 
     public RotaryMechanism(String name, RotaryMechCharacteristics characteristics, T io,
-        Optional<E> absoluteEncoder)
-    {
+        Optional<E> absoluteEncoder, String encoderName) {
         super(name, io);
         this.absoluteEncoder = absoluteEncoder;
+        this.encoderName = encoderName;
         visualizer = new RotaryVisualizer(name, characteristics);
     }
 
-    private Optional<Angle> getTrajectoryAngle()
-    {
+    private Optional<Angle> getTrajectoryAngle() {
         if (inputs.controlType != ControlType.POSITION || inputs.positionError == null) {
             return Optional.empty();
         }
@@ -64,8 +63,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
         return Optional.of(inputs.activeTrajectoryPosition);
     }
 
-    private Optional<Angle> getGoalAngle()
-    {
+    private Optional<Angle> getGoalAngle() {
         if (inputs.controlType != ControlType.POSITION || inputs.positionError == null) {
             return Optional.empty();
         }
@@ -74,8 +72,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     }
 
     // Checks if mechanism is near a goal position within a specified tolerance
-    public boolean nearGoal(Angle goalAngle, Angle tolerance)
-    {
+    public boolean nearGoal(Angle goalAngle, Angle tolerance) {
         return MathUtil.isNear(
             getPosition().in(BaseUnits.AngleUnit),
             goalAngle.in(BaseUnits.AngleUnit),
@@ -83,8 +80,7 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         // First, refresh motor inputs from hardware in the base class.
         super.periodic();
 
@@ -96,13 +92,12 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
         // Finally, update and log absolute encoder inputs if present.
         absoluteEncoder.ifPresent(encoder -> {
             encoder.updateInputs(absoluteEncoderInputs);
-            Logger.processInputs(encoder.getName(), absoluteEncoderInputs);
+            Logger.processInputs(encoderName, absoluteEncoderInputs);
         });
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         super.close();
         absoluteEncoder.ifPresent(AbsoluteEncoderIO::close);
     }

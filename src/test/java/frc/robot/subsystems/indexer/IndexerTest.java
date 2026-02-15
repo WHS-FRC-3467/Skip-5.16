@@ -29,8 +29,7 @@ public class IndexerTest {
     Indexer indexer;
 
     @BeforeEach // this method will run before each test
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
         indexer = IndexerConstants.get();
@@ -44,8 +43,7 @@ public class IndexerTest {
     }
 
     @AfterEach // this method will run after each test
-    void shutdown()
-    {
+    void shutdown() {
         try {
             indexer.close();
         } catch (Exception e) {
@@ -54,11 +52,10 @@ public class IndexerTest {
     }
 
     @Test // marks this method as a test
-    void index()
-    {
+    void shoot() {
         TestUtil.runTest(
-            indexer.setStateCommand(Indexer.State.PULL),
-            2,
+            indexer.shoot(),
+            5,
             indexer);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
@@ -69,16 +66,15 @@ public class IndexerTest {
     }
 
     @Test
-    void stop()
-    {
+    void stop() {
         TestUtil.runTest(
-            indexer.setStateCommand(Indexer.State.STOP),
+            indexer.stopCommand(),
             2,
             indexer);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
-            assertTrue(indexer.nearSetpoint());
+            assertTrue(indexer.getSpeed() < 0.1);
         } catch (Exception e) {
             fail("Failed to stop indexer: " + e.getMessage());
         }

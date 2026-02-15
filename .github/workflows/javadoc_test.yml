@@ -1,11 +1,11 @@
-name: Build
+name: Test Javadoc
 
 on:
   push:
 
 jobs:
-  run_tests:
-    name: Test
+  build:
+    name: Test Javadoc
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -17,9 +17,5 @@ jobs:
           java-version: "17"
       - name: Grant execute permission
         run: chmod +x gradlew
-      - name: Build Robot Code
-        run: ./gradlew build -x test
-      - name: Test Robot Code
-        run: ./gradlew test
-      - name: Check Formatting
-        run: ./gradlew spotlessCheck
+      - name: Build robot code
+        run: ./gradlew javadoc

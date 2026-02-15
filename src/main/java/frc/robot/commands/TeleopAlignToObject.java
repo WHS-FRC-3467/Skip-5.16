@@ -40,7 +40,7 @@ public class TeleopAlignToObject extends Command {
 
     /**
      * Creates a command to align the robot to a detected object while allowing driver control.
-     * 
+     *
      * @param drive the Drive subsystem to control robot movement
      * @param objectDetector the ObjectDetector subsystem to detect and track objects
      * @param mode the contour selection mode for choosing which detected object to align to
@@ -51,8 +51,7 @@ public class TeleopAlignToObject extends Command {
      */
     public TeleopAlignToObject(Drive drive, ObjectDetector objectDetector,
         ContourSelectionMode mode, DoubleSupplier xSupplier,
-        DoubleSupplier ySupplier, DoubleSupplier rotSupplier)
-    {
+        DoubleSupplier ySupplier, DoubleSupplier rotSupplier) {
         this.drive = drive;
         this.xSupplier = xSupplier;
         this.ySupplier = ySupplier;
@@ -67,8 +66,7 @@ public class TeleopAlignToObject extends Command {
      * Initializes the command by resetting the angular controller to ensure a clean start.
      */
     @Override
-    public void initialize()
-    {
+    public void initialize() {
         // Conservatively reset upon initialization
         strategy.getAngularController().reset(0.0);
     }
@@ -79,8 +77,7 @@ public class TeleopAlignToObject extends Command {
      * object is detected.
      */
     @Override
-    public void execute()
-    {
+    public void execute() {
         // Take translation inputs from joystick
         // Apply linear velocity shaping
         Translation2d linearVelocity = DriveCommands
@@ -116,12 +113,11 @@ public class TeleopAlignToObject extends Command {
 
     /**
      * Checks if the command is finished.
-     * 
+     *
      * @return false; this is a continuous teleop command that runs until interrupted.
      */
     @Override
-    public boolean isFinished()
-    {
+    public boolean isFinished() {
         return false;
     }
 }

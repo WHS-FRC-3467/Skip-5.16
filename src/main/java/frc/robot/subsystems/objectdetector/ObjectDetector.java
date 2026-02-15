@@ -49,21 +49,20 @@ public class ObjectDetector extends SubsystemBase {
     private ArrayList<Translation2d> objectPoseBuffer = new ArrayList<>(10);
 
     /**
-     * Constructs a new ObjectDetector subsystem with the specified IO implementation.
-     * Creates an Object Detection device that can periodically update its inputs field.
-     * 
+     * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
+     * Object Detection device that can periodically update its inputs field.
+     *
+     * @param cameraName the name of the camera for logging purposes
      * @param io the IO implementation for object detection (real, sim, or replay)
      */
-    public ObjectDetector(ObjectDetectionIO io)
-    {
-        objectDetection = new ObjectDetection(io);
+    public ObjectDetector(String cameraName, ObjectDetectionIO io) {
+        objectDetection = new ObjectDetection(cameraName, io);
     }
 
     // Private helper for generating latest ML Object Observation and updating internal buffer of
     // detected object poses (if it was successfully generated).
     private Optional<ObjectDetectionObservation> generateObjectObservation(
-        PhotonTrackedTarget target)
-    {
+        PhotonTrackedTarget target) {
         // Attempt to generate full Object record using ML model
         Optional<ObjectDetectionObservation> observation =
             objectDetection.getObjectObservation(target,
@@ -84,8 +83,7 @@ public class ObjectDetector extends SubsystemBase {
 
     // Private helper for generating latest Contour observation.
     private Optional<ObjectDetectionObservation> generateContourObservation(
-        ContourSelectionMode selection)
-    {
+        ContourSelectionMode selection) {
         // Attempt to generate partial Object record using Blob model
         Optional<ObjectDetectionObservation> observation =
             objectDetection.getContourObservation(objectDetection.getTargets(), selection);
@@ -94,8 +92,7 @@ public class ObjectDetector extends SubsystemBase {
     }
 
     // Private helper for logging Object Detection values. Object ID = -9999 for stale values.
-    private void logObjectObservation(Optional<ObjectDetectionObservation> observation)
-    {
+    private void logObjectObservation(Optional<ObjectDetectionObservation> observation) {
         // Logged calculations for sim
         if (observation.isPresent() && (observation.get().objectPose().isPresent()
             && observation.get().distance().isPresent())) {
@@ -138,8 +135,7 @@ public class ObjectDetector extends SubsystemBase {
 
     // Private helper for logging Contour values. Object ID = -9999 for stale values.
     private void logContourObservation(Optional<ObjectDetectionObservation> observation,
-        ContourSelectionMode mode)
-    {
+        ContourSelectionMode mode) {
         // Logged calculations for sim
         if (observation.isPresent()) {
             Logger.recordOutput("Detection/" + "Contour: " + mode + ": Object ID",
@@ -162,8 +158,7 @@ public class ObjectDetector extends SubsystemBase {
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         // Update the inputs data structure associated with this object detection camera with latest
         // readings
         objectDetection.periodic();

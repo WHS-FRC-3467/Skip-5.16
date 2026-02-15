@@ -24,8 +24,7 @@ public class TestUtil {
     private static Timer timer = new Timer();
     private static Timer loopTimer = new Timer();
 
-    public static void runTest(Command command, double duration, Subsystem subsystem)
-    {
+    public static void runTest(Command command, double duration, Subsystem subsystem) {
         command.initialize();
 
         timer.restart();

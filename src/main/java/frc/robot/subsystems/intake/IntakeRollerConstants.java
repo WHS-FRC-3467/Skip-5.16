@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.intakeRoller;
+package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -49,26 +49,25 @@ public class IntakeRollerConstants {
 
     public static final String NAME = "Intake Roller";
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(10.0);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(75.0);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
 
-    private static final double GEARING = (2.0 / 1.0);
+    private static final double GEARING = (24.0 / 12.0);
 
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.5);
+    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
+    private static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.1);
 
     // Velocity PID
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the intake roller.
-     * 
+     *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -104,11 +103,10 @@ public class IntakeRollerConstants {
     /**
      * Factory method to create a FlywheelMechanism instance for the intake roller subsystem.
      * Creates the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
-     * 
+     *
      * @return A configured FlywheelMechanism instance
      */
-    public static FlywheelMechanism<?> getMechanism()
-    {
+    public static FlywheelMechanism<?> getMechanism() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -128,15 +126,5 @@ public class IntakeRollerConstants {
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
-    }
-
-    /**
-     * Factory method to create an IntakeRoller subsystem instance.
-     * 
-     * @return A fully configured IntakeRoller subsystem
-     */
-    public static IntakeRoller get()
-    {
-        return new IntakeRoller(getMechanism());
     }
 }

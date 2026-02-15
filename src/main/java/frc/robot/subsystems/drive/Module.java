@@ -47,8 +47,7 @@ public class Module {
     public Module(
         ModuleIO io,
         int index,
-        SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants)
-    {
+        SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants) {
         this.io = io;
         this.index = index;
         this.constants = constants;
@@ -65,8 +64,7 @@ public class Module {
     /**
      * Updates inputs, processes odometry data, and updates connection alerts.
      */
-    public void periodic()
-    {
+    public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
 
@@ -90,8 +88,7 @@ public class Module {
      *
      * @param state Desired module state (speed and angle), will be optimized
      */
-    public void runSetpoint(SwerveModuleState state)
-    {
+    public void runSetpoint(SwerveModuleState state) {
         // Optimize velocity setpoint
         state.optimize(getAngle());
         state.cosineScale(inputs.turnPosition);
@@ -106,15 +103,13 @@ public class Module {
      *
      * @param output Drive motor output voltage
      */
-    public void runCharacterization(double output)
-    {
+    public void runCharacterization(double output) {
         io.setDriveOpenLoop(output);
         io.setTurnPosition(new Rotation2d());
     }
 
     /** Disables all outputs to motors. */
-    public void stop()
-    {
+    public void stop() {
         io.setDriveOpenLoop(0.0);
         io.setTurnOpenLoop(0.0);
     }
@@ -124,8 +119,7 @@ public class Module {
      *
      * @return Current module angle
      */
-    public Rotation2d getAngle()
-    {
+    public Rotation2d getAngle() {
         return inputs.turnPosition;
     }
 
@@ -134,8 +128,7 @@ public class Module {
      *
      * @return Drive position in meters
      */
-    public double getPositionMeters()
-    {
+    public double getPositionMeters() {
         return inputs.drivePositionRad * constants.WheelRadius;
     }
 
@@ -144,8 +137,7 @@ public class Module {
      *
      * @return Drive velocity in meters per second
      */
-    public double getVelocityMetersPerSec()
-    {
+    public double getVelocityMetersPerSec() {
         return inputs.driveVelocityRadPerSec * constants.WheelRadius;
     }
 
@@ -154,8 +146,7 @@ public class Module {
      *
      * @return Module position containing angle and distance
      */
-    public SwerveModulePosition getPosition()
-    {
+    public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(getPositionMeters(), getAngle());
     }
 
@@ -164,8 +155,7 @@ public class Module {
      *
      * @return Module state containing angle and velocity
      */
-    public SwerveModuleState getState()
-    {
+    public SwerveModuleState getState() {
         return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
     }
 
@@ -174,8 +164,7 @@ public class Module {
      *
      * @return Array of module positions from this cycle
      */
-    public SwerveModulePosition[] getOdometryPositions()
-    {
+    public SwerveModulePosition[] getOdometryPositions() {
         return odometryPositions;
     }
 
@@ -184,8 +173,7 @@ public class Module {
      *
      * @return Array of timestamps in seconds
      */
-    public double[] getOdometryTimestamps()
-    {
+    public double[] getOdometryTimestamps() {
         return inputs.odometryTimestamps;
     }
 
@@ -194,8 +182,7 @@ public class Module {
      *
      * @return Drive position in radians
      */
-    public double getWheelRadiusCharacterizationPosition()
-    {
+    public double getWheelRadiusCharacterizationPosition() {
         return inputs.drivePositionRad;
     }
 
@@ -204,8 +191,7 @@ public class Module {
      *
      * @return Drive velocity in rotations per second
      */
-    public double getFFCharacterizationVelocity()
-    {
+    public double getFFCharacterizationVelocity() {
         return Units.radiansToRotations(inputs.driveVelocityRadPerSec);
     }
 }

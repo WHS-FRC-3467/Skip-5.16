@@ -1,17 +1,16 @@
-/* Copyright (C) 2026 Windham Windup
+/*
+ * Copyright (C) 2026 Windham Windup
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
  */
 
 package frc.robot.subsystems.climber;
@@ -86,13 +85,11 @@ public class ClimberConstants {
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0);
 
     /**
-     * Creates and configures a TalonFX motor controller configuration for the climber
-     * mechanism.
-     * 
+     * Creates and configures a TalonFX motor controller configuration for the climber mechanism.
+     *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -132,11 +129,10 @@ public class ClimberConstants {
     /**
      * Factory method to create a Climber instance for the climber subsystem. Creates the
      * appropriate subsystem based on the current robot mode (REAL, SIM, or REPLAY).
-     * 
+     *
      * @return A configured Climber instance
      */
-    public static Climber get()
-    {
+    public static Climber get() {
         LinearMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -146,7 +142,7 @@ public class ClimberConstants {
             case SIM:
                 mechanism = new LinearMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.climber),
-                    DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
+                    DCMOTOR, CARRIAGE_MASS, false, CHARACTERISTICS);
                 break;
             case REPLAY:
                 mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}) {};

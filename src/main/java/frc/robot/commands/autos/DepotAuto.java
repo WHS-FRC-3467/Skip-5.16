@@ -18,15 +18,13 @@ package frc.robot.commands.autos;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import static edu.wpi.first.units.Units.Seconds;
 import java.util.Collections;
 import java.util.List;
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.wpilibj2.command.Commands;
 
 /**
  * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect FUEL from
@@ -38,17 +36,15 @@ public class DepotAuto extends AutoRoutine {
      * fuel. Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
      *
      * @param drive the drive subsystem
-     * @param intakeLinear the intake linear subsystem for deploying/retracting intake
-     * @param intake the intake roller subsystem for collecting fuel
+     * @param intake the intake subsystem
      * @param indexer the indexer subsystem for managing fuel flow
      * @param tower the tower subsystem for moving fuel to shooter
      * @param shooter the shooter superstructure for launching fuel
      * @param start the starting position on the field
      */
-    public DepotAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake, Indexer indexer,
+    public DepotAuto(Drive drive, IntakeSuperstructure intake, Indexer indexer,
         Tower tower,
-        ShooterSuperstructure shooter, StartPosition start)
-    {
+        ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
@@ -67,7 +63,7 @@ public class DepotAuto extends AutoRoutine {
         // Load the named paths
         this.loadAllPaths(expectedPaths);
 
-        // Mirror necessary paths when starting on  RIGHT side so the dashboard shows correct poses
+        // Mirror necessary paths when starting on RIGHT side so the dashboard shows correct poses
         this.setMirrorFlags(Collections.nCopies(expectedPaths.size(), false), start);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
@@ -76,21 +72,20 @@ public class DepotAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                AutoSegments.initializeIntake(intakeLinear, intake),
+                intake.retractIntake().withTimeout(1.25),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
                 // Drive to depot
                 AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                // Pre-deploy intake before driving through depot
-                AutoCommands.extendIntake(intakeLinear),
-                Commands.waitSeconds(0.25),
                 // Run through depot while intaking FUEL
-                AutoSegments.driveAndIntake(intakeLinear, intake,
+                AutoCommands.driveAndIntake(intake,
                     AutoBuilder.followPath(pathPlannerPaths.get(2)), Seconds.of(0.5)),
                 // Drive to shooting location and shoot all FUEL
-                AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
-                    pathPlannerPaths.get(3)));
+                AutoCommands.makeFullShot(drive, intake, indexer, tower, shooter,
+                    pathPlannerPaths.get(3)),
+                // Re-initialize intake for tele-op
+                intake.retractIntake().withTimeout(1.25));
         }
     }
 }

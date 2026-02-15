@@ -37,8 +37,7 @@ public class RotaryVisualizer {
 
     private final double armLength;
 
-    public RotaryVisualizer(String name, RotaryMechCharacteristics constants)
-    {
+    public RotaryVisualizer(String name, RotaryMechCharacteristics constants) {
         this.name = name;
         mechanism = new LoggedMechanism2d(3.0, 3.0, new Color8Bit(Color.kBlack));
         LoggedMechanismRoot2d root = mechanism.getRoot(name + " root", 1.5, 1.5);
@@ -90,8 +89,7 @@ public class RotaryVisualizer {
         root.append(goal);
     }
 
-    private void update()
-    {
+    private void update() {
         SmartDashboard.putData(name + " Visualizer", mechanism);
     }
 
@@ -100,8 +98,7 @@ public class RotaryVisualizer {
      *
      * @param angle The measured angle to display
      */
-    public void setCurrentAngle(Angle angle)
-    {
+    public void setCurrentAngle(Angle angle) {
         measured.setAngle(Rotation2d.fromRadians(angle.in(Radians)));
 
         update();
@@ -112,8 +109,7 @@ public class RotaryVisualizer {
      *
      * @param angle Optional trajectory angle, empty to hide
      */
-    public void setTrajectoryAngle(Optional<Angle> angle)
-    {
+    public void setTrajectoryAngle(Optional<Angle> angle) {
         if (angle.isEmpty()) {
             trajectory.setLength(0.0);
         }
@@ -131,8 +127,7 @@ public class RotaryVisualizer {
      *
      * @param angle Optional goal angle, empty to hide
      */
-    public void setGoalAngle(Optional<Angle> angle)
-    {
+    public void setGoalAngle(Optional<Angle> angle) {
         if (angle.isEmpty()) {
             goal.setLength(0.0);
         }

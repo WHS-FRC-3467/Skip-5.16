@@ -60,8 +60,7 @@ public class HubState {
      *
      * @return a defensive copy of the hub change times
      */
-    public static double[] getHubChangeTimes()
-    {
+    public static double[] getHubChangeTimes() {
         return Arrays.copyOf(HUB_CHANGE_TIMES, HUB_CHANGE_TIMES.length);
     }
 
@@ -93,8 +92,7 @@ public class HubState {
      * Checks the active alliance based on the game-specific message from the DriverStation. Meant
      * to only be called at the first possible change time.
      */
-    public void setFirstActiveAlliance()
-    {
+    public void setFirstActiveAlliance() {
         String gameSpecificMessage = DriverStation.getGameSpecificMessage();
         // The game-specific message indicates which alliance's hub is INACTIVE during the first
         // alliance shift. We therefore set firstActiveAlliance to the *other* alliance:
@@ -115,12 +113,11 @@ public class HubState {
 
     /**
      * Find the next time that the hub will change based on the current match time
-     * 
+     *
      * @param matchTime the current match time in seconds
      * @return the next hub change time, or 0.0 if no hub changes are scheduled
      */
-    private double nextSwitchTime(double matchTime)
-    {
+    private double nextSwitchTime(double matchTime) {
         for (int i = 0; i < HUB_CHANGE_TIMES.length; i++) {
             if (matchTime > HUB_CHANGE_TIMES[i]) {
                 return HUB_CHANGE_TIMES[i];
@@ -132,8 +129,7 @@ public class HubState {
     /**
      * Determines if the hub is close to changing. Uses {@link #SECONDS_BEFORE} as the threshold.
      */
-    private boolean isCloseToSwitching()
-    {
+    private boolean isCloseToSwitching() {
         double matchTime = DriverStation.getMatchTime();
         if (matchTime > HUB_CHANGE_TIMES[4]) {
             return matchTime - nextSwitchTime(matchTime) <= SECONDS_BEFORE;
@@ -147,8 +143,7 @@ public class HubState {
      * Meant to be called regularly. Checks which hub is active and stores it in
      * {@link #activeAlliance}
      */
-    public void periodic()
-    {
+    public void periodic() {
         double matchTime = DriverStation.getMatchTime();
         if (matchTime <= HUB_CHANGE_TIMES[4] || matchTime > HUB_CHANGE_TIMES[0]) {
             // If the game is in the transition phase at the start of teleop (t>130),
@@ -178,8 +173,7 @@ public class HubState {
     /**
      * Returns whether our alliance hub is currently active
      */
-    private boolean isOurHubActive()
-    {
+    private boolean isOurHubActive() {
         return activeAlliance == DriverStation.getAlliance().orElse(Alliance.Blue);
     }
 }

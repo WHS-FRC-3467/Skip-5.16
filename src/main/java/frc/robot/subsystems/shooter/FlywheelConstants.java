@@ -40,27 +40,26 @@ public class FlywheelConstants {
     public static final AngularAcceleration MAX_ACCELERATION =
         RotationsPerSecondPerSecond.of(300.0);
 
-    private static final double GEARING = (1.0 / 4.0);
+    private static final double GEARING = (20.0 / 18.0);
 
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.2);
+    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(2.0);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
+    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(2);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.001);
 
-    public static final Distance FLYWHEEL_RADIUS = Inches.of(2); // 2 inches
+    public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(50.0, 0.0, 0.0);
+    public static final PID SLOT0_PID = new PID(10.0, 0.0, 0.0).withV(0.4);
 
     /**
      * Creates a TalonFX motor controller configuration for the flywheel mechanism. Configures
      * current limits, voltage limits, neutral mode, gearing ratios, and PID gains.
-     * 
+     *
      * @param invert whether to invert the motor direction
      * @return configured TalonFXConfiguration for the flywheel motor
      */
-    public static TalonFXConfiguration getFXConfig(boolean invert)
-    {
+    public static TalonFXConfiguration getFXConfig(boolean invert) {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -98,11 +97,10 @@ public class FlywheelConstants {
     /**
      * Creates and configures the left flywheel mechanism based on the current robot mode. Selects
      * the appropriate implementation (real, sim, or replay) and enables tunable PID.
-     * 
+     *
      * @return configured left flywheel mechanism
      */
-    public static FlywheelMechanism<?> getLeft()
-    {
+    public static FlywheelMechanism<?> getLeft() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -130,11 +128,10 @@ public class FlywheelConstants {
     /**
      * Creates and configures the right flywheel mechanism based on the current robot mode. Selects
      * the appropriate implementation (real, sim, or replay) and enables tunable PID.
-     * 
+     *
      * @return configured right flywheel mechanism
      */
-    public static FlywheelMechanism<?> getRight()
-    {
+    public static FlywheelMechanism<?> getRight() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:

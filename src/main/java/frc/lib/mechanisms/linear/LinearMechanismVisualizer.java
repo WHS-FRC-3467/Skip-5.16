@@ -53,8 +53,7 @@ public class LinearMechanismVisualizer {
 
     private Rotation3d orientation;
 
-    public LinearMechanismVisualizer(String name, LinearMechCharacteristics characteristics)
-    {
+    public LinearMechanismVisualizer(String name, LinearMechCharacteristics characteristics) {
         this.name = name;
         this.orientation = characteristics.orientation();
 
@@ -127,8 +126,7 @@ public class LinearMechanismVisualizer {
     /**
      * Updates the 2D visualization angle based on the current orientation.
      */
-    private void updateVisualizationAngle()
-    {
+    private void updateVisualizationAngle() {
         // Convert the pitch (Y rotation) to a 2D visualization angle
         // WPILib uses counter-clockwise positive, so pitch directly maps to visualization angle
         double visualAngleDegrees = Math.toDegrees(-orientation.getY());
@@ -140,8 +138,7 @@ public class LinearMechanismVisualizer {
         goal.setAngle(visualAngleDegrees);
     }
 
-    private void update()
-    {
+    private void update() {
         SmartDashboard.putData(name + " Visualizer", mechanism);
     }
 
@@ -150,8 +147,7 @@ public class LinearMechanismVisualizer {
      *
      * @param distance The measured distance to display
      */
-    public void setMeasuredDistance(Distance distance)
-    {
+    public void setMeasuredDistance(Distance distance) {
         measured.setLength(distance.in(Meters));
 
         update();
@@ -162,8 +158,7 @@ public class LinearMechanismVisualizer {
      *
      * @param distance Optional trajectory distance, empty to hide
      */
-    public void setTrajectoryDistance(Optional<Distance> distance)
-    {
+    public void setTrajectoryDistance(Optional<Distance> distance) {
         if (distance.isEmpty()) {
             trajectoryArm.setLength(0.0);
         }
@@ -181,8 +176,7 @@ public class LinearMechanismVisualizer {
      *
      * @param distance Optional goal distance, empty to hide
      */
-    public void setGoalDistance(Optional<Distance> distance)
-    {
+    public void setGoalDistance(Optional<Distance> distance) {
         if (distance.isEmpty()) {
             goalArm.setLength(0.0);
         }
@@ -201,8 +195,7 @@ public class LinearMechanismVisualizer {
      *
      * @param orientation The new orientation of the mechanism
      */
-    public void setOrientation(Rotation3d orientation)
-    {
+    public void setOrientation(Rotation3d orientation) {
         this.orientation = orientation;
         updateVisualizationAngle();
         update();
@@ -213,8 +206,7 @@ public class LinearMechanismVisualizer {
      *
      * @return The current orientation
      */
-    public Rotation3d getOrientation()
-    {
+    public Rotation3d getOrientation() {
         return orientation;
     }
 }

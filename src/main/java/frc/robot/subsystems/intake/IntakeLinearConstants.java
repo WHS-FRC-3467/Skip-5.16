@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.subsystems.intakeLinear;
+package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
@@ -49,17 +49,17 @@ public class IntakeLinearConstants {
 
     public static final String NAME = "Intake Linear";
 
-    public static final double GEARING = (2.0 / 1.0);
+    public static final double GEARING = (42.0 / 12.0);
 
     public static final Distance MIN_DISTANCE = Inches.of(0.0);
-    public static final Distance MAX_DISTANCE = Inches.of(11.4);
+    public static final Distance MAX_DISTANCE = Inches.of(11.375);
     public static final Distance STARTING_DISTANCE = Inches.of(0.0);
 
-    public static final Distance DRUM_RADIUS = Inches.of(1.0);
-    public static final Mass CARRIAGE_MASS = Kilograms.of(.01);
+    public static final Distance DRUM_RADIUS = Inches.of(0.5);
+    public static final Mass CARRIAGE_MASS = Kilograms.of(.1);
     public static final DistanceAngleConverter CONVERTER = new DistanceAngleConverter(DRUM_RADIUS);
 
-    public static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
+    public static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
 
     // Orientation for the linear mechanism.
     // Uses WPILib's counter-clockwise positive convention around Y-axis:
@@ -79,11 +79,10 @@ public class IntakeLinearConstants {
     /**
      * Creates and configures a TalonFX motor controller configuration for the intake linear
      * mechanism.
-     * 
+     *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -116,11 +115,10 @@ public class IntakeLinearConstants {
     /**
      * Factory method to create a LinearMechanism instance for the intake linear subsystem. Creates
      * the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
-     * 
+     *
      * @return A configured LinearMechanism instance
      */
-    public static LinearMechanism<?> getMechanism()
-    {
+    public static LinearMechanism<?> getMechanism() {
         LinearMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -130,7 +128,7 @@ public class IntakeLinearConstants {
             case SIM:
                 mechanism = new LinearMechanismSim(NAME,
                     new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeLinear),
-                    DCMOTOR, CARRIAGE_MASS, CHARACTERISTICS, false);
+                    DCMOTOR, CARRIAGE_MASS, false, CHARACTERISTICS);
                 break;
             case REPLAY:
                 mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}) {};
@@ -140,15 +138,5 @@ public class IntakeLinearConstants {
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
-    }
-
-    /**
-     * Factory method to create an IntakeLinear subsystem instance.
-     * 
-     * @return A fully configured IntakeLinear subsystem
-     */
-    public static IntakeLinear get()
-    {
-        return new IntakeLinear(getMechanism());
     }
 }

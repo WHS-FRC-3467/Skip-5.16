@@ -33,10 +33,10 @@ import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.PID;
 
 /**
- * Abstract base class for all robot mechanisms that use motors.
- * Provides common functionality for motor control, PID tuning, logging, and visualization.
- * Mechanisms include flywheels, linear actuators, and rotary arms.
- * 
+ * Abstract base class for all robot mechanisms that use motors. Provides common functionality for
+ * motor control, PID tuning, logging, and visualization. Mechanisms include flywheels, linear
+ * actuators, and rotary arms.
+ *
  * @param <T> the type of MotorIO implementation used by this mechanism
  */
 public abstract class Mechanism<T extends MotorIO> {
@@ -46,8 +46,7 @@ public abstract class Mechanism<T extends MotorIO> {
     protected final T io;
     private final List<TunablePidConfig> tunablePidConfigs = new ArrayList<>();
 
-    protected Mechanism(String name, T io)
-    {
+    protected Mechanism(String name, T io) {
         this.name = name;
         this.io = io;
     }
@@ -72,8 +71,7 @@ public abstract class Mechanism<T extends MotorIO> {
             LoggedTunableNumber kv,
             LoggedTunableNumber kg,
             LoggedTunableNumber ks,
-            int id)
-        {
+            int id) {
             this.slot = slot;
             this.kp = kp;
             this.ki = ki;
@@ -88,12 +86,11 @@ public abstract class Mechanism<T extends MotorIO> {
 
     /**
      * Enables tunable PID for a slot using this mechanism's name as the logging prefix.
-     * 
+     *
      * @param slot The slot to update
      * @param defaultPid The default PID values
      */
-    public void enableTunablePID(PIDSlot slot, PID defaultPid)
-    {
+    public void enableTunablePID(PIDSlot slot, PID defaultPid) {
         LoggedTunableNumber kp =
             new LoggedTunableNumber(name + "/PID/" + slot + "/kP", defaultPid.P());
         LoggedTunableNumber ki =
@@ -113,8 +110,7 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /** Call this method periodically */
-    public void periodic()
-    {
+    public void periodic() {
         for (TunablePidConfig config : tunablePidConfigs) {
             LoggedTunableNumber.ifChanged(
                 config.id,
@@ -143,16 +139,14 @@ public abstract class Mechanism<T extends MotorIO> {
     /**
      * Sets the mechanism to coast mode.
      */
-    public void runCoast()
-    {
+    public void runCoast() {
         io.runCoast();
     }
 
     /**
      * Sets the mechanism to brake mode.
      */
-    public void runBrake()
-    {
+    public void runBrake() {
         io.runBrake();
     }
 
@@ -161,8 +155,7 @@ public abstract class Mechanism<T extends MotorIO> {
      *
      * @param voltage Desired voltage output.
      */
-    public void runVoltage(Voltage voltage)
-    {
+    public void runVoltage(Voltage voltage) {
         io.runVoltage(voltage);
     }
 
@@ -171,8 +164,7 @@ public abstract class Mechanism<T extends MotorIO> {
      *
      * @param current Desired torque-producing current.
      */
-    public void runCurrent(Current current)
-    {
+    public void runCurrent(Current current) {
         io.runCurrent(current);
     }
 
@@ -181,8 +173,7 @@ public abstract class Mechanism<T extends MotorIO> {
      *
      * @param dutyCycle Fractional output between 0 and 1.
      */
-    public void runDutyCycle(double dutyCycle)
-    {
+    public void runDutyCycle(double dutyCycle) {
         io.runDutyCycle(dutyCycle);
     }
 
@@ -192,10 +183,11 @@ public abstract class Mechanism<T extends MotorIO> {
      * @param position Target position.
      * @param slot PID slot index.
      */
-    public void runPosition(Angle position, PIDSlot slot)
-    {
+    public void runPosition(Angle position, PIDSlot slot) {
         io.runPosition(position, slot);
+
     }
+
 
     /**
      * Runs the mechanism at a target velocity.
@@ -205,29 +197,26 @@ public abstract class Mechanism<T extends MotorIO> {
      * @param slot PID slot index.
      */
     public void runVelocity(AngularVelocity velocity, AngularAcceleration acceleration,
-        PIDSlot slot)
-    {
+        PIDSlot slot) {
         io.runVelocity(velocity, acceleration, slot);
     }
 
     /**
      * Updates one PID slot on the motor
-     * 
+     *
      * @param slot The slot to update
      * @param pid The PID to set
      */
-    public void setPID(PIDSlot slot, PID pid)
-    {
+    public void setPID(PIDSlot slot, PID pid) {
         io.setPID(slot, pid);
     }
 
     /**
      * Sets the position of the motor's internal encoder
-     * 
+     *
      * @param position Desired position to set encoder to
      */
-    public void setEncoderPosition(Angle position)
-    {
+    public void setEncoderPosition(Angle position) {
         io.setEncoderPosition(position);
     }
 
@@ -236,19 +225,26 @@ public abstract class Mechanism<T extends MotorIO> {
      *
      * @return The supply current
      */
-    public Current getSupplyCurrent()
-    {
+    public Current getSupplyCurrent() {
         return inputs.supplyCurrent;
     }
 
     /**
      * Getter for angle of the motor
-     * 
+     *
      * @return Angle of the motor or fused encoder
      */
-    public Angle getPosition()
-    {
+    public Angle getPosition() {
         return inputs.position;
+    }
+
+    /**
+     * Gets the error between the target position and current position of the motor.
+     *
+     * @return The position error in angle units
+     */
+    public Angle getPositionError() {
+        return inputs.positionError;
     }
 
     /**
@@ -256,8 +252,7 @@ public abstract class Mechanism<T extends MotorIO> {
      *
      * @return The torque current
      */
-    public Current getTorqueCurrent()
-    {
+    public Current getTorqueCurrent() {
         return inputs.torqueCurrent;
     }
 
@@ -266,26 +261,32 @@ public abstract class Mechanism<T extends MotorIO> {
      *
      * @return The angular velocity
      */
-    public AngularVelocity getVelocity()
-    {
+    public AngularVelocity getVelocity() {
         return inputs.velocity;
+    }
+
+    /**
+     * Gets the error between the target velocity and current velocity of the motor.
+     *
+     * @return The velocity error in angular velocity units
+     */
+    public AngularVelocity getVelocityError() {
+        return inputs.velocityError;
     }
 
     /**
      * Closes the mechanism and releases resources.
      */
-    public void close()
-    {
+    public void close() {
         io.close();
     }
 
     /**
      * Supplier for the Pose3d of the mechanism
-     * 
+     *
      * @return Supplier for the Pose3d
      */
-    public Supplier<Pose3d> getPoseSupplier()
-    {
+    public Supplier<Pose3d> getPoseSupplier() {
         return () -> Pose3d.kZero;
     }
 }
