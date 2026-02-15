@@ -3,7 +3,7 @@ package frc.robot.util;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
-
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
@@ -62,14 +63,17 @@ public class FuelSim {
         0.5 * AIR_DENSITY * DRAG_COF * FUEL_CROSS_AREA;
 
     protected static final int HOPPER_CAPACITY = 50;
-    protected static final double HOPPER_FLOOR_HEIGHT = 0.25; // TODO: Replace with actual value, in
-                                                              // meters
+    protected static final double HOPPER_FLOOR_HEIGHT = Units.inchesToMeters(7); 
+    // NOTE: HOPPER_FLOOR_HEIGHT is an approximate placeholder because the height varies with respect to distance from the shooter. 
+    // This is the vertical distance (in meters) from the carpet/field floor (z = 0 in this sim) to the  
+    // lowest point of the hopper interior where the centers of stored fuel rest. This value  
+    // should be measured from the robot CAD or by physically measuring the competition robot  
+    // and then updated here.
+
     // Array of 3d positions of the fuel hopper
     // Gets larger as balls are intaked (translations appended)
     // Gets smaller as balls are ejected or shot (final indices popped)
     private final ArrayList<Translation3d> hopperFuel = new ArrayList<Translation3d>();
-
-    Pose2d previousRobot = new Pose2d();
 
     protected static final Translation3d[] FIELD_XZ_LINE_STARTS = {
             new Translation3d(0, 0, 0),
@@ -151,6 +155,9 @@ public class FuelSim {
                     }
 
                     Translation3d accel = Fg.plus(Fd).div(FUEL_MASS);
+                    vel = vel.plus(accel.times(PERIOD / subticks));
+                } else {
+                    Translation3d accel = Fg.div(FUEL_MASS);
                     vel = vel.plus(accel.times(PERIOD / subticks));
                 }
                 if (Math.abs(vel.getZ()) < 0.05 && pos.getZ() <= FUEL_RADIUS + 0.03) {
@@ -609,9 +616,10 @@ public class FuelSim {
         yVel += fieldSpeeds.vyMetersPerSecond;
 
         // Spawn the launched fuel
-        spawnFuel(launchPose.getTranslation(), new Translation3d(xVel, yVel, verticalVel));
-        // Release the last fuel from the fuel in hopper list
-        hopperFuel.remove(hopperFuel.size() - 1);
+        // Release the last fuel from the fuel in hopper list, if any are present
+        if (!hopperFuel.isEmpty()) {
+            hopperFuel.remove(hopperFuel.size() - 1);
+        }
     }
 
 
@@ -624,15 +632,13 @@ public class FuelSim {
      */
     public void setHopperFuel(int numFuel) {
         int previousAmount = getHeldFuel();
-        if (numFuel < 0) {
-            numFuel = 0;
-        }
-        if (numFuel < previousAmount) {
+        int amountFuel = MathUtil.clamp(numFuel, 0, 50);
+        if (amountFuel < previousAmount) {
             for (int i = numFuel; i < previousAmount; i++) {
                 hopperFuel.remove(hopperFuel.size() - 1);
             }
         } else {
-            for (int i = previousAmount; i < numFuel; i++) {
+            for (int i = previousAmount; i < amountFuel; i++) {
                 hopperFuel.add(Hopper.getRelativePosInHopper(i));
             }
         }
@@ -642,7 +648,7 @@ public class FuelSim {
      * Represents the filling of the hopper in Sim. Make numFuel positive if adding fuel, negative
      * if removing fuel.
      *
-     * @param numFuel desired number of fuels added to the hopper
+     * @param numFuel number of fuels to change in the hopper (positive to add, negative to remove)
      */
     public void fillHopperBy(int numFuel) {
         setHopperFuel(hopperFuel.size() + numFuel);
@@ -983,7 +989,7 @@ public class FuelSim {
         }
     }
 
-    /** Utility class to managing a fuel's position in the hopper based on an index */
+    /** Utility class for managing a fuel's position in the hopper based on an index */
     protected static class Hopper {
 
         protected static final int PER_LAYER = 14; // 3+4+3+4 layout
@@ -992,9 +998,11 @@ public class FuelSim {
         protected static final double LAYER_HEIGHT = (FUEL_RADIUS * 2) + 0.01;
         protected static final double X_OFFSET = 0.35;
 
-        // Stores a robot-relative position of a fuel that is in the hopper based on an index
+        // Stores a robot-relative position of a fuel that is in the hopper based on an index.
+        // This cache is effectively bounded by HOPPER_CAPACITY (50); at most one entry is stored
+        // per hopper index, so the map will never grow beyond that number of elements.
         protected static final HashMap<Integer, Translation3d> hopperMap =
-            new HashMap<Integer, Translation3d>();
+            new HashMap<Integer, Translation3d>(HOPPER_CAPACITY);
 
         /**
          * Get a robot-relative position for the given hopper index. The hopper is arranged in
