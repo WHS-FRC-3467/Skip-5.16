@@ -44,17 +44,16 @@ public class RobotSim {
         shootSimFuel.whileTrue(
             Commands.repeatingSequence(
                 Commands.waitSeconds(.1),
+                Commands.runOnce(() -> fuelSim.fillHopperBy(-2)),
                 Commands.runOnce(() -> {
-                    // Use FuelSim API that consumes an in-hopper fuel if present so
-                    // visual state and index occupancy remain consistent.
-                    fuelSim.launchFromHopper(
+                    fuelSim.spawnFuel(
                         new Pose3d(robotState.getEstimatedPose())
                             .plus(new Transform3d(Inches.of(-10), Inches.of(-3.6),
                                 Inches.of(21), Rotation3d.kZero))
                             .getTranslation(),
                         fuelSim.launchVel(shooter.getAverageLinearVelocity(),
                             Degrees.of(75.0).minus(shooter.getHoodAngle())));
-                    fuelSim.launchFromHopper(
+                    fuelSim.spawnFuel(
                         new Pose3d(robotState.getEstimatedPose())
                             .plus(new Transform3d(Inches.of(-10), Inches.of(3.6),
                                 Inches.of(21), Rotation3d.kZero))
@@ -68,7 +67,7 @@ public class RobotSim {
 
         fuelSim.enableAirResistance();
         fuelSim.spawnStartingFuel();
-        fuelSim.fillHopper(8);
+        fuelSim.setHopperFuel(8);
         fuelSim.registerRobot(
             Constants.FULL_ROBOT_WIDTH.in(Meters),
             Constants.FULL_ROBOT_LENGTH.in(Meters),
@@ -87,7 +86,7 @@ public class RobotSim {
             // Reset field fuels, then fill the hopper with placeholder fuels.
             fuelSim.clearFuel();
             fuelSim.spawnStartingFuel();
-            fuelSim.fillHopper(8);
+            fuelSim.setHopperFuel(8);
         }).withName("Reset Fuel").ignoringDisable(true));
     }
 

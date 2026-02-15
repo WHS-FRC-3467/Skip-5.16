@@ -18,7 +18,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.RobotState;
-import lombok.Getter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,11 +64,12 @@ public class FuelSim {
     protected static final int HOPPER_CAPACITY = 50;
     protected static final double HOPPER_FLOOR_HEIGHT = 0.25; // TODO: Replace with actual value, in
                                                               // meters
+    // Array of 3d positions of the fuel hopper
+    // Gets larger as balls are intaked (translations appended)
+    // Gets smaller as balls are ejected or shot (final indices popped)
+    private final ArrayList<Translation3d> hopperFuel = new ArrayList<Translation3d>();
 
     Pose2d previousRobot = new Pose2d();
-
-    @Getter
-    private int heldFuel = 0;
 
     protected static final Translation3d[] FIELD_XZ_LINE_STARTS = {
             new Translation3d(0, 0, 0),
@@ -134,8 +134,6 @@ public class FuelSim {
         protected Fuel(Translation3d pos, Translation3d vel) {
             this.pos = pos;
             this.vel = vel;
-            this.inHopper = false;
-            this.indexInHopper = -1;
         }
 
         protected Fuel(Translation3d pos) {
@@ -306,33 +304,6 @@ public class FuelSim {
         protected void addImpulse(Translation3d impulse) {
             vel = vel.plus(impulse);
         }
-
-        /**
-         * If the fuel is in the hopper, update it's pose by applying the robot's translation
-         * since the last update. This keeps hopper-held fuel fixed relative to the robot.
-         *
-         * @param robotPose current robot pose
-         * @param previousRobotPose previous robot pose used to compute delta
-         */
-        protected void updateHopper(Pose2d robotPose, Pose2d previousRobotPose)
-        {
-            // If this fuel is stored in the hopper (has an assigned index), compute its
-            // absolute field position from the robot's current pose and the stored
-            // robot-relative hopper location. This accounts for robot translation and
-            // rotation every update so the fuel stays fixed relative to the robot.
-            if (inHopper && indexInHopper >= 0) {
-                Translation3d rel = Hopper.getRelativePosInHopper(indexInHopper);
-                // Rotate the robot-relative X/Y by the robot heading and translate into field
-                Translation2d rel2 = new Translation2d(rel.getX(), rel.getY())
-                    .rotateBy(robotPose.getRotation());
-                double fieldX = robotPose.getX() + rel2.getX();
-                double fieldY = robotPose.getY() + rel2.getY();
-                double fieldZ = rel.getZ();
-                pos = new Translation3d(fieldX, fieldY, fieldZ);
-                // while in hopper, zero velocity so physics won't move it
-                vel = Translation3d.kZero;
-            }
-        }
     }
 
     /**
@@ -454,15 +425,9 @@ public class FuelSim {
      * Clears the field of fuel
      */
     public void clearFuel() {
-        // Free any occupied hopper slots before removing fuels so slots can be reused.
-        for (Fuel f : fuels) {
-            if (f.inHopper && f.indexInHopper >= 0) {
-                Hopper.freeIndex(f.indexInHopper);
-            }
-        }
         fuels.clear();
-        // Reset held count to zero since all fuels were cleared
-        heldFuel = 0;
+        // Empty Hopper fuel
+        hopperFuel.clear();
     }
 
     /**
@@ -577,7 +542,7 @@ public class FuelSim {
             return;
 
         stepSim();
-        Logger.recordOutput("FuelSim/NumberInHopper", heldFuel);
+        Logger.recordOutput("FuelSim/NumberInHopper", hopperFuel.size());
     }
 
     /**
@@ -586,9 +551,7 @@ public class FuelSim {
     public void stepSim() {
         for (int i = 0; i < subticks; i++) {
             for (Fuel fuel : fuels) {
-                if (!fuel.inHopper) {
-                    fuel.update(this.simulateAirResistance, this.subticks);
-                }
+                fuel.update(this.simulateAirResistance, this.subticks);
             }
 
             handleFuelCollisions(fuels);
@@ -596,7 +559,6 @@ public class FuelSim {
             if (robotPoseSupplier != null) {
                 handleRobotCollisions(fuels);
                 handleIntakes(fuels);
-                handleHopper(fuels);
             }
         }
 
@@ -631,125 +593,29 @@ public class FuelSim {
             throw new IllegalStateException("Robot must be registered before launching fuel.");
         }
 
-        // Build the launch pose: robot position with a vertical offset for the shooter
         Pose3d launchPose = new Pose3d(this.robotPoseSupplier.get())
             .plus(new Transform3d(new Translation3d(Meters.zero(), Meters.zero(), launchHeight),
                 Rotation3d.kZero));
-
-        // Get robot's current field-relative linear velocity so projectile inherits it
         ChassisSpeeds fieldSpeeds = this.robotFieldSpeedsSupplier.get();
 
-        // Decompose shooter speed into horizontal and vertical components using hood angle
         double horizontalVel = Math.cos(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
         double verticalVel = Math.sin(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
+        double xVel = horizontalVel
+            * Math.cos(
+                turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians));
+        double yVel = horizontalVel
+            * Math.sin(
+                turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians));
 
-        // Convert shooter-relative horizontal speed into field X/Y using turret yaw + robot heading
-        double turretPlusHeading =
-            turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians);
-        double xVel = horizontalVel * Math.cos(turretPlusHeading);
-        double yVel = horizontalVel * Math.sin(turretPlusHeading);
-
-        // Add robot's current linear velocity so the launched fuel has correct field frame motion
         xVel += fieldSpeeds.vxMetersPerSecond;
         yVel += fieldSpeeds.vyMetersPerSecond;
 
-        // Spawn the fuel at the computed launch position with the computed velocity
-        // If there are fuels in the hopper, prefer to launch one of them so we free its
-        // hopper slot and reuse the actual Fuel object (keeps counts and visuals consistent).
-        int slotToUse = -1;
-        for (int i = HOPPER_CAPACITY - 1; i >= 0; i--) {
-            if (Hopper.occupied[i]) {
-                slotToUse = i;
-                break;
-            }
-        }
-
-        if (slotToUse >= 0) {
-            // Find the fuel object that occupies this slot
-            Fuel chosen = null;
-            for (Fuel f : fuels) {
-                if (f.inHopper && f.indexInHopper == slotToUse) {
-                    chosen = f;
-                    break;
-                }
-            }
-
-            if (chosen != null) {
-                // Remove from hopper, free slot, and set launched pos/velocity
-                chosen.inHopper = false;
-                chosen.indexInHopper = -1;
-                Hopper.freeIndex(slotToUse);
-                chosen.pos = launchPose.getTranslation();
-                chosen.vel = new Translation3d(xVel, yVel, verticalVel);
-                if (heldFuel > 0)
-                    heldFuel--;
-                return;
-            } else {
-                // Occupied but no matching Fuel found (defensive) — just free the slot
-                Hopper.freeIndex(slotToUse);
-                if (heldFuel > 0)
-                    heldFuel--;
-            }
-        }
-
-        // Fallback: spawn a new fuel if hopper had none available
-        // spawnFuel(launchPose.getTranslation(), new Translation3d(xVel, yVel, verticalVel));
+        // Spawn the launched fuel
+        spawnFuel(launchPose.getTranslation(), new Translation3d(xVel, yVel, verticalVel));
+        // Release the last fuel from the fuel in hopper list
+        hopperFuel.remove(hopperFuel.size() - 1);
     }
 
-    /**
-     * Launch a fuel from the hopper if one is available; otherwise spawn a new fuel.
-     *
-     * <p>
-     * This method prefers to reuse an existing Fuel object that is currently marked as in the
-     * hopper so the simulator's visual state and indexing remain consistent. If a stored fuel is
-     * found it will be removed from the hopper, its slot freed, its pose/velocity set to the
-     * provided values, and {@code heldFuel} decremented. If no stored fuel is available this
-     * behaves like {@link #spawnFuel}.
-     *
-     * @param pos launch position (field coordinates)
-     * @param vel launch velocity (field coordinates)
-     */
-    public void launchFromHopper(Translation3d pos, Translation3d vel)
-    {
-        int slotToUse = -1;
-        for (int i = HOPPER_CAPACITY - 1; i >= 0; i--) {
-            if (Hopper.occupied[i]) {
-                slotToUse = i;
-                break;
-            }
-        }
-
-        if (slotToUse >= 0) {
-            Fuel chosen = null;
-            for (Fuel f : fuels) {
-                if (f.inHopper && f.indexInHopper == slotToUse) {
-                    chosen = f;
-                    break;
-                }
-            }
-
-            if (chosen != null) {
-                chosen.inHopper = false;
-                chosen.indexInHopper = -1;
-                Hopper.freeIndex(slotToUse);
-                chosen.pos = pos;
-                chosen.vel = vel;
-                if (heldFuel > 0) {
-                    heldFuel--;
-                }
-                return;
-            } else {
-                // Defensive: free slot if occupied but no matching fuel found
-                Hopper.freeIndex(slotToUse);
-                if (heldFuel > 0) {
-                    heldFuel--;
-                }
-            }
-        }
-
-        // Fallback: spawn a new fuel if none available in hopper
-        spawnFuel(pos, vel);
-    }
 
     /**
      * Set the number of fuels considered "held" in the hopper and reconcile actual simulator state
@@ -758,89 +624,46 @@ public class FuelSim {
      *
      * @param numFuel desired number of fuels in the hopper (clamped 0..HOPPER_CAPACITY)
      */
-    private void setHeldFuel(int numFuel)
-    {
-        if (numFuel < 0)
+    public void setHopperFuel(int numFuel) {
+        int previousAmount = getHeldFuel();
+        if (numFuel < 0) {
             numFuel = 0;
-        if (numFuel > HOPPER_CAPACITY)
-            numFuel = HOPPER_CAPACITY;
-
-        // Count current in-hopper fuels
-        int current = 0;
-        for (Fuel f : fuels) {
-            if (f.inHopper)
-                current++;
         }
-
-        if (numFuel == current) {
-            heldFuel = numFuel;
-            return;
-        }
-
-        if (numFuel < current) {
-            // Need to remove (current - numFuel) fuels from hopper: free their slots and
-            // mark them as on-field (leave them near robot so they don't immediately
-            // disappear). We'll remove the highest-indexed ones first.
-            int toRemove = current - numFuel;
-            // iterate over a copy to allow modification
-            for (Fuel f : fuels) {
-                if (toRemove == 0)
-                    break;
-                if (f.inHopper && f.indexInHopper >= 0) {
-                    Hopper.freeIndex(f.indexInHopper);
-                    f.inHopper = false;
-                    f.indexInHopper = -1;
-                    // drop the fuel slightly in front of the robot to make it visible
-                    Pose2d robotPose =
-                        (robotPoseSupplier != null) ? robotPoseSupplier.get() : new Pose2d();
-                    Translation2d forward =
-                        new Translation2d(0.2, 0).rotateBy(robotPose.getRotation());
-                    f.pos = new Translation3d(robotPose.getX() + forward.getX(),
-                        robotPose.getY() + forward.getY(), FUEL_RADIUS);
-                    f.vel = Translation3d.kZero;
-                    toRemove--;
-                }
+        if (numFuel < previousAmount) {
+            for (int i = numFuel; i < previousAmount; i++) {
+                hopperFuel.remove(hopperFuel.size() - 1);
             }
-            heldFuel = numFuel;
-            return;
+        } else {
+            for (int i = previousAmount; i < numFuel; i++) {
+                hopperFuel.add(Hopper.getRelativePosInHopper(i));
+            }
         }
-
-        // n > current: create placeholder fuels in hopper to reach desired count
-        int toAdd = numFuel - current;
-        Pose2d robotPose = (robotPoseSupplier != null) ? robotPoseSupplier.get() : new Pose2d();
-        for (int i = 0; i < toAdd; i++) {
-            int slot = Hopper.allocateNextIndex();
-            Translation3d rel = Hopper.getRelativePosInHopper(slot);
-            Translation2d rel2 =
-                new Translation2d(rel.getX(), rel.getY()).rotateBy(robotPose.getRotation());
-            double fieldX = robotPose.getX() + rel2.getX();
-            double fieldY = robotPose.getY() + rel2.getY();
-            double fieldZ = rel.getZ();
-            Fuel placeholder = new Fuel(new Translation3d(fieldX, fieldY, fieldZ));
-            placeholder.inHopper = true;
-            placeholder.indexInHopper = slot;
-            placeholder.vel = Translation3d.kZero;
-            fuels.add(placeholder);
-        }
-        heldFuel = numFuel;
     }
 
     /**
-     * Fill the hopper to exactly n fuels (creates placeholder in-hopper Fuel objects if necessary).
+     * Represents the filling of the hopper in Sim. Make numFuel positive if adding fuel, negative
+     * if removing fuel.
      *
-     * @param n desired number of fuels in the hopper
+     * @param numFuel desired number of fuels added to the hopper
      */
-    public void fillHopper(int numFuel)
-    {
-        setHeldFuel(numFuel);
+    public void fillHopperBy(int numFuel) {
+        setHopperFuel(hopperFuel.size() + numFuel);
     }
 
     /**
-     * Empty the hopper (free all occupied slots and remove in-hopper Fuel objects).
+     * Empty the hopper (free all occupied slots of the hopper Fuel list).
      */
-    public void emptyHopper()
-    {
-        setHeldFuel(0);
+    public void emptyHopper() {
+        hopperFuel.clear();
+    }
+
+    /**
+     * Get the number of fuel currently in the robot.
+     *
+     * @return The number of fuel in the hopper
+     */
+    public int getHeldFuel() {
+        return hopperFuel.size();
     }
 
     /**
@@ -913,30 +736,13 @@ public class FuelSim {
         for (SimIntake intake : intakes) {
             for (int i = 0; i < fuels.size(); i++) {
                 if (intake.shouldIntake(fuels.get(i), robot)) {
-                    // Allocate a hopper slot index and mark the fuel as stored.
-                    int slot = Hopper.allocateNextIndex();
-                    Fuel f = fuels.get(i);
-                    f.inHopper = true;
-                    f.indexInHopper = slot;
-                    // set initial placeholder position at robot XY and hopper floor; the
-                    // precise field position will be computed each update in updateHopper()
-                    f.pos = new Translation3d(robot.getX(), robot.getY(), HOPPER_FLOOR_HEIGHT);
-                    f.vel = Translation3d.kZero;
-                    heldFuel++;
+                    fillHopperBy(1);
+                    // Remove intaked fuel from fuel on field for sim then counteract the increment
+                    fuels.remove(i);
                     i--;
                 }
             }
         }
-    }
-
-    /** Update the state of each fuel that is in the hopper */
-    protected void handleHopper(ArrayList<Fuel> fuels)
-    {
-        Pose2d robot = robotPoseSupplier.get();
-        for (int i = 0; i < fuels.size(); i++) {
-            fuels.get(i).updateHopper(robot, previousRobot);
-        }
-        previousRobot = robotPoseSupplier.get();
     }
 
     /**
@@ -1161,7 +967,7 @@ public class FuelSim {
 
         protected boolean shouldIntake(Fuel fuel, Pose2d robotPose) {
             if (!ableToIntake.getAsBoolean() || fuel.pos.getZ() > bumperHeight
-                || heldFuel >= HOPPER_CAPACITY)
+                || hopperFuel.size() >= HOPPER_CAPACITY)
                 return false;
 
             Translation2d fuelRelativePos = new Pose2d(fuel.pos.toTranslation2d(), Rotation2d.kZero)
@@ -1192,11 +998,6 @@ public class FuelSim {
         protected static final HashMap<Integer, Translation3d> hopperMap =
             new HashMap<Integer, Translation3d>();
 
-        // Tracks whether a given hopper index is currently occupied by a stored fuel.
-        // This separates occupancy from the position cache (hopperMap) so cached
-        // positions don't imply the slot is taken.
-        protected static final boolean[] occupied = new boolean[HOPPER_CAPACITY];
-
         /**
          * Get a robot-relative position for the given hopper index. The hopper is arranged in
          * layers of 14 balls (row pattern 3,4,3,4). This method returns a consistent translation
@@ -1206,8 +1007,8 @@ public class FuelSim {
          * @param index zero-based hopper slot index
          * @return robot-relative Translation3d for the slot
          */
-        protected static Translation3d getRelativePosInHopper(int index)
-        {
+        // WILL KEEP THIS METHOD
+        protected static Translation3d getRelativePosInHopper(int index) {
             if (hopperMap.containsKey(index)) {
                 return hopperMap.get(index);
             }
@@ -1246,61 +1047,6 @@ public class FuelSim {
             return pos;
         }
 
-        /**
-         * Convenience: return the next available slot position (first unused index). Caches the
-         * computed position in {@code hopperMap}.
-         *
-         * @return robot-relative Translation3d for the next free hopper slot
-         */
-        protected static Translation3d getRelativePosInHopper()
-        {
-            int i = 0;
-            // find first unoccupied slot
-            while (i < HOPPER_CAPACITY && occupied[i]) {
-                i++;
-            }
-            if (i >= HOPPER_CAPACITY) {
-                // fallback to last slot if full
-                i = HOPPER_CAPACITY - 1;
-            }
-            return getRelativePosInHopper(i);
-        }
-
-        /**
-         * Allocate and return the next hopper index. The index is cached and can be used to place
-         * fuel into the hopper with a consistent robot-relative position.
-         *
-         * @return allocated zero-based hopper index
-         */
-        protected static int allocateNextIndex()
-        {
-            int i = 0;
-            // find first free index
-            while (i < HOPPER_CAPACITY && occupied[i]) {
-                i++;
-            }
-            if (i >= HOPPER_CAPACITY) {
-                // if full, fallback to last slot
-                i = HOPPER_CAPACITY - 1;
-            }
-            // mark occupied and ensure a cached robot-relative position exists
-            occupied[i] = true;
-            getRelativePosInHopper(i);
-            return i;
-        }
-
-        /**
-         * Free a previously allocated hopper index so it can be reused by future allocations. Safe
-         * to call multiple times for the same index.
-         *
-         * @param index zero-based hopper slot index to free
-         */
-        protected static void freeIndex(int index)
-        {
-            if (index >= 0 && index < HOPPER_CAPACITY) {
-                occupied[index] = false;
-            }
-        }
     }
 
     /**
