@@ -112,6 +112,8 @@ public class RobotSim {
     /** Updates all data that only matters in sim/replay. Should be called periodically */
     public void updateSim() {
         fuelSim.updateSim();
-        posePublisher.update();
+
+        if (posePublisher != null)
+            posePublisher.update();
     }
 }

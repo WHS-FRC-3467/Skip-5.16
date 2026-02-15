@@ -342,8 +342,7 @@ public class VisionConstants {
      * Creates and configures a VisionSubsystem with AprilTag cameras based on the current robot
      * mode. Instantiates cameras with appropriate IO implementations (real, sim, or replay).
      */
-    public static void create()
-    {
+    public static void create() {
         switch (Constants.currentMode) {
             case REAL -> {
                 var camera1 = new AprilTagCamera(FRONT, getFrontIOReal());

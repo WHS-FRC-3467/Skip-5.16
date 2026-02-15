@@ -213,7 +213,7 @@ spotless {
     java {
         // Target all Java files
         target '**/*.java'
-        eclipse().configFile(rootProject.file('style.xml'))
+        eclipse('4.38.0').configFile(rootProject.file('style.xml'))
         // Other common rules
         removeUnusedImports()
         trimTrailingWhitespace()

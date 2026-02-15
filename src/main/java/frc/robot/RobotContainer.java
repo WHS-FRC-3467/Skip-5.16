@@ -29,6 +29,8 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
+import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
@@ -51,7 +53,7 @@ public class RobotContainer {
     // Subsystems
     public final Drive drive;
     // private final ShooterSuperstructure shooter;
-    // private final IntakeSuperstructure intake;
+    private final IntakeSuperstructure intake;
     // private final Indexer indexer;
     // private final Tower tower;
     // private final ObjectDetector objectDetector;
@@ -74,7 +76,7 @@ public class RobotContainer {
 
         drive = DriveConstants.get();
         // shooter = ShooterSuperstructureConstants.get();
-        // intake = IntakeSuperstructureConstants.get();
+        intake = IntakeSuperstructureConstants.get();
         // indexer = IndexerConstants.get();
         // tower = TowerConstants.get();
         // VisionConstants.create();
@@ -173,9 +175,9 @@ public class RobotContainer {
         // intake.extendLinear()));
 
         // Left Trigger: Intake
-        // controller.leftTrigger()
-        // .onTrue(intake.extendIntake())
-        // .onFalse(intake.stopRoller());
+        controller.leftTrigger()
+            .onTrue(intake.extendIntake())
+            .onFalse(intake.stopRoller());
 
         // Right Bumper: Trench Align
         controller.rightBumper()

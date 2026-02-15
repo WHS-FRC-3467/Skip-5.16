@@ -36,9 +36,9 @@ public class FlywheelConstants {
     public static String NAME = "Flywheel";
 
     public static final AngularVelocity MAX_VELOCITY =
-        RotationsPerSecond.of(100.0);
+        RotationsPerSecond.of(85.9);
     public static final AngularAcceleration MAX_ACCELERATION =
-        RotationsPerSecondPerSecond.of(300.0);
+        RotationsPerSecondPerSecond.of(189.5);
 
     private static final double GEARING = (20.0 / 18.0);
 
@@ -50,7 +50,7 @@ public class FlywheelConstants {
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(10.0, 0.0, 0.0).withV(0.4);
+    public static final PID SLOT0_PID = new PID(10.0, 0.0, 0.0);
 
     /**
      * Creates a TalonFX motor controller configuration for the flywheel mechanism. Configures
@@ -105,12 +105,12 @@ public class FlywheelConstants {
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal("Left " + NAME,
-                    new MotorIOTalonFX("Left " + NAME, getFXConfig(false), Ports.leftFlywheelMain,
+                    new MotorIOTalonFX("Left " + NAME, getFXConfig(true), Ports.leftFlywheelMain,
                         new TalonFXFollower(Ports.leftFlywheelFollower, false)));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim("Left " + NAME,
-                    new MotorIOTalonFXSim("Left " + NAME, getFXConfig(false),
+                    new MotorIOTalonFXSim("Left " + NAME, getFXConfig(true),
                         Ports.leftFlywheelMain,
                         new TalonFXFollower(Ports.leftFlywheelFollower, false)),
                     DCMOTOR, MOI, TOLERANCE);
@@ -136,12 +136,12 @@ public class FlywheelConstants {
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal("Right " + NAME,
-                    new MotorIOTalonFX("Right " + NAME, getFXConfig(true), Ports.rightFlywheelMain,
+                    new MotorIOTalonFX("Right " + NAME, getFXConfig(false), Ports.rightFlywheelMain,
                         new TalonFXFollower(Ports.rightFlywheelFollower, false)));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim("Right " + NAME,
-                    new MotorIOTalonFXSim("Right " + NAME, getFXConfig(true),
+                    new MotorIOTalonFXSim("Right " + NAME, getFXConfig(false),
                         Ports.rightFlywheelMain,
                         new TalonFXFollower(Ports.rightFlywheelFollower, false)),
                     DCMOTOR, MOI, TOLERANCE);

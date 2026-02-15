@@ -434,8 +434,7 @@ public class MotorIOTalonFX implements MotorIO {
     }
 
     @Override
-    public void setPID(PIDSlot slot, PID pid)
-    {
+    public void setPID(PIDSlot slot, PID pid) {
         switch (slot) {
             case SLOT_0 -> setPIDSlot0(pid);
             case SLOT_1 -> setPIDSlot1(pid);
