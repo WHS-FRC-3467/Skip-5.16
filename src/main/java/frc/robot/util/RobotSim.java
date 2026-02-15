@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import lombok.AccessLevel;
@@ -36,10 +36,11 @@ public class RobotSim {
     private void registerFuelSimMechanisms(
         Drive drive,
         ShooterSuperstructure shooter,
-        Indexer indexer,
-        IntakeSuperstructure intake) {
+        IndexerSuperstructure indexer,
+        IntakeSuperstructure intake)
+    {
         Trigger shootSimFuel = new Trigger(() -> (shooter.readyToShoot.getAsBoolean()
-            && (indexer.getSpeed() > 0.1) && (fuelSim.getHeldFuel() > 0)));
+            && (indexer.getFloorSpeed() > 0.1) && (fuelSim.getHeldFuel() > 0)));
 
         shootSimFuel.whileTrue(
             Commands.repeatingSequence(
@@ -93,24 +94,27 @@ public class RobotSim {
      *
      * @param drive Drive subsystem for robot pose tracking
      * @param shooter Shooter superstructure
-     * @param indexer Indexer subsystem
+     * @param indexer IndexerSuperstructure subsystem
      * @param intake Intake subsystem
      */
     public void addMechanismData(
         Drive drive,
         ShooterSuperstructure shooter,
-        Indexer indexer,
-        IntakeSuperstructure intake) {
+        IndexerSuperstructure indexer,
+        IntakeSuperstructure intake)
+    {
         registerFuelSimMechanisms(drive, shooter, indexer, intake);
         posePublisher = new MechanismPosePublisher(intake, shooter);
     }
 
-    public FuelSim getFuelSim() {
+    public FuelSim getFuelSim()
+    {
         return fuelSim;
     }
 
     /** Updates all data that only matters in sim/replay. Should be called periodically */
-    public void updateSim() {
+    public void updateSim()
+    {
         fuelSim.updateSim();
         posePublisher.update();
     }

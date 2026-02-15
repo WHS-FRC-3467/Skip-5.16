@@ -1,7 +1,17 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
+/*
+ * Copyright (C) 2026 Windham Windup
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
+ */
 package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.Inches;
@@ -20,7 +30,6 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
-import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
@@ -30,14 +39,14 @@ import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
 
-/** Add your docs here. */
-public class IndexerConstants {
+public class IndexerCenterConstants {
 
-    public static String NAME = "Indexer";
+    public static String NAME = "IndexerCenter";
 
     public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(60);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second).times(10);
 
+    // TODO: Set actual gearing
     private static final double GEARING = (48.0 / 22.0) * (24.0 / 36.0) * (17.0 / 18.0);
 
     public static final Distance RADIUS = Inches.of(0.5);
@@ -56,7 +65,8 @@ public class IndexerConstants {
      *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig() {
+    public static TalonFXConfiguration getFXConfig()
+    {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -87,23 +97,22 @@ public class IndexerConstants {
     }
 
     /**
-     * Factory method to create an Indexer subsystem instance. Creates the appropriate mechanism
-     * based on the current robot mode (REAL, SIM, or REPLAY).
+     * Factory method to create an IndexerSuperstructure subsystem instance. Creates the appropriate
+     * mechanism based on the current robot mode (REAL, SIM, or REPLAY).
      *
-     * @return A fully configured Indexer subsystem
+     * @return A fully configured IndexerSuperstructure subsystem
      */
-    public static Indexer get() {
+    public static FlywheelMechanism<?> get()
+    {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexer,
-                        new TalonFXFollower(Ports.indexerCentering, true)));
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexerCentering));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexer,
-                        new TalonFXFollower(Ports.indexerCentering, true)),
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexerCentering),
                     DCMOTOR, MOI,
                     TOLERANCE);
                 break;
@@ -114,7 +123,7 @@ public class IndexerConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return new Indexer(mechanism);
+        return mechanism;
     }
 
 }

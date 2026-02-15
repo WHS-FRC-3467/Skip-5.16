@@ -42,9 +42,6 @@ public class Ports {
     public static final Device.CAN rightFlywheelMain = new CAN(4, "rio");
     public static final Device.CAN rightFlywheelFollower = new CAN(5, "rio");
 
-    public static final Device.CAN indexer = new CAN(18, "rio");
-    public static final Device.CAN indexerCentering = new CAN(23, "rio");
-
     public static final Device.CAN hood = new CAN(20, "rio");
     public static final Device.CAN indexerLaserCAN = new CAN(19, "rio");
     public static final Device.CAN intakeRoller = new CAN(21, "rio");
@@ -53,4 +50,10 @@ public class Ports {
     public static final Device.CAN towerLaserCAN1 = new CAN(24, "rio");
     public static final Device.CAN towerLaserCAN2 = new CAN(25, "rio");
     public static final Device.CAN climber = new CAN(30, "rio");
+
+    public static final Device.CAN indexerFloor = new CAN(25, "rio");
+    // TODO: Ensure ID is correct
+    public static final Device.CAN indexerFloorFollower = new CAN(26, "rio");
+    // public static final Device.CAN indexer = new CAN(26, "rio");
+    public static final Device.CAN indexerCentering = new CAN(24, "rio");
 }

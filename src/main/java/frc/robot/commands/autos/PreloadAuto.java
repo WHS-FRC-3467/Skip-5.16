@@ -18,7 +18,7 @@ package frc.robot.commands.autos;
 import java.util.List;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
@@ -30,8 +30,9 @@ import frc.robot.subsystems.tower.Tower;
 public class PreloadAuto extends AutoRoutine {
 
     public PreloadAuto(Drive drive, IntakeSuperstructure intake,
-        Indexer indexer, Tower tower,
-        ShooterSuperstructure shooter, StartPosition start) {
+        IndexerSuperstructure indexer, Tower tower,
+        ShooterSuperstructure shooter, StartPosition start)
+    {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
