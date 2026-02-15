@@ -31,6 +31,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggerHelper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -105,6 +106,7 @@ public class Climber extends SubsystemBase {
             .withName("Go To " + state.toString() + " State");
     }
 
+
     /**
      * Returns true if the climber is near the specified goal position, within a tolerance.
      *
@@ -127,7 +129,7 @@ public class Climber extends SubsystemBase {
     public Command waitUntilGoalCommand(Distance position) {
         return Commands.waitUntil(() -> {
             return nearGoal();
-        });
+        }).withName("wait until goal");
     }
 
     /**
@@ -158,6 +160,7 @@ public class Climber extends SubsystemBase {
     @Override
     public void periodic() {
         Logger.recordOutput(ClimberConstants.NAME + "/State", state.name());
+        LoggerHelper.recordCurrentCommand(this.getName(), this);
         io.periodic();
     }
 

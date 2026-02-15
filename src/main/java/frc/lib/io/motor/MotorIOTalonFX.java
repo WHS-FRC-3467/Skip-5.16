@@ -167,7 +167,7 @@ public class MotorIOTalonFX implements MotorIO {
      * @return True if the motor is using a position control mode.
      */
     protected boolean isRunningPositionControl() {
-        var control = motor.getAppliedControl();
+        ControlRequest control = motor.getAppliedControl();
         return (control instanceof PositionTorqueCurrentFOC)
             || (control instanceof PositionVoltage)
             || (control instanceof MotionMagicTorqueCurrentFOC)
@@ -181,7 +181,7 @@ public class MotorIOTalonFX implements MotorIO {
      * @return True if the motor is using a velocity control mode.
      */
     protected boolean isRunningVelocityControl() {
-        var control = motor.getAppliedControl();
+        ControlRequest control = motor.getAppliedControl();
         return (control instanceof VelocityTorqueCurrentFOC)
             || (control instanceof VelocityVoltage)
             || (control instanceof MotionMagicVelocityTorqueCurrentFOC)
@@ -194,7 +194,7 @@ public class MotorIOTalonFX implements MotorIO {
      * @return True if the motor is using a Motion Magic mode.
      */
     protected boolean isRunningMotionMagic() {
-        var control = motor.getAppliedControl();
+        ControlRequest control = motor.getAppliedControl();
         return (control instanceof MotionMagicTorqueCurrentFOC)
             || (control instanceof DynamicMotionMagicTorqueCurrentFOC)
             || (control instanceof MotionMagicVelocityTorqueCurrentFOC)
@@ -208,7 +208,7 @@ public class MotorIOTalonFX implements MotorIO {
      * @return The current control type.
      */
     protected ControlType getCurrentControlType() {
-        var control = motor.getAppliedControl();
+        ControlRequest control = motor.getAppliedControl();
 
         if (control instanceof StaticBrake) {
             return ControlType.BRAKE;
@@ -279,7 +279,7 @@ public class MotorIOTalonFX implements MotorIO {
             inputs.velocityError = RotationsPerSecond.of(closedLoopErrorValue);
             inputs.activeTrajectoryVelocity = RotationsPerSecond.of(closedLoopTargetValue);
         } else if (isRunningPositionControl && isRunningMotionMagic) {
-            var targetVelocity = closedLoopReferenceSlope.getValue();
+            Double targetVelocity = closedLoopReferenceSlope.getValue();
             inputs.velocityError = RotationsPerSecond.of(
                 targetVelocity - inputs.velocity.in(RotationsPerSecond));
             inputs.activeTrajectoryVelocity = RotationsPerSecond.of(targetVelocity);

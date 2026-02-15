@@ -45,7 +45,7 @@ public class ServoIOSim implements ServoIO {
      * @param value Position from 0.0 to 1.0, corresponding to the range of full left to full right.
      */
     public void setScaledPosition(double value) {
-        var servoAngleRange = maxAngle - minAngle;
+        double servoAngleRange = maxAngle - minAngle;
         goalPosition = MathUtil.clamp(value, 0.0, 1.0) * servoAngleRange + minAngle;
     }
 

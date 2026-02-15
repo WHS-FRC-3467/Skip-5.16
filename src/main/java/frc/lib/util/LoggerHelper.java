@@ -1,6 +1,7 @@
 package frc.lib.util;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -16,7 +17,7 @@ public class LoggerHelper {
      * @param subsystem The subsystem to log the current command for
      */
     public static void recordCurrentCommand(String name, SubsystemBase subsystem) {
-        final var currentCommand = subsystem.getCurrentCommand();
+        final Command currentCommand = subsystem.getCurrentCommand();
         Logger.recordOutput(
             name + "/Current Command",
             currentCommand == null ? "None" : currentCommand.getName());

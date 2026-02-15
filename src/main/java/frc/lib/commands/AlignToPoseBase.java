@@ -85,10 +85,10 @@ public abstract class AlignToPoseBase extends Command {
         linearController.updatePID();
         angularController.updatePID();
 
-        var relativePose2d = robotState.getEstimatedPose().relativeTo(targetPose.get());
-        var targetRotation2d = targetPose.get().getRotation();
-        var linearVelocity = new Translation2d();
-        var offsetVector = new Translation2d();
+        Pose2d relativePose2d = robotState.getEstimatedPose().relativeTo(targetPose.get());
+        Rotation2d targetRotation2d = targetPose.get().getRotation();
+        Translation2d linearVelocity = new Translation2d();
+        Translation2d offsetVector = new Translation2d();
 
         switch (mode) {
             case STRAFE:
