@@ -38,7 +38,7 @@ public class IndexerSuperstructure extends SubsystemBase {
     private final FlywheelMechanism<?> centerIO;
 
     private static final LoggedTunableNumber FLOOR_SHOOT_RPS =
-        new LoggedTunableNumber(IndexerFloorConstants.NAME + "/FloorShootRPS",
+        new LoggedTunableNumber(IndexerFloorConstants.NAME + "/ShootRPS",
             IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber FLOOR_EJECT_RPS =
@@ -49,7 +49,7 @@ public class IndexerSuperstructure extends SubsystemBase {
             IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber CENTER_SHOOT_RPS =
-        new LoggedTunableNumber(IndexerCenterConstants.NAME + "/FloorShootRPS",
+        new LoggedTunableNumber(IndexerCenterConstants.NAME + "/ShootRPS",
             IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber CENTER_EJECT_RPS =
@@ -63,7 +63,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      * Constructs an IndexerSuperstructure subsystem.
      *
      * @param floorIO The flywheel mechanism for controlling the indexer floor motors
-     * @param centerIO
+     * @param centerIO The flywheel mechanism for controlling the indexer centering motors
      */
     public IndexerSuperstructure(FlywheelMechanism<?> floorIO, FlywheelMechanism<?> centerIO) {
         this.floorIO = floorIO;

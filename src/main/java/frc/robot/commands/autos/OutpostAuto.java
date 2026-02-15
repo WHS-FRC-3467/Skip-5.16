@@ -49,8 +49,7 @@ public class OutpostAuto extends AutoRoutine {
      */
     public OutpostAuto(Drive drive, IntakeSuperstructure intake, IndexerSuperstructure indexer,
         Tower tower,
-        ShooterSuperstructure shooter, StartPosition start)
-    {
+        ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {

@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class IndexerSuperstructureConstants {
     /**
-     * Creates and configures a complete IndexerSuperstructure subsystem. Combines floor centering
+     * Creates and configures a complete IndexerSuperstructure subsystem. Combines floor and centering
      * flywheel mechanisms into a unified indexer subsystem.
      *
      * @return configured IndexerSuperstructure instance
