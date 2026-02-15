@@ -128,8 +128,6 @@ public class FuelSim {
     protected static class Fuel {
         protected Translation3d pos;
         protected Translation3d vel;
-        protected boolean inHopper;
-        protected int indexInHopper;
 
         protected Fuel(Translation3d pos, Translation3d vel) {
             this.pos = pos;
