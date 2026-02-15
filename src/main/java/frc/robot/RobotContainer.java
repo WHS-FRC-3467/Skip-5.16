@@ -19,30 +19,32 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.robot.Constants.PathConstants;
+import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.intake.IntakeLinearConstants;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
-import frc.robot.subsystems.leds.LEDs;
-import frc.robot.subsystems.leds.LEDsConstants;
-import frc.robot.subsystems.objectdetector.ObjectDetector;
-import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
+import frc.robot.subsystems.shooter.HoodConstants;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.indexer.IndexerSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
-import frc.robot.subsystems.vision.VisionConstants;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Distance;
 
@@ -61,12 +63,12 @@ public class RobotContainer {
 
     // Subsystems
     public final Drive drive;
-    // private final ShooterSuperstructure shooter;
+    private final ShooterSuperstructure shooter;
     private final IntakeSuperstructure intake;
     private final IndexerSuperstructure indexer;
     private final Tower tower;
-    private final ObjectDetector objectDetector;
-    private final LEDs leds;
+    // private final ObjectDetector objectDetector;
+    // private final LEDs leds;
 
     // Controller
     private final CommandXboxControllerExtended controller =
@@ -84,13 +86,13 @@ public class RobotContainer {
     public RobotContainer() {
 
         drive = DriveConstants.get();
-        // shooter = ShooterSuperstructureConstants.get();
+        shooter = ShooterSuperstructureConstants.get();
         intake = IntakeSuperstructureConstants.get();
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
-        VisionConstants.create();
-        objectDetector = ObjectDetectorConstants.get();
-        leds = LEDsConstants.get();
+        // VisionConstants.create();
+        // objectDetector = ObjectDetectorConstants.get();
+        // leds = LEDsConstants.get();
 
         // if (RobotBase.isSimulation()) {
         // RobotSim.getInstance().addMechanismData(drive, shooter, indexer,
@@ -198,37 +200,37 @@ public class RobotContainer {
                     robotState::getTunnelAssistHeading));
 
         // D-Pad Up: Force Intake Linear Slide Back
-        // controller.povUp().onTrue(intake.retractIntake());
+        controller.povUp().onTrue(intake.retractIntake());
 
         // D-Pad Down: Unjam
-        // controller.povDown().whileTrue(Commands.parallel(
-        // intake.ejectRoller(),
-        // indexer.eject(),
-        // tower.eject()));
+        controller.povDown().whileTrue(Commands.parallel(
+            intake.ejectRoller(),
+            indexer.eject(),
+            tower.eject()));
 
         // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
-        // controller.povRight()
-        // .onTrue(
-        // shooter.spinUpShooterToHubDistance(
-        // Meters.of((Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0)));
+        controller.povRight()
+            .onTrue(
+                shooter.spinUpShooterToHubDistance(
+                    Meters.of((Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0)));
 
         // D-Pad Left: Take the Hub Shot, wind down flywheel, indexer, and tower on release
         // No vision fallback - do not trust the robot's pose (no automatic shoot when ready)
-        // controller.povLeft()
-        // .whileTrue(
-        // // Shoot while superstructure is at the flywheel and hood setpoints
-        // Commands.parallel(
-        // indexer.shoot(),
-        // tower.shoot(),
-        // intake.cycle(),
-        // Commands.runOnce(() -> drive.stopWithX()))
-        // .onlyWhile(shooter.atHubSetpoints)
-        // .repeatedly())
-        // .onFalse(Commands.parallel(
-        // shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
-        // indexer.stopCommand(),
-        // tower.stopCommand(),
-        // intake.extendIntake()));
+        controller.povLeft()
+            .whileTrue(
+                // Shoot while superstructure is at the flywheel and hood setpoints
+                Commands.parallel(
+                    indexer.shoot(),
+                    tower.shoot(),
+                    intake.cycle(),
+                    Commands.runOnce(() -> drive.stopWithX()))
+                    .onlyWhile(shooter.atHubSetpoints)
+                    .repeatedly())
+            .onFalse(Commands.parallel(
+                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                indexer.stopCommand(),
+                tower.stopCommand(),
+                intake.extendIntake()));
     }
 
     /**
@@ -236,25 +238,25 @@ public class RobotContainer {
      * the dashboard for manual testing and debugging.
      */
     private void initializeDashboard() {
-        // SmartDashboard.putData("Indexer/Expel", indexer.eject());
-        // SmartDashboard.putData("Indexer/Feed", indexer.feed());
-        // SmartDashboard.putData("Indexer/Stop", indexer.stopCommand());
+        SmartDashboard.putData("Indexer/Expel", indexer.eject());
+        SmartDashboard.putData("Indexer/Feed", indexer.feed());
+        SmartDashboard.putData("Indexer/Stop", indexer.stopCommand());
 
-        // SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendLinear());
-        // SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
-        // SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendLinear());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
 
-        // SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
-        // SmartDashboard.putData("Hood angle", Commands.runOnce(() -> System.out.println(
-        // Degrees.of(90).minus(HoodConstants.MIN_ANGLE_OFFSET).minus(shooter.getHoodAngle())
-        // .in(Degrees))));
+        SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
+        SmartDashboard.putData("Hood angle", Commands.runOnce(() -> System.out.println(
+            Degrees.of(90).minus(HoodConstants.MIN_ANGLE_OFFSET).minus(shooter.getHoodAngle())
+                .in(Degrees))));
 
-        // SmartDashboard.putData("Intake Linear/Extend", intake.extendLinear());
-        // SmartDashboard.putData("Intake Linear/Retract", intake.retractIntake());
-        // SmartDashboard.putData("Intake Linear/Cycle", intake.cycle());
-        // SmartDashboard.putData("Intake Linear/Coast", intake.linearCoast());
-        // SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
-        // SmartDashboard.putData("Indexer/Shoot", indexer.shoot());
+        SmartDashboard.putData("Intake Linear/Extend", intake.extendLinear());
+        SmartDashboard.putData("Intake Linear/Retract", intake.retractIntake());
+        SmartDashboard.putData("Intake Linear/Cycle", intake.cycle());
+        SmartDashboard.putData("Intake Linear/Coast", intake.linearCoast());
+        SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
+        SmartDashboard.putData("Indexer/Shoot", indexer.shoot());
         SmartDashboard.putData("Face Target",
             DriveCommands.joystickDriveFacingTarget(
                 drive,

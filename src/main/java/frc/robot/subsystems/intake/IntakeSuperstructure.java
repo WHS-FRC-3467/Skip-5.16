@@ -138,13 +138,15 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @return A repeating command that cycles the linear mechanism
      */
     public Command cycle() {
-        return Commands.repeatingSequence(
-            extendLinear(),
-            Commands.waitSeconds(.1),
-            Commands.waitUntil(isExtended).withTimeout(1.25),
-            retractLinear(),
-            Commands.waitSeconds(.1),
-            Commands.waitUntil(isRetracted).withTimeout(1.25));
+        return Commands.sequence(
+            runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
+            Commands.repeatingSequence(
+                extendLinear(),
+                Commands.waitSeconds(.1),
+                Commands.waitUntil(isExtended).withTimeout(1.25),
+                retractLinear(),
+                Commands.waitSeconds(.1),
+                Commands.waitUntil(isRetracted).withTimeout(1.25)));
     }
 
     /**
