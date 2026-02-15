@@ -20,7 +20,6 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
-import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
@@ -31,9 +30,9 @@ import frc.robot.Ports;
 import frc.robot.Robot;
 
 /** Add your docs here. */
-public class IndexerConstants {
+public class IndexerFloorConstants {
 
-    public static String NAME = "Indexer";
+    public static String NAME = "IndexerFloor";
 
     public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(100.0);
     public static final AngularAcceleration MAX_ACCELERATION =
@@ -87,23 +86,21 @@ public class IndexerConstants {
     }
 
     /**
-     * Factory method to create an Indexer subsystem instance. Creates the appropriate mechanism
-     * based on the current robot mode (REAL, SIM, or REPLAY).
+     * Factory method to create an IndexerSuperstructure subsystem instance. Creates the appropriate
+     * mechanism based on the current robot mode (REAL, SIM, or REPLAY).
      *
-     * @return A fully configured Indexer subsystem
+     * @return A fully configured IndexerSuperstructure subsystem
      */
-    public static Indexer get() {
+    public static FlywheelMechanism<?> get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexerFloor,
-                        new TalonFXFollower(Ports.indexerCentering, true)));
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexerFloor));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexerFloor,
-                        new TalonFXFollower(Ports.indexerCentering, true)),
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexerFloor),
                     DCMOTOR, MOI,
                     TOLERANCE);
                 break;
@@ -114,7 +111,7 @@ public class IndexerConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return new Indexer(mechanism);
+        return mechanism;
     }
 
 }

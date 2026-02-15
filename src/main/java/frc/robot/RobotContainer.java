@@ -31,6 +31,15 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
+import frc.robot.subsystems.leds.LEDs;
+import frc.robot.subsystems.leds.LEDsConstants;
+import frc.robot.subsystems.objectdetector.ObjectDetector;
+import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
+import frc.robot.subsystems.indexer.IndexerSuperstructureConstants;
+import frc.robot.subsystems.tower.Tower;
+import frc.robot.subsystems.tower.TowerConstants;
+import frc.robot.subsystems.vision.VisionConstants;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
@@ -54,10 +63,10 @@ public class RobotContainer {
     public final Drive drive;
     // private final ShooterSuperstructure shooter;
     private final IntakeSuperstructure intake;
-    // private final Indexer indexer;
-    // private final Tower tower;
-    // private final ObjectDetector objectDetector;
-    // private final LEDs leds;
+    private final IndexerSuperstructure indexer;
+    private final Tower tower;
+    private final ObjectDetector objectDetector;
+    private final LEDs leds;
 
     // Controller
     private final CommandXboxControllerExtended controller =
@@ -77,11 +86,11 @@ public class RobotContainer {
         drive = DriveConstants.get();
         // shooter = ShooterSuperstructureConstants.get();
         intake = IntakeSuperstructureConstants.get();
-        // indexer = IndexerConstants.get();
-        // tower = TowerConstants.get();
-        // VisionConstants.create();
-        // objectDetector = ObjectDetectorConstants.get();
-        // leds = LEDsConstants.get();
+        indexer = IndexerSuperstructureConstants.get();
+        tower = TowerConstants.get();
+        VisionConstants.create();
+        objectDetector = ObjectDetectorConstants.get();
+        leds = LEDsConstants.get();
 
         // if (RobotBase.isSimulation()) {
         // RobotSim.getInstance().addMechanismData(drive, shooter, indexer,

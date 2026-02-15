@@ -18,7 +18,7 @@ import java.util.function.BooleanSupplier;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.tower.Tower;
-import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -37,7 +37,7 @@ public class FuelCommands {
      * @param indexer the indexer subsystem
      * @return a command that feeds the tower until a laserCAN is tripped
      */
-    public static Command stageFuel(Indexer indexer, Tower tower) {
+    public static Command stageFuel(IndexerSuperstructure indexer, Tower tower) {
         return Commands.parallel(
             indexer.feed(),
             tower.feed())
@@ -63,7 +63,7 @@ public class FuelCommands {
      * @return a command that shoots fuel and then stops the indexer / tower after the given
      *         duration
      */
-    public static Command shootFuel(Indexer indexer, Tower tower,
+    public static Command shootFuel(IndexerSuperstructure indexer, Tower tower,
         ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration) {
         Command feed = Commands.parallel(
             indexer.shoot(),
