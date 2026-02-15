@@ -182,10 +182,9 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return The linear velocity in meters per second.
      */
-    public double getFloorLinearVelocity()
+    public LinearVelocity getFloorLinearVelocity()
     {
-        return floorIO.getVelocity().in(RadiansPerSecond)
-            * IndexerFloorConstants.RADIUS.in(Meters);
+        return MetersPerSecond.of(floorIO.getVelocity().in(RadiansPerSecond) * IndexerFloorConstants.RADIUS.in(Meters));
     }
 
     /**
@@ -193,10 +192,10 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @return The linear velocity in meters per second.
      */
-    public double getCenteringLinearVelocity()
+    public LinearVelocity getCenteringLinearVelocity()
     {
-        return centerIO.getVelocity().in(RadiansPerSecond)
-            * IndexerCenterConstants.RADIUS.in(Meters);
+        return MetersPerSecond.of(centerIO.getVelocity().in(RadiansPerSecond)
+            * IndexerCenterConstants.RADIUS.in(Meters));
     }
 
     /**
@@ -212,46 +211,6 @@ public class IndexerSuperstructure extends SubsystemBase {
             IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
         centerIO.runVelocity(RadiansPerSecond.of(centeringVelocity.in(MetersPerSecond)),
             IndexerCenterConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
-    }
-
-    /**
-     * Gets the current linear position of the indexer floor motors.
-     *
-     * @return The linear position in meters (equivalent to 2 * PI * radius * rotations).
-     */
-    public double getFloorLinearPosition()
-    {
-        return floorIO.getPosition().in(Radians)
-            * (2 * Math.PI * IndexerFloorConstants.RADIUS.in(Meters));
-    }
-
-    /**
-     * Gets the current linear position of the indexer center motor.
-     *
-     * @return The linear position in meters (equivalent to 2 * PI * radius * rotations).
-     */
-    public double getCenterLinearPosition()
-    {
-        return centerIO.getPosition().in(Radians)
-            * (2 * Math.PI * IndexerCenterConstants.RADIUS.in(Meters));
-    }
-
-    /**
-     * Sets the current linear position of the indexer motors.
-     *
-     * @param floorPosition desired linear position for the floor mechanism (meters)
-     * @param centeringPosition desired linear position for the centering mechanism (meters)
-     */
-    public void setLinearPosition(Distance floorPosition, Distance centeringPosition)
-    {
-        floorIO.runPosition(Radians.of(
-            floorPosition.in(Meters)
-                / IndexerFloorConstants.RADIUS.in(Meters)),
-            PIDSlot.SLOT_0);
-        centerIO.runPosition(Radians.of(
-            centeringPosition.in(Meters)
-                / IndexerCenterConstants.RADIUS.in(Meters)),
-            PIDSlot.SLOT_0);
     }
 
     /**
