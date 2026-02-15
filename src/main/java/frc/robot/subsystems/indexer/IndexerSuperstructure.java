@@ -193,7 +193,7 @@ public class IndexerSuperstructure extends SubsystemBase {
         floorIO.runVelocity(RadiansPerSecond.of(floorVelocity.in(MetersPerSecond)),
             IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
         centerIO.runVelocity(RadiansPerSecond.of(centeringVelocity.in(MetersPerSecond)),
-            IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+            IndexerCenterConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
     /**
