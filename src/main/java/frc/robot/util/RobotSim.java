@@ -44,8 +44,8 @@ public class RobotSim {
         shootSimFuel.whileTrue(
             Commands.repeatingSequence(
                 Commands.waitSeconds(.1),
-                Commands.runOnce(() -> fuelSim.fillHopperBy(-2)),
                 Commands.runOnce(() -> {
+                    fuelSim.fillHopperBy(-2);
                     fuelSim.spawnFuel(
                         new Pose3d(robotState.getEstimatedPose())
                             .plus(new Transform3d(Inches.of(-10), Inches.of(-3.6),

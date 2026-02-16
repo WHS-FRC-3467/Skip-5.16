@@ -65,16 +65,11 @@ public class FuelSim {
     protected static final int HOPPER_CAPACITY = 50;
     protected static final double HOPPER_FLOOR_HEIGHT = Units.inchesToMeters(7);
     // NOTE: HOPPER_FLOOR_HEIGHT is an approximate placeholder because the height varies with
-    // respect to distance from the shooter. This is the vertical distance (in meters) from 
+    // respect to distance from the shooter. This is the vertical distance (in meters) from
     // the carpet/field floor (z = 0 in this sim) to the
     // lowest point of the hopper interior where the centers of stored fuel rest. This value
     // should be measured from the robot CAD or by physically measuring the competition robot
     // and then updated here.
-
-    // Array of 3d positions of the fuel hopper
-    // Gets larger as balls are intaked (translations appended)
-    // Gets smaller as balls are ejected or shot (final indices popped)
-    private final ArrayList<Translation3d> hopperFuel = new ArrayList<Translation3d>();
 
     protected static final Translation3d[] FIELD_XZ_LINE_STARTS = {
             new Translation3d(0, 0, 0),
@@ -400,6 +395,10 @@ public class FuelSim {
     protected double bumperHeight;
     protected ArrayList<SimIntake> intakes = new ArrayList<>();
     protected int subticks = 5;
+    // Array of 3d positions of the fuel hopper
+    // Gets larger as balls are intaked (translations appended)
+    // Gets smaller as balls are ejected or shot (final indices popped)
+    private final ArrayList<Translation3d> hopperFuel = new ArrayList<Translation3d>();
 
     /**
      * Creates a new instance of FuelSim
@@ -656,9 +655,10 @@ public class FuelSim {
      */
     public void setHopperFuel(int numFuel) {
         int previousAmount = getHeldFuel();
+        // Clamp the new set amount of fuel
         int amountFuel = MathUtil.clamp(numFuel, 0, 50);
         if (amountFuel < previousAmount) {
-            for (int i = numFuel; i < previousAmount; i++) {
+            for (int i = amountFuel; i < previousAmount; i++) {
                 hopperFuel.remove(hopperFuel.size() - 1);
             }
         } else {
@@ -1013,12 +1013,13 @@ public class FuelSim {
         }
     }
 
-    /** Utility class for managing a fuel's position in the hopper based on an index */
+    /**
+     * Utility class for managing a fuel's position in the hopper based on an index
+     */
     protected static class Hopper {
 
-        protected static final int PER_LAYER = 14; // 3+4+3+4 layout
+        protected static final int PER_LAYER = 13;
         protected static final double SPACING = 0.152; // spacing between ball centers (m)
-        // Small gap between layers - may remove, TBD
         protected static final double LAYER_HEIGHT = (FUEL_RADIUS * 2) + 0.01;
         protected static final double X_OFFSET = 0.35;
 
@@ -1030,14 +1031,12 @@ public class FuelSim {
 
         /**
          * Get a robot-relative position for the given hopper index. The hopper is arranged in
-         * layers of 14 balls (row pattern 3,4,3,4). This method returns a consistent translation
-         * for a given index and caches the result in {@code hopperMap} so repeated calls return the
-         * same position.
+         * layers of 13 FUEL. This method returns a consistent translation for a given index and
+         * caches the result in {@code hopperMap} so repeated calls return the same position.
          *
          * @param index zero-based hopper slot index
          * @return robot-relative Translation3d for the slot
          */
-        // WILL KEEP THIS METHOD
         protected static Translation3d getRelativePosInHopper(int index) {
             if (hopperMap.containsKey(index)) {
                 return hopperMap.get(index);
@@ -1047,7 +1046,7 @@ public class FuelSim {
             int idxInLayer = index % PER_LAYER;
 
             // row counts and their x-offset multipliers (front -> back)
-            int[] rowCounts = {3, 4, 3, 4};
+            int[] rowCounts = {4, 5, 4, 5};
             double[] rowXMultipliers = {0, -1, -2, -3};
 
             int running = 0;
