@@ -156,7 +156,7 @@ public abstract class DriveToPoseBase extends Command {
             maxAngularSpeed.get());
 
         // Convert to robot-relative speeds and set request velocities
-        ChassisSpeeds fieldRelativeSpeed = new ChassisSpeeds(
+        var fieldRelativeSpeed = new ChassisSpeeds(
             linearOutput * Math.cos(directionToTarget.getRadians()),
             linearOutput * Math.sin(directionToTarget.getRadians()),
             angularOutput);

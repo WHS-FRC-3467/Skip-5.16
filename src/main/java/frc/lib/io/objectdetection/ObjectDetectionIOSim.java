@@ -35,7 +35,7 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
         super(cameraProperties.name());
         this.target_name = target_name;
 
-        SimCameraProperties simCameraProperties = new SimCameraProperties();
+        var simCameraProperties = new SimCameraProperties();
         simCameraProperties.setCalibration(
             cameraProperties.resolutionWidth(),
             cameraProperties.resolutionHeight(),

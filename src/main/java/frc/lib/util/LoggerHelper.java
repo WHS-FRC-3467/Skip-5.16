@@ -17,7 +17,7 @@ public class LoggerHelper {
      * @param subsystem The subsystem to log the current command for
      */
     public static void recordCurrentCommand(String name, SubsystemBase subsystem) {
-        final Command currentCommand = subsystem.getCurrentCommand();
+        final var currentCommand = subsystem.getCurrentCommand();
         Logger.recordOutput(
             name + "/Current Command",
             currentCommand == null ? "None" : currentCommand.getName());

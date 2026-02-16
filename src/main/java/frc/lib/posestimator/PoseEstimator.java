@@ -26,7 +26,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Time;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
@@ -112,7 +111,7 @@ public class PoseEstimator {
      *         {@link Optional}.
      */
     public Optional<Transform2d> getPoseDeltaThenToNow(double timestampSeconds) {
-        Optional<Pose2d> optionalOdometryPoseAtTime =
+        var optionalOdometryPoseAtTime =
             odometry.odometryBuffer().getSample(timestampSeconds);
         if (optionalOdometryPoseAtTime.isEmpty()) {
             return Optional.empty();
@@ -189,7 +188,7 @@ public class PoseEstimator {
 
         // Scale the vision correction by the Kalman gain
 
-        Matrix<N3, N1> scaledVisionCorrectionVector = visionKalmanGain.times(
+        var scaledVisionCorrectionVector = visionKalmanGain.times(
             VecBuilder.fill(
                 unscaledVisionCorrection.getX(),
                 unscaledVisionCorrection.getY(),

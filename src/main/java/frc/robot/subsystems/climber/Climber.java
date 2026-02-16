@@ -129,7 +129,7 @@ public class Climber extends SubsystemBase {
     public Command waitUntilGoalCommand(Distance position) {
         return Commands.waitUntil(() -> {
             return nearGoal();
-        }).withName("wait until goal");
+        }).withName("Wait Until Goal");
     }
 
     /**

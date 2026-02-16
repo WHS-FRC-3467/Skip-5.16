@@ -50,7 +50,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
         this.poseSupplier = poseSupplier;
         this.system = system;
 
-        SimCameraProperties simCameraProperties = new SimCameraProperties();
+        var simCameraProperties = new SimCameraProperties();
         if (cameraProperties.cameraMatrix() == null || cameraProperties.distCoeffs() == null) {
             simCameraProperties.setCalibration(cameraProperties.resolutionWidth(),
                 cameraProperties.resolutionHeight(),

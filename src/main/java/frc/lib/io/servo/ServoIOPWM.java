@@ -60,7 +60,7 @@ public class ServoIOPWM implements ServoIO {
      * @param degrees The angle in degrees to set the servo.
      */
     public void setAngle(double degrees) {
-        double servoAngleRange = maxAngle - minAngle;
+        var servoAngleRange = maxAngle - minAngle;
         servo.set((MathUtil.clamp(degrees, minAngle, maxAngle) - minAngle) / servoAngleRange);
     }
 
