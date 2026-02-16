@@ -44,8 +44,7 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
         Distance maxDistance,
         Distance startingDistance,
         Distance drumRadius,
-        Rotation3d orientation) {
-    }
+        Rotation3d orientation) {}
 
     private final double drumRadiusMeters;
     private final LinearMechanismVisualizer visualizer;
