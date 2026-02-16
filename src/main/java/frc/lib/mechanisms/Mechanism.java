@@ -15,21 +15,14 @@
 
 package frc.lib.mechanisms;
 
-import static edu.wpi.first.units.Units.Meter;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Radians;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Voltage;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
@@ -45,7 +38,6 @@ import frc.lib.util.PID;
  * @param <T> the type of MotorIO implementation used by this mechanism
  */
 public abstract class Mechanism<T extends MotorIO> {
-
     protected final String name;
     protected final MotorInputsAutoLogged inputs = new MotorInputsAutoLogged();
     protected final T io;
@@ -190,9 +182,7 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void runPosition(Angle position, PIDSlot slot) {
         io.runPosition(position, slot);
-
     }
-
 
     /**
      * Runs the mechanism at a target velocity.
@@ -244,17 +234,6 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
-     * Gets the linear position of the mechanism based on the angle and a given radius.
-     *
-     * @param radius The radius to convert angle to distance
-     * @return The linear position of the mechanism
-     */
-    public Distance getPosition(Distance radius) {
-        return Meters
-            .of(inputs.position.in(Radians) * radius.in(Meters));
-    }
-
-    /**
      * Gets the error between the target position and current position of the motor.
      *
      * @return The position error in angle units
@@ -295,14 +274,5 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void close() {
         io.close();
-    }
-
-    /**
-     * Supplier for the Pose3d of the mechanism
-     *
-     * @return Supplier for the Pose3d
-     */
-    public Supplier<Pose3d> getPoseSupplier() {
-        return () -> Pose3d.kZero;
     }
 }
