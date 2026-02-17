@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
+import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
@@ -40,11 +41,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     public final LoggedTrigger isExtended;
     public final LoggedTrigger isRetracted;
 
-    private final LinearMechanism<?> intakeLinearIO;
+    private final DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO;
     private final FlywheelMechanism<?> intakeRollerIO;
 
     public IntakeSuperstructure(
-        LinearMechanism<?> intakeLinearIO,
+        DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO,
         FlywheelMechanism<?> intakeRollerIO) {
         this.intakeLinearIO = intakeLinearIO;
         this.intakeRollerIO = intakeRollerIO;
@@ -53,10 +54,10 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
             () -> (intakeLinearIO.getVelocity().abs(RotationsPerSecond) < 0.01));
         this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) > LINEAR_CURRENT.get() * 0.8)
-                .and(this.isStopped);
+            .and(this.isStopped);
         this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) < -LINEAR_CURRENT.get() * 0.8)
-                .and(this.isStopped);
+            .and(this.isStopped);
     }
 
     /**
@@ -65,7 +66,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @return The estimated linear extension of the subsystem
      */
     public Distance getExtension() {
-        return IntakeLinearConstants.CONVERTER.toDistance(intakeLinearIO.getPosition());
+        return intakeLinearIO.getLinearPosition();
     }
 
     public boolean isIntaking() {
