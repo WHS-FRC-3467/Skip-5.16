@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.788837719298246,
-        "y": 7.42952850877193
+        "x": 3.8320399429386587,
+        "y": 7.483152639087019
       },
       "isLocked": false,
       "linkedName": "UnderTrench-Shoot-Left-End"
@@ -17,15 +17,15 @@
     {
       "anchor": {
         "x": 4.625449561403509,
-        "y": 7.458377192982456
+        "y": 7.48
       },
       "prevControl": {
-        "x": 3.788837719298246,
-        "y": 7.458377192982456
+        "x": 3.7026856591842536,
+        "y": 7.488340463467734
       },
       "nextControl": {
-        "x": 5.56828137037429,
-        "y": 7.458377192982456
+        "x": 5.708145506419401,
+        "y": 7.4702139800285305
       },
       "isLocked": false,
       "linkedName": null
@@ -36,8 +36,8 @@
         "y": 7.0
       },
       "prevControl": {
-        "x": 5.606304824561404,
-        "y": 7.458377192982456
+        "x": 5.643452211126961,
+        "y": 7.4702139800285305
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,7 +46,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.7358490566037735,
+      "waypointRelativePos": 0.74,
       "rotationDegrees": -90.0
     },
     {

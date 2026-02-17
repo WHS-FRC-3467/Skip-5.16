@@ -35,6 +35,7 @@ import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
@@ -271,11 +272,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     public Command prepareShot(Command whileAtPosition) {
         return Commands.sequence(
-                Commands.parallel(
-                        spinUpShooter(),
-                        Commands.repeatingSequence(
-                                Commands.waitUntil(readyToShoot),
-                                whileAtPosition.until(readyToShoot.negate()))));
+                        Commands.parallel(
+                                spinUpShooter(),
+                                Commands.repeatingSequence(
+                                        Commands.waitUntil(readyToShoot),
+                                        whileAtPosition.until(readyToShoot.negate()))))
+                .withName("Prepare Shot");
     }
 
     /**
@@ -285,7 +287,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @return command that sets the hood angle
      */
     public Command setHoodAngle(Angle angle) {
-        return Commands.runOnce(() -> setHoodPosition(angle));
+        return Commands.runOnce(() -> setHoodPosition(angle)).withName("Set Hood Angle");
     }
 
     /**
@@ -295,7 +297,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @return command that sets the flywheel speed
      */
     public Command setFlywheelSpeed(AngularVelocity velocity) {
-        return Commands.runOnce(() -> spinFlywheel(velocity));
+        return Commands.runOnce(() -> spinFlywheel(velocity)).withName("Set Flywheel Speed");
     }
 
     @Override
@@ -312,6 +314,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     getName() + "/Tuning/DistanceToTargetMeters",
                     robotState.getDistanceToTarget().in(Meters));
         }
+        LoggerHelper.recordCurrentCommand(this.getName(), this);
 
         leftFlywheelIO.periodic();
         rightFlywheelIO.periodic();

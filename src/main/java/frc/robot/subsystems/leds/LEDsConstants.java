@@ -30,15 +30,12 @@ import com.ctre.phoenix6.signals.RGBWColor;
 import com.ctre.phoenix6.signals.StatusLedWhenActiveValue;
 import com.ctre.phoenix6.signals.StripTypeValue;
 import com.ctre.phoenix6.signals.VBatOutputModeValue;
-
 import edu.wpi.first.wpilibj.util.Color;
-
 import frc.lib.io.lights.LightsIO;
 import frc.lib.io.lights.LightsIOCandle;
 import frc.lib.io.lights.LightsIOSim;
 import frc.robot.Constants;
 import frc.robot.Ports;
-
 import java.util.List;
 
 public class LEDsConstants {

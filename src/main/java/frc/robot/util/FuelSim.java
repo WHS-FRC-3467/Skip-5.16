@@ -353,7 +353,7 @@ public class FuelSim {
      *
      * @param fuels list of fuels to process
      */
-    protected void handleFuelCollisions(ArrayList<Fuel> fuels) {
+    protected void handleFuelCollisions(List<Fuel> fuels) {
         // Clear grid
         for (int i = 0; i < GRID_COLS; i++) {
             for (int j = 0; j < GRID_ROWS; j++) {

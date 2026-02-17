@@ -182,7 +182,6 @@ public class AutoCommands {
         return Commands.sequence(
                 intake.extendIntake().withTimeout(1.25),
                 pathCommand,
-                Commands.waitSeconds(afterPathWait.in(Seconds)),
-                intake.retractIntake().withTimeout(1.25));
+                Commands.waitSeconds(afterPathWait.in(Seconds)));
     }
 }

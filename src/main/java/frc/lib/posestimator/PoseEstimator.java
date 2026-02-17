@@ -186,6 +186,7 @@ public class PoseEstimator {
         Transform2d unscaledVisionCorrection = new Transform2d(oldPose, newVisionPose);
 
         // Scale the vision correction by the Kalman gain
+
         var scaledVisionCorrectionVector =
                 visionKalmanGain.times(
                         VecBuilder.fill(
