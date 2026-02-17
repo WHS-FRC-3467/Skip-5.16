@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggerHelper;
 
 /**
  * Subsystem that controls the indexer floor and indexer centering mechanism for moving game pieces
@@ -70,6 +71,7 @@ public class IndexerSuperstructure extends SubsystemBase {
 
     @Override
     public void periodic() {
+        LoggerHelper.recordCurrentCommand(this.getName(), this);
         floorIO.periodic();
         centerIO.periodic();
     }
@@ -89,7 +91,7 @@ public class IndexerSuperstructure extends SubsystemBase {
         return this.runOnce(() -> {
             floorIO.runBrake();
             centerIO.runBrake();
-        });
+        }).withName("Stop");
     }
 
     private void stop() {
@@ -107,7 +109,7 @@ public class IndexerSuperstructure extends SubsystemBase {
         return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(FLOOR_SHOOT_RPS.get()),
                 RotationsPerSecond.of(CENTER_SHOOT_RPS.get())),
-            () -> stop());
+            () -> stop()).withName("Shoot");
     }
 
     /**
@@ -120,7 +122,7 @@ public class IndexerSuperstructure extends SubsystemBase {
         return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(FLOOR_FEED_RPS.get()),
                 RotationsPerSecond.of(CENTER_FEED_RPS.get())),
-            () -> stop());
+            () -> stop()).withName("Feed");
     }
 
     /**
@@ -133,7 +135,7 @@ public class IndexerSuperstructure extends SubsystemBase {
         return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(FLOOR_EJECT_RPS.get()),
                 RotationsPerSecond.of(CENTER_EJECT_RPS.get())),
-            () -> stop());
+            () -> stop()).withName("Eject");
     }
 
     /**
