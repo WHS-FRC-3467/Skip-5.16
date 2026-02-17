@@ -18,9 +18,7 @@ package frc.lib.mechanisms;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -31,6 +29,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorInputsAutoLogged;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.PID;
+import lombok.Getter;
 
 /**
  * Abstract base class for all robot mechanisms that use motors. Provides common functionality for
@@ -40,7 +39,7 @@ import frc.lib.util.PID;
  * @param <T> the type of MotorIO implementation used by this mechanism
  */
 public abstract class Mechanism<T extends MotorIO> {
-
+    @Getter
     protected final String name;
     protected final MotorInputsAutoLogged inputs = new MotorInputsAutoLogged();
     protected final T io;
@@ -185,9 +184,7 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void runPosition(Angle position, PIDSlot slot) {
         io.runPosition(position, slot);
-
     }
-
 
     /**
      * Runs the mechanism at a target velocity.
@@ -279,14 +276,5 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void close() {
         io.close();
-    }
-
-    /**
-     * Supplier for the Pose3d of the mechanism
-     *
-     * @return Supplier for the Pose3d
-     */
-    public Supplier<Pose3d> getPoseSupplier() {
-        return () -> Pose3d.kZero;
     }
 }

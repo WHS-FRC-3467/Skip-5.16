@@ -47,7 +47,7 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
      * @param motor The DC motor characteristics
      * @param mass The mass of the carriage
      * @param useGravity Whether to simulate gravity effects (applies when orientation is vertical)
-     * @param constraints The mechanism characteristics including orientation
+     * @param characteristics The mechanism characteristics including orientation
      */
     public LinearMechanismSim(
         String name,
@@ -55,8 +55,8 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
         DCMotor motor,
         Mass mass,
         Boolean useGravity,
-        LinearMechCharacteristics constraints) {
-        super(name, constraints, io);
+        LinearMechCharacteristics characteristics) {
+        super(name, characteristics, io);
 
         // ElevatorSim is used as the underlying physics simulation.
         // Note: ElevatorSim assumes vertical orientation for gravity simulation.
@@ -68,11 +68,11 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
             motor,
             io.getRotorToSensorRatio() * io.getSensorToMechanismRatio(),
             mass.in(Kilograms),
-            constraints.converter().getDrumRadius().in(Meters),
-            constraints.minDistance().in(Meters),
-            constraints.maxDistance().in(Meters),
+            characteristics.drumRadius().in(Meters),
+            characteristics.minDistance().in(Meters),
+            characteristics.maxDistance().in(Meters),
             useGravity,
-            constraints.startingDistance().in(Meters));
+            characteristics.startingDistance().in(Meters));
     }
 
     @Override
@@ -95,15 +95,15 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
 
         lastTime = currentTime;
 
-        io.setPosition(converter.toAngle(Meters.of(sim.getPositionMeters())));
+        io.setPosition(toAngle(Meters.of(sim.getPositionMeters())));
         io.setRotorVelocity(
-            converter.toAngle(Meters.of(sim.getVelocityMetersPerSecond())).per(Seconds));
+            toAngle(Meters.of(sim.getVelocityMetersPerSecond())).per(Seconds));
 
         super.periodic();
     }
 
     @Override
     public void setEncoderPosition(Angle position) {
-        sim.setState(converter.toDistance(position).in(Meters), 0);
+        sim.setState(toDistance(position).in(Meters), 0);
     }
 }
