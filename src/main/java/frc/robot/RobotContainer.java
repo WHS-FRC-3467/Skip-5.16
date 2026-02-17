@@ -141,6 +141,11 @@ public class RobotContainer {
             new OutpostAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.RIGHT));
 
+        // Drivebase Characterization Autos
+        autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
+        autoChooser.addOption("RotationalCharacterization",
+            new RotationalCharacterizationAuto(drive));
+
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path")
                 .setPoses(auto.getAllPathPoses().stream()
@@ -193,7 +198,7 @@ public class RobotContainer {
                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                 indexer.stopCommand(),
                 tower.stopCommand(),
-                intake.extendLinear()));
+                intake.extendIntake()));
 
         // Left Trigger: Intake
         controller.leftTrigger()
@@ -260,7 +265,7 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Feed", indexer.feed());
         SmartDashboard.putData("Indexer/Stop", indexer.stopCommand());
 
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendLinear());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
 
@@ -269,9 +274,6 @@ public class RobotContainer {
             Degrees.of(90).minus(HoodConstants.MIN_ANGLE_OFFSET).minus(shooter.getHoodAngle())
                 .in(Degrees))));
 
-        SmartDashboard.putData("Intake Linear/Extend", intake.extendLinear());
-        SmartDashboard.putData("Intake Linear/Retract", intake.retractIntake());
-        SmartDashboard.putData("Intake Linear/Cycle", intake.cycle());
         SmartDashboard.putData("Intake Linear/Coast", intake.linearCoast());
         SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
         SmartDashboard.putData("Indexer/Shoot", indexer.shoot());
