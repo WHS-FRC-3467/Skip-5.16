@@ -31,11 +31,11 @@ import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.mechanisms.linear.LinearMechanism.LinearMechCharacteristics;
 import frc.lib.mechanisms.linear.LinearMechanismReal;
 import frc.lib.mechanisms.linear.LinearMechanismSim;
-import frc.lib.util.MechanismUtil.DistanceAngleConverter;
 import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
@@ -57,7 +57,6 @@ public class IntakeLinearConstants {
 
     public static final Distance DRUM_RADIUS = Inches.of(0.5);
     public static final Mass CARRIAGE_MASS = Kilograms.of(.1);
-    public static final DistanceAngleConverter CONVERTER = new DistanceAngleConverter(DRUM_RADIUS);
 
     public static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
 
@@ -71,7 +70,7 @@ public class IntakeLinearConstants {
 
     public static final LinearMechCharacteristics CHARACTERISTICS =
         new LinearMechCharacteristics(MIN_DISTANCE, MAX_DISTANCE,
-            STARTING_DISTANCE, CONVERTER, ORIENTATION);
+            STARTING_DISTANCE, DRUM_RADIUS, ORIENTATION);
 
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
 
@@ -118,7 +117,7 @@ public class IntakeLinearConstants {
      *
      * @return A configured LinearMechanism instance
      */
-    public static LinearMechanism<?> getMechanism() {
+    public static DistanceControlledMechanism<LinearMechanism<?>> getMechanism() {
         LinearMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -137,6 +136,7 @@ public class IntakeLinearConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return mechanism;
+
+        return new DistanceControlledMechanism<>(mechanism, DRUM_RADIUS);
     }
 }

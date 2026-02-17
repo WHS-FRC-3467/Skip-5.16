@@ -90,7 +90,7 @@ public class BasicNeutralAuto extends AutoRoutine {
                         Commands.waitSeconds(3),
                         Commands.either(
                             Commands
-                                .runOnce(() -> RobotSim.getInstance().getFuelSim().setHeldFuel(20)),
+                                .runOnce(() -> RobotSim.getInstance().getFuelSim().setHopperFuel(20)),
                             Commands.none(), RobotBase::isSimulation)),
                 // Reverse back through depot / outpost to shooting location & shoot FUEL
                 start == StartPosition.LEFT
