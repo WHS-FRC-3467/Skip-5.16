@@ -40,6 +40,9 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
     public DistanceControlledMechanism(T mechanism, Distance radius) {
         this.mechanism = mechanism;
         this.radiusMeters = radius.in(Meters);
+        if (this.radiusMeters <= 0.0) {
+            throw new IllegalArgumentException("radius must be greater than 0 meters");
+        }
     }
 
     /**
