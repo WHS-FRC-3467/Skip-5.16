@@ -96,5 +96,6 @@
   "java.project.referencedLibraries": [
     "processor/build/libs/**/*.jar"
   ],
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.format.settings.google.extra": "--aosp"
 }
