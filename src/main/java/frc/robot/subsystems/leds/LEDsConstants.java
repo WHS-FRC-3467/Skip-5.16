@@ -30,12 +30,15 @@ import com.ctre.phoenix6.signals.RGBWColor;
 import com.ctre.phoenix6.signals.StatusLedWhenActiveValue;
 import com.ctre.phoenix6.signals.StripTypeValue;
 import com.ctre.phoenix6.signals.VBatOutputModeValue;
+
 import edu.wpi.first.wpilibj.util.Color;
+
 import frc.lib.io.lights.LightsIO;
 import frc.lib.io.lights.LightsIOCandle;
 import frc.lib.io.lights.LightsIOSim;
 import frc.robot.Constants;
 import frc.robot.Ports;
+
 import java.util.List;
 
 public class LEDsConstants {
@@ -78,7 +81,6 @@ public class LEDsConstants {
     }
 
     public record LEDSegment(int startIndex, int endIndex, int animationSlot) {}
-    ;
 
     // Animations
 
@@ -86,7 +88,6 @@ public class LEDsConstants {
     public static final ControlRequest candleOff = new EmptyAnimation(CANDLE_LEDS.animationSlot);
 
     public static final ControlRequest frontOff = new EmptyAnimation(FRONT_STRIP.animationSlot);
-    ;
 
     public static final List<ControlRequest> offAnimation = List.of(candleOff, frontOff);
 

@@ -21,6 +21,7 @@ import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
+
 import java.util.List;
 
 /**
@@ -44,7 +45,6 @@ public class PreloadAuto extends AutoRoutine {
             case RIGHT -> expectedPaths = List.of("PreloadShoot-Right");
             default -> expectedPaths = List.of();
         }
-        ;
 
         // Load the named paths
         this.loadAllPaths(expectedPaths);

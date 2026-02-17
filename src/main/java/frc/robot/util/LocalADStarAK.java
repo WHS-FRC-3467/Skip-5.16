@@ -21,14 +21,17 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
 import com.pathplanner.lib.pathfinding.LocalADStar;
 import com.pathplanner.lib.pathfinding.Pathfinder;
+
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Translation2d;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 // NOTE: This file is available at
 // https://gist.github.com/mjansen4857/a8024b55eb427184dbd10ae8923bd57d
@@ -90,8 +93,8 @@ public class LocalADStarAK implements Pathfinder {
     /**
      * Set the goal position to pathfind to
      *
-     * @param goalPosition Goal position on the field. f this is within an obstacle it will be moved
-     *     to the nearest non-obstacle node.
+     * @param goalPosition Goal position on the field. If this is within an obstacle it will be
+     *     moved to the nearest non-obstacle node.
      */
     @Override
     public void setGoalPosition(Translation2d goalPosition) {
