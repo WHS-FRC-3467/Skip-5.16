@@ -16,6 +16,7 @@
 package frc.robot.subsystems.tower;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -33,15 +34,17 @@ import frc.lib.util.LoggedTunableNumber;
 public class Tower extends SubsystemBase {
 
     private static final LoggedTunableNumber SHOOT_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/ShootRPS",
-            TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
+            new LoggedTunableNumber(
+                    TowerConstants.NAME + "/ShootRPS",
+                    TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber EJECT_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/EjectRPS", -0.5);
+            new LoggedTunableNumber(TowerConstants.NAME + "/EjectRPS", -0.5);
 
     private static final LoggedTunableNumber FEED_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/FeedRPS",
-            TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
+            new LoggedTunableNumber(
+                    TowerConstants.NAME + "/FeedRPS",
+                    TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private final FlywheelMechanism<?> io;
 
@@ -49,16 +52,23 @@ public class Tower extends SubsystemBase {
     private final DistanceSensor laserCAN2 = TowerConstants.getLaserCAN2();
 
     public final LoggedTrigger laserCAN1Tripped =
-        new LoggedTrigger(TowerConstants.LASERCAN1_NAME,
-            () -> laserCAN1.betweenDistance(TowerConstants.MINIMUM_TRIP_DISTANCE,
-                TowerConstants.MAXIMUM_TRIP_DISTANCE));
+            new LoggedTrigger(
+                    TowerConstants.LASERCAN1_NAME,
+                    () ->
+                            laserCAN1.betweenDistance(
+                                    TowerConstants.MINIMUM_TRIP_DISTANCE,
+                                    TowerConstants.MAXIMUM_TRIP_DISTANCE));
     public final LoggedTrigger laserCAN2Tripped =
-        new LoggedTrigger(TowerConstants.LASERCAN2_NAME,
-            () -> laserCAN2.betweenDistance(TowerConstants.MINIMUM_TRIP_DISTANCE,
-                TowerConstants.MAXIMUM_TRIP_DISTANCE));
+            new LoggedTrigger(
+                    TowerConstants.LASERCAN2_NAME,
+                    () ->
+                            laserCAN2.betweenDistance(
+                                    TowerConstants.MINIMUM_TRIP_DISTANCE,
+                                    TowerConstants.MAXIMUM_TRIP_DISTANCE));
 
-    public final LoggedTrigger isStaged = new LoggedTrigger(TowerConstants.NAME + "/IsStaged",
-        laserCAN1Tripped.or(laserCAN2Tripped));
+    public final LoggedTrigger isStaged =
+            new LoggedTrigger(
+                    TowerConstants.NAME + "/IsStaged", laserCAN1Tripped.or(laserCAN2Tripped));
 
     /**
      * Constructs a new Tower subsystem with the specified flywheel mechanism.
@@ -106,8 +116,7 @@ public class Tower extends SubsystemBase {
      */
     public Command shoot() {
         return this.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get())),
-            () -> stop());
+                () -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get())), () -> stop());
     }
 
     /**
@@ -118,8 +127,7 @@ public class Tower extends SubsystemBase {
      */
     public Command feed() {
         return this.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(FEED_RPS.get())),
-            () -> stop());
+                () -> runVelocity(RotationsPerSecond.of(FEED_RPS.get())), () -> stop());
     }
 
     /**
@@ -130,8 +138,7 @@ public class Tower extends SubsystemBase {
      */
     public Command eject() {
         return this.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(EJECT_RPS.get())),
-            () -> stop());
+                () -> runVelocity(RotationsPerSecond.of(EJECT_RPS.get())), () -> stop());
     }
 
     /**
@@ -147,11 +154,8 @@ public class Tower extends SubsystemBase {
         io.runBrake();
     }
 
-    /**
-     * Closes the underlying flywheel mechanism and releases resources.
-     */
+    /** Closes the underlying flywheel mechanism and releases resources. */
     public void close() {
         io.close();
     }
-
 }

@@ -85,7 +85,7 @@
     " */",
   ],
   "editor.formatOnSave": true,
-  "java.format.settings.url": "./style.xml",
+  "editor.defaultFormatter": "josevseb.google-java-format-for-vs-code",
   "[java]": {
     "editor.detectIndentation": false
   },

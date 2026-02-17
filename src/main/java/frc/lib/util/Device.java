@@ -19,30 +19,26 @@ package frc.lib.util;
  * Sealed interface representing different types of hardware devices on the robot. Provides
  * type-safe device port definitions for CAN, DIO, and PWM devices.
  */
-public sealed
-interface Device {
+public sealed interface Device {
     /**
      * CAN bus device with an ID and bus name.
      *
      * @param id the CAN ID of the device
      * @param bus the name of the CAN bus the device is connected to (e.g., "rio", "Drivetrain")
      */
-    record CAN(int id, String bus) implements Device {
-    }
+    record CAN(int id, String bus) implements Device {}
 
     /**
      * Digital Input/Output device with a port ID.
      *
      * @param id the DIO port ID on the roboRIO
      */
-    public record DIO(int id) implements Device {
-    }
+    public record DIO(int id) implements Device {}
 
     /**
      * Pulse Width Modulation device with a port ID.
      *
      * @param id the PWM port ID on the roboRIO
      */
-    public record PWM(int id) implements Device {
-    }
+    public record PWM(int id) implements Device {}
 }

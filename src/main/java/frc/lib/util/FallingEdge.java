@@ -52,5 +52,4 @@ public class FallingEdge implements BooleanSupplier {
         previousState = currentState;
         return fallingEdge;
     }
-
 }

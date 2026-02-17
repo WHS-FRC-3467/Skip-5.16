@@ -6,6 +6,7 @@ package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -18,12 +19,12 @@ import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
 import frc.robot.commands.DriveCommands;
-import frc.robot.subsystems.tower.Tower;
+import frc.robot.commands.FuelCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
-import frc.robot.commands.FuelCommands;
+import frc.robot.subsystems.tower.Tower;
 
 /**
  * Class containing useful individual commands or small-group command sequences that can be strung
@@ -42,18 +43,15 @@ public class AutoCommands {
         if (RobotBase.isSimulation()) {
             final RobotState robotState = RobotState.getInstance();
             return drive.runOnce(
-                () -> {
-                    Pose2d pose =
-                        path.getStartingHolonomicPose().get();
-                    if (FieldUtil.shouldFlip()) {
-                        pose = FieldUtil.apply(pose);
-                    }
+                    () -> {
+                        Pose2d pose = path.getStartingHolonomicPose().get();
+                        if (FieldUtil.shouldFlip()) {
+                            pose = FieldUtil.apply(pose);
+                        }
 
-                    robotState.resetPose(pose);
-                });
-        } else
-
-        {
+                        robotState.resetPose(pose);
+                    });
+        } else {
             return Commands.none();
         }
     }
@@ -68,19 +66,21 @@ public class AutoCommands {
      * @param indexer the indexer subsystem used to feed game pieces into the shooter
      * @param tower the tower subsystem used to move game pieces toward the shooter
      * @param shooter the shooter superstructure responsible for spinning up and controlling the
-     *        shooter
+     *     shooter
      * @param duration the maximum duration in seconds to run the align-and-shoot sequence
      * @return a command that aligns the robot to the target and shoots for up to the given duration
      */
-    public static Command alignAndShoot(Drive drive, IndexerSuperstructure indexer,
-        Tower tower, ShooterSuperstructure shooter, double duration) {
+    public static Command alignAndShoot(
+            Drive drive,
+            IndexerSuperstructure indexer,
+            Tower tower,
+            ShooterSuperstructure shooter,
+            double duration) {
         final var robotState = RobotState.getInstance();
         return Commands.deadline(
-            FuelCommands.shootFuel(indexer, tower, shooter,
-                robotState.facingTarget,
-                duration),
-            DriveCommands.joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0,
-                robotState::getAngleToTarget));
+                FuelCommands.shootFuel(indexer, tower, shooter, robotState.facingTarget, duration),
+                DriveCommands.joystickDriveAtAngle(
+                        drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget));
     }
 
     /**
@@ -91,15 +91,18 @@ public class AutoCommands {
      * @param path the path to drive, the shooter will prepare to shoot at the end of this path.
      * @param shooter the shooter subsystem
      * @return a command that prepares the shooter to shoot THE HUB from the end of the provided
-     *         path
+     *     path
      */
     public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter) {
         // All paths blue canonical, so flip end translation if red alliance
         return shooter.spinUpShooterToHubDistance(
-            Meters.of(
-                FieldUtil
-                    .apply(path.getAllPathPoints().get(path.getAllPathPoints().size() - 1).position)
-                    .getDistance(Target.HUB.getAllianceTranslation().toTranslation2d())));
+                Meters.of(
+                        FieldUtil.apply(
+                                        path.getAllPathPoints()
+                                                .get(path.getAllPathPoints().size() - 1)
+                                                .position)
+                                .getDistance(
+                                        Target.HUB.getAllianceTranslation().toTranslation2d())));
     }
 
     /**
@@ -114,18 +117,20 @@ public class AutoCommands {
      * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
      * @param path The path to drive to the shooting location, the robot will shoot from the path's
-     *        end pose
+     *     end pose
      * @return a command that drives to the shooting location and attempts to shoot all the
-     *         PRELOADED FUEL
+     *     PRELOADED FUEL
      */
-    public static Command makePreloadShot(Drive drive, IndexerSuperstructure indexer,
-        Tower tower,
-        ShooterSuperstructure shooter, PathPlannerPath path) {
+    public static Command makePreloadShot(
+            Drive drive,
+            IndexerSuperstructure indexer,
+            Tower tower,
+            ShooterSuperstructure shooter,
+            PathPlannerPath path) {
         return Commands.sequence(
-            new ParallelDeadlineGroup(
-                AutoBuilder.followPath(path),
-                AutoCommands.prepareHubShot(path, shooter)),
-            FuelCommands.shootFuel(indexer, tower, shooter, () -> true, 1.5));
+                new ParallelDeadlineGroup(
+                        AutoBuilder.followPath(path), AutoCommands.prepareHubShot(path, shooter)),
+                FuelCommands.shootFuel(indexer, tower, shooter, () -> true, 1.5));
     }
 
     /**
@@ -141,19 +146,23 @@ public class AutoCommands {
      * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
      * @param path The path to drive to the shooting location, the robot will shoot from the path's
-     *        end pose
+     *     end pose
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
-    public static Command makeFullShot(Drive drive, IntakeSuperstructure intake,
-        IndexerSuperstructure indexer,
-        Tower tower, ShooterSuperstructure shooter, PathPlannerPath path) {
+    public static Command makeFullShot(
+            Drive drive,
+            IntakeSuperstructure intake,
+            IndexerSuperstructure indexer,
+            Tower tower,
+            ShooterSuperstructure shooter,
+            PathPlannerPath path) {
         return Commands.sequence(
-            new ParallelDeadlineGroup(
-                AutoBuilder.followPath(path),
-                AutoCommands.prepareHubShot(path, shooter)),
-            new ParallelDeadlineGroup(
-                FuelCommands.shootFuel(indexer, tower, shooter, () -> true, 5.0), // ~ 10 bps
-                intake.cycle())); // TODO: more testing
+                new ParallelDeadlineGroup(
+                        AutoBuilder.followPath(path), AutoCommands.prepareHubShot(path, shooter)),
+                new ParallelDeadlineGroup(
+                        FuelCommands.shootFuel(
+                                indexer, tower, shooter, () -> true, 5.0), // ~ 10 bps
+                        intake.cycle())); // TODO: more testing
     }
 
     /**
@@ -164,16 +173,16 @@ public class AutoCommands {
      * @param intake Intake subsystem
      * @param pathCommand The command that follows the desired path
      * @param afterPathWait The time to wait after the intaking path is complete before stopping the
-     *        intake
+     *     intake
      */
-    public static Command driveAndIntake(IntakeSuperstructure intake, Command pathCommand,
-        Time afterPathWait) {
+    public static Command driveAndIntake(
+            IntakeSuperstructure intake, Command pathCommand, Time afterPathWait) {
         // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
-            intake.extendIntake().withTimeout(1.25),
-            pathCommand,
-            Commands.waitSeconds(afterPathWait.in(Seconds)),
-            intake.retractIntake().withTimeout(1.25));
+                intake.extendIntake().withTimeout(1.25),
+                pathCommand,
+                Commands.waitSeconds(afterPathWait.in(Seconds)),
+                intake.retractIntake().withTimeout(1.25));
     }
 }

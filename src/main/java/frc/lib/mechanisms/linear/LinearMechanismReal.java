@@ -23,8 +23,7 @@ import frc.lib.io.motor.MotorIO;
  * MotorIO interface.
  */
 public class LinearMechanismReal extends LinearMechanism<MotorIO> {
-    public LinearMechanismReal(String name, MotorIO io,
-        LinearMechCharacteristics characteristics) {
+    public LinearMechanismReal(String name, MotorIO io, LinearMechCharacteristics characteristics) {
         super(name, characteristics, io);
     }
 

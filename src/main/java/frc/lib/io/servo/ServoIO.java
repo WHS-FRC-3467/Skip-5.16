@@ -31,9 +31,6 @@ public interface ServoIO {
      */
     public default void setAngle(Angle position) {}
 
-    /**
-     * Disables PWM output until told to run to a position again.
-     */
+    /** Disables PWM output until told to run to a position again. */
     public default void stop() {}
-
 }

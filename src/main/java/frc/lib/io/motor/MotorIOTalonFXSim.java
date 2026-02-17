@@ -17,6 +17,7 @@ package frc.lib.io.motor;
 
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -44,14 +45,12 @@ public class MotorIOTalonFXSim extends MotorIOTalonFX implements MotorIOSim {
      * @param main CAN ID of the main motor
      * @param followerData Configuration data for the follower(s)
      */
-    public MotorIOTalonFXSim(String name, TalonFXConfiguration config, CAN main,
-        TalonFXFollower... followerData) {
+    public MotorIOTalonFXSim(
+            String name, TalonFXConfiguration config, CAN main, TalonFXFollower... followerData) {
         super(name, config, main, followerData);
 
-        rotorToSensorRatio =
-            config.Feedback.RotorToSensorRatio;
-        sensorToMechanismRatio =
-            config.Feedback.SensorToMechanismRatio;
+        rotorToSensorRatio = config.Feedback.RotorToSensorRatio;
+        sensorToMechanismRatio = config.Feedback.SensorToMechanismRatio;
         simState = super.motor.getSimState();
     }
 
@@ -87,17 +86,18 @@ public class MotorIOTalonFXSim extends MotorIOTalonFX implements MotorIOSim {
 
     @Override
     public void updateInputs(MotorInputs inputs) {
-        inputs.connected = BaseStatusSignal.refreshAll(
-            super.position,
-            super.velocity,
-            super.supplyVoltage,
-            super.supplyCurrent,
-            super.torqueCurrent,
-            super.temperature,
-            super.closedLoopError,
-            super.closedLoopReference,
-            super.closedLoopReferenceSlope)
-            .isOK();
+        inputs.connected =
+                BaseStatusSignal.refreshAll(
+                                super.position,
+                                super.velocity,
+                                super.supplyVoltage,
+                                super.supplyCurrent,
+                                super.torqueCurrent,
+                                super.temperature,
+                                super.closedLoopError,
+                                super.closedLoopReference,
+                                super.closedLoopReferenceSlope)
+                        .isOK();
 
         simState.setSupplyVoltage(RobotController.getBatteryVoltage());
 
@@ -116,26 +116,23 @@ public class MotorIOTalonFXSim extends MotorIOTalonFX implements MotorIOSim {
         boolean isRunningMotionMagic = super.isRunningMotionMagic();
         boolean isRunningVelocityControl = super.isRunningVelocityControl();
 
-        inputs.positionError = isRunningPositionControl
-            ? Rotations.of(closedLoopErrorValue)
-            : Rotations.zero();
+        inputs.positionError =
+                isRunningPositionControl ? Rotations.of(closedLoopErrorValue) : Rotations.zero();
 
         inputs.activeTrajectoryPosition =
-            isRunningPositionControl && isRunningMotionMagic
-                ? Rotations.of(closedLoopTargetValue)
-                : Rotations.zero();
+                isRunningPositionControl && isRunningMotionMagic
+                        ? Rotations.of(closedLoopTargetValue)
+                        : Rotations.zero();
 
-        inputs.goalPosition = isRunningPositionControl
-            ? goalPosition
-            : Rotations.zero();
+        inputs.goalPosition = isRunningPositionControl ? goalPosition : Rotations.zero();
 
         if (isRunningVelocityControl) {
             inputs.velocityError = RotationsPerSecond.of(closedLoopErrorValue);
             inputs.activeTrajectoryVelocity = RotationsPerSecond.of(closedLoopTargetValue);
         } else if (isRunningPositionControl && isRunningMotionMagic) {
             var targetVelocity = closedLoopReferenceSlope.getValue();
-            inputs.velocityError = RotationsPerSecond.of(
-                targetVelocity - inputs.velocity.in(RotationsPerSecond));
+            inputs.velocityError =
+                    RotationsPerSecond.of(targetVelocity - inputs.velocity.in(RotationsPerSecond));
             inputs.activeTrajectoryVelocity = RotationsPerSecond.of(targetVelocity);
         } else {
             inputs.velocityError = RotationsPerSecond.zero();

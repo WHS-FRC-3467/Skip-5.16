@@ -4,17 +4,17 @@
 
 package frc.lib.mechanisms.rotary;
 
-import frc.lib.io.absoluteencoder.AbsoluteEncoderIO;
-import frc.lib.io.absoluteencoder.AbsoluteEncoderInputsAutoLogged;
-import frc.lib.io.motor.MotorIO.ControlType;
-import frc.lib.mechanisms.Mechanism;
-import java.util.Optional;
-import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import frc.lib.io.absoluteencoder.AbsoluteEncoderIO;
+import frc.lib.io.absoluteencoder.AbsoluteEncoderInputsAutoLogged;
 import frc.lib.io.motor.MotorIO;
+import frc.lib.io.motor.MotorIO.ControlType;
+import frc.lib.mechanisms.Mechanism;
+import java.util.Optional;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Abstract base class for rotary mechanisms that pivot around an axis. Examples include arms,
@@ -25,7 +25,7 @@ import frc.lib.io.motor.MotorIO;
  * @param <E> the type of AbsoluteEncoderIO implementation (if used)
  */
 public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncoderIO>
-    extends Mechanism<T> {
+        extends Mechanism<T> {
 
     public enum RotaryAxis {
         PITCH,
@@ -34,21 +34,25 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     }
 
     public static record RotaryMechCharacteristics(
-        Distance armLength,
-        Angle minAngle,
-        Angle maxAngle,
-        Angle startingAngle,
-        RotaryAxis axis) {}
+            Distance armLength,
+            Angle minAngle,
+            Angle maxAngle,
+            Angle startingAngle,
+            RotaryAxis axis) {}
 
     protected final AbsoluteEncoderInputsAutoLogged absoluteEncoderInputs =
-        new AbsoluteEncoderInputsAutoLogged();
+            new AbsoluteEncoderInputsAutoLogged();
     protected final Optional<E> absoluteEncoder;
     private final String encoderName;
 
     private final RotaryVisualizer visualizer;
 
-    public RotaryMechanism(String name, RotaryMechCharacteristics characteristics, T io,
-        Optional<E> absoluteEncoder, String encoderName) {
+    public RotaryMechanism(
+            String name,
+            RotaryMechCharacteristics characteristics,
+            T io,
+            Optional<E> absoluteEncoder,
+            String encoderName) {
         super(name, io);
         this.absoluteEncoder = absoluteEncoder;
         this.encoderName = encoderName;
@@ -74,9 +78,9 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
     // Checks if mechanism is near a goal position within a specified tolerance
     public boolean nearGoal(Angle goalAngle, Angle tolerance) {
         return MathUtil.isNear(
-            getPosition().in(BaseUnits.AngleUnit),
-            goalAngle.in(BaseUnits.AngleUnit),
-            tolerance.in(BaseUnits.AngleUnit));
+                getPosition().in(BaseUnits.AngleUnit),
+                goalAngle.in(BaseUnits.AngleUnit),
+                tolerance.in(BaseUnits.AngleUnit));
     }
 
     @Override
@@ -90,10 +94,11 @@ public abstract class RotaryMechanism<T extends MotorIO, E extends AbsoluteEncod
         visualizer.setGoalAngle(getGoalAngle());
 
         // Finally, update and log absolute encoder inputs if present.
-        absoluteEncoder.ifPresent(encoder -> {
-            encoder.updateInputs(absoluteEncoderInputs);
-            Logger.processInputs(encoderName, absoluteEncoderInputs);
-        });
+        absoluteEncoder.ifPresent(
+                encoder -> {
+                    encoder.updateInputs(absoluteEncoderInputs);
+                    Logger.processInputs(encoderName, absoluteEncoderInputs);
+                });
     }
 
     @Override

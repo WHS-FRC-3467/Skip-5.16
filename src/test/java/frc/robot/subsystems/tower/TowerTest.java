@@ -17,13 +17,14 @@ package frc.robot.subsystems.tower;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TowerTest {
     Tower tower;
@@ -53,10 +54,7 @@ public class TowerTest {
 
     @Test // marks this method as a test
     void shoot() {
-        TestUtil.runTest(
-            tower.shoot(),
-            2,
-            tower);
+        TestUtil.runTest(tower.shoot(), 2, tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
             assertTrue(tower.nearSetpoint());
@@ -67,10 +65,7 @@ public class TowerTest {
 
     @Test // marks this method as a test
     void feed() {
-        TestUtil.runTest(
-            tower.feed(),
-            2,
-            tower);
+        TestUtil.runTest(tower.feed(), 2, tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
             assertTrue(tower.nearSetpoint());
@@ -81,10 +76,7 @@ public class TowerTest {
 
     @Test
     void stop() {
-        TestUtil.runTest(
-            tower.stopCommand(),
-            2,
-            tower);
+        TestUtil.runTest(tower.stopCommand(), 2, tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
