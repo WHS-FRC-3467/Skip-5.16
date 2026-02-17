@@ -73,7 +73,7 @@ public class RobotContainer {
     // Subsystems
     public final Drive drive;
     private final ShooterSuperstructure shooter;
-    private final IntakeSuperstructure intake;
+    final IntakeSuperstructure intake;
     private final IndexerSuperstructure indexer;
     private final Tower tower;
     private final ObjectDetector objectDetector;
@@ -252,23 +252,18 @@ public class RobotContainer {
      * the dashboard for manual testing and debugging.
      */
     private void initializeDashboard() {
+        // Register all @SmartDashboardCommand annotated commands
+        SmartDashboardCommands.register(this);
+
         SmartDashboard.putData("Indexer/Expel", indexer.eject());
         SmartDashboard.putData("Indexer/Feed", indexer.feed());
         SmartDashboard.putData("Indexer/Stop", indexer.stopCommand());
-
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendLinear());
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
 
         SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
         SmartDashboard.putData("Hood angle", Commands.runOnce(() -> System.out.println(
             Degrees.of(90).minus(HoodConstants.MIN_ANGLE_OFFSET).minus(shooter.getHoodAngle())
                 .in(Degrees))));
 
-        SmartDashboard.putData("Intake Linear/Extend", intake.extendLinear());
-        SmartDashboard.putData("Intake Linear/Retract", intake.retractIntake());
-        SmartDashboard.putData("Intake Linear/Cycle", intake.cycle());
-        SmartDashboard.putData("Intake Linear/Coast", intake.linearCoast());
         SmartDashboard.putData("Ready Shooter", shooter.spinUpShooter());
         SmartDashboard.putData("Indexer/Shoot", indexer.shoot());
         SmartDashboard.putData("Face Target",

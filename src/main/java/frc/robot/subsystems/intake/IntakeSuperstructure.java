@@ -29,6 +29,7 @@ import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
+import frc.lib.util.SmartDashboardCommand;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
@@ -93,6 +94,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command that extends the linear mechanism
      */
+    @SmartDashboardCommand(key = "Intake Linear/Extend")
     public Command extendLinear() {
         return this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(LINEAR_CURRENT.get())))
             .withName("Extend Linear");
@@ -114,6 +116,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command sequence that retracts the intake
      */
+    @SmartDashboardCommand(key = "Intake Linear/Retract")
     public Command retractIntake() {
         return Commands.sequence(
             runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
@@ -128,6 +131,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command sequence that extends the intake
      */
+    @SmartDashboardCommand(key = "Intake Linear/Extend Intake")
     public Command extendIntake() {
         return Commands.sequence(
             runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
@@ -141,6 +145,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A repeating command that cycles the linear mechanism
      */
+    @SmartDashboardCommand(key = "Intake Linear/Cycle")
     public Command cycle() {
         return Commands.repeatingSequence(
             extendLinear(),
@@ -175,6 +180,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command that sets the intake linear mechanism to coast mode
      */
+    @SmartDashboardCommand(key = "Intake Linear/Coast")
     public Command linearCoast() {
         return this.runOnce(() -> intakeLinearIO.runCoast()).withName("Linear Coast");
     }
