@@ -149,8 +149,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     }
 
     /**
-     * Creates a command to stop the intake roller flywheel by applying brake. Use
-     * {@link #stopLinear()} to stop the linear mechanism.
+     * Creates a command to stop the intake roller flywheel by applying brake.
      *
      * @return A command that stops the roller motion
      */
