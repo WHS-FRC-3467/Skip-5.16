@@ -80,9 +80,16 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
             PIDSlot.SLOT_0)).withName("Run Roller");
     }
 
+    /**
+     * Creates a command to hold the intake linear mechanism in its current position using position
+     * control.
+     *
+     * @return A command that holds the linear mechanism in its current position
+     */
     private Command holdLinear() {
         return this.runOnce(
-            () -> intakeLinearIO.runPosition(intakeLinearIO.getPosition(), PIDSlot.SLOT_0));
+            () -> intakeLinearIO.runPosition(intakeLinearIO.getPosition(), PIDSlot.SLOT_0))
+            .withName("Hold Linear");
     }
 
     /**
@@ -92,23 +99,25 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      */
     private Command extendLinear() {
         return Commands.sequence(
-            Commands.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(LINEAR_CURRENT.get()))),
+            this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(LINEAR_CURRENT.get()))),
             Commands.waitSeconds(.1),
-            Commands.waitUntil(isStopped),
-            holdLinear());
+            Commands.waitUntil(isStopped).withTimeout(2.0),
+            holdLinear())
+            .withName("Extend Linear");
     }
 
     /**
-     * Creates a command to extend the intake linear mechanism by applying negative current.
+     * Creates a command to retract the intake linear mechanism by applying negative current.
      *
-     * @return A command that applies negative current to the linear mechanism
+     * @return A command that retracts the linear mechanism
      */
     private Command retractLinear() {
         return Commands.sequence(
-            Commands.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(-LINEAR_CURRENT.get()))),
+            this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(-LINEAR_CURRENT.get()))),
             Commands.waitSeconds(.1),
-            Commands.waitUntil(isStopped),
-            holdLinear());
+            Commands.waitUntil(isStopped).withTimeout(2.0),
+            holdLinear())
+            .withName("Retract Linear");
     }
 
     /**
@@ -121,7 +130,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.sequence(
             runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
             retractLinear(),
-            stopRoller());
+            stopRoller())
+            .withName("Retract Intake");
     }
 
     /**
@@ -133,7 +143,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     public Command extendIntake() {
         return Commands.sequence(
             runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-            extendLinear());
+            extendLinear())
+            .withName("Extend Intake");
     }
 
     /**
@@ -145,7 +156,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     public Command cycle() {
         return Commands.repeatingSequence(
             extendLinear(),
-            retractLinear());
+            retractLinear())
+            .withName("Cycle");
     }
 
     /**
