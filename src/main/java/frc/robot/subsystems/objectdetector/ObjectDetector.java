@@ -23,9 +23,9 @@ import frc.robot.RobotState;
 import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Meters;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
@@ -38,6 +38,7 @@ import java.util.Optional;
 public class ObjectDetector extends SubsystemBase {
     private final RobotState robotState = RobotState.getInstance();
     private final ObjectDetection objectDetection;
+    private int maxDetections = 0;
 
     @Getter
     private List<Optional<ObjectDetectionObservation>> latestObjectObservation;
@@ -52,81 +53,65 @@ public class ObjectDetector extends SubsystemBase {
      * 
      * @param io the IO implementation for object detection (real, sim, or replay)
      */
-    public ObjectDetector(ObjectDetectionIO io)
-    {
+    public ObjectDetector(ObjectDetectionIO io) {
         objectDetection = new ObjectDetection(io);
     }
 
-    // Private helper for generating latest ML Object Observation and updating internal buffer of
-    // detected object poses (if it was successfully generated).
+    // Private helper for generating latest ML Object Observation
     private Optional<ObjectDetectionObservation> generateObjectObservation(
-        PhotonTrackedTarget target)
-    {
+        PhotonTrackedTarget target) {
         // Attempt to generate full Object record using ML model
         Optional<ObjectDetectionObservation> observation =
             objectDetection.getObjectObservation(target,
                 ObjectDetectorConstants.CAMERA0_TRANSFORM,
                 ObjectDetectorConstants.OBJECT0_HEIGHT_METERS, 1, 0, 1, 0,
                 robotState.getEstimatedPose());
-        // If no record/pose was generated, return empty/partial record early & don't update pose
-        // buffer
-        if (observation.isEmpty() || observation.get().objectPose().isEmpty()) {
-            return observation;
-        }
-        // Return latest Object observation (full)
+        // Return latest Object observation (full, partial, or empty record)
         return observation;
     }
 
     // Private helper for generating latest Contour observation
     private Optional<ObjectDetectionObservation> generateContourObservation(
-        ContourSelectionMode selection)
-    {
+        ContourSelectionMode selection) {
         // Attempt to generate partial Object record using Blob model
         Optional<ObjectDetectionObservation> observation =
             objectDetection.getContourObservation(objectDetection.getTargets(), selection);
-        // Return latest Blob observation (partial or empty)
+        // Return latest Blob observation (partial or empty record)
         return observation;
     }
 
     // Private helper for logging Object Detection values. Object ID = -9999 for stale values.
-    private void logObjectObservation(Optional<ObjectDetectionObservation> observation)
-    {
-        // Logged calculations for sim
-        if (observation.isPresent() && (observation.get().objectPose().isPresent()
-            && observation.get().distance().isPresent())) {
-            Logger.recordOutput("Detection/" + "ML:" + "Latest Detection's Object ID",
-                observation.get().objID());
-
-            Logger.recordOutput("Detection/" + "ML:" + "Latest Detection's Detection Confidence",
-                observation.get().confidence());
-
-            Logger.recordOutput("Detection/" + "ML:" + "Latest Detection's Calculated Coordinates",
-                observation.get().objectPose().get().getTranslation());
-
-            Logger.recordOutput("Detection/" + "ML:" + "Latest Detection's Calculated Distance",
-                observation.get().distance().get().in(Meters));
-
-            Logger.recordOutput("Detection/" + "ML:" + "Sim Target #0 True Range",
-                ObjectDetectorConstants.SIM_TARGETS[0].getPose().toPose2d().getTranslation()
-                    .minus(robotState.getEstimatedPose().getTranslation()).getX());
-
-            Logger.recordOutput("Detection/" + "ML:" + "Sim Target #0 True Heading",
-                ObjectDetectorConstants.SIM_TARGETS[0].getPose().toPose2d().getTranslation()
-                    .minus(robotState.getEstimatedPose().getTranslation()).getY());
-
-            Logger.recordOutput("Detection/" + "ML:" + "Sim Target #0 True Distance",
-                ObjectDetectorConstants.SIM_TARGETS[0].getPose().toPose2d().getTranslation()
-                    .getDistance(robotState.getEstimatedPose().getTranslation()));
-        } else {
-            Logger.recordOutput("Detection/" + "ML:" + "Latest Detection's Object ID", -9999);
+    private void logObjectObservation(List<Optional<ObjectDetectionObservation>> observation) {
+        if (observation.isEmpty()) {
+            Logger.recordOutput("Detection/" + "ML:" + "Active Detections", -1);
+            for (int i = 0; i < maxDetections; i++) {
+                Logger.recordOutput(
+                    "Detection/" + "ML:" + "OBJECT DETECTION #" + i + " Calculated Coordinates",
+                    new Translation2d(-1, -1));
+            }
+            return;
+        }
+        int detectionSize = observation.size();
+        maxDetections = Math.max(detectionSize, maxDetections);
+        for (int i = 0; i < detectionSize; i++) {
+            Optional<ObjectDetectionObservation> detection = observation.get(i);
+            if (detection.isPresent() && detection.get().objectPose().isPresent()) {
+                Logger.recordOutput("Detection/" + "ML:" + "Active Detections", detectionSize);
+                Logger.recordOutput(
+                    "Detection/" + "ML:" + "OBJECT DETECTION #" + i + " Calculated Coordinates",
+                    detection.get().objectPose().get().getTranslation());
+            }
+        }
+        for (int i = detectionSize; i < maxDetections; i++) {
+            Logger.recordOutput(
+                "Detection/" + "ML:" + "OBJECT DETECTION #" + i + " Calculated Coordinates",
+                new Translation2d(-1, -1));
         }
     }
 
     // Private helper for logging Contour values. Object ID = -9999 for stale values.
     private void logContourObservation(Optional<ObjectDetectionObservation> observation,
-        ContourSelectionMode mode)
-    {
-        // Logged calculations for sim
+        ContourSelectionMode mode) {
         if (observation.isPresent()) {
             Logger.recordOutput("Detection/" + "Contour: " + mode + ": Object ID",
                 observation.get().objID());
@@ -148,8 +133,7 @@ public class ObjectDetector extends SubsystemBase {
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         // Update the inputs data structure associated with this object detection camera with latest
         // readings
         objectDetection.periodic();
@@ -162,17 +146,14 @@ public class ObjectDetector extends SubsystemBase {
             // Generate latest Contour observations
             latestBigContourObservation = generateContourObservation(ContourSelectionMode.LARGEST);
             latestLowContourObservation = generateContourObservation(ContourSelectionMode.LOWEST);
-        } else
-
-        {
+        } else {
             // Prevent stale data from persisting
-            latestObjectObservation = List.of(Optional.empty());
+            latestObjectObservation = List.of();
             latestBigContourObservation = Optional.empty();
             latestLowContourObservation = Optional.empty();
         }
-
         // Log Object & Blob observations for sim
-        logObjectObservation(latestObjectObservation.get(0));
+        logObjectObservation(latestObjectObservation);
         logContourObservation(latestBigContourObservation, ContourSelectionMode.LARGEST);
         logContourObservation(latestLowContourObservation, ContourSelectionMode.LOWEST);
     }
