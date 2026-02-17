@@ -20,6 +20,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotController;
@@ -99,5 +100,10 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
             toAngle(Meters.of(sim.getVelocityMetersPerSecond())).per(Seconds));
 
         super.periodic();
+    }
+
+    @Override
+    public void setEncoderPosition(Angle position) {
+        sim.setState(toDistance(position).in(Meters), 0);
     }
 }
