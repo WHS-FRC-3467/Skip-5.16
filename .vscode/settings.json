@@ -85,9 +85,9 @@
     " */",
   ],
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "josevseb.google-java-format-for-vs-code",
   "[java]": {
-    "editor.detectIndentation": false
+    "editor.detectIndentation": false,
+    "editor.defaultFormatter": "josevseb.google-java-format-for-vs-code"
   },
   "java.project.sourcePaths": [
     "src/main/java",
