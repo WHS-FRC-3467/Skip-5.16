@@ -37,8 +37,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         new LoggedTunableNumber(IntakeLinearConstants.NAME + "/LinearTorqueCurrent", 40.0);
 
     public final LoggedTrigger isStopped;
-    public final LoggedTrigger isExtended;
-    public final LoggedTrigger isRetracted;
 
     private final LinearMechanism<?> intakeLinearIO;
     private final FlywheelMechanism<?> intakeRollerIO;
@@ -51,14 +49,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
         this.isStopped = new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearStopped",
             () -> (intakeLinearIO.getVelocity().abs(RotationsPerSecond) < 0.01));
-        this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
-            () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) > LINEAR_CURRENT.get()
-                * 0.8)
-                    .and(this.isStopped);
-        this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
-            () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) < -LINEAR_CURRENT.get()
-                * 0.8)
-                    .and(this.isStopped);
     }
 
     /**
@@ -72,7 +62,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     public boolean isIntaking() {
         return intakeRollerIO.getVelocity().in(RotationsPerSecond) > 1.0
-            && isExtended.getAsBoolean();
+            && isStopped.getAsBoolean();
     }
 
     /**
@@ -102,7 +92,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.sequence(
             Commands.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(LINEAR_CURRENT.get()))),
             Commands.waitSeconds(.1),
-            Commands.waitUntil(isExtended),
+            Commands.waitUntil(isStopped),
             holdLinear());
     }
 
@@ -115,7 +105,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.sequence(
             Commands.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(-LINEAR_CURRENT.get()))),
             Commands.waitSeconds(.1),
-            Commands.waitUntil(isRetracted),
+            Commands.waitUntil(isStopped),
             holdLinear());
     }
 
