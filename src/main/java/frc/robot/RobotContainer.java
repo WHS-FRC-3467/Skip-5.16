@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.AutoRoutine;
@@ -240,6 +241,14 @@ public class RobotContainer {
                 indexer.stopCommand(),
                 tower.stopCommand(),
                 intake.extendIntake()));
+
+        robotState.enteringTrench.whileTrue(
+            Commands.sequence(
+                // Force hood down
+                shooter.setHoodAngle(Degrees.zero()),
+                // Prevent hood from raising
+                shooter.idle())
+                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     }
 
     /**
