@@ -38,7 +38,8 @@ import java.util.Optional;
 public class ObjectDetector extends SubsystemBase {
     private final RobotState robotState = RobotState.getInstance();
     private final ObjectDetection objectDetection;
-    private int maxDetections = 0;
+    private int maxDetectionsSize = 0;
+    private final static Translation2d INVALID_TRANSLATION = new Translation2d(-1, -1);
 
     @Getter
     private List<Optional<ObjectDetectionObservation>> latestObjectObservation;
@@ -50,7 +51,7 @@ public class ObjectDetector extends SubsystemBase {
     /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
      * Object Detection device that can periodically update its inputs field.
-     * 
+     *
      * @param io the IO implementation for object detection (real, sim, or replay)
      */
     public ObjectDetector(String cameraName, ObjectDetectionIO io)
@@ -83,33 +84,24 @@ public class ObjectDetector extends SubsystemBase {
         return observation;
     }
 
-    // Private helper for logging Object Detection values. Object ID = -9999 for stale values.
+    // Private helper for logging Object Detection values. -1 for stale values.
     private void logObjectObservation(List<Optional<ObjectDetectionObservation>> observation)
     {
-        if (observation.isEmpty()) {
-            Logger.recordOutput("Detection/" + "ML:" + "Active Detections", -1);
-            for (int i = 0; i < maxDetections; i++) {
-                Logger.recordOutput(
-                    "Detection/" + "ML:" + "OBJECT DETECTION #" + i + " Calculated Coordinates",
-                    new Translation2d(-1, -1));
-            }
-            return;
-        }
+        String prefix = "Detection/ML:";
         int detectionSize = observation.size();
-        maxDetections = Math.max(detectionSize, maxDetections);
-        for (int i = 0; i < detectionSize; i++) {
-            Optional<ObjectDetectionObservation> detection = observation.get(i);
-            if (detection.isPresent() && detection.get().objectPose().isPresent()) {
-                Logger.recordOutput("Detection/" + "ML:" + "Active Detections", detectionSize);
-                Logger.recordOutput(
-                    "Detection/" + "ML:" + "OBJECT DETECTION #" + i + " Calculated Coordinates",
-                    detection.get().objectPose().get().getTranslation());
+        maxDetectionsSize = Math.max(detectionSize, maxDetectionsSize);
+
+        Logger.recordOutput(prefix + "Active Detections", detectionSize);
+        for (int i = 0; i < maxDetectionsSize; i++) {
+            Translation2d translation = INVALID_TRANSLATION;
+            if (i < detectionSize) {
+                Optional<ObjectDetectionObservation> detection = observation.get(i);
+                if (detection.isPresent() && detection.get().objectPose().isPresent()) {
+                    translation = detection.get().objectPose().get().getTranslation();
+                }
             }
-        }
-        for (int i = detectionSize; i < maxDetections; i++) {
-            Logger.recordOutput(
-                "Detection/" + "ML:" + "OBJECT DETECTION #" + i + " Calculated Coordinates",
-                new Translation2d(-1, -1));
+            Logger.recordOutput(prefix + "OBJECT DETECTION #" + i + " Calculated Coordinates",
+                translation);
         }
     }
 
@@ -117,24 +109,16 @@ public class ObjectDetector extends SubsystemBase {
     private void logContourObservation(Optional<ObjectDetectionObservation> observation,
         ContourSelectionMode mode)
     {
-        // Logged calculations for sim
+        String prefix = "Detection/" + "Contour: " + mode + ": ";
         if (observation.isPresent()) {
-            Logger.recordOutput("Detection/" + "Contour: " + mode + ": Object ID",
-                observation.get().objID());
-
-            Logger.recordOutput("Detection/" + "Contour: " + mode + ": Confidence",
-                observation.get().confidence());
-
-            Logger.recordOutput("Detection/" + "Contour: " + mode + ": Pitch",
-                observation.get().pitch().in(Degrees));
-
-            Logger.recordOutput("Detection/" + "Contour: " + mode + ": Yaw",
-                observation.get().yaw().in(Degrees));
-
-            Logger.recordOutput("Detection/" + "Contour: " + mode + ": Area",
-                observation.get().area());
+            ObjectDetectionObservation obs = observation.get();
+            Logger.recordOutput(prefix + "Object ID", obs.objID());
+            Logger.recordOutput(prefix + "Confidence", obs.confidence());
+            Logger.recordOutput(prefix + "Pitch", obs.pitch().in(Degrees));
+            Logger.recordOutput(prefix + "Yaw", obs.yaw().in(Degrees));
+            Logger.recordOutput(prefix + "Area", obs.area());
         } else {
-            Logger.recordOutput("Detection/" + "Contour: " + mode + ": Object ID", -9999);
+            Logger.recordOutput(prefix + "Object ID", -9999);
         }
     }
 

@@ -32,8 +32,7 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
 
     public ObjectDetectionIOSim(CameraProperties cameraProperties,
         Supplier<Pose2d> robotPoseSupplier,
-        String target_name, Supplier<VisionTargetSim[]> visionTargetSupplier)
-    {
+        String target_name, Supplier<VisionTargetSim[]> visionTargetSupplier) {
         super(cameraProperties.name());
         this.target_name = target_name;
 
@@ -63,8 +62,7 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
 
     // Update the robot's pose in the sim and use the super's implementation to update inputs
     @Override
-    public void updateInputs(ObjectDetectionIOInputs inputs)
-    {
+    public void updateInputs(ObjectDetectionIOInputs inputs) {
         // Update target & robot poses + camera observations
         updateTargetPoses();
         visionSim.update(robotPoseSupplier.get());
@@ -72,8 +70,7 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     }
 
     // Private helper for simulating moving game pieces. Calls can have performance impact.
-    private void updateTargetPoses()
-    {
+    private void updateTargetPoses() {
         visionSim.clearVisionTargets();
         visionTargets = Arrays.stream(visionTargetSupplier.get()).filter(target -> target != null)
             .toArray(VisionTargetSim[]::new);

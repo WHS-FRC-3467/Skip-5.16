@@ -135,11 +135,10 @@ public class ObjectDetectorConstants {
     /**
      * Creates and configures an ObjectDetector subsystem based on the current robot mode. Selects
      * the appropriate IO implementation (real hardware, simulation, or replay).
-     * 
+     *
      * @return a configured ObjectDetector instance
      */
-    public static ObjectDetector get()
-    {
+    public static ObjectDetector get() {
         RobotState robotState = RobotState.getInstance();
         switch (Constants.currentMode) {
             case REAL:

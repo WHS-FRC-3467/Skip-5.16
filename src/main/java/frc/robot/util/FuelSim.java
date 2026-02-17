@@ -1103,8 +1103,7 @@ public class FuelSim {
     }
 
     // Return list of fuel poses for use in Object Detection simulation. Read only.
-    public synchronized List<Pose3d> getFuelPoses()
-    {
+    public synchronized List<Pose3d> getFuelPoses() {
         if (fuels.isEmpty()) {
             return List.of();
         }
