@@ -136,20 +136,13 @@ public class MotorIOTalonFX implements MotorIO {
         closedLoopReferenceSlope = motor.getClosedLoopReferenceSlope();
 
         updateThread.CTRECheckErrorAndRetry(() -> BaseStatusSignal.setUpdateFrequencyForAll(
-            100,
+            main.bus() == "rio" ? 50 : 100,
             position,
             velocity,
             supplyVoltage,
             supplyCurrent,
             torqueCurrent,
-            temperature))
-            .exceptionally(ex -> {
-                LOGGER.log(Level.SEVERE, ex.toString(), ex);
-                return null;
-            });
-
-        updateThread.CTRECheckErrorAndRetry(() -> BaseStatusSignal.setUpdateFrequencyForAll(
-            200,
+            temperature,
             closedLoopError,
             closedLoopReference,
             closedLoopReferenceSlope))
