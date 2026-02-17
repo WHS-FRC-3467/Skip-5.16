@@ -58,6 +58,8 @@ public class IntakeLinearConstants {
     public static final Distance DRUM_RADIUS = Inches.of(0.5);
     public static final Mass CARRIAGE_MASS = Kilograms.of(.1);
 
+    public static final Distance TOLERANCE = Inches.of(2);
+
     public static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
 
     // Orientation for the linear mechanism.
