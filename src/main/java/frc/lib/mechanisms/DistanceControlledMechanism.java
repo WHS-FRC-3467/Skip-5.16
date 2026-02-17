@@ -6,7 +6,7 @@ import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
-
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.units.measure.*;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.util.PID;
@@ -123,6 +123,12 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
      */
     public void periodic() {
         mechanism.periodic();
+
+        Logger.recordOutput(mechanism.getName() + "/LinearPosition", getLinearPosition());
+        Logger.recordOutput(mechanism.getName() + "/LinearPositionError", getLinearPositionError());
+        Logger.recordOutput(mechanism.getName() + "/LinearVelocity", getLinearVelocity());
+        Logger.recordOutput(mechanism.getName() + "/LinearVelocityError", getLinearVelocityError());
+
     }
 
     /**

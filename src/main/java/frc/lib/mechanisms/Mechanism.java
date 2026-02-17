@@ -29,6 +29,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorInputsAutoLogged;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.PID;
+import lombok.Getter;
 
 /**
  * Abstract base class for all robot mechanisms that use motors. Provides common functionality for
@@ -38,6 +39,7 @@ import frc.lib.util.PID;
  * @param <T> the type of MotorIO implementation used by this mechanism
  */
 public abstract class Mechanism<T extends MotorIO> {
+    @Getter
     protected final String name;
     protected final MotorInputsAutoLogged inputs = new MotorInputsAutoLogged();
     protected final T io;
