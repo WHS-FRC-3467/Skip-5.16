@@ -73,14 +73,14 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @param angularVelocity A supplier that provides the desired angular velocity for the roller
      * @return A command that sets the roller to the specified velocity
      */
-    public Command runRoller(Supplier<AngularVelocity> angularVelocity) {
+    private Command runRoller(Supplier<AngularVelocity> angularVelocity) {
         return this.runOnce(() -> intakeRollerIO.runVelocity(
             angularVelocity.get(),
             IntakeRollerConstants.MAX_ACCELERATION,
             PIDSlot.SLOT_0)).withName("Run Roller");
     }
 
-    public Command holdLinear() {
+    private Command holdLinear() {
         return this.runOnce(
             () -> intakeLinearIO.runPosition(intakeLinearIO.getPosition(), PIDSlot.SLOT_0));
     }
@@ -90,7 +90,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command that extends the linear mechanism
      */
-    public Command extendLinear() {
+    private Command extendLinear() {
         return Commands.sequence(
             Commands.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(LINEAR_CURRENT.get()))),
             Commands.waitSeconds(.1),
@@ -103,7 +103,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command that applies negative current to the linear mechanism
      */
-    public Command retractLinear() {
+    private Command retractLinear() {
         return Commands.sequence(
             Commands.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(-LINEAR_CURRENT.get()))),
             Commands.waitSeconds(.1),
@@ -146,15 +146,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.repeatingSequence(
             extendLinear(),
             retractLinear());
-    }
-
-    /**
-     * Creates a command to stop the intake linear mechanism.
-     *
-     * @return A command that stops the linear motion
-     */
-    public Command stopLinear() {
-        return this.runOnce(() -> intakeLinearIO.runBrake()).withName("Stop Linear");
     }
 
     /**
