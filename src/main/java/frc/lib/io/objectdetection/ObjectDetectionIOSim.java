@@ -5,7 +5,6 @@
 package frc.lib.io.objectdetection;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -72,7 +71,7 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     // Private helper for simulating moving game pieces.
     private void updateTargetPoses() {
         visionSim.clearVisionTargets();
-        visionTargets = Arrays.stream(visionTargetSupplier.get()).toArray(VisionTargetSim[]::new);
+        visionTargets = visionTargetSupplier.get();
         if (visionTargets.length > 0) {
             visionSim.addVisionTargets(target_name, visionTargets);
             // Log updated target poses for AScope

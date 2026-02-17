@@ -18,6 +18,7 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
@@ -57,7 +58,7 @@ public class ObjectDetectorConstants {
     // field from starting starboard edge, +theta -> right-hand rule.
     public static final String CAMERA0_NAME = "Detection Camera #0";
     public static final Transform3d CAMERA0_TRANSFORM =
-        new Transform3d(Units.Inches.of(0.0), Units.Inches.of(0.0), Units.Inches.of(30),
+        new Transform3d(Units.Inches.of(8), Units.Inches.of(0), Units.Inches.of(30),
             new Rotation3d(Units.Degrees.of(0.0), Units.Degrees.of(0.0), Units.Degrees.of(0.0)));
 
     // Intrinsics
@@ -118,24 +119,36 @@ public class ObjectDetectorConstants {
     public final static double OBJECT0_HEIGHT_METERS = 0.150114;
 
     // Dynamic supplier for moving sim targets
-    // Only publish FUEL to VisionSystemSim that are roughly within camera FOV & 8m of the robot --
-    // publish nearest values first
+    // Only publish FUEL to OBject Detection VisionSystemSim that are roughly within 8m of the
+    // camera & its FOV -- publish nearest values first
     public static Supplier<VisionTargetSim[]> visionTargetSimSupplier =
-        () -> RobotSim.getInstance().getFuelSim().getFuelPoses().stream()
-            .filter(pose -> pose != null)
-            .filter(pose -> {
-                var rel = pose.getTranslation().toTranslation2d()
-                    .minus(robotState.getEstimatedPose().getTranslation());
-                double yaw = Math.atan2(rel.getY(), rel.getX());
-                return yaw < CAMERA0_FOV.in(Radians) / 2;
-            })
-            .filter(pose -> pose.getTranslation().toTranslation2d()
-                .getDistance(robotState.getEstimatedPose().getTranslation()) < 8.0)
-            .sorted(Comparator.comparingDouble(pose -> pose.getTranslation().toTranslation2d()
-                .getDistance(robotState.getEstimatedPose().getTranslation())))
-            .limit(0) // ML model limit (TEST)
-            .map(pose -> new VisionTargetSim(pose, new TargetModel(OBJECT0_HEIGHT_METERS)))
-            .toArray(VisionTargetSim[]::new);
+        () -> {
+            var robotPose = robotState.getEstimatedPose();
+            var cameraPose = robotPose.transformBy(new Transform2d(CAMERA0_TRANSFORM.getX(),
+                CAMERA0_TRANSFORM.getY(), CAMERA0_TRANSFORM.getRotation().toRotation2d()));
+            var fuels = RobotSim.getInstance().getFuelSim().getFuelPoses();
+            double halfFov = CAMERA0_FOV.in(Radians) / 2.0;
+            return fuels.stream()
+                .filter(pose -> pose != null)
+                .filter(pose -> pose.getTranslation().toTranslation2d()
+                    .getDistance(cameraPose.getTranslation()) < 8.0)
+                .filter(pose -> {
+                    var fieldRel = pose.getTranslation().toTranslation2d()
+                        .minus(cameraPose.getTranslation());
+                    var cameraRel = fieldRel.rotateBy(cameraPose.getRotation().unaryMinus());
+                    if (cameraRel.getX() <= 0) {
+                        return false;
+                    }
+                    double yaw =
+                        Math.atan2(cameraRel.getY(), cameraRel.getX());
+                    return Math.abs(yaw) < halfFov;
+                })
+                .sorted(Comparator.comparingDouble(pose -> pose.getTranslation().toTranslation2d()
+                    .getDistance(cameraPose.getTranslation())))
+                .limit(15)
+                .map(pose -> new VisionTargetSim(pose, new TargetModel(OBJECT0_HEIGHT_METERS)))
+                .toArray(VisionTargetSim[]::new);
+        };
 
     /**
      * Creates and configures an ObjectDetector subsystem based on the current robot mode. Selects
@@ -143,8 +156,7 @@ public class ObjectDetectorConstants {
      *
      * @return a configured ObjectDetector instance
      */
-    public static ObjectDetector get()
-    {
+    public static ObjectDetector get() {
         RobotState robotState = RobotState.getInstance();
         switch (Constants.currentMode) {
             case REAL:
