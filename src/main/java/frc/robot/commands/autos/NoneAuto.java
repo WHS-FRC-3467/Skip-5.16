@@ -25,8 +25,7 @@ public class NoneAuto extends AutoRoutine {
     /**
      * Constructs a NoneAuto that executes no commands during autonomous period.
      */
-    public NoneAuto()
-    {
+    public NoneAuto() {
         addCommands(Commands.none());
     }
 }

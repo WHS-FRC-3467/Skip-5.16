@@ -29,8 +29,7 @@ public class TowerTest {
     Tower tower;
 
     @BeforeEach // this method will run before each test
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
         tower = TowerConstants.get();
@@ -44,8 +43,7 @@ public class TowerTest {
     }
 
     @AfterEach // this method will run after each test
-    void shutdown()
-    {
+    void shutdown() {
         try {
             tower.close();
         } catch (Exception e) {
@@ -54,10 +52,9 @@ public class TowerTest {
     }
 
     @Test // marks this method as a test
-    void shoot()
-    {
+    void shoot() {
         TestUtil.runTest(
-            tower.setStateCommand(Tower.State.SHOOT),
+            tower.shoot(),
             2,
             tower);
         try {
@@ -69,10 +66,9 @@ public class TowerTest {
     }
 
     @Test // marks this method as a test
-    void idle()
-    {
+    void feed() {
         TestUtil.runTest(
-            tower.setStateCommand(Tower.State.IDLE),
+            tower.feed(),
             2,
             tower);
         try {
@@ -84,16 +80,15 @@ public class TowerTest {
     }
 
     @Test
-    void stop()
-    {
+    void stop() {
         TestUtil.runTest(
-            tower.setStateCommand(Tower.State.STOP),
+            tower.stopCommand(),
             2,
             tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
-            assertTrue(tower.nearSetpoint());
+            assertTrue(tower.getSpeed() < 0.1);
         } catch (Exception e) {
             fail("Failed to stop indexer: " + e.getMessage());
         }

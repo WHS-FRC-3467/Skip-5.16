@@ -22,8 +22,7 @@ public class FieldUtil {
      * @param x The X coordinate in blue alliance frame
      * @return The X coordinate in the current alliance frame
      */
-    public static double applyX(double x)
-    {
+    public static double applyX(double x) {
         return shouldFlip() ? FieldConstants.FIELD_LENGTH - x : x;
     }
 
@@ -33,8 +32,7 @@ public class FieldUtil {
      * @param y The Y coordinate in blue alliance frame
      * @return The Y coordinate in the current alliance frame
      */
-    public static double applyY(double y)
-    {
+    public static double applyY(double y) {
         return shouldFlip() ? FieldConstants.FIELD_WIDTH - y : y;
     }
 
@@ -44,8 +42,7 @@ public class FieldUtil {
      * @param translation The translation in blue alliance frame
      * @return The translation in the current alliance frame
      */
-    public static Translation2d apply(Translation2d translation)
-    {
+    public static Translation2d apply(Translation2d translation) {
         return new Translation2d(applyX(translation.getX()), applyY(translation.getY()));
     }
 
@@ -55,8 +52,7 @@ public class FieldUtil {
      * @param rotation The rotation in blue alliance frame
      * @return The rotation in the current alliance frame
      */
-    public static Rotation2d apply(Rotation2d rotation)
-    {
+    public static Rotation2d apply(Rotation2d rotation) {
         return shouldFlip() ? rotation.rotateBy(Rotation2d.kPi) : rotation;
     }
 
@@ -66,8 +62,7 @@ public class FieldUtil {
      * @param pose The pose in blue alliance frame
      * @return The pose in the current alliance frame
      */
-    public static Pose2d apply(Pose2d pose)
-    {
+    public static Pose2d apply(Pose2d pose) {
         return shouldFlip()
             ? new Pose2d(apply(pose.getTranslation()), apply(pose.getRotation()))
             : pose;
@@ -79,8 +74,7 @@ public class FieldUtil {
      * @param translation The 3D translation in blue alliance frame
      * @return The 3D translation in the current alliance frame
      */
-    public static Translation3d apply(Translation3d translation)
-    {
+    public static Translation3d apply(Translation3d translation) {
         return new Translation3d(
             applyX(translation.getX()), applyY(translation.getY()), translation.getZ());
     }
@@ -91,8 +85,7 @@ public class FieldUtil {
      * @param rotation The 3D rotation in blue alliance frame
      * @return The 3D rotation in the current alliance frame
      */
-    public static Rotation3d apply(Rotation3d rotation)
-    {
+    public static Rotation3d apply(Rotation3d rotation) {
         return shouldFlip() ? rotation.rotateBy(new Rotation3d(0.0, 0.0, Math.PI)) : rotation;
     }
 
@@ -102,8 +95,7 @@ public class FieldUtil {
      * @param pose The 3D pose in blue alliance frame
      * @return The 3D pose in the current alliance frame
      */
-    public static Pose3d apply(Pose3d pose)
-    {
+    public static Pose3d apply(Pose3d pose) {
         return new Pose3d(apply(pose.getTranslation()), apply(pose.getRotation()));
     }
 
@@ -112,8 +104,7 @@ public class FieldUtil {
      *
      * @return True if on red alliance, false if on blue alliance
      */
-    public static boolean shouldFlip()
-    {
+    public static boolean shouldFlip() {
         return !Constants.disableHAL
             && DriverStation.getAlliance().isPresent()
             && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;

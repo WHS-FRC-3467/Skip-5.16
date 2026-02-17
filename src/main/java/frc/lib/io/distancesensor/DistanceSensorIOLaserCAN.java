@@ -28,7 +28,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.util.Device;
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.LaserCANConfigurator;
-import lombok.Getter;
 
 /**
  * A distance sensor implementation that uses a LaserCAN
@@ -36,8 +35,6 @@ import lombok.Getter;
 public class DistanceSensorIOLaserCAN implements DistanceSensorIO {
     private static final Logger LOGGER = Logger.getLogger(DistanceSensorIOLaserCAN.class.getName());
 
-    @Getter
-    private final String name;
     private final LaserCANConfigurator laserCAN;
 
     private final CANUpdateThread updateThread = new CANUpdateThread();
@@ -57,10 +54,7 @@ public class DistanceSensorIOLaserCAN implements DistanceSensorIO {
      * @param timingBudget The timing budget setting that controls measurement speed/accuracy.
      */
     public DistanceSensorIOLaserCAN(Device.CAN id, String name, RangingMode rangingMode,
-        RegionOfInterest regionOfInterest, TimingBudget timingBudget)
-    {
-        this.name = name;
-
+        RegionOfInterest regionOfInterest, TimingBudget timingBudget) {
         laserCANOnWrongBusAlert =
             new Alert("LaserCAN " + name + " must be wired to the RIO's CAN bus",
                 AlertType.kError);
@@ -95,8 +89,7 @@ public class DistanceSensorIOLaserCAN implements DistanceSensorIO {
     }
 
     @Override
-    public void updateInputs(DistanceSensorInputs inputs)
-    {
+    public void updateInputs(DistanceSensorInputs inputs) {
         Measurement measure = laserCAN.getMeasurement();
 
         if (measure == null) {

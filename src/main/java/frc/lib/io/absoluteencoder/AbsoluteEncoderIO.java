@@ -30,25 +30,13 @@ public interface AbsoluteEncoderIO extends AutoCloseable {
     }
 
     /**
-     * Getter for the name of the sensor
-     * 
-     * @return The name of the sensor
-     */
-    public default String getName()
-    {
-        return "";
-    }
-
-    /**
      * Updates the provided {@link AbsoluteEncoderInputs} instance with the latest sensor readings.
      * If the sensor is not connected, it populates the fields with default values.
      *
      * @param inputs The structure to populate with updated sensor values.
      */
-    public default void updateInputs(AbsoluteEncoderInputs inputs)
-    {}
+    public default void updateInputs(AbsoluteEncoderInputs inputs) {}
 
     @Override
-    public default void close()
-    {}
+    public default void close() {}
 }

@@ -17,9 +17,9 @@ package frc.robot.commands.autos;
 
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
+
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.util.RobotSim;
@@ -40,17 +40,16 @@ public class OutpostAuto extends AutoRoutine {
      * CENTER, or RIGHT).
      *
      * @param drive the drive subsystem
-     * @param intakeLinear the intake linear subsystem for deploying/retracting intake
-     * @param intake the intake roller subsystem for collecting fuel
+     * @param intake the intake superstructure controlling both linear and roller intake for
+     *        collecting fuel
      * @param indexer the indexer subsystem for managing fuel flow
      * @param tower the tower subsystem for moving fuel to shooter
      * @param shooter the shooter superstructure for launching fuel
      * @param start the starting position on the field
      */
-    public OutpostAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intake, Indexer indexer,
+    public OutpostAuto(Drive drive, IntakeSuperstructure intake, IndexerSuperstructure indexer,
         Tower tower,
-        ShooterSuperstructure shooter, StartPosition start)
-    {
+        ShooterSuperstructure shooter, StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
@@ -78,20 +77,22 @@ public class OutpostAuto extends AutoRoutine {
                 // Reset odometry
                 AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                 // Initialize intake
-                AutoSegments.initializeIntake(intakeLinear, intake),
+                intake.retractIntake().withTimeout(1.25),
                 // Take preload shot
-                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                     pathPlannerPaths.get(0)),
                 // Go to the OUTPOST and intake FUEL
                 AutoBuilder.followPath(pathPlannerPaths.get(1)),
                 // Wait for FUEL to be dumped
                 Commands.waitSeconds(3),
                 Commands.either(
-                    Commands.runOnce(() -> RobotSim.getInstance().getFuelSim().setHeldFuel(20)),
+                    Commands.runOnce(() -> RobotSim.getInstance().getFuelSim().setHopperFuel(20)),
                     Commands.none(), RobotBase::isSimulation),
                 // Drive to shooting location and shoot all FUEL
-                AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
-                    pathPlannerPaths.get(2)));
+                AutoCommands.makeFullShot(drive, intake, indexer, tower, shooter,
+                    pathPlannerPaths.get(2)),
+                // Re-initialize intake for tele-op
+                intake.retractIntake().withTimeout(1.25));
         }
     }
 }

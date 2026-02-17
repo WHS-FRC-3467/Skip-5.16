@@ -22,8 +22,7 @@ import org.junit.jupiter.api.Test;
 public class RobotContainerTest {
 
     @Test
-    public void createRobotContainer()
-    {
+    public void createRobotContainer() {
         // Instantiate RobotContainer
         try {
             new RobotContainer();

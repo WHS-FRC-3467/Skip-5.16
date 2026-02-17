@@ -22,18 +22,17 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.util.RobotSim;
 
 public class BasicNeutralAuto extends AutoRoutine {
 
-    public BasicNeutralAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intakeRoller,
-        Indexer indexer, Tower tower, ShooterSuperstructure shooter, StartPosition start)
-    {
+    public BasicNeutralAuto(Drive drive, IntakeSuperstructure intake,
+        IndexerSuperstructure indexer, Tower tower, ShooterSuperstructure shooter,
+        StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
@@ -66,42 +65,40 @@ public class BasicNeutralAuto extends AutoRoutine {
                     ? AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0))
                     : AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0).mirrorPath()),
                 // Initialize intake to starting position
-                AutoSegments.initializeIntake(intakeLinear, intakeRoller),
+                intake.retractIntake().withTimeout(1.25),
                 // Drive to the neutral zone
                 start == StartPosition.LEFT ? AutoBuilder.followPath(pathPlannerPaths.get(0))
                     : AutoBuilder.followPath(pathPlannerPaths.get(0).mirrorPath()),
                 // Sweep neutral zone while intaking
-                AutoSegments.driveAndIntake(intakeLinear, intakeRoller,
+                AutoCommands.driveAndIntake(intake,
                     start == StartPosition.LEFT ? AutoBuilder.followPath(pathPlannerPaths.get(1))
                         : AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
                     Seconds.of(0.0)),
                 // Run back under the trench and shoot
-                AutoSegments.makeFullShot(drive, intakeLinear, indexer, tower, shooter,
+                AutoCommands.makeFullShot(drive, intake, indexer, tower, shooter,
                     start == StartPosition.LEFT ? pathPlannerPaths.get(2)
                         : pathPlannerPaths.get(2).mirrorPath()),
                 // Re-initialize intake for depot / outpost run
-                AutoSegments.initializeIntake(intakeLinear, intakeRoller),
+                intake.retractIntake().withTimeout(1.25),
                 // Run to depot / outpost
                 AutoBuilder.followPath(pathPlannerPaths.get(3)),
                 // Sweep through depot while intaking OR wait for FUEL to be dumped
                 start == StartPosition.LEFT
-                    ? AutoSegments.driveAndIntake(intakeLinear, intakeRoller,
+                    ? AutoCommands.driveAndIntake(intake,
                         AutoBuilder.followPath(pathPlannerPaths.get(4)), Seconds.of(0.0))
                     : Commands.sequence(
                         Commands.waitSeconds(3),
                         Commands.either(
                             Commands
-                                .runOnce(() -> RobotSim.getInstance().getFuelSim().setHeldFuel(20)),
+                                .runOnce(() -> RobotSim.getInstance().getFuelSim().setHopperFuel(20)),
                             Commands.none(), RobotBase::isSimulation)),
                 // Reverse back through depot / outpost to shooting location & shoot FUEL
                 start == StartPosition.LEFT
-                    ? AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                    ? AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                         pathPlannerPaths.get(5))
-                    : AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
+                    : AutoCommands.makePreloadShot(drive, indexer, tower, shooter,
                         pathPlannerPaths.get(4)),
                 // Re-initialize intake for tele-op
-                AutoSegments.initializeIntake(intakeLinear, intakeRoller));
+                intake.retractIntake().withTimeout(1.25));
     }
 }
-
-

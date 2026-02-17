@@ -45,15 +45,14 @@ public abstract class AlignToObjectBase {
 
     /**
      * Constructs an AlignToObjectBase with the given parameters.
-     * 
+     *
      * @param objectDetector the object detector subsystem
      * @param mode the contour selection mode (LARGEST or LOWEST)
      * @param maxAngularSpeed the maximum angular speed in rad/s
      * @param maxAngularAcceleration the maximum angular acceleration in rad/s^2
      */
     public AlignToObjectBase(ObjectDetector objectDetector, ContourSelectionMode mode,
-        double maxAngularSpeed, double maxAngularAcceleration)
-    {
+        double maxAngularSpeed, double maxAngularAcceleration) {
         this.objectDetector = objectDetector;
         this.mode = mode;
         this.maxAngularSpeed = maxAngularSpeed;
@@ -66,11 +65,10 @@ public abstract class AlignToObjectBase {
     /**
      * Generate angular velocity required to match the robot's heading to the centroid of the
      * detected object.
-     * 
+     *
      * @return Error-reduced angular velocity (rad/s).
      */
-    protected OptionalDouble getVisionOmega()
-    {
+    protected OptionalDouble getVisionOmega() {
         Optional<ObjectDetectionObservation> contourObservation;
 
         switch (mode) {
@@ -111,8 +109,7 @@ public abstract class AlignToObjectBase {
 
     // Private helper for sim logging
     private void logObjectAlign(Optional<ObjectDetectionObservation> observation,
-        double speedDegPerSec)
-    {
+        double speedDegPerSec) {
         // Log for sim
         if (observation.isPresent()) {
             Logger.recordOutput("VisionAlign/" + "ContourYawDeg",
@@ -127,12 +124,11 @@ public abstract class AlignToObjectBase {
 
     /**
      * Checks if the robot is aligned within the specified tolerance.
-     * 
+     *
      * @param tolRad the tolerance in radians
      * @return true if aligned within tolerance, false otherwise
      */
-    protected Boolean isAligned(double tolRad)
-    {
+    protected Boolean isAligned(double tolRad) {
         return (hasTarget && Math.abs(contourYaw) < tolRad);
     }
 }

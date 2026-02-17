@@ -31,19 +31,23 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
 
     private Time lastTime = Seconds.zero();
 
-    public RotaryMechanismSim(String name, MotorIOSim io, DCMotor dcMotor,
-        MomentOfInertia momentOfInertia, Boolean useGravity,
+    public RotaryMechanismSim(
+        String name,
+        MotorIOSim io,
+        DCMotor motor,
+        MomentOfInertia momentOfInertia,
+        Boolean useGravity,
         RotaryMechCharacteristics characteristics,
-        Optional<AbsoluteEncoderIOSim> absoluteEncoder)
-    {
-        super(name, characteristics, io, absoluteEncoder);
+        Optional<AbsoluteEncoderIOSim> absoluteEncoder,
+        String encoderName) {
+        super(name, characteristics, io, absoluteEncoder, encoderName);
 
         if (momentOfInertia.isEquivalent(KilogramSquareMeters.zero()))
             throw new IllegalArgumentException(
                 "momentOfInertia must be greater than zero!");
 
         sim = new SingleJointedArmSim(
-            dcMotor,
+            motor,
             io.getRotorToSensorRatio() * io.getSensorToMechanismRatio(),
             momentOfInertia.in(KilogramSquareMeters),
             characteristics.armLength().in(Meters),
@@ -54,8 +58,7 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Time currentTime = RobotController.getMeasureTime();
         double deltaTime = currentTime.minus(lastTime).in(Seconds);
 
@@ -73,9 +76,6 @@ public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEnco
         absoluteEncoder.ifPresent(encoderSim -> {
             encoderSim
                 .setAngle(Radians.of(sim.getAngleRads()).times(io.getSensorToMechanismRatio()));
-            encoderSim
-                .setAngularVelocity(RadiansPerSecond.of(sim.getVelocityRadPerSec())
-                    .times(io.getSensorToMechanismRatio()));
         });
 
         super.periodic();

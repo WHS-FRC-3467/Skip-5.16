@@ -33,7 +33,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * Configuration constants for the object detection subsystem.
- * 
+ *
  * <p>
  * Contains camera calibration data, mounting positions, and simulation targets for ML-based object
  * detection. Each camera has:
@@ -42,7 +42,7 @@ import lombok.NoArgsConstructor;
  * <li>Intrinsics: Camera matrix and distortion coefficients from calibration</li>
  * <li>Performance: Resolution, FPS, latency, and standard deviation factors</li>
  * </ul>
- * 
+ *
  * <p>
  * Used for detecting game pieces or other objects using PhotonVision's ML pipeline. In simulation,
  * uses configured target positions to test detection algorithms.
@@ -144,14 +144,15 @@ public class ObjectDetectorConstants {
         switch (Constants.currentMode) {
             case REAL:
                 // Real IO, inputs = PhotonVision implementation of ObjectDetectionIO
-                return new ObjectDetector(new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
+                return new ObjectDetector(CAMERA0_NAME,
+                    new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
             case SIM:
                 // Sim IO, inputs = sim implementation of ObjectionDetectionIO
-                return new ObjectDetector(new ObjectDetectionIOSim(CAMERA0,
+                return new ObjectDetector(CAMERA0_NAME, new ObjectDetectionIOSim(CAMERA0,
                     () -> robotState.getEstimatedPose(), OBJECT0_NAME, visionTargetSimSupplier));
             case REPLAY:
                 // Replayed robot, use logged data for IO
-                return new ObjectDetector(new ObjectDetectionIO() {});
+                return new ObjectDetector(CAMERA0_NAME, new ObjectDetectionIO() {});
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }

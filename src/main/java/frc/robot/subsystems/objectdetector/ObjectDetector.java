@@ -53,13 +53,15 @@ public class ObjectDetector extends SubsystemBase {
      * 
      * @param io the IO implementation for object detection (real, sim, or replay)
      */
-    public ObjectDetector(ObjectDetectionIO io) {
-        objectDetection = new ObjectDetection(io);
+    public ObjectDetector(String cameraName, ObjectDetectionIO io)
+    {
+        objectDetection = new ObjectDetection(cameraName, io);
     }
 
     // Private helper for generating latest ML Object Observation
     private Optional<ObjectDetectionObservation> generateObjectObservation(
-        PhotonTrackedTarget target) {
+        PhotonTrackedTarget target)
+    {
         // Attempt to generate full Object record using ML model
         Optional<ObjectDetectionObservation> observation =
             objectDetection.getObjectObservation(target,
@@ -72,7 +74,8 @@ public class ObjectDetector extends SubsystemBase {
 
     // Private helper for generating latest Contour observation
     private Optional<ObjectDetectionObservation> generateContourObservation(
-        ContourSelectionMode selection) {
+        ContourSelectionMode selection)
+    {
         // Attempt to generate partial Object record using Blob model
         Optional<ObjectDetectionObservation> observation =
             objectDetection.getContourObservation(objectDetection.getTargets(), selection);
@@ -81,7 +84,8 @@ public class ObjectDetector extends SubsystemBase {
     }
 
     // Private helper for logging Object Detection values. Object ID = -9999 for stale values.
-    private void logObjectObservation(List<Optional<ObjectDetectionObservation>> observation) {
+    private void logObjectObservation(List<Optional<ObjectDetectionObservation>> observation)
+    {
         if (observation.isEmpty()) {
             Logger.recordOutput("Detection/" + "ML:" + "Active Detections", -1);
             for (int i = 0; i < maxDetections; i++) {
@@ -111,7 +115,9 @@ public class ObjectDetector extends SubsystemBase {
 
     // Private helper for logging Contour values. Object ID = -9999 for stale values.
     private void logContourObservation(Optional<ObjectDetectionObservation> observation,
-        ContourSelectionMode mode) {
+        ContourSelectionMode mode)
+    {
+        // Logged calculations for sim
         if (observation.isPresent()) {
             Logger.recordOutput("Detection/" + "Contour: " + mode + ": Object ID",
                 observation.get().objID());
@@ -133,7 +139,8 @@ public class ObjectDetector extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {
+    public void periodic()
+    {
         // Update the inputs data structure associated with this object detection camera with latest
         // readings
         objectDetection.periodic();

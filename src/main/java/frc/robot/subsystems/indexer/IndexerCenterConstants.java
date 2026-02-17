@@ -12,22 +12,20 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
+package frc.robot.subsystems.indexer;
 
-package frc.robot.subsystems.intakeRoller;
-
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
-
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
@@ -41,34 +39,29 @@ import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+public class IndexerCenterConstants {
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class IntakeRollerConstants {
+    public static final String NAME = "IndexerCenter";
 
-    public static final String NAME = "Intake Roller";
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(60);
+    public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second).times(10);
+    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(10.0);
-    public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
+    public static final Distance RADIUS = Inches.of(0.5);
 
-    private static final double GEARING = (2.0 / 1.0);
-
-    public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.5);
-
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
+    private static final double GEARING = (40.0 / 16.0);
+    private static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
+    private static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
+    public static final PID SLOT0_PID = new PID(100.0, 0.0, 0.0).withV(0.0);
 
     /**
-     * Creates and configures a TalonFX motor controller configuration for the intake roller.
-     * 
+     * Creates and configures a TalonFX motor controller configuration for the indexer.
+     *
      * @return The configured TalonFX configuration
      */
-    public static TalonFXConfiguration getFXConfig()
-    {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
@@ -94,31 +87,28 @@ public class IntakeRollerConstants {
         config.Feedback.SensorToMechanismRatio = GEARING;
 
         config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
-        config.MotionMagic.MotionMagicCruiseVelocity = MAX_VELOCITY.in(RotationsPerSecond);
-        config.MotionMagic.MotionMagicAcceleration =
-            MAX_ACCELERATION.in(RotationsPerSecondPerSecond);
 
         return config;
     }
 
     /**
-     * Factory method to create a FlywheelMechanism instance for the intake roller subsystem.
-     * Creates the appropriate mechanism based on the current robot mode (REAL, SIM, or REPLAY).
-     * 
-     * @return A configured FlywheelMechanism instance
+     * Factory method to create an IndexerSuperstructure subsystem instance. Creates the appropriate
+     * mechanism based on the current robot mode (REAL, SIM, or REPLAY).
+     *
+     * @return A fully configured IndexerSuperstructure subsystem
      */
-    public static FlywheelMechanism<?> getMechanism()
-    {
+    public static FlywheelMechanism<?> get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
                 mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeRoller));
+                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexerCentering));
                 break;
             case SIM:
                 mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeRoller),
-                    DCMOTOR, MOI, TOLERANCE);
+                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexerCentering),
+                    DCMOTOR, MOI,
+                    TOLERANCE);
                 break;
             case REPLAY:
                 mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}) {};
@@ -130,13 +120,4 @@ public class IntakeRollerConstants {
         return mechanism;
     }
 
-    /**
-     * Factory method to create an IntakeRoller subsystem instance.
-     * 
-     * @return A fully configured IntakeRoller subsystem
-     */
-    public static IntakeRoller get()
-    {
-        return new IntakeRoller(getMechanism());
-    }
 }

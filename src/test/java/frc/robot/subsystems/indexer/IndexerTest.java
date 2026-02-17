@@ -26,14 +26,13 @@ import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
 
 public class IndexerTest {
-    Indexer indexer;
+    IndexerSuperstructure indexer;
 
     @BeforeEach // this method will run before each test
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
-        indexer = IndexerConstants.get();
+        indexer = IndexerSuperstructureConstants.get();
 
         /* enable the robot */
         DriverStationSim.setEnabled(true);
@@ -44,41 +43,38 @@ public class IndexerTest {
     }
 
     @AfterEach // this method will run after each test
-    void shutdown()
-    {
+    void shutdown() {
         try {
             indexer.close();
         } catch (Exception e) {
-            fail("Failed to close Indexer subsystem: " + e.getMessage());
+            fail("Failed to close IndexerSuperstructure subsystem: " + e.getMessage());
         }
     }
 
     @Test // marks this method as a test
-    void index()
-    {
+    void shoot() {
         TestUtil.runTest(
-            indexer.setStateCommand(Indexer.State.PULL),
-            2,
+            indexer.shoot(),
+            5,
             indexer);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
             assertTrue(indexer.nearSetpoint());
         } catch (Exception e) {
-            fail("Failed to run Indexer to pull: " + e.getMessage());
+            fail("Failed to run IndexerSuperstructure to pull: " + e.getMessage());
         }
     }
 
     @Test
-    void stop()
-    {
+    void stop() {
         TestUtil.runTest(
-            indexer.setStateCommand(Indexer.State.STOP),
+            indexer.stopCommand(),
             2,
             indexer);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
-            assertTrue(indexer.nearSetpoint());
+            assertTrue((indexer.getFloorSpeed() < 0.1) && (indexer.getCenteringSpeed() < 0.1));
         } catch (Exception e) {
             fail("Failed to stop indexer: " + e.getMessage());
         }

@@ -18,6 +18,8 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import com.pathplanner.lib.path.PathConstraints;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
@@ -56,8 +58,8 @@ public final class Constants {
 
         // TODO: Fill in with real serial number prefixes. Figure out by displaying/logging String
         // serial.
-        public static final String compSerial = "0001";
-        public static final String alphaSerial = "0000";
+        public static final String COMP_SERIAL = "0001";
+        public static final String ALPHA_SERIAL = "0000";
 
         static {
             if (Robot.isReal()) {
@@ -66,8 +68,8 @@ public final class Constants {
             } else {
                 serial = "3467";
             }
-            RobotConstants.isComp = serial.startsWith(RobotConstants.compSerial);
-            RobotConstants.isAlpha = serial.startsWith(RobotConstants.alphaSerial);
+            RobotConstants.isComp = serial.startsWith(RobotConstants.COMP_SERIAL);
+            RobotConstants.isAlpha = serial.startsWith(RobotConstants.ALPHA_SERIAL);
         }
     }
 
@@ -100,4 +102,17 @@ public final class Constants {
     public static final Distance FULL_ROBOT_WIDTH = Inches.of(27.0 + 3.25);
     public static final Distance FULL_ROBOT_LENGTH = Inches.of(27.0 + 3.25);
     public static final Distance BUMPER_HEIGHT = Inches.of(4.0);
+    public static final Transform3d LEFT_SHOOTER_EXIT_TRANSFORM =
+        new Transform3d(
+            Inches.of(-7.346),
+            Inches.of(3.84),
+            Inches.of(22),
+            new Rotation3d(0, 0, 0));
+
+    public static final Transform3d RIGHT_SHOOTER_EXIT_TRANSFORM =
+        new Transform3d(
+            Inches.of(-7.346),
+            Inches.of(-3.84),
+            Inches.of(22),
+            new Rotation3d(0, 0, 0));
 }
