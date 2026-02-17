@@ -24,6 +24,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggerHelper;
 
 /**
  * Subsystem that controls the tower mechanism that transfers game pieces from the indexer to the
@@ -71,6 +72,7 @@ public class Tower extends SubsystemBase {
 
     @Override
     public void periodic() {
+        LoggerHelper.recordCurrentCommand(this.getName(), this);
         io.periodic();
         laserCAN1.periodic();
         laserCAN2.periodic();
@@ -107,7 +109,7 @@ public class Tower extends SubsystemBase {
     public Command shoot() {
         return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get())),
-            () -> stop());
+            () -> stop()).withName("Shoot");
     }
 
     /**
@@ -119,7 +121,7 @@ public class Tower extends SubsystemBase {
     public Command feed() {
         return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(FEED_RPS.get())),
-            () -> stop());
+            () -> stop()).withName("Feed");
     }
 
     /**
@@ -131,7 +133,7 @@ public class Tower extends SubsystemBase {
     public Command eject() {
         return this.startEnd(
             () -> runVelocity(RotationsPerSecond.of(EJECT_RPS.get())),
-            () -> stop());
+            () -> stop()).withName("Eject");
     }
 
     /**
@@ -140,7 +142,7 @@ public class Tower extends SubsystemBase {
      * @return a command that stops the tower
      */
     public Command stopCommand() {
-        return this.runOnce(() -> io.runBrake());
+        return this.runOnce(() -> io.runBrake()).withName("Stop");
     }
 
     private void stop() {
