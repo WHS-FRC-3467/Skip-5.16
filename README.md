@@ -8,7 +8,7 @@ Codebase for the 2026 season REBUILT
 
 Our robot code leverages several advanced software engineering practices and custom abstractions that distinguish it from typical FRC teams:
 
-- **Hardware Abstraction Layer (HAL)**: A three-layer architecture (IO interfaces, Mechanism abstractions, and Subsystems) that completely isolates vendor-specific code from robot logic, enabling seamless hardware swapping and comprehensive simulation testing.
+- **Hardware Abstraction Architecture**: A three-layer architecture (IO interfaces, Mechanism abstractions, and Subsystems) that completely isolates vendor-specific code from robot logic, enabling seamless hardware swapping and comprehensive simulation testing.
 
 - **AdvantageKit Integration**: Full sensor data logging with `@AutoLog` annotations on all IO interfaces, allowing complete match replay and debugging capabilities through time-travel debugging in AdvantageScope.
 
@@ -36,7 +36,7 @@ Our robot code leverages several advanced software engineering practices and cus
 
 - **Code Quality Tooling**: Automated enforcement of code standards using Spotless formatter and Google Error Prone static analysis integrated into the build process, ensuring consistent code quality across the team.
 
-- **Advanced Vision Processing**: PhotonVision integration with multi-camera support, pose estimation, and custom filtering for AprilTag and object detection with automatic fallback strategies.
+- **Advanced Vision Processing**: PhotonVision integration with multi-camera support, pose estimation, and custom filtering for AprilTags and object detection with automatic fallback strategies.
 
 ## Documentation
 
