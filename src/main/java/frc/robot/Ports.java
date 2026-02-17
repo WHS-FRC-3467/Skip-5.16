@@ -33,24 +33,28 @@ public class Ports {
     // - We assign CAN ID 0 to the pigeon
     public static final CANBus DRIVETRAIN_BUS = new CANBus("Drivetrain");
 
-    public static final Device.CAN lights = new CAN(1, "rio");
+    public static final Device.CAN lights = new CAN(7, "Drivetrain");
 
-    public static final Device.CAN pdh = new CAN(50, "rio");
+    public static final Device.CAN pdh = new CAN(40, "rio");
 
-    public static final Device.CAN leftFlywheelMain = new CAN(2, "rio");
-    public static final Device.CAN leftFlywheelFollower = new CAN(3, "rio");
-    public static final Device.CAN rightFlywheelMain = new CAN(4, "rio");
-    public static final Device.CAN rightFlywheelFollower = new CAN(5, "rio");
+    public static final Device.CAN leftFlywheelMain = new CAN(18, "rio");
+    public static final Device.CAN leftFlywheelFollower = new CAN(16, "rio");
+    public static final Device.CAN rightFlywheelMain = new CAN(21, "rio");
+    public static final Device.CAN rightFlywheelFollower = new CAN(22, "rio");
 
-    public static final Device.CAN indexer = new CAN(18, "rio");
-    public static final Device.CAN indexerCentering = new CAN(23, "rio");
+    public static final Device.CAN hood = new CAN(19, "rio");
 
-    public static final Device.CAN hood = new CAN(20, "rio");
-    public static final Device.CAN indexerLaserCAN = new CAN(19, "rio");
-    public static final Device.CAN intakeRoller = new CAN(21, "rio");
-    public static final Device.CAN intakeLinear = new CAN(22, "rio");
-    public static final Device.CAN tower = new CAN(17, "rio");
-    public static final Device.CAN towerLaserCAN1 = new CAN(24, "rio");
-    public static final Device.CAN towerLaserCAN2 = new CAN(25, "rio");
-    public static final Device.CAN climber = new CAN(30, "rio");
+    public static final Device.CAN tower = new CAN(20, "rio");
+    public static final Device.CAN towerLaserCAN1 = new CAN(17, "rio");
+    public static final Device.CAN towerLaserCAN2 = new CAN(23, "rio");
+
+    public static final Device.CAN indexerFloor = new CAN(25, "rio");
+    // TODO: Ensure ID is correct
+    public static final Device.CAN indexerFloorFollower = new CAN(26, "rio");
+    public static final Device.CAN indexerCentering = new CAN(24, "rio");
+
+    public static final Device.CAN intakeLinear = new CAN(27, "rio");
+    public static final Device.CAN intakeRoller = new CAN(28, "rio");
+
+    public static final Device.CAN climber = new CAN(30, "rio"); // placeholder
 }

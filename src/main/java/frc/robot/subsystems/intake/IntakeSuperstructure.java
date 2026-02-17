@@ -37,7 +37,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private static final LoggedTunableNumber LINEAR_CURRENT =
         new LoggedTunableNumber(IntakeLinearConstants.NAME + "/LinearTorqueCurrent", 60.0);
 
-    public final LoggedTrigger linearStopped;
+    public final LoggedTrigger isStopped;
     public final LoggedTrigger isExtended;
     public final LoggedTrigger isRetracted;
 
@@ -50,15 +50,14 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         this.intakeLinearIO = intakeLinearIO;
         this.intakeRollerIO = intakeRollerIO;
 
-        this.linearStopped =
-            new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearStopped",
-                () -> isLinearStopped());
+        this.isStopped = new LoggedTrigger(IntakeLinearConstants.NAME + "/isLinearStopped",
+            () -> (intakeLinearIO.getVelocity().abs(RotationsPerSecond) < 0.01));
         this.isExtended = new LoggedTrigger(IntakeLinearConstants.NAME + "/isExtended",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) > LINEAR_CURRENT.get() * 0.8)
-            .and(this.linearStopped);
+            .and(this.isStopped);
         this.isRetracted = new LoggedTrigger(IntakeLinearConstants.NAME + "/isRetracted",
             () -> this.intakeLinearIO.getTorqueCurrent().in(Amps) < -LINEAR_CURRENT.get() * 0.8)
-            .and(this.linearStopped);
+            .and(this.isStopped);
     }
 
     /**
@@ -68,15 +67,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      */
     public Distance getExtension() {
         return intakeLinearIO.getLinearPosition();
-    }
-
-    /**
-     * Checks if the linear mechanism has stopped moving.
-     *
-     * @return true if the linear velocity is less than 2.0 rotations per second, false otherwise
-     */
-    private boolean isLinearStopped() {
-        return Math.abs(intakeLinearIO.getVelocity().in(RotationsPerSecond)) < 2.0;
     }
 
     public boolean isIntaking() {
@@ -151,8 +141,10 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     public Command cycle() {
         return Commands.repeatingSequence(
             extendLinear(),
+            Commands.waitSeconds(.1),
             Commands.waitUntil(isExtended).withTimeout(1.25),
             retractLinear(),
+            Commands.waitSeconds(.1),
             Commands.waitUntil(isRetracted).withTimeout(1.25));
     }
 
@@ -199,6 +191,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     public void periodic() {
         intakeLinearIO.periodic();
         intakeRollerIO.periodic();
+
     }
 
     @Override

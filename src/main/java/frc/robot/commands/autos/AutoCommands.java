@@ -20,7 +20,7 @@ import frc.robot.RobotState.Target;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.commands.FuelCommands;
@@ -72,7 +72,7 @@ public class AutoCommands {
      * @param duration the maximum duration in seconds to run the align-and-shoot sequence
      * @return a command that aligns the robot to the target and shoots for up to the given duration
      */
-    public static Command alignAndShoot(Drive drive, Indexer indexer,
+    public static Command alignAndShoot(Drive drive, IndexerSuperstructure indexer,
         Tower tower, ShooterSuperstructure shooter, double duration) {
         final var robotState = RobotState.getInstance();
         return Commands.deadline(
@@ -110,7 +110,7 @@ public class AutoCommands {
      * doesn't complete in 2.75s, attempt a shot anyway.
      *
      * @param drive The Drive subsystem
-     * @param indexer The Indexer subsystem
+     * @param indexer The IndexerSuperstructure subsystem
      * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
      * @param path The path to drive to the shooting location, the robot will shoot from the path's
@@ -118,7 +118,7 @@ public class AutoCommands {
      * @return a command that drives to the shooting location and attempts to shoot all the
      *         PRELOADED FUEL
      */
-    public static Command makePreloadShot(Drive drive, Indexer indexer,
+    public static Command makePreloadShot(Drive drive, IndexerSuperstructure indexer,
         Tower tower,
         ShooterSuperstructure shooter, PathPlannerPath path) {
         return Commands.sequence(
@@ -137,14 +137,15 @@ public class AutoCommands {
      *
      * @param drive The Drive subsystem
      * @param intake The IntakeSuperStructure subsystem
-     * @param indexer The Indexer subsystem
+     * @param indexer The IndexerSuperstructure subsystem
      * @param tower The Tower subsystem
      * @param shooter The ShooterSuperstructure subsystem
      * @param path The path to drive to the shooting location, the robot will shoot from the path's
      *        end pose
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
-    public static Command makeFullShot(Drive drive, IntakeSuperstructure intake, Indexer indexer,
+    public static Command makeFullShot(Drive drive, IntakeSuperstructure intake,
+        IndexerSuperstructure indexer,
         Tower tower, ShooterSuperstructure shooter, PathPlannerPath path) {
         return Commands.sequence(
             new ParallelDeadlineGroup(
