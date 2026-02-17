@@ -111,7 +111,8 @@ public class PoseEstimator {
      *         {@link Optional}.
      */
     public Optional<Transform2d> getPoseDeltaThenToNow(double timestampSeconds) {
-        var optionalOdometryPoseAtTime = odometry.odometryBuffer().getSample(timestampSeconds);
+        var optionalOdometryPoseAtTime =
+            odometry.odometryBuffer().getSample(timestampSeconds);
         if (optionalOdometryPoseAtTime.isEmpty()) {
             return Optional.empty();
         }
@@ -186,6 +187,7 @@ public class PoseEstimator {
             new Transform2d(oldPose, newVisionPose);
 
         // Scale the vision correction by the Kalman gain
+
         var scaledVisionCorrectionVector = visionKalmanGain.times(
             VecBuilder.fill(
                 unscaledVisionCorrection.getX(),

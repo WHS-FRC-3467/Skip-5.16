@@ -140,6 +140,11 @@ public class RobotContainer {
             new OutpostAuto(drive, intake, indexer, tower, shooter,
                 StartPosition.RIGHT));
 
+        // Drivebase Characterization Autos
+        autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
+        autoChooser.addOption("RotationalCharacterization",
+            new RotationalCharacterizationAuto(drive));
+
         autoChooser.onChange(auto -> {
             autoPreviewField.getObject("path")
                 .setPoses(auto.getAllPathPoses().stream()
