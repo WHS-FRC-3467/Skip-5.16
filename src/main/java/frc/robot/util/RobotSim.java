@@ -44,8 +44,8 @@ public class RobotSim {
         shootSimFuel.whileTrue(
             Commands.repeatingSequence(
                 Commands.waitSeconds(.1),
-                Commands.runOnce(() -> fuelSim.setHeldFuel(fuelSim.getHeldFuel() - 2)),
                 Commands.runOnce(() -> {
+                    fuelSim.fillHopperBy(-2);
                     fuelSim.spawnFuel(
                         new Pose3d(robotState.getEstimatedPose())
                             .plus(new Transform3d(Inches.of(-10), Inches.of(-3.6),
@@ -67,6 +67,7 @@ public class RobotSim {
 
         fuelSim.enableAirResistance();
         fuelSim.spawnStartingFuel();
+        fuelSim.setHopperFuel(8);
         fuelSim.registerRobot(
             Constants.FULL_ROBOT_WIDTH.in(Meters),
             Constants.FULL_ROBOT_LENGTH.in(Meters),
@@ -82,9 +83,10 @@ public class RobotSim {
 
         fuelSim.start();
         SmartDashboard.putData(Commands.runOnce(() -> {
-            fuelSim.setHeldFuel(8);
+            // Reset field fuels, then fill the hopper with placeholder fuels.
             fuelSim.clearFuel();
             fuelSim.spawnStartingFuel();
+            fuelSim.setHopperFuel(8);
         }).withName("Reset Fuel").ignoringDisable(true));
     }
 

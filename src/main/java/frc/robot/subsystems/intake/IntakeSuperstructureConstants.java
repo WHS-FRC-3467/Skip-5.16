@@ -24,7 +24,6 @@ public class IntakeSuperstructureConstants {
      */
     public static IntakeSuperstructure get() {
         return new IntakeSuperstructure(
-
             IntakeLinearConstants.getMechanism(),
             IntakeRollerConstants.getMechanism());
     }

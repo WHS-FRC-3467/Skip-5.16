@@ -4,15 +4,17 @@
 
 package frc.lib.mechanisms.linear;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 import java.util.Optional;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.BaseUnits;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.ControlType;
 import frc.lib.mechanisms.Mechanism;
-import frc.lib.util.MechanismUtil.DistanceAngleConverter;
 
 /**
  * Abstract class for linear mechanisms, which are mechanisms that move in a straight line. This
@@ -27,7 +29,7 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
      * @param minDistance Minimum extension distance
      * @param maxDistance Maximum extension distance
      * @param startingDistance Starting extension distance
-     * @param converter Converts between rotational and linear units
+     * @param drumRadius The radius of the drum causing linear motion
      * @param orientation The 3D orientation of the linear mechanism's axis of motion. The mechanism
      *        extends along the positive X-axis in its local frame, then rotated by this
      *        orientation. Uses WPILib's counter-clockwise positive convention around Y-axis:
@@ -41,17 +43,24 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
         Distance minDistance,
         Distance maxDistance,
         Distance startingDistance,
-        DistanceAngleConverter converter,
+        Distance drumRadius,
         Rotation3d orientation) {}
 
-    protected final DistanceAngleConverter converter;
-
+    private final double drumRadiusMeters;
     private final LinearMechanismVisualizer visualizer;
 
     public LinearMechanism(String name, LinearMechCharacteristics characteristics, T io) {
         super(name, io);
         visualizer = new LinearMechanismVisualizer(name, characteristics);
-        converter = characteristics.converter();
+        drumRadiusMeters = characteristics.drumRadius().in(Meters);
+    }
+
+    protected Distance toDistance(Angle angle) {
+        return Meters.of(angle.in(Radians) * drumRadiusMeters);
+    }
+
+    protected Angle toAngle(Distance distance) {
+        return Radians.of(distance.in(Meters) / drumRadiusMeters);
     }
 
     private Optional<Distance> getTrajectoryDistance() {
@@ -59,7 +68,7 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
             return Optional.empty();
         }
 
-        return Optional.of(converter.toDistance(inputs.activeTrajectoryPosition));
+        return Optional.of(toDistance(inputs.activeTrajectoryPosition));
     }
 
     private Optional<Distance> getGoalDistance() {
@@ -67,13 +76,13 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
             return Optional.empty();
         }
 
-        return Optional.of(converter.toDistance(inputs.goalPosition));
+        return Optional.of(toDistance(inputs.goalPosition));
     }
 
     // Checks if mechanism is near a goal position within a specified tolerance
     public boolean nearGoal(Distance goalPosition, Distance tolerance) {
         return MathUtil.isNear(
-            converter.toDistance(getPosition()).in(BaseUnits.DistanceUnit),
+            toDistance(getPosition()).in(BaseUnits.DistanceUnit),
             goalPosition.in(BaseUnits.DistanceUnit),
             tolerance.in(BaseUnits.DistanceUnit));
     }
@@ -82,7 +91,7 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
     public void periodic() {
         super.periodic();
 
-        visualizer.setMeasuredDistance(converter.toDistance(inputs.position));
+        visualizer.setMeasuredDistance(toDistance(inputs.position));
         visualizer.setTrajectoryDistance(getTrajectoryDistance());
         visualizer.setGoalDistance(getGoalDistance());
     }

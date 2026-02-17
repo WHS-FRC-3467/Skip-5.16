@@ -35,6 +35,7 @@ import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
@@ -69,17 +70,17 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private static final InterpolatingDoubleTreeMap feedFlywheelMap =
         new InterpolatingDoubleTreeMap();
     static {
-        feedFlywheelMap.put(3.0, 16.0);
-        feedFlywheelMap.put(4.0, 17.0);
-        feedFlywheelMap.put(5.0, 19.0);
-        feedFlywheelMap.put(6.0, 21.0);
-        feedFlywheelMap.put(7.0, 24.0);
-        feedFlywheelMap.put(8.0, 26.0);
-        feedFlywheelMap.put(9.0, 28.0);
-        feedFlywheelMap.put(10.0, 29.5);
-        feedFlywheelMap.put(11.0, 31.0);
-        feedFlywheelMap.put(12.0, 33.0);
-        feedFlywheelMap.put(13.0, 34.0);
+        feedFlywheelMap.put(3.0, 17.0);
+        feedFlywheelMap.put(4.0, 18.0);
+        feedFlywheelMap.put(5.0, 20.0);
+        feedFlywheelMap.put(6.0, 22.0);
+        feedFlywheelMap.put(7.0, 25.0);
+        feedFlywheelMap.put(8.0, 27.0);
+        feedFlywheelMap.put(9.0, 29.0);
+        feedFlywheelMap.put(10.0, 30.5);
+        feedFlywheelMap.put(11.0, 32.0);
+        feedFlywheelMap.put(12.0, 34.0);
+        feedFlywheelMap.put(13.0, 35.0);
     }
 
     private final RobotState robotState = RobotState.getInstance();
@@ -261,7 +262,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 spinUpShooter(),
                 Commands.repeatingSequence(
                     Commands.waitUntil(readyToShoot),
-                    whileAtPosition.until(readyToShoot.negate()))));
+                    whileAtPosition.until(readyToShoot.negate()))))
+            .withName("Prepare Shot");
     }
 
     /**
@@ -271,7 +273,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @return command that sets the hood angle
      */
     public Command setHoodAngle(Angle angle) {
-        return Commands.runOnce(() -> setHoodPosition(angle));
+        return Commands.runOnce(() -> setHoodPosition(angle)).withName("Set Hood Angle");
     }
 
     /**
@@ -281,7 +283,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @return command that sets the flywheel speed
      */
     public Command setFlywheelSpeed(AngularVelocity velocity) {
-        return Commands.runOnce(() -> spinFlywheel(velocity));
+        return Commands.runOnce(() -> spinFlywheel(velocity)).withName("Set Flywheel Speed");
     }
 
     @Override
@@ -297,6 +299,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             Logger.recordOutput(getName() + "/Tuning/DistanceToTargetMeters",
                 robotState.getDistanceToTarget().in(Meters));
         }
+        LoggerHelper.recordCurrentCommand(this.getName(), this);
 
         leftFlywheelIO.periodic();
         rightFlywheelIO.periodic();
