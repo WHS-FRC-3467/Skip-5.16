@@ -6,6 +6,8 @@ package frc.robot.subsystems.objectdetector;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.Radians;
+import java.util.Comparator;
 import java.util.function.Supplier;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.VisionTargetSim;
@@ -15,7 +17,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
@@ -49,6 +50,7 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectDetectorConstants {
+    private final static RobotState robotState = RobotState.getInstance();
     // Object detection camera #0
     // Extrinsics
     // Transform sign convention: +X -> towards other alliance's station, +Y -> towards center of
@@ -114,21 +116,24 @@ public class ObjectDetectorConstants {
     // Target constants
     public final static String OBJECT0_NAME = "FUEL";
     public final static double OBJECT0_HEIGHT_METERS = 0.150114;
-    // Initialize fixed array of sim targets
-    public static VisionTargetSim[] SIM_TARGETS = new VisionTargetSim[] {
-            new VisionTargetSim(new Pose3d(3, 2, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                new TargetModel(OBJECT0_HEIGHT_METERS)),
-            new VisionTargetSim(new Pose3d(7, 6, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                new TargetModel(OBJECT0_HEIGHT_METERS)),
-            new VisionTargetSim(new Pose3d(12, 7, OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                new TargetModel(OBJECT0_HEIGHT_METERS)),
-            new VisionTargetSim(new Pose3d(13, 4, 10 * OBJECT0_HEIGHT_METERS / 2, new Rotation3d()),
-                new TargetModel(10 * OBJECT0_HEIGHT_METERS)),
-            null,
-    };
+
     // Dynamic supplier for moving sim targets
+    // Only publish FUEL to VisionSystemSim that are roughly within camera FOV & 8m of the robot --
+    // publish nearest values first
     public static Supplier<VisionTargetSim[]> visionTargetSimSupplier =
-        () -> RobotSim.getInstance().getFuelSim().getFuelPoses().stream().limit(20)
+        () -> RobotSim.getInstance().getFuelSim().getFuelPoses().stream()
+            .filter(pose -> pose != null)
+            .filter(pose -> {
+                var rel = pose.getTranslation().toTranslation2d()
+                    .minus(robotState.getEstimatedPose().getTranslation());
+                double yaw = Math.atan2(rel.getY(), rel.getX());
+                return yaw < CAMERA0_FOV.in(Radians) / 2;
+            })
+            .filter(pose -> pose.getTranslation().toTranslation2d()
+                .getDistance(robotState.getEstimatedPose().getTranslation()) < 8.0)
+            .sorted(Comparator.comparingDouble(pose -> pose.getTranslation().toTranslation2d()
+                .getDistance(robotState.getEstimatedPose().getTranslation())))
+            .limit(0) // ML model limit (TEST)
             .map(pose -> new VisionTargetSim(pose, new TargetModel(OBJECT0_HEIGHT_METERS)))
             .toArray(VisionTargetSim[]::new);
 
@@ -138,7 +143,8 @@ public class ObjectDetectorConstants {
      *
      * @return a configured ObjectDetector instance
      */
-    public static ObjectDetector get() {
+    public static ObjectDetector get()
+    {
         RobotState robotState = RobotState.getInstance();
         switch (Constants.currentMode) {
             case REAL:

@@ -69,11 +69,10 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
         super.updateInputs(inputs);
     }
 
-    // Private helper for simulating moving game pieces. Calls can have performance impact.
+    // Private helper for simulating moving game pieces.
     private void updateTargetPoses() {
         visionSim.clearVisionTargets();
-        visionTargets = Arrays.stream(visionTargetSupplier.get()).filter(target -> target != null)
-            .toArray(VisionTargetSim[]::new);
+        visionTargets = Arrays.stream(visionTargetSupplier.get()).toArray(VisionTargetSim[]::new);
         if (visionTargets.length > 0) {
             visionSim.addVisionTargets(target_name, visionTargets);
             // Log updated target poses for AScope

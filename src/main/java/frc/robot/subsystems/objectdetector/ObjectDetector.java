@@ -54,15 +54,13 @@ public class ObjectDetector extends SubsystemBase {
      *
      * @param io the IO implementation for object detection (real, sim, or replay)
      */
-    public ObjectDetector(String cameraName, ObjectDetectionIO io)
-    {
+    public ObjectDetector(String cameraName, ObjectDetectionIO io) {
         objectDetection = new ObjectDetection(cameraName, io);
     }
 
     // Private helper for generating latest ML Object Observation
     private Optional<ObjectDetectionObservation> generateObjectObservation(
-        PhotonTrackedTarget target)
-    {
+        PhotonTrackedTarget target) {
         // Attempt to generate full Object record using ML model
         Optional<ObjectDetectionObservation> observation =
             objectDetection.getObjectObservation(target,
@@ -75,8 +73,7 @@ public class ObjectDetector extends SubsystemBase {
 
     // Private helper for generating latest Contour observation
     private Optional<ObjectDetectionObservation> generateContourObservation(
-        ContourSelectionMode selection)
-    {
+        ContourSelectionMode selection) {
         // Attempt to generate partial Object record using Blob model
         Optional<ObjectDetectionObservation> observation =
             objectDetection.getContourObservation(objectDetection.getTargets(), selection);
@@ -85,8 +82,7 @@ public class ObjectDetector extends SubsystemBase {
     }
 
     // Private helper for logging Object Detection values. -1 for stale values.
-    private void logObjectObservation(List<Optional<ObjectDetectionObservation>> observation)
-    {
+    private void logObjectObservation(List<Optional<ObjectDetectionObservation>> observation) {
         String prefix = "Detection/ML:";
         int detectionSize = observation.size();
         maxDetectionsSize = Math.max(detectionSize, maxDetectionsSize);
@@ -107,8 +103,7 @@ public class ObjectDetector extends SubsystemBase {
 
     // Private helper for logging Contour values. Object ID = -9999 for stale values.
     private void logContourObservation(Optional<ObjectDetectionObservation> observation,
-        ContourSelectionMode mode)
-    {
+        ContourSelectionMode mode) {
         String prefix = "Detection/" + "Contour: " + mode + ": ";
         if (observation.isPresent()) {
             ObjectDetectionObservation obs = observation.get();
@@ -123,8 +118,7 @@ public class ObjectDetector extends SubsystemBase {
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         // Update the inputs data structure associated with this object detection camera with latest
         // readings
         objectDetection.periodic();
