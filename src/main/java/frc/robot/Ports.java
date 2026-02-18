@@ -16,6 +16,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.CANBus;
+
 import frc.lib.util.Device;
 import frc.lib.util.Device.CAN;
 
@@ -50,7 +51,7 @@ public class Ports {
 
     public static final Device.CAN indexerFloor = new CAN(25, "rio");
     // TODO: Ensure ID is correct
-    // public static final Device.CAN indexerFloorFollower = new CAN(26, "rio");
+    public static final Device.CAN indexerFloorFollower = new CAN(26, "rio");
     public static final Device.CAN indexerCentering = new CAN(24, "rio");
 
     public static final Device.CAN intakeLinear = new CAN(27, "rio");
