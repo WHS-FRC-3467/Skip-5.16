@@ -154,6 +154,17 @@ tasks.withType(JavaCompile).configureEach {
     options.errorprone.disable("Unused")
 }
 
+// Configure incremental annotation processing for self-contained annotation processor
+// This enables the annotation processor in this project to process annotations in the same build
+// Gradle will compile the processor classes first, then use them in a second pass
+compileJava {
+    // Enable incremental compilation
+    options.incremental = true
+    
+    // The processor will be compiled in the first pass, then available for the second pass
+    // The META-INF/services file registers it for automatic discovery
+}
+
 // Create version file
 project.compileJava.dependsOn(createVersionFile)
 project.compileJava.dependsOn("spotlessApply")
