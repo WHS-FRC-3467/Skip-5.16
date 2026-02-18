@@ -156,6 +156,17 @@ public class Drive extends SubsystemBase {
     @AutoLogOutput(key = "Drive/Skid/TransMagLatest")
     private double[] skidTranslationalSpeedMagnitudesLatest = new double[] {0.0, 0.0, 0.0, 0.0};
 
+    // Reused buffers for skid detection to avoid per-sample allocations at high odometry rates.
+    private final SwerveModuleState[] skidMeasuredStatesScratch =
+            new SwerveModuleState[] {
+                new SwerveModuleState(),
+                new SwerveModuleState(),
+                new SwerveModuleState(),
+                new SwerveModuleState()
+            };
+    private final double[] skidTranslationalSpeedScratch = new double[] {0.0, 0.0, 0.0, 0.0};
+    private final boolean[] skidBadWheelsScratch = new boolean[] {false, false, false, false};
+
     /**
      * Constructs a new Drive subsystem.
      *
@@ -273,11 +284,11 @@ public class Drive extends SubsystemBase {
                     enableSkidDetection.get()
                             ? computeSkidMaskForSample(
                                     sampleIndex, sampleTimestamps, modulePositions)
-                            : new boolean[] {false, false, false, false};
+                            : clearAndReturnFalseSkidMask();
 
             // Keep the latest sample easy to view in AdvantageScope.
             if (sampleIndex == sampleCount - 1) {
-                skidBadWheelsLatest = badWheels.clone();
+                System.arraycopy(badWheels, 0, skidBadWheelsLatest, 0, skidBadWheelsLatest.length);
             }
 
             robotState.addOdometryObservation(
@@ -521,9 +532,8 @@ public class Drive extends SubsystemBase {
      */
     private boolean[] computeSkidMaskForSample(
             int sampleIndex, double[] sampleTimestamps, SwerveModulePosition[] positionsNow) {
-        boolean[] badWheels = new boolean[] {false, false, false, false};
-
-        SwerveModuleState[] measuredStates;
+        boolean[] badWheels = clearAndReturnFalseSkidMask();
+        SwerveModuleState[] measuredStates = skidMeasuredStatesScratch;
 
         if (sampleIndex <= 0) {
             /*
@@ -532,59 +542,63 @@ public class Drive extends SubsystemBase {
              * states for this cycle. It is quite rare to not have multiple samples on a real robot,
              * but if that happens, this isn't a bad metric.
              */
-            measuredStates = getModuleStates();
+            for (int i = 0; i < 4; i++) {
+                measuredStates[i].speedMetersPerSecond = modules[i].getVelocityMetersPerSec();
+                measuredStates[i].angle = modules[i].getAngle();
+            }
         } else {
             double secondsBetweenSamples =
                     sampleTimestamps[sampleIndex] - sampleTimestamps[sampleIndex - 1];
 
             if (secondsBetweenSamples <= 1e-6) {
-                skidTranslationalSpeedMagnitudesLatest = new double[] {0.0, 0.0, 0.0, 0.0};
+                setAllZeros(skidTranslationalSpeedMagnitudesLatest);
                 return badWheels;
             }
 
-            SwerveModulePosition[] previousModulePositions = new SwerveModulePosition[4];
             for (int i = 0; i < 4; i++) {
-                previousModulePositions[i] = modules[i].getOdometryPositions()[sampleIndex - 1];
-            }
-
-            measuredStates = new SwerveModuleState[4];
-            for (int i = 0; i < 4; i++) {
+                SwerveModulePosition previousPosition =
+                        modules[i].getOdometryPositions()[sampleIndex - 1];
                 double deltaDistanceMeters =
-                        positionsNow[i].distanceMeters - previousModulePositions[i].distanceMeters;
+                        positionsNow[i].distanceMeters - previousPosition.distanceMeters;
 
                 double speedMetersPerSecond = deltaDistanceMeters / secondsBetweenSamples;
 
-                measuredStates[i] =
-                        new SwerveModuleState(speedMetersPerSecond, positionsNow[i].angle);
+                measuredStates[i].speedMetersPerSecond = speedMetersPerSecond;
+                measuredStates[i].angle = positionsNow[i].angle;
             }
         }
 
         final double angularVelocityRadiansPerSecond =
                 kinematics.toChassisSpeeds(measuredStates).omegaRadiansPerSecond;
 
-        double[] translationalSpeedMagnitudesMetersPerSecond = new double[4];
+        double[] translationalSpeedMagnitudesMetersPerSecond = skidTranslationalSpeedScratch;
 
         for (int i = 0; i < 4; i++) {
-            Translation2d measuredWheelVelocityVector =
-                    new Translation2d(
-                            measuredStates[i].speedMetersPerSecond, measuredStates[i].angle);
-
             Translation2d moduleLocation = MODULE_TRANSLATIONS.get(i);
 
-            Translation2d rotationalVelocityVector =
-                    new Translation2d(
-                            -angularVelocityRadiansPerSecond * moduleLocation.getY(),
-                            angularVelocityRadiansPerSecond * moduleLocation.getX());
+            double measuredVx =
+                    measuredStates[i].speedMetersPerSecond * measuredStates[i].angle.getCos();
+            double measuredVy =
+                    measuredStates[i].speedMetersPerSecond * measuredStates[i].angle.getSin();
 
+            double rotationalVx = -angularVelocityRadiansPerSecond * moduleLocation.getY();
+            double rotationalVy = angularVelocityRadiansPerSecond * moduleLocation.getX();
+
+            double translationalVx = measuredVx - rotationalVx;
+            double translationalVy = measuredVy - rotationalVy;
             translationalSpeedMagnitudesMetersPerSecond[i] =
-                    measuredWheelVelocityVector.minus(rotationalVelocityVector).getNorm();
+                    Math.hypot(translationalVx, translationalVy);
         }
 
-        skidTranslationalSpeedMagnitudesLatest =
-                translationalSpeedMagnitudesMetersPerSecond.clone();
+        System.arraycopy(
+                translationalSpeedMagnitudesMetersPerSecond,
+                0,
+                skidTranslationalSpeedMagnitudesLatest,
+                0,
+                skidTranslationalSpeedMagnitudesLatest.length);
 
         double medianTranslationalSpeedMetersPerSecond =
-                median(translationalSpeedMagnitudesMetersPerSecond);
+                medianOfFour(translationalSpeedMagnitudesMetersPerSecond);
 
         if (medianTranslationalSpeedMetersPerSecond < SKID_MIN_TRANSLATION_MPS.get()) {
             return badWheels;
@@ -608,13 +622,52 @@ public class Drive extends SubsystemBase {
         return badWheels;
     }
 
-    private static double median(double[] values) {
-        double[] copy = values.clone();
-        java.util.Arrays.sort(copy);
-        int n = copy.length;
-        if ((n & 1) == 1) {
-            return copy[n / 2];
+    private boolean[] clearAndReturnFalseSkidMask() {
+        for (int i = 0; i < skidBadWheelsScratch.length; i++) {
+            skidBadWheelsScratch[i] = false;
         }
-        return 0.5 * (copy[n / 2 - 1] + copy[n / 2]);
+        return skidBadWheelsScratch;
+    }
+
+    private static void setAllZeros(double[] values) {
+        for (int i = 0; i < values.length; i++) {
+            values[i] = 0.0;
+        }
+    }
+
+    private static double medianOfFour(double[] values) {
+        // 4-element sorting network; returns average of middle two with zero allocations.
+        double a = values[0];
+        double b = values[1];
+        double c = values[2];
+        double d = values[3];
+
+        if (a > b) {
+            double t = a;
+            a = b;
+            b = t;
+        }
+        if (c > d) {
+            double t = c;
+            c = d;
+            d = t;
+        }
+        if (a > c) {
+            double t = a;
+            a = c;
+            c = t;
+        }
+        if (b > d) {
+            double t = b;
+            b = d;
+            d = t;
+        }
+        if (b > c) {
+            double t = b;
+            b = c;
+            c = t;
+        }
+
+        return 0.5 * (b + c);
     }
 }
