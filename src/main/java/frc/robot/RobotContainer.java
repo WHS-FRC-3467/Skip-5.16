@@ -260,6 +260,9 @@ public class RobotContainer {
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
 
+        SmartDashboard.putData("Tower/Stop", tower.stopCommand());
+        SmartDashboard.putData("Tower/Shoot", tower.shoot());
+
         SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
         SmartDashboard.putData(
                 "Hood angle",

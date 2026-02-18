@@ -16,7 +16,6 @@
 package frc.robot;
 
 import com.ctre.phoenix6.CANBus;
-
 import frc.lib.util.Device;
 import frc.lib.util.Device.CAN;
 
