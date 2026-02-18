@@ -73,7 +73,7 @@ public class FlywheelConstants {
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
 
-        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         config.MotorOutput.Inverted =
                 invert ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
 
