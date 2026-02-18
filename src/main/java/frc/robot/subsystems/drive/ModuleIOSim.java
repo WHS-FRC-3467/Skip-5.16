@@ -26,8 +26,6 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import frc.lib.util.LoggedTunableBoolean;
-import frc.lib.util.LoggedTunableNumber;
 
 /**
  * Physics sim implementation of module IO. The sim models are configured using a set of module
@@ -50,19 +48,6 @@ public class ModuleIOSim implements ModuleIO {
 
     private final DCMotorSim driveSim;
     private final DCMotorSim turnSim;
-
-    /**
-     * Dashboard input for whether or not to enable simulated module skid.
-     *
-     * <p>When enabled, the drive motor voltage applied to the simulation is multiplied by {@link
-     * #skidMultiplier}. This intentionally makes the simulated wheel "over-achieve" compared to the
-     * rest of the drivetrain, which is a simple way to create a repeatable skid-like outlier for
-     * testing detection and filtering logic.
-     */
-    private final LoggedTunableBoolean enableSkid;
-
-    /** The multiplier applied to the drive voltage when {@link #enableSkid} is active. */
-    private final LoggedTunableNumber skidMultiplier;
 
     private boolean driveClosedLoop = false;
     private boolean turnClosedLoop = false;
@@ -99,10 +84,6 @@ public class ModuleIOSim implements ModuleIO {
 
         // Enable wrapping for turn PID
         turnController.enableContinuousInput(-Math.PI, Math.PI);
-
-        // Instantiate tuning values
-        enableSkid = new LoggedTunableBoolean("Drive/" + name + "/Enable Skid Simulation", false);
-        skidMultiplier = new LoggedTunableNumber("Drive/" + name + "/Skid Multiplier", 1.8);
     }
 
     @Override
@@ -152,10 +133,6 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public void setDriveOpenLoop(double output) {
-        output =
-                MathUtil.clamp(
-                        output * (enableSkid.get() ? skidMultiplier.get() : 1.0), -12.0, 12.0);
-
         driveClosedLoop = false;
         driveAppliedVolts = output;
     }
@@ -168,8 +145,6 @@ public class ModuleIOSim implements ModuleIO {
 
     @Override
     public void setDriveVelocity(double velocityRadPerSec) {
-        velocityRadPerSec = velocityRadPerSec * (enableSkid.get() ? skidMultiplier.get() : 1.0);
-
         driveClosedLoop = true;
         driveFFVolts = DRIVE_KS * Math.signum(velocityRadPerSec) + DRIVE_KV * velocityRadPerSec;
         driveController.setSetpoint(velocityRadPerSec);
