@@ -691,7 +691,7 @@ public class FuelSim {
     public void setHopperFuel(int numFuel) {
         int previousAmount = getHeldFuel();
         // Clamp the new set amount of fuel
-        int amountFuel = MathUtil.clamp(numFuel, 0, 50);
+        int amountFuel = MathUtil.clamp(numFuel, 0, HOPPER_CAPACITY);
         if (amountFuel < previousAmount) {
             for (int i = amountFuel; i < previousAmount; i++) {
                 hopperFuel.remove(hopperFuel.size() - 1);
