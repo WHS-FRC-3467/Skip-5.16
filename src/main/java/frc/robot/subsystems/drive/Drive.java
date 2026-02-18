@@ -140,13 +140,15 @@ public class Drive extends SubsystemBase {
      * The detection checks how consistent each wheel's translational velocity is compared to the
      * others. A wheel that is slipping is often an outlier.
      */
-    private static final LoggedTunableNumber SKID_OUTLIER_SCALE = new LoggedTunableNumber("Drive/SkidOutlierScale", 1.35);
+    private static final LoggedTunableNumber SKID_OUTLIER_SCALE =
+            new LoggedTunableNumber("Drive/SkidOutlierScale", 1.35);
 
     /*
      * At very low translation speeds, encoder quantization and noise can cause false positives. We
      * skip skid detection if the median translational speed is below this threshold.
      */
-    private static final LoggedTunableNumber SKID_MIN_TRANSLATION_MPS = new LoggedTunableNumber("Drive/SkidOutlierScale", 0.15);
+    private static final LoggedTunableNumber SKID_MIN_TRANSLATION_MPS =
+            new LoggedTunableNumber("Drive/SkidOutlierScale", 0.15);
 
     @AutoLogOutput(key = "Drive/Skid/BadWheelsLatest")
     private boolean[] skidBadWheelsLatest = new boolean[] {false, false, false, false};
