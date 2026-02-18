@@ -25,6 +25,7 @@ public interface AbsoluteEncoderIO extends AutoCloseable {
     abstract class AbsoluteEncoderInputs {
         /** Whether the sensor is connected. */
         public boolean connected = false;
+
         /** Angle the encoder reads. 0 &lt;= r &lt; 1 where r = angle in rotations */
         public Angle angle = null;
     }

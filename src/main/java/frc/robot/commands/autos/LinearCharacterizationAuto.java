@@ -14,10 +14,10 @@
  */
 package frc.robot.commands.autos;
 
-import java.util.List;
 import com.pathplanner.lib.auto.AutoBuilder;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
+import java.util.List;
 
 public class LinearCharacterizationAuto extends AutoRoutine {
 
@@ -33,9 +33,9 @@ public class LinearCharacterizationAuto extends AutoRoutine {
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null))
             loadCommands(
-                // Reset odometry
-                AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
-                // Follow straight path
-                AutoBuilder.followPath(pathPlannerPaths.get(0)));
+                    // Reset odometry
+                    AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                    // Follow straight path
+                    AutoBuilder.followPath(pathPlannerPaths.get(0)));
     }
 }

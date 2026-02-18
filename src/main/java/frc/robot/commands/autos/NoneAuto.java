@@ -18,13 +18,9 @@ package frc.robot.commands.autos;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 
-/**
- * No-operation autonomous routine that does nothing. Used as a default or fallback option.
- */
+/** No-operation autonomous routine that does nothing. Used as a default or fallback option. */
 public class NoneAuto extends AutoRoutine {
-    /**
-     * Constructs a NoneAuto that executes no commands during autonomous period.
-     */
+    /** Constructs a NoneAuto that executes no commands during autonomous period. */
     public NoneAuto() {
         addCommands(Commands.none());
     }

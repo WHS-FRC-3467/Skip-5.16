@@ -18,6 +18,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
+
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -101,14 +102,19 @@ public class IndexerCenterConstants {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexerCentering));
+                mechanism =
+                        new FlywheelMechanismReal(
+                                NAME,
+                                new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexerCentering));
                 break;
             case SIM:
-                mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexerCentering),
-                    DCMOTOR, MOI,
-                    TOLERANCE);
+                mechanism =
+                        new FlywheelMechanismSim(
+                                NAME,
+                                new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexerCentering),
+                                DCMOTOR,
+                                MOI,
+                                TOLERANCE);
                 break;
             case REPLAY:
                 mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}) {};
@@ -119,5 +125,4 @@ public class IndexerCenterConstants {
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
     }
-
 }

@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.Units;
@@ -32,22 +33,23 @@ import frc.robot.RobotState;
 import frc.robot.util.RobotSim;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.photonvision.estimation.TargetModel;
+import org.photonvision.simulation.VisionTargetSim;
 
 /**
  * Configuration constants for the object detection subsystem.
  *
- * <p>
- * Contains camera calibration data, mounting positions, and simulation targets for ML-based object
- * detection. Each camera has:
+ * <p>Contains camera calibration data, mounting positions, and simulation targets for ML-based
+ * object detection. Each camera has:
+ *
  * <ul>
- * <li>Extrinsics: Physical mounting transform (position and orientation on robot)</li>
- * <li>Intrinsics: Camera matrix and distortion coefficients from calibration</li>
- * <li>Performance: Resolution, FPS, latency, and standard deviation factors</li>
+ *   <li>Extrinsics: Physical mounting transform (position and orientation on robot)
+ *   <li>Intrinsics: Camera matrix and distortion coefficients from calibration
+ *   <li>Performance: Resolution, FPS, latency, and standard deviation factors
  * </ul>
  *
- * <p>
- * Used for detecting game pieces or other objects using PhotonVision's ML pipeline. In simulation,
- * uses configured target positions to test detection algorithms.
+ * <p>Used for detecting game pieces or other objects using PhotonVision's ML pipeline. In
+ * simulation, uses configured target positions to test detection algorithms.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectDetectorConstants {
@@ -69,26 +71,29 @@ public class ObjectDetectorConstants {
 
     // ThriftyCam Default Calibrations
     public static final Matrix<N3, N3> CAMERA0_MATRIX =
-        MatBuilder.fill(Nat.N3(), Nat.N3(),
-            2002.948392331919,
-            0.0,
-            783.9099067246102,
-            0.0,
-            1999.0390684862123,
-            662.7694019679813,
-            0.0,
-            0.0,
-            1.0);
+            MatBuilder.fill(
+                    Nat.N3(),
+                    Nat.N3(),
+                    2002.948392331919,
+                    0.0,
+                    783.9099067246102,
+                    0.0,
+                    1999.0390684862123,
+                    662.7694019679813,
+                    0.0,
+                    0.0,
+                    1.0);
 
-    public static final Vector<N8> CAMERA0_DIST_COEFFS = VecBuilder.fill(
-        0.09905119793103302,
-        -0.06388083628565337,
-        3.87402720846368E-5,
-        1.4421218015997156E-4,
-        -0.16329892957216433,
-        -0.004599206903333014,
-        0.0029050841273878885,
-        0.0067195798658376375);
+    public static final Vector<N8> CAMERA0_DIST_COEFFS =
+            VecBuilder.fill(
+                    0.09905119793103302,
+                    -0.06388083628565337,
+                    3.87402720846368E-5,
+                    1.4421218015997156E-4,
+                    -0.16329892957216433,
+                    -0.004599206903333014,
+                    0.0029050841273878885,
+                    0.0067195798658376375);
 
     // Performance
     public static final double CAMERA0_FPS = 22;
@@ -101,18 +106,18 @@ public class ObjectDetectorConstants {
     public static final Time CAMERA0_LATENCY_STDDEV = Milliseconds.of(5);
 
     public static final CameraProperties CAMERA0 =
-        new CameraProperties(
-            CAMERA0_NAME,
-            CAMERA0_TRANSFORM,
-            CAMERA0_MATRIX,
-            CAMERA0_DIST_COEFFS,
-            CAMERA0_RESOLUTION_WIDTH,
-            CAMERA0_RESOLUTION_HEIGHT,
-            CAMERA0_STDDEV_FACTOR,
-            CAMERA0_FOV,
-            CAMERA0_FPS,
-            CAMERA0_LATENCY,
-            CAMERA0_LATENCY_STDDEV);
+            new CameraProperties(
+                    CAMERA0_NAME,
+                    CAMERA0_TRANSFORM,
+                    CAMERA0_MATRIX,
+                    CAMERA0_DIST_COEFFS,
+                    CAMERA0_RESOLUTION_WIDTH,
+                    CAMERA0_RESOLUTION_HEIGHT,
+                    CAMERA0_STDDEV_FACTOR,
+                    CAMERA0_FOV,
+                    CAMERA0_FPS,
+                    CAMERA0_LATENCY,
+                    CAMERA0_LATENCY_STDDEV);
 
     // Target constants
     public final static String OBJECT0_NAME = "FUEL";
@@ -161,12 +166,17 @@ public class ObjectDetectorConstants {
         switch (Constants.currentMode) {
             case REAL:
                 // Real IO, inputs = PhotonVision implementation of ObjectDetectionIO
-                return new ObjectDetector(CAMERA0_NAME,
-                    new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
+                return new ObjectDetector(
+                        CAMERA0_NAME, new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
             case SIM:
                 // Sim IO, inputs = sim implementation of ObjectionDetectionIO
-                return new ObjectDetector(CAMERA0_NAME, new ObjectDetectionIOSim(CAMERA0,
-                    () -> robotState.getEstimatedPose(), OBJECT0_NAME, visionTargetSimSupplier));
+                return new ObjectDetector(
+                        CAMERA0_NAME,
+                        new ObjectDetectionIOSim(
+                                CAMERA0,
+                                () -> robotState.getEstimatedPose(),
+                                OBJECT0_NAME,
+                                visionTargetSimSupplier));
             case REPLAY:
                 // Replayed robot, use logged data for IO
                 return new ObjectDetector(CAMERA0_NAME, new ObjectDetectionIO() {});

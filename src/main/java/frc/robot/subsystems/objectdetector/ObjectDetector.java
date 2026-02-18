@@ -15,11 +15,18 @@
 
 package frc.robot.subsystems.objectdetector;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.ObjectDetection;
-import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
+import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.robot.RobotState;
+import java.util.ArrayList;
+import java.util.Optional;
 import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -61,7 +68,7 @@ public class ObjectDetector extends SubsystemBase {
 
     // Private helper for generating latest ML Object Observation
     private Optional<ObjectDetectionObservation> generateObjectObservation(
-        PhotonTrackedTarget target) {
+            PhotonTrackedTarget target) {
         // Attempt to generate full Object record using ML model
         Optional<ObjectDetectionObservation> observation =
             objectDetection.getObjectObservation(target,
@@ -74,7 +81,7 @@ public class ObjectDetector extends SubsystemBase {
 
     // Private helper for generating latest Contour observation
     private Optional<ObjectDetectionObservation> generateContourObservation(
-        ContourSelectionMode selection) {
+            ContourSelectionMode selection) {
         // Attempt to generate partial Object record using Blob model
         Optional<ObjectDetectionObservation> observation =
             objectDetection.getContourObservation(objectDetection.getTargets(), selection);

@@ -15,27 +15,25 @@
 
 package frc.robot.subsystems.leds;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.TreeSet;
-import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.controls.ControlRequest;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.Lights;
 import frc.lib.io.lights.LightsIO;
 import frc.lib.util.LoggerHelper;
+import java.util.List;
+import java.util.Optional;
+import java.util.TreeSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Subsystem that controls the robot's LED lights for visual feedback and animations. Provides
  * commands for different animation patterns during disabled, autonomous, and teleop modes.
  */
 public class LEDs extends SubsystemBase {
-    /**
-     * The states for the lights in order from highest priority to low
-     */
+    /** The states for the lights in order from highest priority to low */
     @Getter
     @RequiredArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
@@ -98,14 +96,11 @@ public class LEDs extends SubsystemBase {
     public void periodic() {
         updateState();
 
-
         LoggerHelper.recordCurrentCommand(LEDsConstants.NAME, this);
         Logger.recordOutput(LEDsConstants.NAME + "/State", currentState.name());
-        Logger.recordOutput(LEDsConstants.NAME + "/StateQueue",
-            stateQueue
-                .stream()
-                .map(s -> s.name())
-                .toArray(String[]::new));
+        Logger.recordOutput(
+                LEDsConstants.NAME + "/StateQueue",
+                stateQueue.stream().map(s -> s.name()).toArray(String[]::new));
     }
 
     public Command scheduleStateCommand(State state) {
