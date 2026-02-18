@@ -30,6 +30,7 @@ import frc.lib.posestimator.PoseEstimator;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.FieldUtil;
+import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.subsystems.drive.Drive;
 import java.util.Optional;
@@ -45,6 +46,8 @@ public class RobotState {
 
     private static final LoggedTunableNumber SHOOT_TOLERANCE_DEGREES =
             new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 1.0);
+    private static final LoggedTunableNumber MAX_HOOD_RETRACT_TIME =
+            new LoggedTunableNumber("RobotState/MaxHoodRetractTime", 0.2);
 
     private static final double LINEAR_ODOMETRY_STD_DEV = 0.01;
     private static final double ANGULAR_ODOMETRY_STD_DEV = 0.01;
@@ -65,6 +68,59 @@ public class RobotState {
                                                     .minus(getEstimatedPose().getRotation())
                                                     .getDegrees())
                                     < SHOOT_TOLERANCE_DEGREES.get());
+
+    /**
+     * Whether or not the robot is entering the trench in {@code MAX_HOOD_RETRACT_TIME}. For use to
+     * check whether we need to force the hood to retract to prevent decapitation.
+     */
+    public final LoggedTrigger enteringTrench =
+            new LoggedTrigger(
+                    "RobotState/EnteringTrench",
+                    () -> {
+                        // Predict future pose
+                        Pose2d futurePose =
+                                getEstimatedPose()
+                                        .exp(
+                                                getFieldRelativeVelocity()
+                                                        .toTwist2d(MAX_HOOD_RETRACT_TIME.get()));
+
+                        // Normalize to alliance frame
+                        Pose2d pose = FieldUtil.apply(futurePose);
+
+                        double x = pose.getX();
+                        double y = pose.getY();
+
+                        double halfRobotLength = Constants.FULL_ROBOT_LENGTH.in(Meters) / 2.0;
+
+                        // Alliance trench corridor
+                        double trenchMinX =
+                                FieldConstants.LeftBump.NEAR_LEFT_CORNER.getX() - halfRobotLength;
+                        double trenchMaxX =
+                                FieldConstants.LeftBump.FAR_LEFT_CORNER.getX() + halfRobotLength;
+
+                        // Opponent trench corridor (mirrored)
+                        double oppTrenchMinX = FieldConstants.FIELD_LENGTH - trenchMaxX;
+                        double oppTrenchMaxX = FieldConstants.FIELD_LENGTH - trenchMinX;
+
+                        boolean inAllianceCorridor = x >= trenchMinX && x <= trenchMaxX;
+
+                        boolean inOpponentCorridor = x >= oppTrenchMinX && x <= oppTrenchMaxX;
+
+                        boolean inRightTrench =
+                                y >= FieldConstants.LinesHorizontal.RIGHT_TRENCH_OPEN_END
+                                        && y
+                                                <= FieldConstants.LinesHorizontal
+                                                        .RIGHT_TRENCH_OPEN_START;
+
+                        boolean inLeftTrench =
+                                y >= FieldConstants.LinesHorizontal.LEFT_TRENCH_OPEN_END
+                                        && y
+                                                <= FieldConstants.LinesHorizontal
+                                                        .LEFT_TRENCH_OPEN_START;
+
+                        return (inAllianceCorridor || inOpponentCorridor)
+                                && (inLeftTrench || inRightTrench);
+                    });
 
     // -------- POSE ESTIMATION --------
 
@@ -164,7 +220,7 @@ public class RobotState {
     }
 
     /**
-     * Classifies the robot's current position into a broad field region.
+     * Classifies the supplied pose into a broad field region.
      *
      * <p>The pose is transformed into the current alliance field frame via {@code
      * FieldUtil.apply(...)} so that {@link FieldRegion#ALLIANCE_ZONE} always refers to the current
@@ -173,8 +229,11 @@ public class RobotState {
      *
      * <p>Bump/trench lanes are checked first so they take precedence over the coarse X-based zone
      * classification.
+     *
+     * @param currentPose The pose to check
+     * @return The field region {@code currentPose} is in
      */
-    public FieldRegion getFieldRegion() {
+    public FieldRegion getFieldRegion(Pose2d currentPose) {
         // Pose in blue-side field frame (i.e., "alliance side" is always the current alliance).
         Pose2d pose = FieldUtil.apply(getEstimatedPose());
         double x = pose.getX();
@@ -209,6 +268,23 @@ public class RobotState {
         } else {
             return FieldRegion.OPPONENT_ALLIANCE_ZONE;
         }
+    }
+
+    /**
+     * Classifies the current pose into a broad field region.
+     *
+     * <p>The pose is transformed into the current alliance field frame via {@code
+     * FieldUtil.apply(...)} so that {@link FieldRegion#ALLIANCE_ZONE} always refers to the current
+     * alliance's side of the field (and {@link FieldRegion#OPPONENT_ALLIANCE_ZONE} to the far
+     * side), regardless of whether the robot is actually on blue or red.
+     *
+     * <p>Bump/trench lanes are checked first so they take precedence over the coarse X-based zone
+     * classification.
+     *
+     * @return The field region the robot is in
+     */
+    public FieldRegion getFieldRegion() {
+        return getFieldRegion(getEstimatedPose());
     }
 
     /** Returns the nearest cardinal angle (multiple of 90 degrees) to the current robot angle. */
@@ -284,6 +360,7 @@ public class RobotState {
                     // Midfield side of the corridor: point toward the opponent wall.
                     yield FieldUtil.apply(Rotation2d.kZero);
                 } else {
+
                     // Inside the corridor but not classified into a lane: stay square.
                     yield getNearestCardinalAngle();
                 }
