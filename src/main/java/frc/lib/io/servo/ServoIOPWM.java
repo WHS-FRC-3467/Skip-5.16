@@ -16,11 +16,11 @@
 package frc.lib.io.servo;
 
 import static edu.wpi.first.units.Units.Degrees;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Servo;
 import frc.lib.util.Device;
-import lombok.Getter;
 
 /**
  * ServoIOPWM is an abstraction for WPILib's Servo class with Pulse Width Modulation signal control
@@ -29,16 +29,12 @@ import lombok.Getter;
  */
 public class ServoIOPWM implements ServoIO {
 
-    @Getter
-    private final String name;
     private final Servo servo;
 
     private double minAngle;
     private double maxAngle;
 
-    public ServoIOPWM(Device.PWM id, String name, Angle minAngle, Angle maxAngle)
-    {
-        this.name = name;
+    public ServoIOPWM(Device.PWM id, Angle minAngle, Angle maxAngle) {
         servo = new Servo(id.id());
         this.minAngle = minAngle.in(Degrees);
         this.maxAngle = maxAngle.in(Degrees);
@@ -49,24 +45,21 @@ public class ServoIOPWM implements ServoIO {
      *
      * @param value Position from 0.0 to 1.0, corresponding to the range of full left to full right.
      */
-    public void setScaledPosition(double value)
-    {
+    public void setScaledPosition(double value) {
         servo.set(MathUtil.clamp(value, 0.0, 1.0));
     }
 
     /**
      * Set the servo angle.
      *
-     * <p>
-     * Servo angles that are out of the supported range of the servo simply "saturate" in that
+     * <p>Servo angles that are out of the supported range of the servo simply "saturate" in that
      * direction In other words, if the servo has a range of (X degrees to Y degrees) than angles of
      * less than X result in an angle of X being set and angles of more than Y degrees result in an
      * angle of Y being set.
      *
      * @param degrees The angle in degrees to set the servo.
      */
-    public void setAngle(double degrees)
-    {
+    public void setAngle(double degrees) {
         var servoAngleRange = maxAngle - minAngle;
         servo.set((MathUtil.clamp(degrees, minAngle, maxAngle) - minAngle) / servoAngleRange);
     }
@@ -74,8 +67,7 @@ public class ServoIOPWM implements ServoIO {
     /**
      * Set the servo angle.
      *
-     * <p>
-     * Servo angles that are out of the supported range of the servo simply "saturate" in that
+     * <p>Servo angles that are out of the supported range of the servo simply "saturate" in that
      * direction In other words, if the servo has a range of (X degrees to Y degrees) than angles of
      * less than X result in an angle of X being set and angles of more than Y degrees result in an
      * angle of Y being set.
@@ -83,17 +75,13 @@ public class ServoIOPWM implements ServoIO {
      * @param angle The Angle set the servo.
      */
     @Override
-    public void setAngle(Angle angle)
-    {
+    public void setAngle(Angle angle) {
         setAngle(angle.in(Degrees));
     }
 
-    /**
-     * Disables the PWM output until told to run to a position again.
-     */
+    /** Disables the PWM output until told to run to a position again. */
     @Override
-    public void stop()
-    {
+    public void stop() {
         servo.setDisabled();
     }
 }

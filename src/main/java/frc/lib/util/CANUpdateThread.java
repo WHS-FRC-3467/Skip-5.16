@@ -15,6 +15,8 @@
 
 package frc.lib.util;
 
+import au.grapplerobotics.ConfigurationFailedException;
+import com.ctre.phoenix6.StatusCode;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -23,13 +25,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.StatusCode;
-import au.grapplerobotics.ConfigurationFailedException;
-
 /**
- * Thread pool for executing CAN device configuration operations asynchronously.
- * Automatically retries failed configuration attempts up to a maximum number of times.
- * Prevents blocking the main robot loop during device initialization.
+ * Thread pool for executing CAN device configuration operations asynchronously. Automatically
+ * retries failed configuration attempts up to a maximum number of times. Prevents blocking the main
+ * robot loop during device initialization.
  */
 public class CANUpdateThread implements AutoCloseable {
 
@@ -37,7 +36,7 @@ public class CANUpdateThread implements AutoCloseable {
 
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
     private final ThreadPoolExecutor executor =
-        new ThreadPoolExecutor(1, 1, 5, TimeUnit.MILLISECONDS, queue);
+            new ThreadPoolExecutor(1, 1, 5, TimeUnit.MILLISECONDS, queue);
 
     /**
      * Attempts a CTRE status-returning action up to MAX_RETRIES times.
@@ -45,21 +44,21 @@ public class CANUpdateThread implements AutoCloseable {
      * @param action Supplier that returns a StatusCode from a CTRE configuration call
      * @return CompletableFuture that completes when successful or throws on persistent failure
      */
-    public CompletableFuture<Void> CTRECheckErrorAndRetry(
-        Supplier<StatusCode> action)
-    {
-        return CompletableFuture.runAsync(() -> {
-            StatusCode lastStatus = StatusCode.OK;
+    public CompletableFuture<Void> CTRECheckErrorAndRetry(Supplier<StatusCode> action) {
+        return CompletableFuture.runAsync(
+                () -> {
+                    StatusCode lastStatus = StatusCode.OK;
 
-            for (int i = 0; i < MAX_RETRIES; i++) {
-                lastStatus = action.get();
-                if (lastStatus.isOK()) {
-                    return;
-                }
-            }
+                    for (int i = 0; i < MAX_RETRIES; i++) {
+                        lastStatus = action.get();
+                        if (lastStatus.isOK()) {
+                            return;
+                        }
+                    }
 
-            throw new RuntimeException("CTRE config failed: " + lastStatus);
-        }, executor);
+                    throw new RuntimeException("CTRE config failed: " + lastStatus);
+                },
+                executor);
     }
 
     /**
@@ -69,29 +68,29 @@ public class CANUpdateThread implements AutoCloseable {
      * @return CompletableFuture that completes when successful or throws on persistent failure
      */
     public CompletableFuture<Void> laserCANCheckErrorAndRetry(
-        ThrowingRunnable<ConfigurationFailedException> action)
-    {
-        return CompletableFuture.runAsync(() -> {
-            ConfigurationFailedException lastException = null;
+            ThrowingRunnable<ConfigurationFailedException> action) {
+        return CompletableFuture.runAsync(
+                () -> {
+                    ConfigurationFailedException lastException = null;
 
-            for (int i = 0; i < MAX_RETRIES; i++) {
-                try {
-                    action.run();
-                    return; // success
-                } catch (ConfigurationFailedException e) {
-                    lastException = e;
-                } catch (Exception e) {
-                    throw new CompletionException(e);
-                }
-            }
+                    for (int i = 0; i < MAX_RETRIES; i++) {
+                        try {
+                            action.run();
+                            return; // success
+                        } catch (ConfigurationFailedException e) {
+                            lastException = e;
+                        } catch (Exception e) {
+                            throw new CompletionException(e);
+                        }
+                    }
 
-            throw new CompletionException(lastException);
-        }, executor);
+                    throw new CompletionException(lastException);
+                },
+                executor);
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         executor.shutdownNow();
     }
 }

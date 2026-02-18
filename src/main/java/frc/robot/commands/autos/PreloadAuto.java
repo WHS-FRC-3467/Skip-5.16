@@ -15,14 +15,13 @@
 
 package frc.robot.commands.autos;
 
-import java.util.List;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.intakeLinear.IntakeLinear;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
+import java.util.List;
 
 /**
  * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect pieces from
@@ -30,37 +29,37 @@ import frc.robot.subsystems.tower.Tower;
  */
 public class PreloadAuto extends AutoRoutine {
 
-    public PreloadAuto(Drive drive, IntakeLinear intakeLinear, IntakeRoller intakeRoller,
-        Indexer indexer, Tower tower,
-        ShooterSuperstructure shooter, StartPosition start)
-    {
+    public PreloadAuto(
+            Drive drive,
+            IntakeSuperstructure intake,
+            IndexerSuperstructure indexer,
+            Tower tower,
+            ShooterSuperstructure shooter,
+            StartPosition start) {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
-            case LEFT -> expectedPaths =
-                List.of("PreloadShoot-Left");
-            case CENTER -> expectedPaths =
-                List.of("PreloadShoot-Center");
-            case RIGHT -> expectedPaths =
-                List.of("PreloadShoot-Right");
+            case LEFT -> expectedPaths = List.of("PreloadShoot-Left");
+            case CENTER -> expectedPaths = List.of("PreloadShoot-Center");
+            case RIGHT -> expectedPaths = List.of("PreloadShoot-Right");
             default -> expectedPaths = List.of();
-        };
+        }
 
         // Load the named paths
         this.loadAllPaths(expectedPaths);
 
-        // Mirror necessary paths when starting on  RIGHT side so the dashboard shows correct poses
+        // Mirror necessary paths when starting on RIGHT side so the dashboard shows correct poses
         this.setMirrorFlags(List.of(false), start);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null))
             loadCommands(
-                // Reset odometry
-                AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
-                // Initialize intake
-                AutoSegments.initializeIntake(intakeLinear, intakeRoller),
-                // Take preload shot
-                AutoSegments.makePreloadShot(drive, indexer, tower, shooter,
-                    pathPlannerPaths.get(0)));
+                    // Reset odometry
+                    AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                    // Initialize intake
+                    intake.retractIntake(),
+                    // Take preload shot
+                    AutoCommands.makePreloadShot(
+                            drive, indexer, tower, shooter, pathPlannerPaths.get(0)));
     }
 }

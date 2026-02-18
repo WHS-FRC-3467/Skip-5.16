@@ -15,9 +15,6 @@
 
 package frc.lib.devices;
 
-import java.util.Optional;
-import org.littletonrobotics.junction.Logger;
-import org.photonvision.targeting.PhotonPipelineResult;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -25,26 +22,28 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.lib.io.vision.VisionIO;
 import frc.lib.io.vision.VisionIO.VisionIOInputs;
+import java.util.Optional;
 import lombok.Getter;
+import org.littletonrobotics.junction.Logger;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 /**
  * Represents a single AprilTag camera on the robot.
- * 
- * <p>
- * Handles interfacing with the {@link VisionIO} hardware layer, providing camera intrinsics,
+ *
+ * <p>Handles interfacing with the {@link VisionIO} hardware layer, providing camera intrinsics,
  * mounting transforms, and reading vision results.
  */
 public class AprilTagCamera {
 
     /**
      * Intrinsic &amp; observed properties describing the camera.
-     * 
+     *
      * @param name Unique name for the camera
      * @param robotToCamera Transform from the robot frame to the camera frame
      * @param cameraMatrix Intrinsic camera matrix
@@ -54,48 +53,46 @@ public class AprilTagCamera {
      * @param stdDevFactor Standard deviation factor used in vision pose estimation
      * @param fov Estimated FOV of camera
      * @param fps Estimate FPS of camera
-     * @param latency Average latency of the camera (exposure -> network tables) 
-     * @param latencyStdDev Standard deviation of the camera latency 
+     * @param latency Average latency of the camera (exposure -> network tables)
+     * @param latencyStdDev Standard deviation of the camera latency
      */
     public record CameraProperties(
-        String name,
-        Transform3d robotToCamera,
-        Matrix<N3, N3> cameraMatrix,
-        Matrix<N8, N1> distCoeffs,
-        int resolutionWidth,
-        int resolutionHeight,
-        double stdDevFactor,
-        Angle fov,
-        double fps,  
-        Time latency,  
-        Time latencyStdDev) {  
-    }  
+            String name,
+            Transform3d robotToCamera,
+            Matrix<N3, N3> cameraMatrix,
+            Matrix<N8, N1> distCoeffs,
+            int resolutionWidth,
+            int resolutionHeight,
+            double stdDevFactor,
+            Angle fov,
+            double fps,
+            Time latency,
+            Time latencyStdDev) {}
+
     private final VisionIO io;
     private final VisionIOInputs inputs;
 
     private final Alert mismatchedIntrinsicsAlert;
 
     /** The camera's properties, including intrinsics and transform relative to the robot. */
-    @Getter
-    private final CameraProperties properties;
+    @Getter private final CameraProperties properties;
 
     /**
      * Constructs a new {@code AprilTagCamera}.
-     * <p>
-     * Initializes the camera properties, sets up logging of inputs, and validates that supplied
+     *
+     * <p>Initializes the camera properties, sets up logging of inputs, and validates that supplied
      * intrinsics match those from the {@link VisionIO} inputs.
-     * </p>
      *
      * @param properties the camera properties
      * @param io the VisionIO interface for this camera
      */
-    public AprilTagCamera(CameraProperties properties, VisionIO io)
-    {
-        mismatchedIntrinsicsAlert = new Alert(
-            "Camera "
-                + properties.name()
-                + "'s supplied intrinsics in code do not match intrinsics from replayed inputs! Defaulting to inputs!",
-            AlertType.kWarning);
+    public AprilTagCamera(CameraProperties properties, VisionIO io) {
+        mismatchedIntrinsicsAlert =
+                new Alert(
+                        "Camera "
+                                + properties.name()
+                                + "'s supplied intrinsics in code do not match intrinsics from replayed inputs! Defaulting to inputs!",
+                        AlertType.kWarning);
 
         this.io = io;
         inputs = new VisionIOInputs(properties.cameraMatrix(), properties.distCoeffs());
@@ -107,43 +104,40 @@ public class AprilTagCamera {
         Matrix<N8, N1> distCoeffs = MatBuilder.fill(Nat.N8(), Nat.N1(), inputs.distCoeffs);
 
         if (!cameraMatrix.equals(properties.cameraMatrix())
-            || !distCoeffs.equals(properties.distCoeffs())) {
+                || !distCoeffs.equals(properties.distCoeffs())) {
             mismatchedIntrinsicsAlert.set(true);
         }
 
         this.properties =
-            new CameraProperties(
-                properties.name(),
-                properties.robotToCamera(),
-                cameraMatrix,
-                distCoeffs,
-                properties.resolutionWidth(),
-                properties.resolutionHeight(),
-                properties.stdDevFactor(),
-                properties.fov(),
-                properties.fps(),
-                properties.latency(),
-                properties.latencyStdDev());
+                new CameraProperties(
+                        properties.name(),
+                        properties.robotToCamera(),
+                        cameraMatrix,
+                        distCoeffs,
+                        properties.resolutionWidth(),
+                        properties.resolutionHeight(),
+                        properties.stdDevFactor(),
+                        properties.fov(),
+                        properties.fps(),
+                        properties.latency(),
+                        properties.latencyStdDev());
     }
 
     /**
      * Retrieves unread vision results from the camera.
-     * <p>
-     * Updates inputs from the {@link VisionIO}, processes them through the logger, and returns any
-     * results if the camera is connected. Returns an empty {@link Optional} if the camera is not
-     * connected.
-     * </p>
+     *
+     * <p>Updates inputs from the {@link VisionIO}, processes them through the logger, and returns
+     * any results if the camera is connected. Returns an empty {@link Optional} if the camera is
+     * not connected.
      *
      * @return an {@link Optional} containing an array of {@link PhotonPipelineResult} if available,
-     *         or {@link Optional#empty()} if the camera is disconnected
+     *     or {@link Optional#empty()} if the camera is disconnected
      */
-    public Optional<PhotonPipelineResult[]> getUnreadResults()
-    {
+    public Optional<PhotonPipelineResult[]> getUnreadResults() {
         io.updateInputs(inputs);
         Logger.processInputs(properties.name(), inputs);
 
-        if (!inputs.connected)
-            return Optional.empty();
+        if (!inputs.connected) return Optional.empty();
 
         return Optional.of(inputs.results);
     }

@@ -17,20 +17,20 @@ package frc.robot.subsystems.tower;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TowerTest {
     Tower tower;
 
     @BeforeEach // this method will run before each test
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
         tower = TowerConstants.get();
@@ -44,8 +44,7 @@ public class TowerTest {
     }
 
     @AfterEach // this method will run after each test
-    void shutdown()
-    {
+    void shutdown() {
         try {
             tower.close();
         } catch (Exception e) {
@@ -54,12 +53,8 @@ public class TowerTest {
     }
 
     @Test // marks this method as a test
-    void shoot()
-    {
-        TestUtil.runTest(
-            tower.setStateCommand(Tower.State.SHOOT),
-            2,
-            tower);
+    void shoot() {
+        TestUtil.runTest(tower.shoot(), 2, tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
             assertTrue(tower.nearSetpoint());
@@ -69,12 +64,8 @@ public class TowerTest {
     }
 
     @Test // marks this method as a test
-    void idle()
-    {
-        TestUtil.runTest(
-            tower.setStateCommand(Tower.State.IDLE),
-            2,
-            tower);
+    void feed() {
+        TestUtil.runTest(tower.feed(), 2, tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
             assertTrue(tower.nearSetpoint());
@@ -84,16 +75,12 @@ public class TowerTest {
     }
 
     @Test
-    void stop()
-    {
-        TestUtil.runTest(
-            tower.setStateCommand(Tower.State.STOP),
-            2,
-            tower);
+    void stop() {
+        TestUtil.runTest(tower.stopCommand(), 2, tower);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
-            assertTrue(tower.nearSetpoint());
+            assertTrue(tower.getSpeed() < 0.1);
         } catch (Exception e) {
             fail("Failed to stop indexer: " + e.getMessage());
         }

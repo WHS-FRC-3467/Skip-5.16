@@ -12,12 +12,17 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
+package frc.robot.subsystems.intake;
 
-package frc.robot.commands.autos;
-
-public enum HopperAgitation {
-    INTAKE_CYCLE,
-    TOWER_PULSE,
-    INDEXER_PULSE,
-    NONE
+public class IntakeSuperstructureConstants {
+    /**
+     * Creates and configures an {@link IntakeSuperstructure} subsystem. Combines the linear intake
+     * and roller intake mechanisms into a unified intake system.
+     *
+     * @return a configured {@link IntakeSuperstructure} instance
+     */
+    public static IntakeSuperstructure get() {
+        return new IntakeSuperstructure(
+                IntakeLinearConstants.getMechanism(), IntakeRollerConstants.getMechanism());
+    }
 }

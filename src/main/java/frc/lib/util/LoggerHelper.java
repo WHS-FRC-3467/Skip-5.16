@@ -15,12 +15,11 @@ public class LoggerHelper {
      * @param name The logging key prefix for this subsystem
      * @param subsystem The subsystem to log the current command for
      */
-    public static void recordCurrentCommand(String name, SubsystemBase subsystem)
-    {
+    public static void recordCurrentCommand(String name, SubsystemBase subsystem) {
         final var currentCommand = subsystem.getCurrentCommand();
         Logger.recordOutput(
-            name + "/Current Command",
-            currentCommand == null ? "None" : currentCommand.getName());
+                name + "/Current Command",
+                currentCommand == null ? "None" : currentCommand.getName());
     }
 
     /**
@@ -29,8 +28,7 @@ public class LoggerHelper {
      * @param key the key under which the list of Pose2d objects will be recorded
      * @param list the list of Pose2d objects to be recorded
      */
-    public static void recordPose2dList(String key, List<Pose2d> list)
-    {
+    public static void recordPose2dList(String key, List<Pose2d> list) {
         Pose2d[] array = new Pose2d[list.size()];
         list.toArray(array);
         Logger.recordOutput(key, array);

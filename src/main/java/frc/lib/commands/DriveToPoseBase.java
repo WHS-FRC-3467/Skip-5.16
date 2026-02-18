@@ -6,9 +6,7 @@ package frc.lib.commands;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import java.util.Optional;
-import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,20 +19,21 @@ import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive; // TODO: refactor drive to exist in lib
+import java.util.Optional;
+import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Base command for autonomously driving the robot to a target pose.
- * 
- * <p>
- * This command uses profiled PID controllers to control both linear (x, y) and
- * angular (rotation) motion. It continuously calculates chassis speeds to move
- * the robot toward the target pose while respecting velocity and acceleration limits.
- * 
- * <p>
- * Subclasses should configure the PID controllers and maximum velocities specific
- * to their robot. The command finishes when the robot is within the specified
- * distance and angle tolerances (if set).
- * 
+ *
+ * <p>This command uses profiled PID controllers to control both linear (x, y) and angular
+ * (rotation) motion. It continuously calculates chassis speeds to move the robot toward the target
+ * pose while respecting velocity and acceleration limits.
+ *
+ * <p>Subclasses should configure the PID controllers and maximum velocities specific to their
+ * robot. The command finishes when the robot is within the specified distance and angle tolerances
+ * (if set).
+ *
  * @see frc.robot.commands.DriveToPose
  */
 public abstract class DriveToPoseBase extends Command {
@@ -63,13 +62,12 @@ public abstract class DriveToPoseBase extends Command {
      * @param maxAngularSpeed Maximum angular speed in radians per second
      */
     public DriveToPoseBase(
-        Drive drive,
-        Supplier<Pose2d> targetPose,
-        LoggedTuneableProfiledPID linearController,
-        LoggedTuneableProfiledPID angularController,
-        LoggedTunableNumber maxLinearSpeed,
-        LoggedTunableNumber maxAngularSpeed)
-    {
+            Drive drive,
+            Supplier<Pose2d> targetPose,
+            LoggedTuneableProfiledPID linearController,
+            LoggedTuneableProfiledPID angularController,
+            LoggedTunableNumber maxLinearSpeed,
+            LoggedTunableNumber maxAngularSpeed) {
         this.drive = drive;
         this.targetPose = targetPose;
         this.linearController = linearController;
@@ -86,8 +84,7 @@ public abstract class DriveToPoseBase extends Command {
      *
      * @param tolerance Allowable distance to target pose
      */
-    public DriveToPoseBase withDistanceTolerance(Distance tolerance)
-    {
+    public DriveToPoseBase withDistanceTolerance(Distance tolerance) {
         distanceTolerance = Optional.of(tolerance.in(Meters));
         return this;
     }
@@ -97,8 +94,7 @@ public abstract class DriveToPoseBase extends Command {
      *
      * @param tolerance Allowable angle to target pose
      */
-    public DriveToPoseBase withAngularTolerance(Angle tolerance)
-    {
+    public DriveToPoseBase withAngularTolerance(Angle tolerance) {
         angleTolerance = Optional.of(tolerance.in(Radians));
         return this;
     }
@@ -109,105 +105,103 @@ public abstract class DriveToPoseBase extends Command {
      * @param distanceTolerance Allowable distance to target pose
      * @param angleTolerance Allowable angle to target pose
      */
-    public DriveToPoseBase withTolerance(Distance distanceTolerance, Angle angleTolerance)
-    {
+    public DriveToPoseBase withTolerance(Distance distanceTolerance, Angle angleTolerance) {
         this.distanceTolerance = Optional.of(distanceTolerance.in(Meters));
         this.angleTolerance = Optional.of(angleTolerance.in(Radians));
         return this;
     }
 
     @Override
-    public void initialize()
-    {
+    public void initialize() {
         ChassisSpeeds fieldVelocity =
-            ChassisSpeeds.fromRobotRelativeSpeeds(drive.getChassisSpeeds(),
-                robotState.getEstimatedPose().getRotation());
+                ChassisSpeeds.fromRobotRelativeSpeeds(
+                        drive.getChassisSpeeds(), robotState.getEstimatedPose().getRotation());
 
         linearController.reset(0.0);
 
         angularController.reset(
-            robotState.getEstimatedPose().getRotation().getRadians(),
-            fieldVelocity.omegaRadiansPerSecond);
+                robotState.getEstimatedPose().getRotation().getRadians(),
+                fieldVelocity.omegaRadiansPerSecond);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
-    public void execute()
-    {
+    public void execute() {
         // Checks if tunable values for PID have changed and updates them if so
         linearController.updatePID();
         angularController.updatePID();
 
         // Calculate translation and direction to target
         Translation2d translationToTarget =
-            targetPose.get().getTranslation().minus(robotState.getEstimatedPose().getTranslation());
+                targetPose
+                        .get()
+                        .getTranslation()
+                        .minus(robotState.getEstimatedPose().getTranslation());
 
         Rotation2d directionToTarget = translationToTarget.getAngle();
 
         // Calculate outputs from controllers
         double linearOutput = -linearController.calculate(translationToTarget.getNorm());
 
-        linearOutput = MathUtil.clamp(
-            linearOutput,
-            -maxLinearSpeed.get(),
-            maxLinearSpeed.get());
+        linearOutput = MathUtil.clamp(linearOutput, -maxLinearSpeed.get(), maxLinearSpeed.get());
 
-        double angularOutput = angularController.calculate(
-            robotState.getEstimatedPose().getRotation().getRadians(),
-            targetPose.get().getRotation().getRadians());
+        double angularOutput =
+                angularController.calculate(
+                        robotState.getEstimatedPose().getRotation().getRadians(),
+                        targetPose.get().getRotation().getRadians());
 
-        angularOutput = MathUtil.clamp(
-            angularOutput,
-            -maxAngularSpeed.get(),
-            maxAngularSpeed.get());
+        angularOutput =
+                MathUtil.clamp(angularOutput, -maxAngularSpeed.get(), maxAngularSpeed.get());
 
         // Convert to robot-relative speeds and set request velocities
-        var fieldRelativeSpeed = new ChassisSpeeds(
-            linearOutput * Math.cos(directionToTarget.getRadians()),
-            linearOutput * Math.sin(directionToTarget.getRadians()),
-            angularOutput);
+        var fieldRelativeSpeed =
+                new ChassisSpeeds(
+                        linearOutput * Math.cos(directionToTarget.getRadians()),
+                        linearOutput * Math.sin(directionToTarget.getRadians()),
+                        angularOutput);
 
         drive.runVelocity(
-            ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeed,
-                robotState.getEstimatedPose().getRotation()));
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                        fieldRelativeSpeed, robotState.getEstimatedPose().getRotation()));
 
         Logger.recordOutput("DriveToPose/Target Pose", targetPose.get());
         Logger.recordOutput("DriveToPose/Distance To Target (m)", translationToTarget.getNorm());
         Logger.recordOutput("DriveToPose/Angle To Target (deg)", directionToTarget.getDegrees());
-        Logger.recordOutput("DriveToPose/LinearController/Error",
-            linearController.getPositionError());
+        Logger.recordOutput(
+                "DriveToPose/LinearController/Error", linearController.getPositionError());
         Logger.recordOutput("DriveToPose/LinearController/Output", linearOutput);
-        Logger.recordOutput("DriveToPose/AngularController/Error",
-            angularController.getPositionError());
+        Logger.recordOutput(
+                "DriveToPose/AngularController/Error", angularController.getPositionError());
         Logger.recordOutput("DriveToPose/AngularController/Output", angularOutput);
-
     }
 
     // Returns true when the command should end.
     @Override
-    public boolean isFinished()
-    {
-        boolean withinDistanceTolerance = distanceTolerance
-            .map(tolerance -> Math.abs(linearController.getPositionError()) < tolerance)
-            .orElse(true);
+    public boolean isFinished() {
+        boolean withinDistanceTolerance =
+                distanceTolerance
+                        .map(tolerance -> Math.abs(linearController.getPositionError()) < tolerance)
+                        .orElse(true);
 
-        boolean withinAngularTolerance = angleTolerance
-            .map(tolerance -> Math.abs(angularController.getPositionError()) < tolerance)
-            .orElse(true);
+        boolean withinAngularTolerance =
+                angleTolerance
+                        .map(
+                                tolerance ->
+                                        Math.abs(angularController.getPositionError()) < tolerance)
+                        .orElse(true);
 
-        Logger.recordOutput("DriveToPose/Distance Tolerance Present",
-            distanceTolerance.isPresent());
+        Logger.recordOutput(
+                "DriveToPose/Distance Tolerance Present", distanceTolerance.isPresent());
         Logger.recordOutput("DriveToPose/Within Distance Tolerance", withinDistanceTolerance);
-        Logger.recordOutput("DriveToPose/Angular Tolerance Present",
-            angleTolerance.isPresent());
+        Logger.recordOutput("DriveToPose/Angular Tolerance Present", angleTolerance.isPresent());
         Logger.recordOutput("DriveToPose/Within Angular Tolerance", withinAngularTolerance);
 
         boolean bothTolerancesSupplied =
-            distanceTolerance.isPresent() && angleTolerance.isPresent();
+                distanceTolerance.isPresent() && angleTolerance.isPresent();
 
         return bothTolerancesSupplied
-            ? (withinDistanceTolerance && withinAngularTolerance)
-            : (withinDistanceTolerance || withinAngularTolerance);
+                ? (withinDistanceTolerance && withinAngularTolerance)
+                : (withinDistanceTolerance || withinAngularTolerance);
     }
 
     /**
@@ -215,8 +209,7 @@ public abstract class DriveToPoseBase extends Command {
      *
      * @return The distance error in meters
      */
-    public Distance getDistanceError()
-    {
+    public Distance getDistanceError() {
         return Meters.of(linearController.getPositionError());
     }
 
@@ -225,8 +218,7 @@ public abstract class DriveToPoseBase extends Command {
      *
      * @return The angular error in radians
      */
-    public Angle getAngularError()
-    {
+    public Angle getAngularError() {
         return Radians.of(angularController.getPositionError());
     }
 }

@@ -17,14 +17,14 @@
 
 package frc.lib.util;
 
+import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.autos.StartPosition;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import java.util.ArrayList;
 import java.util.List;
-import com.pathplanner.lib.path.PathPlannerPath;
 
 /**
  * Abstract base class for autonomous routines that use PathPlanner paths. Provides utilities for
@@ -42,13 +42,10 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      *
      * @param pathNames List of path file names to load
      */
-    public void loadAllPaths(List<String> pathNames)
-    {
+    public void loadAllPaths(List<String> pathNames) {
         // Load paths into a temporary list so we can initialize mirror flags to the
         // same size and keep things consistent even if loading fails.
-        List<PathPlannerPath> loaded = pathNames.stream()
-            .map(name -> loadPath(name))
-            .toList();
+        List<PathPlannerPath> loaded = pathNames.stream().map(name -> loadPath(name)).toList();
 
         pathPlannerPaths.addAll(loaded);
 
@@ -59,14 +56,13 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
         }
     }
 
-    private PathPlannerPath loadPath(String pathName)
-    {
+    private PathPlannerPath loadPath(String pathName) {
         PathPlannerPath path;
         try {
             path = PathPlannerPath.fromPathFile(pathName);
         } catch (Exception e) {
-            DriverStation.reportError("Failed to load PathPlanner path: " + pathName,
-                e.getStackTrace());
+            DriverStation.reportError(
+                    "Failed to load PathPlanner path: " + pathName, e.getStackTrace());
             path = null;
         }
 
@@ -78,24 +74,21 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      *
      * @param commands Commands to add to the auto routine
      */
-    public void loadCommands(Command... commands)
-    {
+    public void loadCommands(Command... commands) {
         if (!pathPlannerPaths.contains(null)) {
             this.addCommands(commands);
         } else {
-            DriverStation.reportWarning("Skipping auto due to missing path(s).",
-                false);
+            DriverStation.reportWarning("Skipping auto due to missing path(s).", false);
         }
     }
 
     /**
      * Gets all poses from all loaded paths, mirroring from left to right side within an alliance,
      * as necessary.
-     * 
+     *
      * @return List of all path poses, or empty list if any paths failed to load
      */
-    public List<Pose2d> getAllPathPoses()
-    {
+    public List<Pose2d> getAllPathPoses() {
         // If any path failed to load, return an empty list to indicate problem to caller.
         if (pathPlannerPaths.contains(null)) {
             return List.of();
@@ -130,11 +123,10 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      * values are ignored.
      *
      * @param mirrors a list of booleans indicating whether to mirror each corresponding path for
-     *        RIGHT side autos.
+     *     RIGHT side autos.
      * @param start the starting side of the field - LEFT, CENTER, or RIGHT.
      */
-    public void setMirrorFlags(List<Boolean> mirrors, StartPosition start)
-    {
+    public void setMirrorFlags(List<Boolean> mirrors, StartPosition start) {
         if (mirrors == null) {
             return;
         }
@@ -166,8 +158,7 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      * @param index path index
      * @param mirror whether to mirror that path
      */
-    public void setShouldMirrorPath(int index, boolean mirror)
-    {
+    public void setShouldMirrorPath(int index, boolean mirror) {
         if (index < 0 || index >= pathPlannerPaths.size()) {
             return;
         }
@@ -185,8 +176,7 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      *
      * @return Starting pose of the first path, or zero pose if paths failed to load
      */
-    public Pose2d getStartingPose()
-    {
+    public Pose2d getStartingPose() {
         if (pathPlannerPaths.contains(null)) {
             return new Pose2d();
         } else {

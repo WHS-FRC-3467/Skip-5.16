@@ -38,8 +38,7 @@ import lombok.experimental.Accessors;
  * field-relative pose over time. This is essentially a {@link SwerveDriveOdometry} with more
  * outputs to be utilized in a {@link PoseEstimator}.
  *
- * <p>
- * This class tracks the robot's module positions, integrates motion deltas into a {@link Pose2d}
+ * <p>This class tracks the robot's module positions, integrates motion deltas into a {@link Pose2d}
  * estimate, and maintains a time-buffered history of poses for interpolation. It is intended to be
  * used by a higher-level {@link PoseEstimator} that fuses odometry with vision or other sensors. Do
  * not use this class on it's own, use {@link SwerveDriveOdometry}.
@@ -49,25 +48,23 @@ public class SwerveOdometry {
     /**
      * Represents a single odometry observation from the swerve drive.
      *
-     * <p>
-     * {@code badWheels[i] == true} means module {@code i} should be ignored for this update.
+     * <p>{@code badWheels[i] == true} means module {@code i} should be ignored for this update.
      *
-     * <p>
-     * The mask is carried per-observation so skid detection can be done at the same rate/timestamps
-     * as odometry sampling (instead of at 50Hz in subsystem periodic).
+     * <p>The mask is carried per-observation so skid detection can be done at the same
+     * rate/timestamps as odometry sampling (instead of at 50Hz in subsystem periodic).
      */
     @SuppressWarnings("ArrayRecordComponent")
     public static final record OdometryObservation(
-        Time timestamp,
-        SwerveModulePosition[] swervePositions,
-        Optional<Rotation2d> gyroAngle,
-        boolean[] badWheels) {
+            Time timestamp,
+            SwerveModulePosition[] swervePositions,
+            Optional<Rotation2d> gyroAngle,
+            boolean[] badWheels) {
 
         /** Convenience constructor when you are not doing skid detection. */
-        public OdometryObservation(Time timestamp,
-            SwerveModulePosition[] swervePositions,
-            Optional<Rotation2d> gyroAngle)
-        {
+        public OdometryObservation(
+                Time timestamp,
+                SwerveModulePosition[] swervePositions,
+                Optional<Rotation2d> gyroAngle) {
             this(timestamp, swervePositions, gyroAngle, null);
         }
     }
@@ -78,71 +75,67 @@ public class SwerveOdometry {
     /**
      * Module locations are required to solve chassis motion from a subset of wheels.
      *
-     * If module translations are not provided, we still run odometry normally, but we cannot ignore
-     * skidding wheels because we can't build correct subset kinematics.
+     * <p>If module translations are not provided, we still run odometry normally, but we cannot
+     * ignore skidding wheels because we can't build correct subset kinematics.
      */
     private final Translation2d[] moduleTranslationsOrNull;
 
     /**
      * Cache of kinematics objects for "good wheel subsets".
      *
-     * {@link SwerveDriveKinematics} is constructed from a fixed set of module translation vectors.
-     * When we ignore a skidding wheel, the set of translations changes, so we need a different
-     * kinematics object to correctly solve chassis motion from only the remaining wheels.
+     * <p>{@link SwerveDriveKinematics} is constructed from a fixed set of module translation
+     * vectors. When we ignore a skidding wheel, the set of translations changes, so we need a
+     * different kinematics object to correctly solve chassis motion from only the remaining wheels.
      *
-     * Odometry can run at 100 to 250 Hz. When skid is active, repeatedly constructing new
+     * <p>Odometry can run at 100 to 250 Hz. When skid is active, repeatedly constructing new
      * kinematics objects creates unnecessary allocation and garbage collection work. The possible
      * patterns are small and repeat often (usually none, or one wheel), so caching keeps the
      * runtime steady.
      *
-     * The key is based on the contents of the badWheels array. We do not use the boolean[] directly
-     * because arrays are mutable and use reference identity for hash/equality.
+     * <p>The key is based on the contents of the badWheels array. We do not use the boolean[]
+     * directly because arrays are mutable and use reference identity for hash/equality.
      */
     private final Map<BadWheelsKey, SwerveDriveKinematics> subsetKinematicsCache = new HashMap<>();
 
     /** Stores recent odometry poses for interpolation purposes. */
-    @Getter
-    private final TimeInterpolatableBuffer<Pose2d> odometryBuffer;
+    @Getter private final TimeInterpolatableBuffer<Pose2d> odometryBuffer;
 
     /** Tracks last known module positions for computing motion deltas. */
-    private SwerveModulePosition[] lastModulePositions = new SwerveModulePosition[] {
-            new SwerveModulePosition(),
-            new SwerveModulePosition(),
-            new SwerveModulePosition(),
-            new SwerveModulePosition()
-    };
+    private SwerveModulePosition[] lastModulePositions =
+            new SwerveModulePosition[] {
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition(),
+                new SwerveModulePosition()
+            };
 
     /** The offset from the gyro's 0 at boot and the last reset frame of rotation */
     private Rotation2d gyroOffset = Rotation2d.kZero;
 
     /** The most recent odometry-based robot pose. */
-    @Getter
-    private Pose2d odometryPose = Pose2d.kZero;
+    @Getter private Pose2d odometryPose = Pose2d.kZero;
 
     /**
      * Constructs a new {@code SwerveOdometry}.
      *
      * @param kinematics the swerve drive kinematics for computing motion deltas
      * @param odometryBufferSize the duration for which odometry poses are buffered for
-     *        interpolation
+     *     interpolation
      */
-    public SwerveOdometry(SwerveDriveKinematics kinematics, Time odometryBufferSize)
-    {
+    public SwerveOdometry(SwerveDriveKinematics kinematics, Time odometryBufferSize) {
         this(kinematics, null, odometryBufferSize);
     }
 
     /**
      * Constructs a new {@code SwerveOdometry} with module locations.
      *
-     * <p>
-     * Provide {@code moduleTranslations} if you want to ignore skidding wheels. The translations
+     * <p>Provide {@code moduleTranslations} if you want to ignore skidding wheels. The translations
      * must be in the same module index order used everywhere else (FL, FR, BL, BR in your code).
      */
     public SwerveOdometry(
-        SwerveDriveKinematics kinematics,
-        Translation2d[] moduleTranslations,
-        Time odometryBufferSize)
-    {
+            SwerveDriveKinematics kinematics,
+            Translation2d[] moduleTranslations,
+            Time odometryBufferSize) {
         this.kinematics = kinematics;
         this.moduleTranslationsOrNull = moduleTranslations;
         odometryBuffer = TimeInterpolatableBuffer.createBuffer(odometryBufferSize.in(Seconds));
@@ -152,15 +145,14 @@ public class SwerveOdometry {
      * Adds an odometry observation to the integrator.
      *
      * @param observation an {@link OdometryObservation} containing module positions, timestamp, an
-     *        optional gyro angle, and an optional skid mask
+     *     optional gyro angle, and an optional skid mask
      */
-    public void addOdometryObservation(OdometryObservation observation)
-    {
+    public void addOdometryObservation(OdometryObservation observation) {
         double timestampSeconds = observation.timestamp().in(Seconds);
         SwerveModulePosition[] currentPositions = observation.swervePositions();
 
         Twist2d twist =
-            computeTwist(lastModulePositions, currentPositions, observation.badWheels());
+                computeTwist(lastModulePositions, currentPositions, observation.badWheels());
 
         // Copy positions so callers can't accidentally mutate our history.
         lastModulePositions = copyPositions(currentPositions);
@@ -169,19 +161,21 @@ public class SwerveOdometry {
         odometryPose = odometryPose.exp(twist);
 
         // If gyro angle is available, correct heading drift
-        observation.gyroAngle().ifPresent(
-            angle -> odometryPose =
-                new Pose2d(odometryPose.getTranslation(), angle.plus(gyroOffset)));
+        observation
+                .gyroAngle()
+                .ifPresent(
+                        angle ->
+                                odometryPose =
+                                        new Pose2d(
+                                                odometryPose.getTranslation(),
+                                                angle.plus(gyroOffset)));
 
         // Store pose for later interpolation (e.g., vision sync)
         odometryBuffer.addSample(timestampSeconds, odometryPose);
     }
 
     private Twist2d computeTwist(
-        SwerveModulePosition[] last,
-        SwerveModulePosition[] current,
-        boolean[] badWheels)
-    {
+            SwerveModulePosition[] last, SwerveModulePosition[] current, boolean[] badWheels) {
         if (!canUseBadWheelMask(badWheels)) {
             return kinematics.toTwist2d(last, current);
         }
@@ -217,13 +211,12 @@ public class SwerveOdometry {
         }
 
         SwerveDriveKinematics subsetKinematics =
-            getOrCreateSubsetKinematics(badWheels, subsetTranslations);
+                getOrCreateSubsetKinematics(badWheels, subsetTranslations);
 
         return subsetKinematics.toTwist2d(subsetLast, subsetCurrent);
     }
 
-    private boolean canUseBadWheelMask(boolean[] badWheels)
-    {
+    private boolean canUseBadWheelMask(boolean[] badWheels) {
         if (moduleTranslationsOrNull == null) {
             return false;
         }
@@ -234,37 +227,33 @@ public class SwerveOdometry {
     }
 
     private SwerveDriveKinematics getOrCreateSubsetKinematics(
-        boolean[] badWheels,
-        Translation2d[] subsetTranslations)
-    {
+            boolean[] badWheels, Translation2d[] subsetTranslations) {
         BadWheelsKey key = new BadWheelsKey(badWheels);
-        return subsetKinematicsCache.computeIfAbsent(key,
-            k -> new SwerveDriveKinematics(subsetTranslations));
+        return subsetKinematicsCache.computeIfAbsent(
+                key, k -> new SwerveDriveKinematics(subsetTranslations));
     }
 
     /**
      * Immutable key used by {@link #subsetKinematicsCache}.
      *
-     * The cache needs "same mask means same entry" behavior. A boolean[] cannot be used directly as
-     * a Map key because its equals/hashCode are based on object identity, and the array can be
+     * <p>The cache needs "same mask means same entry" behavior. A boolean[] cannot be used directly
+     * as a Map key because its equals/hashCode are based on object identity, and the array can be
      * mutated after the call.
      *
-     * This class snapshots the mask and uses content-based equality so the cache behaves
+     * <p>This class snapshots the mask and uses content-based equality so the cache behaves
      * predictably even if the caller reuses or mutates the original boolean[].
      */
     private static final class BadWheelsKey {
         private final boolean[] badWheels;
         private final int hash;
 
-        private BadWheelsKey(boolean[] badWheels)
-        {
+        private BadWheelsKey(boolean[] badWheels) {
             this.badWheels = badWheels.clone();
             this.hash = Arrays.hashCode(this.badWheels);
         }
 
         @Override
-        public boolean equals(Object obj)
-        {
+        public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -275,14 +264,12 @@ public class SwerveOdometry {
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return hash;
         }
     }
 
-    private static SwerveModulePosition[] copyPositions(SwerveModulePosition[] positions)
-    {
+    private static SwerveModulePosition[] copyPositions(SwerveModulePosition[] positions) {
         SwerveModulePosition[] copy = new SwerveModulePosition[positions.length];
         System.arraycopy(positions, 0, copy, 0, positions.length);
         return copy;
@@ -293,8 +280,7 @@ public class SwerveOdometry {
      *
      * @param pose the new field-relative {@link Pose2d} representing the robot's known position
      */
-    public void resetPose(Pose2d pose)
-    {
+    public void resetPose(Pose2d pose) {
         gyroOffset = pose.getRotation().minus(odometryPose.getRotation().minus(gyroOffset));
         odometryPose = pose;
         odometryBuffer.clear();

@@ -25,20 +25,12 @@ public interface DistanceSensorIO {
     abstract class DistanceSensorInputs {
         /** Whether the sensor is connected. */
         public boolean connected = false;
+
         /** Distance from the sensor to the nearest object */
         public Distance distance = null;
+
         /** The amount of ambient infrared light detected by the sensor. */
         public double ambientSignal = 0.0;
-    }
-
-    /**
-     * Getter for the name of the sensor
-     * 
-     * @return The name of the sensor
-     */
-    public default String getName()
-    {
-        return "";
     }
 
     /**
@@ -47,6 +39,5 @@ public interface DistanceSensorIO {
      *
      * @param inputs The structure to populate with updated sensor values.
      */
-    public default void updateInputs(DistanceSensorInputs inputs)
-    {}
+    public default void updateInputs(DistanceSensorInputs inputs) {}
 }

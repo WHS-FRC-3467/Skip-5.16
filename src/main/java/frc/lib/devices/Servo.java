@@ -19,19 +19,18 @@ import edu.wpi.first.units.measure.Angle;
 import frc.lib.io.servo.ServoIO;
 
 /**
- * Wrapper class for servo motors that can rotate to specific angles.
- * Provides a simplified interface over ServoIO implementations for controlling PWM servos.
+ * Wrapper class for servo motors that can rotate to specific angles. Provides a simplified
+ * interface over ServoIO implementations for controlling PWM servos.
  */
 public class Servo {
     private final ServoIO io;
 
     /**
      * Constructs a Servo wrapper.
-     * 
+     *
      * @param io the servo IO interface implementation
      */
-    public Servo(ServoIO io)
-    {
+    public Servo(ServoIO io) {
         this.io = io;
     }
 
@@ -39,18 +38,16 @@ public class Servo {
      * Sets the servo position using a scaled value.
      *
      * @param angle position, where an angle with measure 0 corresponds to the leftmost position of
-     *        the servo.
+     *     the servo.
      */
-    public void setAngle(Angle angle)
-    {
+    public void setAngle(Angle angle) {
         io.setAngle(angle);
     }
 
     /**
      * If servo is real, this method disables the PWM output until told to run to a position again.
      */
-    public void stop()
-    {
+    public void stop() {
         io.stop();
     }
 }

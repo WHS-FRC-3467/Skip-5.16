@@ -25,18 +25,9 @@ public interface AbsoluteEncoderIO extends AutoCloseable {
     abstract class AbsoluteEncoderInputs {
         /** Whether the sensor is connected. */
         public boolean connected = false;
+
         /** Angle the encoder reads. 0 &lt;= r &lt; 1 where r = angle in rotations */
         public Angle angle = null;
-    }
-
-    /**
-     * Getter for the name of the sensor
-     * 
-     * @return The name of the sensor
-     */
-    public default String getName()
-    {
-        return "";
     }
 
     /**
@@ -45,10 +36,8 @@ public interface AbsoluteEncoderIO extends AutoCloseable {
      *
      * @param inputs The structure to populate with updated sensor values.
      */
-    public default void updateInputs(AbsoluteEncoderInputs inputs)
-    {}
+    public default void updateInputs(AbsoluteEncoderInputs inputs) {}
 
     @Override
-    public default void close()
-    {}
+    public default void close() {}
 }

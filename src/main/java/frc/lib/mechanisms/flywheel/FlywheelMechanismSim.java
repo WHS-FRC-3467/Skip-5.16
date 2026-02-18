@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.Angle;
@@ -43,33 +44,38 @@ public class FlywheelMechanismSim extends FlywheelMechanism<MotorIOSim> {
 
     private Time lastTime = Seconds.zero();
 
-    public FlywheelMechanismSim(String name, MotorIOSim io, DCMotor characteristics,
-        MomentOfInertia momentOfInertia, AngularVelocity tolerance)
-    {
+    public FlywheelMechanismSim(
+            String name,
+            MotorIOSim io,
+            DCMotor motor,
+            MomentOfInertia momentOfInertia,
+            AngularVelocity tolerance) {
         super(name, io);
 
         if (momentOfInertia.isEquivalent(KilogramSquareMeters.zero()))
-            throw new IllegalArgumentException(
-                "momentOfInertia must be greater than zero!");
+            throw new IllegalArgumentException("momentOfInertia must be greater than zero!");
 
         this.tolerance = tolerance;
-        sim = new FlywheelSim(LinearSystemId.createFlywheelSystem(characteristics,
-            momentOfInertia.in(KilogramSquareMeters),
-            io.getRotorToSensorRatio() * io.getSensorToMechanismRatio()), characteristics);
+        sim =
+                new FlywheelSim(
+                        LinearSystemId.createFlywheelSystem(
+                                motor,
+                                momentOfInertia.in(KilogramSquareMeters),
+                                io.getRotorToSensorRatio() * io.getSensorToMechanismRatio()),
+                        motor);
 
         visualizer = new FlywheelVisualizer(name);
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         Time currentTime = RobotController.getMeasureTime();
         double deltaTime = currentTime.minus(lastTime).in(Seconds);
 
         sim.setInputVoltage(inputs.appliedVoltage.in(Volts));
         sim.update(deltaTime);
         RoboRioSim.setVInVoltage(
-            BatterySim.calculateDefaultBatteryLoadedVoltage(sim.getCurrentDrawAmps()));
+                BatterySim.calculateDefaultBatteryLoadedVoltage(sim.getCurrentDrawAmps()));
 
         lastTime = currentTime;
 
@@ -77,8 +83,12 @@ public class FlywheelMechanismSim extends FlywheelMechanism<MotorIOSim> {
         io.setRotorAcceleration(sim.getAngularAcceleration());
 
         // Angular displacement kinematic equation (θ = ω₀t + (1/2)αt²)'
-        Angle positionChange = Radians.of(sim.getAngularVelocityRadPerSec() * deltaTime
-            + 0.5 * sim.getAngularAccelerationRadPerSecSq() * Math.pow(deltaTime, 2));
+        Angle positionChange =
+                Radians.of(
+                        sim.getAngularVelocityRadPerSec() * deltaTime
+                                + 0.5
+                                        * sim.getAngularAccelerationRadPerSecSq()
+                                        * Math.pow(deltaTime, 2));
 
         io.setPosition(inputs.position.plus(positionChange));
 

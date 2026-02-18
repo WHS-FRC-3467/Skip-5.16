@@ -17,25 +17,23 @@ package frc.robot.subsystems.intake;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.TestUtil;
-import frc.robot.subsystems.intakeRoller.IntakeRoller;
-import frc.robot.subsystems.intakeRoller.IntakeRollerConstants;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class IntakeTest {
-    IntakeRoller intake;
+    IntakeSuperstructure intake;
 
     @BeforeEach // this method will run before each test
-    void setup()
-    {
+    void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
-        intake = IntakeRollerConstants.get();
+        intake = IntakeSuperstructureConstants.get();
 
         /* enable the robot */
         DriverStationSim.setEnabled(true);
@@ -46,8 +44,7 @@ public class IntakeTest {
     }
 
     @AfterEach // this method will run after each test
-    void shutdown()
-    {
+    void shutdown() {
         try {
             intake.close();
         } catch (Exception e) {
@@ -56,34 +53,13 @@ public class IntakeTest {
     }
 
     @Test // marks this method as a test
-    void intake()
-    {
-        TestUtil.runTest(
-            intake.setStateCommand(IntakeRoller.State.INTAKE),
-            2,
-            intake);
+    void intake() {
+        TestUtil.runTest(intake.extendIntake(), 2, intake);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
-            assertTrue(intake.nearSetpoint(IntakeRoller.State.INTAKE));
+            assertTrue(intake.isIntaking());
         } catch (Exception e) {
             fail("Failed to run Intake to intake: " + e.getMessage());
         }
     }
-
-    @Test
-    void stop()
-    {
-        TestUtil.runTest(
-            intake.stop(),
-            2,
-            intake);
-        try {
-            // Check velocity to check if the subsystem is actually in tolerance of stopped
-            // velocity.
-            assertTrue(intake.nearSetpoint(IntakeRoller.State.STOP));
-        } catch (Exception e) {
-            fail("Failed to stop intake: " + e.getMessage());
-        }
-    }
-
 }

@@ -15,13 +15,14 @@
 
 package frc.robot;
 
+import au.grapplerobotics.CanBridge;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
-import au.grapplerobotics.CanBridge;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,9 +32,9 @@ import frc.robot.util.Elastic;
 import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
@@ -50,11 +51,10 @@ public class Robot extends LoggedRobot {
     private Command autonomousCommand;
     private RobotContainer robotContainer;
     private boolean checkedHubGameData = false; // whether we've checked for hub game data at the
-                                                // start of the first alliance phase
+    // start of the first alliance phase
     private Field2d fieldMap = new Field2d();
 
-    public Robot()
-    {
+    public Robot() {
         CanBridge.runTCP(); // Used for configuring LaserCANs via Grapplehook
 
         // Record metadata
@@ -87,10 +87,8 @@ public class Robot extends LoggedRobot {
                 // Replaying a log, set up replay source
                 setUseTiming(false); // Run as fast as possible
                 String logPath = LogFileUtil.findReplayLog();
-                Logger
-                    .setReplaySource(new WPILOGReader(logPath));
-                Logger
-                    .addDataReceiver(
+                Logger.setReplaySource(new WPILOGReader(logPath));
+                Logger.addDataReceiver(
                         new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
             }
         }
@@ -99,17 +97,18 @@ public class Robot extends LoggedRobot {
         Logger.start();
 
         // Check for valid swerve config
-        var modules = new SwerveModuleConstants[] {
-                DriveConstants.FrontLeft,
-                DriveConstants.FrontRight,
-                DriveConstants.BackLeft,
-                DriveConstants.BackRight
-        };
+        var modules =
+                new SwerveModuleConstants[] {
+                    DriveConstants.FrontLeft,
+                    DriveConstants.FrontRight,
+                    DriveConstants.BackLeft,
+                    DriveConstants.BackRight
+                };
         for (var constants : modules) {
             if (constants.DriveMotorType != DriveMotorArrangement.TalonFX_Integrated
-                || constants.SteerMotorType != SteerMotorArrangement.TalonFX_Integrated) {
+                    || constants.SteerMotorType != SteerMotorArrangement.TalonFX_Integrated) {
                 throw new RuntimeException(
-                    "You are using an unsupported swerve configuration, which this template does not support without manual customization. The 2025 release of Phoenix supports some swerve configurations which were not available during 2025 beta testing, preventing any development and support from the AdvantageKit developers.");
+                        "You are using an unsupported swerve configuration, which this template does not support without manual customization. The 2025 release of Phoenix supports some swerve configurations which were not available during 2025 beta testing, preventing any development and support from the AdvantageKit developers.");
             }
         }
 
@@ -121,8 +120,7 @@ public class Robot extends LoggedRobot {
     }
 
     @Override
-    public void robotInit()
-    {
+    public void robotInit() {
         /*
          * Due to the nature of how Java works, the first run of a pathfinding command could have a
          * significantly higher delay compared with subsequent runs. To help alleviate this issue,
@@ -134,9 +132,11 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
 
         // Log first 8 character of robot serial
-        Logger.recordOutput("Robot Serial",
-            Robot.isReal() ? Constants.RobotConstants.serial.subSequence(0, 8).toString()
-                : Constants.RobotConstants.serial);
+        Logger.recordOutput(
+                "Robot Serial",
+                Robot.isReal()
+                        ? Constants.RobotConstants.serial.subSequence(0, 8).toString()
+                        : Constants.RobotConstants.serial);
 
         SmartDashboard.putData("Robot Pose Field Map", fieldMap);
     }
@@ -146,11 +146,10 @@ public class Robot extends LoggedRobot {
      * robot state.
      */
     @Override
-    public void robotPeriodic()
-    {
+    public void robotPeriodic() {
         // Optionally switch the thread to high priority to improve loop
         // timing (see the template project documentation for details)
-        // Threads.setCurrentThreadPriority(true, 99);
+        Threads.setCurrentThreadPriority(true, 99);
 
         // Runs the Scheduler. This is responsible for polling buttons, adding
         // newly-scheduled commands, running already-scheduled commands, removing
@@ -160,7 +159,7 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().run();
 
         // Return to non-RT thread priority (do not modify the first argument)
-        // Threads.setCurrentThreadPriority(false, 10);
+        Threads.setCurrentThreadPriority(false, 10);
 
         // Driver Elastic Dashboard - Update the robot's pose on the main fieldmap
         fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
@@ -168,8 +167,7 @@ public class Robot extends LoggedRobot {
 
     /** This function is called once when the robot is disabled. */
     @Override
-    public void disabledInit()
-    {
+    public void disabledInit() {
         // Switch to Autonomous tab in Elastic Dashboard
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(1);
@@ -183,8 +181,7 @@ public class Robot extends LoggedRobot {
      * pose for autonomous mode.
      */
     @Override
-    public void disabledPeriodic()
-    {
+    public void disabledPeriodic() {
         robotContainer.checkStartPose();
         robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
@@ -193,8 +190,7 @@ public class Robot extends LoggedRobot {
      * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
      */
     @Override
-    public void autonomousInit()
-    {
+    public void autonomousInit() {
         // Switch to Autonomous tab in Elastic Dashboard
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(1);
@@ -210,15 +206,13 @@ public class Robot extends LoggedRobot {
 
     /** This function is called periodically during autonomous. */
     @Override
-    public void autonomousPeriodic()
-    {
+    public void autonomousPeriodic() {
         robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
 
     /** This function is called once when teleop is enabled. */
     @Override
-    public void teleopInit()
-    {
+    public void teleopInit() {
         // This makes sure that the autonomous stops running when
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
@@ -238,12 +232,12 @@ public class Robot extends LoggedRobot {
      * game data updates during teleop.
      */
     @Override
-    public void teleopPeriodic()
-    {
+    public void teleopPeriodic() {
         // Hub State management
         double firstHubChangeTime = HubState.getHubChangeTimes()[0];
-        if (!checkedHubGameData && DriverStation.getMatchTime() <= firstHubChangeTime
-            && DriverStation.getMatchTime() > firstHubChangeTime - 1.0) {
+        if (!checkedHubGameData
+                && DriverStation.getMatchTime() <= firstHubChangeTime
+                && DriverStation.getMatchTime() > firstHubChangeTime - 1.0) {
             // At the beginning of the first alliance phase, check for hub game data
             HubState.getInstance().setFirstActiveAlliance();
             checkedHubGameData = true;
@@ -251,29 +245,24 @@ public class Robot extends LoggedRobot {
         HubState.getInstance().periodic();
     }
 
-
     /** This function is called once when test mode is enabled. */
     @Override
-    public void testInit()
-    {
+    public void testInit() {
         // Cancels all running commands at the start of test mode.
         CommandScheduler.getInstance().cancelAll();
     }
 
     /** This function is called periodically during test mode. */
     @Override
-    public void testPeriodic()
-    {}
+    public void testPeriodic() {}
 
     /** This function is called once when the robot is first started up. */
     @Override
-    public void simulationInit()
-    {}
+    public void simulationInit() {}
 
     /** This function is called periodically whilst in simulation. */
     @Override
-    public void simulationPeriodic()
-    {
+    public void simulationPeriodic() {
         RobotSim.getInstance().updateSim();
     }
 }

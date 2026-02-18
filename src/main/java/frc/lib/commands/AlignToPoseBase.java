@@ -6,8 +6,7 @@ package frc.lib.commands;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -19,6 +18,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public abstract class AlignToPoseBase extends Command {
     private final RobotState robotState = RobotState.getInstance();
@@ -47,13 +48,12 @@ public abstract class AlignToPoseBase extends Command {
      * @param angularController PID controller for angular motion
      */
     public AlignToPoseBase(
-        Drive drive,
-        Supplier<Pose2d> targetPose,
-        AlignMode mode,
-        DoubleSupplier joystickInput,
-        LoggedTuneableProfiledPID linearController,
-        LoggedTuneableProfiledPID angularController)
-    {
+            Drive drive,
+            Supplier<Pose2d> targetPose,
+            AlignMode mode,
+            DoubleSupplier joystickInput,
+            LoggedTuneableProfiledPID linearController,
+            LoggedTuneableProfiledPID angularController) {
         this.drive = drive;
         this.targetPose = targetPose;
         this.mode = mode;
@@ -67,23 +67,21 @@ public abstract class AlignToPoseBase extends Command {
 
     // Called when the command is initially scheduled.
     @Override
-    public void initialize()
-    {
+    public void initialize() {
         ChassisSpeeds fieldVelocity =
-            ChassisSpeeds.fromRobotRelativeSpeeds(drive.getChassisSpeeds(),
-                robotState.getEstimatedPose().getRotation());
+                ChassisSpeeds.fromRobotRelativeSpeeds(
+                        drive.getChassisSpeeds(), robotState.getEstimatedPose().getRotation());
 
         linearController.reset(0.0);
 
         angularController.reset(
-            robotState.getEstimatedPose().getRotation().getRadians(),
-            fieldVelocity.omegaRadiansPerSecond);
+                robotState.getEstimatedPose().getRotation().getRadians(),
+                fieldVelocity.omegaRadiansPerSecond);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
-    public void execute()
-    {
+    public void execute() {
         // Checks if tunable values for PID have changed and updates them if so
         linearController.updatePID();
         angularController.updatePID();
@@ -96,63 +94,60 @@ public abstract class AlignToPoseBase extends Command {
         switch (mode) {
             case STRAFE:
                 offsetVector =
-                    new Translation2d(linearController.calculate(relativePose2d.getX()), 0);
+                        new Translation2d(linearController.calculate(relativePose2d.getX()), 0);
 
                 // Calculate total linear velocity
                 linearVelocity =
-                    getLinearVelocityFromJoysticks(0,
-                        -joystickInput.getAsDouble()).times(drive.getMaxLinearSpeedMetersPerSec())
-                            .plus(offsetVector)
-                            .rotateBy(targetRotation2d);
+                        getLinearVelocityFromJoysticks(0, -joystickInput.getAsDouble())
+                                .times(drive.getMaxLinearSpeedMetersPerSec())
+                                .plus(offsetVector)
+                                .rotateBy(targetRotation2d);
                 break;
 
             case APPROACH:
                 offsetVector =
-                    new Translation2d(0, linearController.calculate(relativePose2d.getY()));
+                        new Translation2d(0, linearController.calculate(relativePose2d.getY()));
 
                 // Calculate total linear velocity
                 linearVelocity =
-                    getLinearVelocityFromJoysticks(-joystickInput.getAsDouble(),
-                        0).times(drive.getMaxLinearSpeedMetersPerSec())
-                            .plus(offsetVector)
-                            .rotateBy(targetRotation2d);
+                        getLinearVelocityFromJoysticks(-joystickInput.getAsDouble(), 0)
+                                .times(drive.getMaxLinearSpeedMetersPerSec())
+                                .plus(offsetVector)
+                                .rotateBy(targetRotation2d);
                 break;
 
             default:
                 break;
         }
 
-        double angularOutput = angularController.calculate(
-            robotState.getEstimatedPose().getRotation().getRadians(),
-            targetPose.get().getRotation().getRadians());
+        double angularOutput =
+                angularController.calculate(
+                        robotState.getEstimatedPose().getRotation().getRadians(),
+                        targetPose.get().getRotation().getRadians());
 
         // Convert to field relative speeds & send command
         ChassisSpeeds speeds =
-            new ChassisSpeeds(
-                linearVelocity.getX(),
-                linearVelocity.getY(),
-                angularOutput);
+                new ChassisSpeeds(linearVelocity.getX(), linearVelocity.getY(), angularOutput);
 
-        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds,
-            robotState.getEstimatedPose().getRotation()));
+        drive.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                        speeds, robotState.getEstimatedPose().getRotation()));
     }
 
     // Returns true when the command should end.
     @Override
-    public boolean isFinished()
-    {
+    public boolean isFinished() {
         return false;
     }
 
-    private static Translation2d getLinearVelocityFromJoysticks(double x, double y)
-    {
+    private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
         double linearMagnitude = Math.pow(Math.hypot(x, y), 2);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
         // Return new linear velocity
         return new Pose2d(new Translation2d(), linearDirection)
-            .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
-            .getTranslation();
+                .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+                .getTranslation();
     }
 
     /**
@@ -160,8 +155,7 @@ public abstract class AlignToPoseBase extends Command {
      *
      * @return The distance error in meters
      */
-    public Distance getDistanceError()
-    {
+    public Distance getDistanceError() {
         return Meters.of(linearController.getPositionError());
     }
 
@@ -170,8 +164,7 @@ public abstract class AlignToPoseBase extends Command {
      *
      * @return The angular error in radians
      */
-    public Angle getAngularError()
-    {
+    public Angle getAngularError() {
         return Radians.of(angularController.getPositionError());
     }
 }

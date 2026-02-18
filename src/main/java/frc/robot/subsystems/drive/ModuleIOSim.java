@@ -54,10 +54,10 @@ public class ModuleIOSim implements ModuleIO {
     /**
      * Dashboard input for whether or not to enable simulated module skid.
      *
-     * When enabled, the drive motor voltage applied to the simulation is multiplied by
-     * {@link #skidMultiplier}. This intentionally makes the simulated wheel "over-achieve" compared
-     * to the rest of the drivetrain, which is a simple way to create a repeatable skid-like outlier
-     * for testing detection and filtering logic.
+     * <p>When enabled, the drive motor voltage applied to the simulation is multiplied by {@link
+     * #skidMultiplier}. This intentionally makes the simulated wheel "over-achieve" compared to the
+     * rest of the drivetrain, which is a simple way to create a repeatable skid-like outlier for
+     * testing detection and filtering logic.
      */
     private final LoggedTunableBoolean enableSkid;
 
@@ -78,18 +78,24 @@ public class ModuleIOSim implements ModuleIO {
      * @param constants Module-specific constants for configuring the simulation
      */
     public ModuleIOSim(
-        String name,
-        SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants)
-    {
+            String name,
+            SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+                    constants) {
         // Create drive and turn sim models
-        driveSim = new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(
-                DRIVE_GEARBOX, constants.DriveInertia, constants.DriveMotorGearRatio),
-            DRIVE_GEARBOX);
-        turnSim = new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(
-                TURN_GEARBOX, constants.SteerInertia, constants.SteerMotorGearRatio),
-            TURN_GEARBOX);
+        driveSim =
+                new DCMotorSim(
+                        LinearSystemId.createDCMotorSystem(
+                                DRIVE_GEARBOX,
+                                constants.DriveInertia,
+                                constants.DriveMotorGearRatio),
+                        DRIVE_GEARBOX);
+        turnSim =
+                new DCMotorSim(
+                        LinearSystemId.createDCMotorSystem(
+                                TURN_GEARBOX,
+                                constants.SteerInertia,
+                                constants.SteerMotorGearRatio),
+                        TURN_GEARBOX);
 
         // Enable wrapping for turn PID
         turnController.enableContinuousInput(-Math.PI, Math.PI);
@@ -100,12 +106,12 @@ public class ModuleIOSim implements ModuleIO {
     }
 
     @Override
-    public void updateInputs(ModuleIOInputs inputs)
-    {
+    public void updateInputs(ModuleIOInputs inputs) {
         // Run closed-loop control
         if (driveClosedLoop) {
             driveAppliedVolts =
-                driveFFVolts + driveController.calculate(driveSim.getAngularVelocityRadPerSec());
+                    driveFFVolts
+                            + driveController.calculate(driveSim.getAngularVelocityRadPerSec());
         } else {
             driveController.reset();
         }
@@ -145,25 +151,25 @@ public class ModuleIOSim implements ModuleIO {
     }
 
     @Override
-    public void setDriveOpenLoop(double output)
-    {
+    public void setDriveOpenLoop(double output) {
         output =
-            output * (enableSkid.get() ? MathUtil.clamp(skidMultiplier.get(), -12.0, 12.0) : 1.0);
+                output
+                        * (enableSkid.get()
+                                ? MathUtil.clamp(skidMultiplier.get(), -12.0, 12.0)
+                                : 1.0);
 
         driveClosedLoop = false;
         driveAppliedVolts = output;
     }
 
     @Override
-    public void setTurnOpenLoop(double output)
-    {
+    public void setTurnOpenLoop(double output) {
         turnClosedLoop = false;
         turnAppliedVolts = output;
     }
 
     @Override
-    public void setDriveVelocity(double velocityRadPerSec)
-    {
+    public void setDriveVelocity(double velocityRadPerSec) {
         velocityRadPerSec = velocityRadPerSec * (enableSkid.get() ? skidMultiplier.get() : 1.0);
 
         driveClosedLoop = true;
@@ -172,8 +178,7 @@ public class ModuleIOSim implements ModuleIO {
     }
 
     @Override
-    public void setTurnPosition(Rotation2d rotation)
-    {
+    public void setTurnPosition(Rotation2d rotation) {
         turnClosedLoop = true;
         turnController.setSetpoint(rotation.getRadians());
     }

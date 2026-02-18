@@ -15,29 +15,28 @@
 
 package frc.lib.devices;
 
-import org.littletonrobotics.junction.Logger;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import frc.lib.io.objectdetection.ObjectDetectionIO;
-import frc.lib.io.objectdetection.ObjectDetectionIO.ObjectDetectionIOInputs;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import frc.lib.io.objectdetection.ObjectDetectionIO;
+import frc.lib.io.objectdetection.ObjectDetectionIO.ObjectDetectionIOInputs;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import org.littletonrobotics.junction.Logger;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * Represents a single Object Detection camera on the robot.
- * 
- * <p>
- * Handles interfacing with the {@link ObjectDetectionIO} hardware layer. While the IO (hardware)
+ *
+ * <p>Handles interfacing with the {@link ObjectDetectionIO} hardware layer. While the IO (hardware)
  * layer is responsible for defining the variables of interest coming from our camera, this device
  * layer is responsible for periodically polling that IO and performing relevant calculations on the
  * return results to generate data for the robot to make decisions. Contains methods useful for both
@@ -45,52 +44,57 @@ import edu.wpi.first.units.measure.Distance;
  */
 public class ObjectDetection {
     // Inputs data structure
-    private final ObjectDetectionIOInputs inputs =
-        new ObjectDetectionIOInputs();
+    private final ObjectDetectionIOInputs inputs = new ObjectDetectionIOInputs();
     // IO implementation of ObjectDetectionIO (how inputs data structure is populated)
     private final ObjectDetectionIO io;
+    private final String cameraName;
 
     /**
      * Represents an Object Detection observation.
-     * 
-     * <p>
-     * These values are a combination of baseline return values from the camera and device-level
+     *
+     * <p>These values are a combination of baseline return values from the camera and device-level
      * calculations using those basic values. This structure can represent essential observations
      * from an ML or HSV Color Detection pipeline.
-     * 
+     *
      * @param objID Object ID (ML pipeline only, negative sentinel value otherwise).
      * @param confidence Object ID confidence (ML pipeline only, negative sentinel value otherwise).
      * @param pitch Pitch of the object relative to the centerline of the camera.
      * @param yaw Yaw of the object relative to the centerline of the camera.
      * @param area Area of the object in the image.
      * @param distance Approximate 2d robot-relative distance to the detected object (empty if pose
-     *        estimation is N/A or fails).
+     *     estimation is N/A or fails).
      * @param objectPose Estimated field-relative pose of the detected object (empty if pose
-     *        estimation is N/A or fails).
+     *     estimation is N/A or fails).
      */
-    public record ObjectDetectionObservation(int objID, double confidence, Angle pitch, Angle yaw,
-        double area, Optional<Distance> distance, Optional<Pose2d> objectPose) {
-    }
+    public record ObjectDetectionObservation(
+            int objID,
+            double confidence,
+            Angle pitch,
+            Angle yaw,
+            double area,
+            Optional<Distance> distance,
+            Optional<Pose2d> objectPose) {}
 
     /*
      * Interface as a data type allows ObjectDetection to accept various implementations of
      * ObjectDetectionIO (e.g. ObjectDetectionIOPhotonVision or ObjectDetectionIOLimelight).
      * Currently factored for PhotonVision only.
      *
+     * @param cameraName The name of the camera for logging purposes
+     *
      * @param io The ObjectDetectionIO implementation to use
      */
-    public ObjectDetection(ObjectDetectionIO io)
-    {
+    public ObjectDetection(String cameraName, ObjectDetectionIO io) {
+        this.cameraName = cameraName;
         this.io = io;
     }
 
     /**
      * Periodically retrieve most recent ObjectDetection pipeline results and populate into inputs.
      */
-    public void periodic()
-    {
+    public void periodic() {
         io.updateInputs(inputs);
-        Logger.processInputs(io.getCamera(), inputs);
+        Logger.processInputs(cameraName, inputs);
     }
 
     /**
@@ -98,8 +102,7 @@ public class ObjectDetection {
      *
      * @return Array of object information from latest pipeline result
      */
-    public PhotonTrackedTarget[] getTargets()
-    {
+    public PhotonTrackedTarget[] getTargets() {
         return inputs.latestTargets;
     }
 
@@ -107,7 +110,7 @@ public class ObjectDetection {
      * Uses an empirical curve fit of area to estimate distance (in.). deltaS = a*area^3 + b*area^2
      * + c*area + d. Cubic fit required to better match governing physics (tan(x) based). Determine
      * fit coefficients from calibration procedure.
-     * 
+     *
      * @param target A data type containing vision pipeline results for a single object.
      * @param a Coefficient for cubic term in curve fit equation.
      * @param b Coefficient for quadratic term in curve fit equation.
@@ -115,44 +118,50 @@ public class ObjectDetection {
      * @param d Coefficient for constant term in curve fit equation.
      * @return The estimated range to the object in meters.
      */
-    public double rangeToTarget_SingleFactorArea(PhotonTrackedTarget target,
-        float a, float b, float c, float d)
-    {
+    public double rangeToTarget_SingleFactorArea(
+            PhotonTrackedTarget target, float a, float b, float c, float d) {
         return (a * Math.pow(target.getArea(), 3)
-            + b * Math.pow(target.getArea(), 2) + c * target.getArea() + d);
+                + b * Math.pow(target.getArea(), 2)
+                + c * target.getArea()
+                + d);
     }
 
     /**
-     * Uses the camera's focal length &amp; trig to estimate range from target; requires no measurement
-     * of pitch. Utilizes pinhole model of a camera. Note that camera focal length in pixels = (P *
-     * D) / H, where P = perceived width of known object (px), D = known distance from camera (in.),
-     * H = known height of object (in.). For unreliable corner detection or object digital height
-     * calculation, use rangeToTarget_SingleFactorArea.
-     * 
+     * Uses the camera's focal length &amp; trig to estimate range from target; requires no
+     * measurement of pitch. Utilizes pinhole model of a camera. Note that camera focal length in
+     * pixels = (P * D) / H, where P = perceived width of known object (px), D = known distance from
+     * camera (in.), H = known height of object (in.). For unreliable corner detection or object
+     * digital height calculation, use rangeToTarget_SingleFactorArea.
+     *
      * @param target A data type containing vision pipeline results for a single object.
      * @param objectPhysicalHeightMeters The physical height of the object being targeted in meters.
      * @param cameraFocalLengthPixels The camera focal length in pixels as determined by a
-     *        calibration procedure.
+     *     calibration procedure.
      * @param cameraCalFactor An empirical calibration factor to account for real lens effects (e.g.
-     *        blur, distortion, focus).
+     *     blur, distortion, focus).
      * @return The estimated range to the object in meters.
      */
-    public double rangeToTarget_FocalLength(PhotonTrackedTarget target,
-        double objectPhysicalHeightMeters, double cameraFocalLengthPixels, double cameraCalFactor)
-    {
+    public double rangeToTarget_FocalLength(
+            PhotonTrackedTarget target,
+            double objectPhysicalHeightMeters,
+            double cameraFocalLengthPixels,
+            double cameraCalFactor) {
         // Return & sort corners to estimate detected object's digital height in pixels.
-        double[] objectDigitalCorners_px =
-            {target.getDetectedCorners().get(0).y, target.getDetectedCorners().get(1).y,
-                    target.getDetectedCorners().get(2).y, target.getDetectedCorners().get(3).y};
+        double[] objectDigitalCorners_px = {
+            target.getDetectedCorners().get(0).y,
+            target.getDetectedCorners().get(1).y,
+            target.getDetectedCorners().get(2).y,
+            target.getDetectedCorners().get(3).y
+        };
         Arrays.sort(objectDigitalCorners_px);
         // Calculate object's digital height in pixels.
         double objectPhysicalHeightPixels =
-            objectDigitalCorners_px[objectDigitalCorners_px.length - 1]
-                - objectDigitalCorners_px[0];
+                objectDigitalCorners_px[objectDigitalCorners_px.length - 1]
+                        - objectDigitalCorners_px[0];
         // Return estimated range to object in meters.
         return (cameraCalFactor
-            * ((objectPhysicalHeightMeters * cameraFocalLengthPixels)
-                / objectPhysicalHeightPixels));
+                * ((objectPhysicalHeightMeters * cameraFocalLengthPixels)
+                        / objectPhysicalHeightPixels));
     }
 
     /**
@@ -166,26 +175,28 @@ public class ObjectDetection {
      * distance estimate will be. For very small differentials, use rangeToTarget_FocalLength.
      *
      * @param target A data type containing vision pipeline results for a single target. Used to
-     *        determine the pitch & yaw of the target from the centerline of the camera's lens in
-     *        degrees; centerline assumed through geometric center of conical FOV. Target pitch is
-     *        positive above centerline and target yaw is positive right of centerline.
+     *     determine the pitch & yaw of the target from the centerline of the camera's lens in
+     *     degrees; centerline assumed through geometric center of conical FOV. Target pitch is
+     *     positive above centerline and target yaw is positive right of centerline.
      * @param cameraTransform Transform3d of the camera relative to the robot. Used to determine the
-     *        camera's height off the ground, the range offset, installation pitch, and installation
-     *        yaw.
+     *     camera's height off the ground, the range offset, installation pitch, and installation
+     *     yaw.
      * @param targetHeightMeters The physical height of the target off the floor as measured by the
-     *        location of the detection reticle in meters. For example, if your detection reticle is
-     *        set to the center of the detected object's bounding box, this height should be the
-     *        elevation off the ground to the center of the target.
+     *     location of the detection reticle in meters. For example, if your detection reticle is
+     *     set to the center of the detected object's bounding box, this height should be the
+     *     elevation off the ground to the center of the target.
      * @param cameraCalFactor An empirical calibration factor to account for real lens effects (e.g.
-     *        blur, distortion, focus).
+     *     blur, distortion, focus).
      * @param cameraOffset An empirical calibration factor to account for bias in the range estimate
-     *        as a result of either camera hardware or installation.
+     *     as a result of either camera hardware or installation.
      * @return The estimated robot range to the target in meters.
      */
-    private double rangeToTarget_Pitch(PhotonTrackedTarget target,
-        Transform3d cameraTransform, double targetHeightMeters, double cameraCalFactor,
-        double cameraOffset)
-    {
+    private double rangeToTarget_Pitch(
+            PhotonTrackedTarget target,
+            Transform3d cameraTransform,
+            double targetHeightMeters,
+            double cameraCalFactor,
+            double cameraOffset) {
         // Empirically-determined tolerance (m)
         // Below which, height differential is too small for algorithm to be reliable.
         double tolerance = 0.175;
@@ -213,11 +224,15 @@ public class ObjectDetection {
                 // estimation or vector transforms are more appropriate but not implemented.
                 // Mathematical approach: lens centerline projection onto object/lens-center plane.
                 yawCorrection =
-                    Math.cos(Math.abs(cameraYawRadians - Math.toRadians(target.getYaw())));
+                        Math.cos(Math.abs(cameraYawRadians - Math.toRadians(target.getYaw())));
             }
             return (((targetHeightMeters - cameraHeightMeters)
-                / Math.tan(cameraPitchRadians + Math.toRadians(target.getPitch())))
-                * yawCorrection * cameraCalFactor + cameraOffset + cameraRangeDelta);
+                                    / Math.tan(
+                                            cameraPitchRadians + Math.toRadians(target.getPitch())))
+                            * yawCorrection
+                            * cameraCalFactor
+                    + cameraOffset
+                    + cameraRangeDelta);
 
         } else {
             // Use rangeToTarget_FocalLength.
@@ -234,23 +249,25 @@ public class ObjectDetection {
      * distance estimate will be.
      *
      * @param target A data type containing vision pipeline results for a single target. Used to
-     *        determine the yaw of the target from the centerline of the camera's lens in degrees;
-     *        centerline assumed through geometric center of conical FOV. Target pitch is positive
-     *        above centerline and target yaw is positive right of centerline.
+     *     determine the yaw of the target from the centerline of the camera's lens in degrees;
+     *     centerline assumed through geometric center of conical FOV. Target pitch is positive
+     *     above centerline and target yaw is positive right of centerline.
      * @param cameraTransform Transform3d of the camera relative to the robot. Used to determine the
-     *        camera's heading offset and installation yaw.
+     *     camera's heading offset and installation yaw.
      * @param targetRangeMeters Robot's range to the target in meters.
      * @param cameraCalFactor An empirical calibration factor to account for real lens effects (e.g.
-     *        blur, distortion, focus).
+     *     blur, distortion, focus).
      * @param cameraOffset An empirical calibration factor to account for bias in heading estimate
-     *        as a result of either camera or installation.
+     *     as a result of either camera or installation.
      * @return The estimated robot heading to the target in meters. Positive heading = robot local X
-     *         axis right of target; negative heading = robot local X axis left of target.
+     *     axis right of target; negative heading = robot local X axis left of target.
      */
-    private double headingToTarget_Yaw(PhotonTrackedTarget target,
-        Transform3d cameraTransform, double targetRangeMeters, double cameraCalFactor,
-        double cameraOffset)
-    {
+    private double headingToTarget_Yaw(
+            PhotonTrackedTarget target,
+            Transform3d cameraTransform,
+            double targetRangeMeters,
+            double cameraCalFactor,
+            double cameraOffset) {
         // Salient camera transform parameters
         // Camera's range to target (math utilizes camera's range, not robot's).
         double cameraRangeMeters = targetRangeMeters - cameraTransform.getX();
@@ -261,7 +278,10 @@ public class ObjectDetection {
         // Mathematically verified for target left or right of centerline & camera yawed left or
         // right; no sign correction required.
         return (Math.tan(cameraYawRadians - Math.toRadians(target.getYaw()))
-            * cameraRangeMeters * cameraCalFactor + cameraOffset + cameraHeadingDelta);
+                        * cameraRangeMeters
+                        * cameraCalFactor
+                + cameraOffset
+                + cameraHeadingDelta);
     }
 
     /**
@@ -272,8 +292,7 @@ public class ObjectDetection {
      * @param targetHeadingMeters Robot's heading to the target in meters.
      * @return The estimated 2d distance from the robot to the target in meters.
      */
-    private double distanceToTarget2d(double targetRangeMeters, double targetHeadingMeters)
-    {
+    private double distanceToTarget2d(double targetRangeMeters, double targetHeadingMeters) {
         // Distance from robot to target
         return Math.sqrt((Math.pow(targetRangeMeters, 2) + Math.pow(targetHeadingMeters, 2)));
     }
@@ -292,12 +311,14 @@ public class ObjectDetection {
      * @param robotPose The 2D pose of the robot on the field.
      * @return A Translation2d of the detected object in field coordinates.
      */
-    private Translation2d estimateTargetToField(double targetRangeMeters,
-        double targetHeadingMeters, Pose2d robotPose)
-    {
-        Translation2d fieldToTargetTranslation = robotPose
-            .transformBy(new Transform2d(targetRangeMeters, targetHeadingMeters, new Rotation2d()))
-            .getTranslation();
+    private Translation2d estimateTargetToField(
+            double targetRangeMeters, double targetHeadingMeters, Pose2d robotPose) {
+        Translation2d fieldToTargetTranslation =
+                robotPose
+                        .transformBy(
+                                new Transform2d(
+                                        targetRangeMeters, targetHeadingMeters, new Rotation2d()))
+                        .getTranslation();
         return fieldToTargetTranslation;
     }
 
@@ -307,18 +328,19 @@ public class ObjectDetection {
      * recent detection (i.e. end of the list). If a detection is deemed a repeat (according to the
      * passed Translation2D tolerance), it is removed from its current location in robot memory and
      * re-added to the end of the list.
-     * 
+     *
      * @param N The number of last detections to store in memory.
      * @param lastNDetections The list of Translation2d objects representing the camera's memory of
-     *        last N detections.
+     *     last N detections.
      * @param toleranceMeters The tolerance in meters for determining whether a detection is new or
-     *        old.
+     *     old.
      * @param targetTranslation The Translation2d of the current target detection to be evaluated.
      */
-    public void updateObservationPoseBuffer(int N,
-        List<Translation2d> lastNDetections, double toleranceMeters,
-        Translation2d targetTranslation)
-    {
+    public void updateObservationPoseBuffer(
+            int N,
+            List<Translation2d> lastNDetections,
+            double toleranceMeters,
+            Translation2d targetTranslation) {
         Translation2d currentTranslation;
         boolean isNewDetection = true;
         double repeatIndex = 0;
@@ -326,9 +348,8 @@ public class ObjectDetection {
         for (int i = 0; i < lastNDetections.size(); i++) {
             currentTranslation = lastNDetections.get(i);
             if ((Math.abs(targetTranslation.getX() - currentTranslation.getX()) <= toleranceMeters)
-                && (Math
-                    .abs(
-                        targetTranslation.getY() - currentTranslation.getY()) <= toleranceMeters)) {
+                    && (Math.abs(targetTranslation.getY() - currentTranslation.getY())
+                            <= toleranceMeters)) {
                 isNewDetection = false;
                 repeatIndex = i;
             }
@@ -353,94 +374,94 @@ public class ObjectDetection {
 
     /**
      * Returns the latest Object observation.
-     * 
-     * <p>
-     * This function returns a full record representing the detected Object -- Object ID,
+     *
+     * <p>This function returns a full record representing the detected Object -- Object ID,
      * confidence, pitch, yaw, area, robot distance to target, and target's field pose -- usually
      * requiring a functional ML pipeline. A PhotonVision ML detection that fails to identify the
-     * Object will return object ID &amp; confidence as -1. Failed pose estimation will return relevant
-     * fields as empty.
-     * 
+     * Object will return object ID &amp; confidence as -1. Failed pose estimation will return
+     * relevant fields as empty.
+     *
      * @param target A single PhotonTrackedTarget representing the detected object of interest,
-     *        likely from objectDetection.getTargets()[i].
+     *     likely from objectDetection.getTargets()[i].
      * @param robotToCamera robotToCamera transform.
      * @param objectPhysicalHeightMeters Physical (real-world) height of the object being
-     *        represented by the PhotonTrackedTarget (e.g. 2025 Algae = 0.41 m = ball diameter) (m).
+     *     represented by the PhotonTrackedTarget (e.g. 2025 Algae = 0.41 m = ball diameter) (m).
      * @param rangeCalFactor Calibration scaling factor for range calculation (usually set to 1).
      * @param rangeCalOffset Calibration offset factor for range calculation (usually set to 0).
      * @param headingCalFactor Calibration scaling factor for heading calculation (usually set to
-     *        1).
+     *     1).
      * @param headingCalOffset Calibration offset factor for heading calculation (usually set to 0).
      * @param robotPose Field-relative robot pose.
      * @return An optional {@link ObjectDetectionObservation}.
      */
-    public Optional<ObjectDetectionObservation> getObjectObservation(PhotonTrackedTarget target,
-        Transform3d robotToCamera,
-        double objectPhysicalHeightMeters, double rangeCalFactor, double rangeCalOffset,
-        double headingCalFactor, double headingCalOffset,
-        Pose2d robotPose)
-    {
+    public Optional<ObjectDetectionObservation> getObjectObservation(
+            PhotonTrackedTarget target,
+            Transform3d robotToCamera,
+            double objectPhysicalHeightMeters,
+            double rangeCalFactor,
+            double rangeCalOffset,
+            double headingCalFactor,
+            double headingCalOffset,
+            Pose2d robotPose) {
         // Robot-local range to target
         double range =
-            rangeToTarget_Pitch(target,
-                robotToCamera,
-                objectPhysicalHeightMeters / 2,
-                rangeCalFactor, rangeCalOffset);
+                rangeToTarget_Pitch(
+                        target,
+                        robotToCamera,
+                        objectPhysicalHeightMeters / 2,
+                        rangeCalFactor,
+                        rangeCalOffset);
         if (range == -1.0) {
             // Range finding algorithm failed due to geometric constraints,
             // return partial ML Object Observation
-            return Optional.of(new ObjectDetectionObservation(
-                target.getDetectedObjectClassID(),
-                target.getDetectedObjectConfidence(),
-                Degrees.of(target.getPitch()),
-                Degrees.of(target.getYaw()),
-                target.getArea(),
-                Optional.empty(),
-                Optional.empty()));
+            return Optional.of(
+                    new ObjectDetectionObservation(
+                            target.getDetectedObjectClassID(),
+                            target.getDetectedObjectConfidence(),
+                            Degrees.of(target.getPitch()),
+                            Degrees.of(target.getYaw()),
+                            target.getArea(),
+                            Optional.empty(),
+                            Optional.empty()));
         }
         // Robot-local heading to target
         double heading =
-            headingToTarget_Yaw(target,
-                robotToCamera,
-                range, headingCalFactor, headingCalOffset);
+                headingToTarget_Yaw(
+                        target, robotToCamera, range, headingCalFactor, headingCalOffset);
         // 2D distance from robot center to target
         double distance = distanceToTarget2d(range, heading);
         // Field-relative Translation2D of target
-        Translation2d targetLocation =
-            estimateTargetToField(
-                range,
-                heading,
-                robotPose);
+        Translation2d targetLocation = estimateTargetToField(range, heading, robotPose);
         // Return packaged ML Object Observation
-        return Optional.of(new ObjectDetectionObservation(
-            target.getDetectedObjectClassID(),
-            target.getDetectedObjectConfidence(),
-            Degrees.of(target.getPitch()),
-            Degrees.of(target.getYaw()),
-            target.getArea(),
-            Optional.of(Meters.of(distance)),
-            Optional.of(new Pose2d(targetLocation, new Rotation2d()))));
+        return Optional.of(
+                new ObjectDetectionObservation(
+                        target.getDetectedObjectClassID(),
+                        target.getDetectedObjectConfidence(),
+                        Degrees.of(target.getPitch()),
+                        Degrees.of(target.getYaw()),
+                        target.getArea(),
+                        Optional.of(Meters.of(distance)),
+                        Optional.of(new Pose2d(targetLocation, new Rotation2d()))));
     }
 
     /**
      * Returns the latest Contour (i.e. Color or Blob) observation.
-     * 
-     * <p>
-     * This function returns a partial record representing the detected Blob (i.e Color or Contour)
-     * containing pitch, yaw, &amp; area. These are baseline PhotonVision results relevant to multiple
-     * pipelines (Color, ML, etc.). Blob observations don't attempt to generate poses, object IDs,
-     * or confidence. Therefore, fields relevant to pose estimation are returned empty and object ID
-     * / confidence are assigned assigned -2 to differentiate this result from an ML detection that
-     * failed to generate both an ID &amp; a pose (-1). See {@link #getObjectObservation}.
-     * 
+     *
+     * <p>This function returns a partial record representing the detected Blob (i.e Color or
+     * Contour) containing pitch, yaw, &amp; area. These are baseline PhotonVision results relevant
+     * to multiple pipelines (Color, ML, etc.). Blob observations don't attempt to generate poses,
+     * object IDs, or confidence. Therefore, fields relevant to pose estimation are returned empty
+     * and object ID / confidence are assigned assigned -2 to differentiate this result from an ML
+     * detection that failed to generate both an ID &amp; a pose (-1). See {@link
+     * #getObjectObservation}.
+     *
      * @param targets An array of PhotonTrackedTargets, likely from objectDetection.getTargets().
      * @param selection An enum representing the two selection modes: LARGEST or LOWEST. LARGEST
-     *        returns Blob with greatest area, LOWEST returns Blob with smallest pitch.
+     *     returns Blob with greatest area, LOWEST returns Blob with smallest pitch.
      * @return An optional {@link ObjectDetectionObservation}.
      */
-    public Optional<ObjectDetectionObservation> getContourObservation(PhotonTrackedTarget[] targets,
-        ContourSelectionMode selection)
-    {
+    public Optional<ObjectDetectionObservation> getContourObservation(
+            PhotonTrackedTarget[] targets, ContourSelectionMode selection) {
         if (targets == null || targets.length == 0) {
             return Optional.empty();
         }
@@ -452,11 +473,14 @@ public class ObjectDetection {
                     return Optional.empty();
                 } else {
                     return Optional.of(
-                        new ObjectDetectionObservation(-2, -2,
-                            Degrees.of(selectedTarget.getPitch()),
-                            Degrees.of(selectedTarget.getYaw()),
-                            selectedTarget.getArea(),
-                            Optional.empty(), Optional.empty()));
+                            new ObjectDetectionObservation(
+                                    -2,
+                                    -2,
+                                    Degrees.of(selectedTarget.getPitch()),
+                                    Degrees.of(selectedTarget.getYaw()),
+                                    selectedTarget.getArea(),
+                                    Optional.empty(),
+                                    Optional.empty()));
                 }
             case LOWEST:
                 selectedTarget = getLowestContour(targets);
@@ -464,11 +488,14 @@ public class ObjectDetection {
                     return Optional.empty();
                 } else {
                     return Optional.of(
-                        new ObjectDetectionObservation(-2, -2,
-                            Degrees.of(selectedTarget.getPitch()),
-                            Degrees.of(selectedTarget.getYaw()),
-                            selectedTarget.getArea(),
-                            Optional.empty(), Optional.empty()));
+                            new ObjectDetectionObservation(
+                                    -2,
+                                    -2,
+                                    Degrees.of(selectedTarget.getPitch()),
+                                    Degrees.of(selectedTarget.getYaw()),
+                                    selectedTarget.getArea(),
+                                    Optional.empty(),
+                                    Optional.empty()));
                 }
             default:
                 return Optional.empty();
@@ -482,8 +509,7 @@ public class ObjectDetection {
     }
 
     // Private helper for getContourObservation(). Finds blob with largest area.
-    private PhotonTrackedTarget getLargestContour(PhotonTrackedTarget[] result)
-    {
+    private PhotonTrackedTarget getLargestContour(PhotonTrackedTarget[] result) {
         PhotonTrackedTarget largestTarget = null;
         double maxArea = 0.0;
 
@@ -497,8 +523,7 @@ public class ObjectDetection {
     }
 
     // Private helper for getContourObservation(). Finds blob with smallest pitch.
-    private PhotonTrackedTarget getLowestContour(PhotonTrackedTarget[] result)
-    {
+    private PhotonTrackedTarget getLowestContour(PhotonTrackedTarget[] result) {
         PhotonTrackedTarget lowestTarget = null;
         double smallestPitch = 90.0;
 
@@ -516,8 +541,7 @@ public class ObjectDetection {
      *
      * @return True if the camera is connected, false otherwise
      */
-    public boolean isConnected()
-    {
+    public boolean isConnected() {
         return inputs.connected;
     }
 }

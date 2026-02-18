@@ -9,23 +9,22 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 /**
  * A ProfiledPIDController with tunable gains that can be adjusted from the dashboard.
- * 
- * <p>
- * This controller extends WPILib's ProfiledPIDController to add runtime tunability.
- * PID gains (kP, kI, kD) and motion profile constraints (max velocity and acceleration)
- * can be adjusted through NetworkTables when tuning mode is enabled.
- * 
- * <p>
- * Call {@link #updatePID()} periodically to check for and apply updated values from the dashboard.
- * 
- * <p>
- * Example usage:
+ *
+ * <p>This controller extends WPILib's ProfiledPIDController to add runtime tunability. PID gains
+ * (kP, kI, kD) and motion profile constraints (max velocity and acceleration) can be adjusted
+ * through NetworkTables when tuning mode is enabled.
+ *
+ * <p>Call {@link #updatePID()} periodically to check for and apply updated values from the
+ * dashboard.
+ *
+ * <p>Example usage:
+ *
  * <pre>{@code
- * LoggedTuneableProfiledPID controller = 
+ * LoggedTuneableProfiledPID controller =
  *     new LoggedTuneableProfiledPID("Arm/PID", 2.0, 0.0, 0.1, 2.0, 5.0);
- * 
+ *
  * // In periodic():
- * controller.updatePID();  // Apply any changes from dashboard
+ * controller.updatePID(); // Apply any changes from dashboard
  * double output = controller.calculate(position, setpoint);
  * }</pre>
  */
@@ -48,9 +47,8 @@ public class LoggedTuneableProfiledPID extends ProfiledPIDController {
      * @param maxV Maximum velocity
      * @param maxA Maximum acceleration
      */
-    public LoggedTuneableProfiledPID(String name, double kP, double kI,
-        double kD, double maxV, double maxA)
-    {
+    public LoggedTuneableProfiledPID(
+            String name, double kP, double kI, double kD, double maxV, double maxA) {
         this(name, kP, kI, kD, maxV, maxA, .02);
     }
 
@@ -65,9 +63,14 @@ public class LoggedTuneableProfiledPID extends ProfiledPIDController {
      * @param maxAcceleration Maximum acceleration
      * @param period Loop period in seconds
      */
-    public LoggedTuneableProfiledPID(String name, double p, double i,
-        double d, double maxVelocity, double maxAcceleration, double period)
-    {
+    public LoggedTuneableProfiledPID(
+            String name,
+            double p,
+            double i,
+            double d,
+            double maxVelocity,
+            double maxAcceleration,
+            double period) {
         super(p, i, d, new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration), period);
 
         // Tunable numbers for PID and motion gain constants
@@ -79,23 +82,16 @@ public class LoggedTuneableProfiledPID extends ProfiledPIDController {
         this.maxAcceleration = new LoggedTunableNumber(name + "/maxAcceleration", maxAcceleration);
     }
 
-    /**
-     * Updates PID and motion profile constraints from tunable values if changed.
-     */
-    public void updatePID()
-    {
+    /** Updates PID and motion profile constraints from tunable values if changed. */
+    public void updatePID() {
         // If changed, update controller constants from Tuneable Numbers
-        if (p.hasChanged(hashCode())
-            || i.hasChanged(hashCode())
-            || d.hasChanged(hashCode())) {
+        if (p.hasChanged(hashCode()) || i.hasChanged(hashCode()) || d.hasChanged(hashCode())) {
             this.setPID(p.get(), i.get(), d.get());
         }
 
-        if (maxVelocity.hasChanged(hashCode())
-            || maxAcceleration.hasChanged(hashCode())) {
+        if (maxVelocity.hasChanged(hashCode()) || maxAcceleration.hasChanged(hashCode())) {
             this.setConstraints(
-                new TrapezoidProfile.Constraints(maxVelocity.get(), maxAcceleration.get()));
+                    new TrapezoidProfile.Constraints(maxVelocity.get(), maxAcceleration.get()));
         }
     }
-
 }

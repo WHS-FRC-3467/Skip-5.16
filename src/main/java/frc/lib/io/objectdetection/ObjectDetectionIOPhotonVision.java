@@ -15,12 +15,12 @@
 
 package frc.lib.io.objectdetection;
 
-import org.photonvision.PhotonCamera;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import java.util.List;
+import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * An ObjectDetectionIO implementation that uses a camera connected to hardware running the
@@ -36,21 +36,21 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
      *
      * @param cameraName The name of the camera
      */
-    public ObjectDetectionIOPhotonVision(String cameraName)
-    {
+    public ObjectDetectionIOPhotonVision(String cameraName) {
         // CameraName is the name of the NetworkTable that PhotonVision is broadcasting information
         // over.
         // The name of the NetworkTable should be the same as the camera’s nickname (from the
         // PhotonVision UI).
         camera = new PhotonCamera(cameraName);
         disconnectedAlert =
-            new Alert("PhotoVision Camera " + cameraName + " is not connected.", AlertType.kError);
+                new Alert(
+                        "PhotoVision Camera " + cameraName + " is not connected.",
+                        AlertType.kError);
         this.cameraName = cameraName;
     }
 
     @Override
-    public void updateInputs(ObjectDetectionIOInputs inputs)
-    {
+    public void updateInputs(ObjectDetectionIOInputs inputs) {
         /* Verify PhotonVision hardware is connected. */
         inputs.connected = camera.isConnected();
         if (!inputs.connected) {
@@ -67,15 +67,10 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
         if (result.isEmpty()) {
             return;
         }
-        // Update latestTargets field of ObjectDetectionIOInputs class with most recent set of targets.
+        // Update latestTargets field of ObjectDetectionIOInputs class with most recent set of
+        // targets.
         inputs.latestTargets =
-            // Array of PhotonTrackedTargets from latest pipeline result.
-            result.get(0).getTargets().toArray(PhotonTrackedTarget[]::new);
-    }
-
-    @Override
-    public String getCamera()
-    {
-        return cameraName;
+                // Array of PhotonTrackedTargets from latest pipeline result.
+                result.get(0).getTargets().toArray(PhotonTrackedTarget[]::new);
     }
 }

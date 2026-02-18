@@ -19,21 +19,20 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
 
 /**
  * A dashboard chooser that integrates with AdvantageKit's logging system.
- * 
- * <p>
- * This class wraps WPILib's SendableChooser to provide automatic logging of selected
- * values. Unlike the standard SendableChooser, this version works correctly with
- * AdvantageKit's replay functionality, allowing you to replay autonomous selections
- * and other dashboard choices from log files.
- * 
- * <p>
- * Example usage:
+ *
+ * <p>This class wraps WPILib's SendableChooser to provide automatic logging of selected values.
+ * Unlike the standard SendableChooser, this version works correctly with AdvantageKit's replay
+ * functionality, allowing you to replay autonomous selections and other dashboard choices from log
+ * files.
+ *
+ * <p>Example usage:
+ *
  * <pre>{@code
  * LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Auto Mode");
  * autoChooser.addDefaultOption("Do Nothing", Commands.none());
  * autoChooser.addOption("Simple Auto", simpleAuto());
  * autoChooser.addOption("Complex Auto", complexAuto());
- * 
+ *
  * // Get selected command
  * Command selectedAuto = autoChooser.get();
  * }</pre>
@@ -47,28 +46,25 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
     private Consumer<V> listener = null;
 
     private final LoggableInputs inputs =
-        new LoggableInputs() {
-            @Override
-            public void toLog(LogTable table)
-            {
-                table.put(key, selectedValue);
-            }
+            new LoggableInputs() {
+                @Override
+                public void toLog(LogTable table) {
+                    table.put(key, selectedValue);
+                }
 
-            @Override
-            public void fromLog(LogTable table)
-            {
-                selectedValue = table.get(key, selectedValue);
-            }
-        };
+                @Override
+                public void fromLog(LogTable table) {
+                    selectedValue = table.get(key, selectedValue);
+                }
+            };
 
     /**
      * Creates a new LoggedDashboardChooser.
      *
-     * @param key The SmartDashboard key, published to "/SmartDashboard/{key}" for NT 
-     *            or "/DashboardInputs/{key}" when logged
+     * @param key The SmartDashboard key, published to "/SmartDashboard/{key}" for NT or
+     *     "/DashboardInputs/{key}" when logged
      */
-    public LoggedDashboardChooser(String key)
-    {
+    public LoggedDashboardChooser(String key) {
         this.key = key;
         SmartDashboard.putData(key, sendableChooser);
         periodic();
@@ -83,8 +79,7 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
      * @param chooser Existing SendableChooser to copy options from
      */
     @SuppressWarnings("unchecked")
-    public LoggedDashboardChooser(String key, SendableChooser<V> chooser)
-    {
+    public LoggedDashboardChooser(String key, SendableChooser<V> chooser) {
         this(key);
 
         // Get options map
@@ -94,9 +89,9 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
             mapField.setAccessible(true);
             options = (Map<String, V>) mapField.get(chooser);
         } catch (NoSuchFieldException
-            | SecurityException
-            | IllegalArgumentException
-            | IllegalAccessException e) {
+                | SecurityException
+                | IllegalArgumentException
+                | IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage());
         }
 
@@ -107,9 +102,9 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
             defaultField.setAccessible(true);
             defaultString = (String) defaultField.get(chooser);
         } catch (NoSuchFieldException
-            | SecurityException
-            | IllegalArgumentException
-            | IllegalAccessException e) {
+                | SecurityException
+                | IllegalArgumentException
+                | IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage());
         }
 
@@ -129,8 +124,7 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
      * @param key Display name for the option
      * @param value Value returned when this option is selected
      */
-    public void addOption(String key, V value)
-    {
+    public void addOption(String key, V value) {
         sendableChooser.addOption(key, key);
         options.put(key, value);
     }
@@ -141,37 +135,33 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
      * @param key Display name for the default option
      * @param value Value returned when this option is selected
      */
-    public void addDefaultOption(String key, V value)
-    {
+    public void addDefaultOption(String key, V value) {
         sendableChooser.setDefaultOption(key, key);
         options.put(key, value);
     }
 
     /**
-     * Returns the currently selected option value.
-     * If no option is selected, returns the default. If no default exists, returns null.
+     * Returns the currently selected option value. If no option is selected, returns the default.
+     * If no default exists, returns null.
      *
      * @return The selected value, or null if nothing is selected
      */
-    public V get()
-    {
+    public V get() {
         return options.get(selectedValue);
     }
 
     /**
-     * Returns the internal SendableChooser for dashboard layout configuration.
-     * Do not read data from this directly - use {@link #get()} instead.
+     * Returns the internal SendableChooser for dashboard layout configuration. Do not read data
+     * from this directly - use {@link #get()} instead.
      *
      * @return The internal SendableChooser object
      */
-    public SendableChooser<String> getSendableChooser()
-    {
+    public SendableChooser<String> getSendableChooser() {
         return sendableChooser;
     }
 
     @Override
-    public void periodic()
-    {
+    public void periodic() {
         if (!Logger.hasReplaySource()) {
             selectedValue = sendableChooser.getSelected();
         }
@@ -188,8 +178,7 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
      *
      * @param listener Consumer to be called with the new value when selection changes
      */
-    public void onChange(Consumer<V> listener)
-    {
+    public void onChange(Consumer<V> listener) {
         this.listener = listener;
     }
 }
