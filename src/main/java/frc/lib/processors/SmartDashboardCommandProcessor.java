@@ -279,16 +279,10 @@ public class SmartDashboardCommandProcessor extends AbstractProcessor {
      * simple heuristics: lowercase first letter of class name.
      */
     private String getFieldNameForSubsystem(String className) {
-        // Simple heuristic: convert IntakeSuperstructure -> intake, Drive -> drive
+        // Simple heuristic: convert IntakeSuperstructure -> intakeSuperstructure, Drive -> drive
         if (className.isEmpty()) {
             return className;
         }
-
-        // Handle special cases
-        if (className.endsWith("Superstructure")) {
-            className = className.substring(0, className.length() - "Superstructure".length());
-        }
-
         return Character.toLowerCase(className.charAt(0)) + className.substring(1);
     }
 
