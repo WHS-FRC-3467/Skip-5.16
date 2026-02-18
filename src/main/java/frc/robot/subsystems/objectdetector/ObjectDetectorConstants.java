@@ -7,11 +7,11 @@ package frc.robot.subsystems.objectdetector;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Radians;
+
 import java.util.Comparator;
 import java.util.function.Supplier;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.VisionTargetSim;
-
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -25,7 +25,6 @@ import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.Units;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.lib.io.objectdetection.*;
 import frc.robot.Constants;
@@ -33,8 +32,6 @@ import frc.robot.RobotState;
 import frc.robot.util.RobotSim;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.photonvision.estimation.TargetModel;
-import org.photonvision.simulation.VisionTargetSim;
 
 /**
  * Configuration constants for the object detection subsystem.
