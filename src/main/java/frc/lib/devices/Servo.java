@@ -38,7 +38,7 @@ public class Servo {
      * Sets the servo position using a scaled value.
      *
      * @param angle position, where an angle with measure 0 corresponds to the leftmost position of
-     *        the servo.
+     *     the servo.
      */
     public void setAngle(Angle angle) {
         io.setAngle(angle);

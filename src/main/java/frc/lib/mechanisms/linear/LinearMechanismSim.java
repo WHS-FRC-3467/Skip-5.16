@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Mass;
@@ -50,12 +51,12 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
      * @param characteristics The mechanism characteristics including orientation
      */
     public LinearMechanismSim(
-        String name,
-        MotorIOSim io,
-        DCMotor motor,
-        Mass mass,
-        Boolean useGravity,
-        LinearMechCharacteristics characteristics) {
+            String name,
+            MotorIOSim io,
+            DCMotor motor,
+            Mass mass,
+            Boolean useGravity,
+            LinearMechCharacteristics characteristics) {
         super(name, characteristics, io);
 
         // ElevatorSim is used as the underlying physics simulation.
@@ -64,15 +65,16 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
         // but physics simulation is most accurate when useGravity=true and orientation
         // is vertical (pitch = -90° for upward, 90° for downward), or when useGravity=false for
         // horizontal mechanisms.
-        sim = new ElevatorSim(
-            motor,
-            io.getRotorToSensorRatio() * io.getSensorToMechanismRatio(),
-            mass.in(Kilograms),
-            characteristics.drumRadius().in(Meters),
-            characteristics.minDistance().in(Meters),
-            characteristics.maxDistance().in(Meters),
-            useGravity,
-            characteristics.startingDistance().in(Meters));
+        sim =
+                new ElevatorSim(
+                        motor,
+                        io.getRotorToSensorRatio() * io.getSensorToMechanismRatio(),
+                        mass.in(Kilograms),
+                        characteristics.drumRadius().in(Meters),
+                        characteristics.minDistance().in(Meters),
+                        characteristics.maxDistance().in(Meters),
+                        useGravity,
+                        characteristics.startingDistance().in(Meters));
     }
 
     @Override
@@ -91,13 +93,12 @@ public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
         sim.setInputVoltage(inputs.appliedVoltage.in(Volts));
         sim.update(deltaTime);
         RoboRioSim.setVInVoltage(
-            BatterySim.calculateDefaultBatteryLoadedVoltage(sim.getCurrentDrawAmps()));
+                BatterySim.calculateDefaultBatteryLoadedVoltage(sim.getCurrentDrawAmps()));
 
         lastTime = currentTime;
 
         io.setPosition(toAngle(Meters.of(sim.getPositionMeters())));
-        io.setRotorVelocity(
-            toAngle(Meters.of(sim.getVelocityMetersPerSecond())).per(Seconds));
+        io.setRotorVelocity(toAngle(Meters.of(sim.getVelocityMetersPerSecond())).per(Seconds));
 
         super.periodic();
     }

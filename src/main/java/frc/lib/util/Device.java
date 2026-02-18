@@ -22,8 +22,7 @@ import java.util.HashSet;
  * Sealed interface representing different types of hardware devices on the robot. Provides
  * type-safe device port definitions for CAN, DIO, and PWM devices.
  */
-public sealed
-interface Device {
+public sealed interface Device {
     /**
      * CAN bus device with an ID and bus name.
      *
@@ -36,7 +35,10 @@ interface Device {
 
         public CAN(int id, String bus) {
             if (id <= 0 || id > 63) {
-                throw new IllegalArgumentException("Illegal CAN ID " + id + ". IDs must be between 1 and 63 inclusive (ID 0 is reserved).");
+                throw new IllegalArgumentException(
+                        "Illegal CAN ID "
+                                + id
+                                + ". IDs must be between 1 and 63 inclusive (ID 0 is reserved).");
             }
 
             if (!ids.containsKey(bus)) {
@@ -57,14 +59,12 @@ interface Device {
      *
      * @param id the DIO port ID on the roboRIO
      */
-    final public record DIO(int id) implements Device {
-    }
+    public final record DIO(int id) implements Device {}
 
     /**
      * Pulse Width Modulation device with a port ID.
      *
      * @param id the PWM port ID on the roboRIO
      */
-    final public record PWM(int id) implements Device {
-    }
+    public final record PWM(int id) implements Device {}
 }

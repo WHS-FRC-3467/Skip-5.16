@@ -23,10 +23,7 @@ public class BeamBreakIODIO implements BeamBreakIO {
 
     private final DigitalInput dio;
 
-    /**
-     * Constructs a {@link BeamBreakIODIO} object with the specified DIO ID
-     *
-     */
+    /** Constructs a {@link BeamBreakIODIO} object with the specified DIO ID */
     public BeamBreakIODIO(Device.DIO id) {
         dio = new DigitalInput(id.id());
     }

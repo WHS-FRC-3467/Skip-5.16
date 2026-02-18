@@ -16,6 +16,7 @@
 package frc.lib.util;
 
 import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -27,13 +28,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 /**
  * Extended Xbox controller with additional functionality for FRC use.
  *
- * <p>
- * This class extends WPILib's CommandXboxController to add configurable deadbands, input curves,
+ * <p>This class extends WPILib's CommandXboxController to add configurable deadbands, input curves,
  * and rumble commands. These features help improve driver control precision and provide tactile
  * feedback during matches.
  *
- * <p>
- * Example usage:
+ * <p>Example usage:
  *
  * <pre>{@code
  * CommandXboxControllerExtended driver = new CommandXboxControllerExtended(0)
@@ -89,8 +88,8 @@ public class CommandXboxControllerExtended extends CommandXboxController {
      * @return Command to rumble the controller
      */
     public Command rumble(RumbleType side, double intensity) {
-        return Commands.startEnd(() -> hid.setRumble(side, intensity),
-            () -> hid.setRumble(side, 0.0));
+        return Commands.startEnd(
+                () -> hid.setRumble(side, intensity), () -> hid.setRumble(side, 0.0));
     }
 
     /**
@@ -103,8 +102,8 @@ public class CommandXboxControllerExtended extends CommandXboxController {
      */
     public Command rumbleForTime(RumbleType side, double intensity, Time time) {
         return Commands.runOnce(() -> hid.setRumble(side, intensity))
-            .andThen(Commands.waitSeconds(time.in(Seconds)))
-            .andThen(() -> hid.setRumble(side, 0.0));
+                .andThen(Commands.waitSeconds(time.in(Seconds)))
+                .andThen(() -> hid.setRumble(side, 0.0));
     }
 
     double applyModifiers(double joystickInput) {

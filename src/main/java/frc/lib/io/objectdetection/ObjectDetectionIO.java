@@ -34,6 +34,7 @@ public interface ObjectDetectionIO {
     public class ObjectDetectionIOInputs implements LoggableInputs {
         /** Whether the camera is connected. */
         public boolean connected = false;
+
         /**
          * Each index of latestPhotonTrackedTargets is a single {@link PhotonTrackedTarget} with all
          * the data needed for each target

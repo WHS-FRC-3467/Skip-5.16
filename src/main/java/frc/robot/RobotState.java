@@ -17,8 +17,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
-import java.util.Optional;
-import org.littletonrobotics.junction.AutoLogOutput;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -34,19 +33,21 @@ import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.subsystems.drive.Drive;
+import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RobotState {
 
     private static final LoggedTunableNumber SHOOT_TOLERANCE_DEGREES =
-        new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 1.0);
+            new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 1.0);
     private static final LoggedTunableNumber MAX_HOOD_RETRACT_TIME =
-        new LoggedTunableNumber("RobotState/MaxHoodRetractTime", 0.2);
+            new LoggedTunableNumber("RobotState/MaxHoodRetractTime", 0.2);
 
     private static final double LINEAR_ODOMETRY_STD_DEV = 0.01;
     private static final double ANGULAR_ODOMETRY_STD_DEV = 0.01;
@@ -59,65 +60,78 @@ public class RobotState {
     @AutoLogOutput(key = "Drive/DrivetrainAngled")
     private boolean drivetrainAngled = false;
 
-    public final Trigger facingTarget = new Trigger(() -> Math.abs(getAngleToTarget()
-        .minus(getEstimatedPose().getRotation())
-        .getDegrees()) < SHOOT_TOLERANCE_DEGREES.get());
+    public final Trigger facingTarget =
+            new Trigger(
+                    () ->
+                            Math.abs(
+                                            getAngleToTarget()
+                                                    .minus(getEstimatedPose().getRotation())
+                                                    .getDegrees())
+                                    < SHOOT_TOLERANCE_DEGREES.get());
 
     /**
      * Whether or not the robot is entering the trench in {@code MAX_HOOD_RETRACT_TIME}. For use to
      * check whether we need to force the hood to retract to prevent decapitation.
      */
     public final LoggedTrigger enteringTrench =
-        new LoggedTrigger("RobotState/EnteringTrench", () -> {
-            // Predict future pose
-            Pose2d futurePose = getEstimatedPose()
-                .exp(getFieldRelativeVelocity().toTwist2d(MAX_HOOD_RETRACT_TIME.get()));
+            new LoggedTrigger(
+                    "RobotState/EnteringTrench",
+                    () -> {
+                        // Predict future pose
+                        Pose2d futurePose =
+                                getEstimatedPose()
+                                        .exp(
+                                                getFieldRelativeVelocity()
+                                                        .toTwist2d(MAX_HOOD_RETRACT_TIME.get()));
 
-            // Normalize to alliance frame
-            Pose2d pose = FieldUtil.apply(futurePose);
+                        // Normalize to alliance frame
+                        Pose2d pose = FieldUtil.apply(futurePose);
 
-            double x = pose.getX();
-            double y = pose.getY();
+                        double x = pose.getX();
+                        double y = pose.getY();
 
-            double halfRobotLength = Constants.FULL_ROBOT_LENGTH.in(Meters) / 2.0;
+                        double halfRobotLength = Constants.FULL_ROBOT_LENGTH.in(Meters) / 2.0;
 
-            // Alliance trench corridor
-            double trenchMinX = FieldConstants.LeftBump.NEAR_LEFT_CORNER.getX() - halfRobotLength;
-            double trenchMaxX = FieldConstants.LeftBump.FAR_LEFT_CORNER.getX() + halfRobotLength;
+                        // Alliance trench corridor
+                        double trenchMinX =
+                                FieldConstants.LeftBump.NEAR_LEFT_CORNER.getX() - halfRobotLength;
+                        double trenchMaxX =
+                                FieldConstants.LeftBump.FAR_LEFT_CORNER.getX() + halfRobotLength;
 
-            // Opponent trench corridor (mirrored)
-            double oppTrenchMinX = FieldConstants.FIELD_LENGTH - trenchMaxX;
-            double oppTrenchMaxX = FieldConstants.FIELD_LENGTH - trenchMinX;
+                        // Opponent trench corridor (mirrored)
+                        double oppTrenchMinX = FieldConstants.FIELD_LENGTH - trenchMaxX;
+                        double oppTrenchMaxX = FieldConstants.FIELD_LENGTH - trenchMinX;
 
-            boolean inAllianceCorridor =
-                x >= trenchMinX && x <= trenchMaxX;
+                        boolean inAllianceCorridor = x >= trenchMinX && x <= trenchMaxX;
 
-            boolean inOpponentCorridor =
-                x >= oppTrenchMinX && x <= oppTrenchMaxX;
+                        boolean inOpponentCorridor = x >= oppTrenchMinX && x <= oppTrenchMaxX;
 
-            boolean inRightTrench =
-                y >= FieldConstants.LinesHorizontal.RIGHT_TRENCH_OPEN_END &&
-                    y <= FieldConstants.LinesHorizontal.RIGHT_TRENCH_OPEN_START;
+                        boolean inRightTrench =
+                                y >= FieldConstants.LinesHorizontal.RIGHT_TRENCH_OPEN_END
+                                        && y
+                                                <= FieldConstants.LinesHorizontal
+                                                        .RIGHT_TRENCH_OPEN_START;
 
-            boolean inLeftTrench =
-                y >= FieldConstants.LinesHorizontal.LEFT_TRENCH_OPEN_END &&
-                    y <= FieldConstants.LinesHorizontal.LEFT_TRENCH_OPEN_START;
+                        boolean inLeftTrench =
+                                y >= FieldConstants.LinesHorizontal.LEFT_TRENCH_OPEN_END
+                                        && y
+                                                <= FieldConstants.LinesHorizontal
+                                                        .LEFT_TRENCH_OPEN_START;
 
-            return (inAllianceCorridor || inOpponentCorridor)
-                && (inLeftTrench || inRightTrench);
-        });
+                        return (inAllianceCorridor || inOpponentCorridor)
+                                && (inLeftTrench || inRightTrench);
+                    });
 
     // -------- POSE ESTIMATION --------
 
-    private final PoseEstimator poseEstimator = new PoseEstimator(
-        new SwerveDriveKinematics(Drive.getModuleTranslations()),
-        Seconds.of(2),
-        LINEAR_ODOMETRY_STD_DEV,
-        ANGULAR_ODOMETRY_STD_DEV);
+    private final PoseEstimator poseEstimator =
+            new PoseEstimator(
+                    new SwerveDriveKinematics(Drive.getModuleTranslations()),
+                    Seconds.of(2),
+                    LINEAR_ODOMETRY_STD_DEV,
+                    ANGULAR_ODOMETRY_STD_DEV);
 
-    @Setter
-    private ChassisSpeeds velocity = new ChassisSpeeds();
-
+    @Setter private ChassisSpeeds velocity = new ChassisSpeeds();
 
     /**
      * Returns the robot's odometry-only pose (without vision corrections).
@@ -179,10 +193,10 @@ public class RobotState {
      */
     public ChassisSpeeds getFieldRelativeVelocity() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(
-            velocity.vxMetersPerSecond,
-            velocity.vyMetersPerSecond,
-            velocity.omegaRadiansPerSecond,
-            getEstimatedPose().getRotation());
+                velocity.vxMetersPerSecond,
+                velocity.vyMetersPerSecond,
+                velocity.omegaRadiansPerSecond,
+                getEstimatedPose().getRotation());
     }
 
     /**
@@ -196,9 +210,7 @@ public class RobotState {
 
     // -------- ZONES --------
 
-    /**
-     * Zones used for strategy/automation decisions (from the active alliance perspective).
-     */
+    /** Zones used for strategy/automation decisions (from the active alliance perspective). */
     public enum FieldRegion {
         ALLIANCE_ZONE,
         NEUTRAL_ZONE,
@@ -210,14 +222,12 @@ public class RobotState {
     /**
      * Classifies the supplied pose into a broad field region.
      *
-     * <p>
-     * The pose is transformed into the current alliance field frame via
-     * {@code FieldUtil.apply(...)} so that {@link FieldRegion#ALLIANCE_ZONE} always refers to the
-     * current alliance's side of the field (and {@link FieldRegion#OPPONENT_ALLIANCE_ZONE} to the
-     * far side), regardless of whether the robot is actually on blue or red.
+     * <p>The pose is transformed into the current alliance field frame via {@code
+     * FieldUtil.apply(...)} so that {@link FieldRegion#ALLIANCE_ZONE} always refers to the current
+     * alliance's side of the field (and {@link FieldRegion#OPPONENT_ALLIANCE_ZONE} to the far
+     * side), regardless of whether the robot is actually on blue or red.
      *
-     * <p>
-     * Bump/trench lanes are checked first so they take precedence over the coarse X-based zone
+     * <p>Bump/trench lanes are checked first so they take precedence over the coarse X-based zone
      * classification.
      *
      * @param currentPose The pose to check
@@ -239,13 +249,13 @@ public class RobotState {
         if (inTrenchXBand) {
             // Right lane occupies the low-Y side of the field.
             if (y >= FieldConstants.LinesHorizontal.RIGHT_TRENCH_OPEN_END
-                && y <= FieldConstants.LinesHorizontal.RIGHT_BUMP_START) {
+                    && y <= FieldConstants.LinesHorizontal.RIGHT_BUMP_START) {
                 return FieldRegion.RIGHT_BUMP_TRENCH;
             }
 
             // Left lane occupies the high-Y side of the field.
             if (y >= FieldConstants.LinesHorizontal.LEFT_BUMP_END
-                && y <= FieldConstants.LinesHorizontal.LEFT_TRENCH_OPEN_START) {
+                    && y <= FieldConstants.LinesHorizontal.LEFT_TRENCH_OPEN_START) {
                 return FieldRegion.LEFT_BUMP_TRENCH;
             }
         }
@@ -263,14 +273,12 @@ public class RobotState {
     /**
      * Classifies the current pose into a broad field region.
      *
-     * <p>
-     * The pose is transformed into the current alliance field frame via
-     * {@code FieldUtil.apply(...)} so that {@link FieldRegion#ALLIANCE_ZONE} always refers to the
-     * current alliance's side of the field (and {@link FieldRegion#OPPONENT_ALLIANCE_ZONE} to the
-     * far side), regardless of whether the robot is actually on blue or red.
+     * <p>The pose is transformed into the current alliance field frame via {@code
+     * FieldUtil.apply(...)} so that {@link FieldRegion#ALLIANCE_ZONE} always refers to the current
+     * alliance's side of the field (and {@link FieldRegion#OPPONENT_ALLIANCE_ZONE} to the far
+     * side), regardless of whether the robot is actually on blue or red.
      *
-     * <p>
-     * Bump/trench lanes are checked first so they take precedence over the coarse X-based zone
+     * <p>Bump/trench lanes are checked first so they take precedence over the coarse X-based zone
      * classification.
      *
      * @return The field region the robot is in
@@ -279,9 +287,7 @@ public class RobotState {
         return getFieldRegion(getEstimatedPose());
     }
 
-    /**
-     * Returns the nearest cardinal angle (multiple of 90 degrees) to the current robot angle.
-     */
+    /** Returns the nearest cardinal angle (multiple of 90 degrees) to the current robot angle. */
     private Rotation2d getNearestCardinalAngle() {
         double currentAngle = getEstimatedPose().getRotation().getDegrees();
         double nearestCardinalAngle = Math.round(currentAngle / 90.0) * 90.0;
@@ -292,21 +298,18 @@ public class RobotState {
      * Gets the heading the robot should maintain while driving through (or approaching) a trench
      * lane.
      *
-     * <p>
-     * The desired heading depends on where the robot is relative to the trench corridor:
-     * </p>
+     * <p>The desired heading depends on where the robot is relative to the trench corridor:
+     *
      * <ul>
-     * <li>When in a bump/trench lane, the heading snaps to the nearest cardinal direction so the
-     * robot stays square with the lane.</li>
-     * <li>When outside a lane, the heading points toward the nearer side of the lane corridor:
-     * toward midfield when on the alliance wall side, and back toward the alliance wall when on the
-     * midfield side (mirrored on the opponent half).</li>
+     *   <li>When in a bump/trench lane, the heading snaps to the nearest cardinal direction so the
+     *       robot stays square with the lane.
+     *   <li>When outside a lane, the heading points toward the nearer side of the lane corridor:
+     *       toward midfield when on the alliance wall side, and back toward the alliance wall when
+     *       on the midfield side (mirrored on the opponent half).
      * </ul>
      *
-     * <p>
-     * All logic is evaluated in the blue-alliance field frame via {@code FieldUtil.apply(...)} so
-     * the behavior is consistent on both alliances.
-     * </p>
+     * <p>All logic is evaluated in the blue-alliance field frame via {@code FieldUtil.apply(...)}
+     * so the behavior is consistent on both alliances.
      *
      * @return the desired field-relative heading
      */
@@ -338,14 +341,15 @@ public class RobotState {
                 } else {
                     // Inside the corridor but not classified into a lane: stay square.
                     yield getNearestCardinalAngle();
-
                 }
             }
 
             case NEUTRAL_ZONE -> {
                 // In the official neutral zone, bias toward the nearer half's direction.
                 yield FieldUtil.apply(
-                    x < FieldConstants.FIELD_CENTER.getX() ? Rotation2d.kZero : Rotation2d.k180deg);
+                        x < FieldConstants.FIELD_CENTER.getX()
+                                ? Rotation2d.kZero
+                                : Rotation2d.k180deg);
             }
 
             case OPPONENT_ALLIANCE_ZONE -> {
@@ -366,35 +370,35 @@ public class RobotState {
 
     // -------- TARGETS --------
 
-
     @AllArgsConstructor
     @SuppressWarnings("ImmutableEnumChecker")
     public enum Target {
         /** The Hub */
-        HUB(new Translation3d(
-            FieldConstants.Hub.TOP_CENTER_POINT.getX(),
-            FieldConstants.Hub.TOP_CENTER_POINT.getY(),
-            FieldConstants.Hub.HEIGHT)),
+        HUB(
+                new Translation3d(
+                        FieldConstants.Hub.TOP_CENTER_POINT.getX(),
+                        FieldConstants.Hub.TOP_CENTER_POINT.getY(),
+                        FieldConstants.Hub.HEIGHT)),
 
         /**
          * Center of the left portion of the alliance zone (upper-Y half in the blue-alliance
          * frame).
          */
         FEED_LEFT(
-            new Translation3d(
-                FieldConstants.LinesVertical.NEUTRAL_ZONE_NEAR / 2.0,
-                (FieldConstants.FIELD_CENTER.getY() + FieldConstants.FIELD_WIDTH) / 2.0,
-                0)),
+                new Translation3d(
+                        FieldConstants.LinesVertical.NEUTRAL_ZONE_NEAR / 2.0,
+                        (FieldConstants.FIELD_CENTER.getY() + FieldConstants.FIELD_WIDTH) / 2.0,
+                        0)),
 
         /**
          * Center of the right portion of the alliance zone (lower-Y half in the blue-alliance
          * frame).
          */
         FEED_RIGHT(
-            new Translation3d(
-                FieldConstants.LinesVertical.NEUTRAL_ZONE_NEAR / 2.0,
-                (0.0 + FieldConstants.FIELD_CENTER.getY()) / 2.0,
-                0));
+                new Translation3d(
+                        FieldConstants.LinesVertical.NEUTRAL_ZONE_NEAR / 2.0,
+                        (0.0 + FieldConstants.FIELD_CENTER.getY()) / 2.0,
+                        0));
 
         private final Translation3d blueTranslation;
 
@@ -406,7 +410,6 @@ public class RobotState {
         public Translation3d getAllianceTranslation() {
             return FieldUtil.apply(blueTranslation);
         }
-
     }
 
     @AutoLogOutput(key = "Robot/CurrentTarget")
@@ -415,15 +418,15 @@ public class RobotState {
 
         // Target the hub anywhere on our side *including* the near bump/trench lanes.
         if (region == FieldRegion.ALLIANCE_ZONE
-            || region == FieldRegion.LEFT_BUMP_TRENCH
-            || region == FieldRegion.RIGHT_BUMP_TRENCH) {
+                || region == FieldRegion.LEFT_BUMP_TRENCH
+                || region == FieldRegion.RIGHT_BUMP_TRENCH) {
             return Target.HUB;
         }
 
         Pose2d pose = FieldUtil.apply(getEstimatedPose());
         return pose.getY() >= FieldConstants.FIELD_CENTER.getY()
-            ? Target.FEED_LEFT
-            : Target.FEED_RIGHT;
+                ? Target.FEED_LEFT
+                : Target.FEED_RIGHT;
     }
 
     /**
@@ -443,8 +446,10 @@ public class RobotState {
      * @return the angle to the target
      */
     public Rotation2d getAngleToTarget() {
-        return getTarget().getAllianceTranslation().toTranslation2d()
-            .minus(getEstimatedPose().getTranslation())
-            .getAngle();
+        return getTarget()
+                .getAllianceTranslation()
+                .toTranslation2d()
+                .minus(getEstimatedPose().getTranslation())
+                .getAngle();
     }
 }

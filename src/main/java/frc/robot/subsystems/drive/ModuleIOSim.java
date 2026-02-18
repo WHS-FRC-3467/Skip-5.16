@@ -38,8 +38,8 @@ public class ModuleIOSim implements ModuleIO {
     private static final double DRIVE_KD = 0.0;
     private static final double DRIVE_KS = 0.0;
     private static final double DRIVE_KV_ROT = 0.742; // Updated from 0.91035 to reflect new gear
-                                                      // ratio (6.0 vs 7.3636): 0.91035 *
-                                                      // (6.0/7.3636) = 0.742
+    // ratio (6.0 vs 7.3636): 0.91035 *
+    // (6.0/7.3636) = 0.742
     private static final double DRIVE_KV = 1.0 / Units.rotationsToRadians(1.0 / DRIVE_KV_ROT);
     private static final double TURN_KP = 12.5;
     private static final double TURN_KD = 0.0;
@@ -63,16 +63,23 @@ public class ModuleIOSim implements ModuleIO {
      * @param constants Module-specific constants for configuring the simulation
      */
     public ModuleIOSim(
-        SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants) {
+            SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+                    constants) {
         // Create drive and turn sim models
-        driveSim = new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(
-                DRIVE_GEARBOX, constants.DriveInertia, constants.DriveMotorGearRatio),
-            DRIVE_GEARBOX);
-        turnSim = new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(
-                TURN_GEARBOX, constants.SteerInertia, constants.SteerMotorGearRatio),
-            TURN_GEARBOX);
+        driveSim =
+                new DCMotorSim(
+                        LinearSystemId.createDCMotorSystem(
+                                DRIVE_GEARBOX,
+                                constants.DriveInertia,
+                                constants.DriveMotorGearRatio),
+                        DRIVE_GEARBOX);
+        turnSim =
+                new DCMotorSim(
+                        LinearSystemId.createDCMotorSystem(
+                                TURN_GEARBOX,
+                                constants.SteerInertia,
+                                constants.SteerMotorGearRatio),
+                        TURN_GEARBOX);
 
         // Enable wrapping for turn PID
         turnController.enableContinuousInput(-Math.PI, Math.PI);
@@ -83,7 +90,8 @@ public class ModuleIOSim implements ModuleIO {
         // Run closed-loop control
         if (driveClosedLoop) {
             driveAppliedVolts =
-                driveFFVolts + driveController.calculate(driveSim.getAngularVelocityRadPerSec());
+                    driveFFVolts
+                            + driveController.calculate(driveSim.getAngularVelocityRadPerSec());
         } else {
             driveController.reset();
         }

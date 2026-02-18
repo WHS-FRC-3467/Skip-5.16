@@ -15,12 +15,12 @@
 
 package frc.lib.io.objectdetection;
 
-import org.photonvision.PhotonCamera;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import java.util.List;
+import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * An ObjectDetectionIO implementation that uses a camera connected to hardware running the
@@ -43,7 +43,9 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
         // PhotonVision UI).
         camera = new PhotonCamera(cameraName);
         disconnectedAlert =
-            new Alert("PhotoVision Camera " + cameraName + " is not connected.", AlertType.kError);
+                new Alert(
+                        "PhotoVision Camera " + cameraName + " is not connected.",
+                        AlertType.kError);
         this.cameraName = cameraName;
     }
 
@@ -68,7 +70,7 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
         // Update latestTargets field of ObjectDetectionIOInputs class with most recent set of
         // targets.
         inputs.latestTargets =
-            // Array of PhotonTrackedTargets from latest pipeline result.
-            result.get(0).getTargets().toArray(PhotonTrackedTarget[]::new);
+                // Array of PhotonTrackedTargets from latest pipeline result.
+                result.get(0).getTargets().toArray(PhotonTrackedTarget[]::new);
     }
 }

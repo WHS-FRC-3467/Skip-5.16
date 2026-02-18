@@ -17,6 +17,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
+
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -31,7 +32,6 @@ import frc.robot.subsystems.drive.DriveConstants;
  * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and "replay"
  * (log replay from a file).
  */
-
 public final class Constants {
     public static final Mode simMode = Mode.SIM;
     public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
@@ -73,8 +73,10 @@ public final class Constants {
         }
     }
 
-    public static RobotType robotType = RobotConstants.isComp ? RobotType.COMP
-        : RobotConstants.isAlpha ? RobotType.ALPHA : RobotType.NONE;
+    public static RobotType robotType =
+            RobotConstants.isComp
+                    ? RobotType.COMP
+                    : RobotConstants.isAlpha ? RobotType.ALPHA : RobotType.NONE;
 
     public enum RobotType {
         COMP,
@@ -84,35 +86,29 @@ public final class Constants {
 
     public static final class PathConstants {
 
-        public static final Distance STARTING_POSE_DRIVE_TOLERANCE =
-            Inches.of(3.0); // For auto
+        public static final Distance STARTING_POSE_DRIVE_TOLERANCE = Inches.of(3.0); // For auto
         public static final Angle STARTING_POSE_ROT_TOLERANCE_DEGREES = Degrees.of(5.0);
 
         public static final Distance PATHGENERATION_DRIVE_TOLERANCE = Inches.of(3.0);
         public static final Angle PATHGENERATION_ROT_TOLERANCE = Degrees.of(5.0);
         // Tune the maxAcceleration, maxAngularVelocityRadPerSec, and
         // maxAngularAccelerationRacPerSecSq constraints for pathfinding
-        public static final PathConstraints ON_THE_FLY_PATH_CONSTRAINTS = new PathConstraints(
-            DriveConstants.kSpeedAt12Volts.magnitude(),
-            4.0,
-            Units.degreesToRadians(540),
-            Units.degreesToRadians(720));
+        public static final PathConstraints ON_THE_FLY_PATH_CONSTRAINTS =
+                new PathConstraints(
+                        DriveConstants.kSpeedAt12Volts.magnitude(),
+                        4.0,
+                        Units.degreesToRadians(540),
+                        Units.degreesToRadians(720));
     }
 
     public static final Distance FULL_ROBOT_WIDTH = Inches.of(27.0 + 3.25);
     public static final Distance FULL_ROBOT_LENGTH = Inches.of(27.0 + 3.25);
     public static final Distance BUMPER_HEIGHT = Inches.of(4.0);
     public static final Transform3d LEFT_SHOOTER_EXIT_TRANSFORM =
-        new Transform3d(
-            Inches.of(-7.346),
-            Inches.of(3.84),
-            Inches.of(22),
-            new Rotation3d(0, 0, 0));
+            new Transform3d(
+                    Inches.of(-7.346), Inches.of(3.84), Inches.of(22), new Rotation3d(0, 0, 0));
 
     public static final Transform3d RIGHT_SHOOTER_EXIT_TRANSFORM =
-        new Transform3d(
-            Inches.of(-7.346),
-            Inches.of(-3.84),
-            Inches.of(22),
-            new Rotation3d(0, 0, 0));
+            new Transform3d(
+                    Inches.of(-7.346), Inches.of(-3.84), Inches.of(22), new Rotation3d(0, 0, 0));
 }
