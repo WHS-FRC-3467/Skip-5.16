@@ -1138,4 +1138,12 @@ public class FuelSim {
 
         return new Translation3d(xVel, yVel, verticalVel);
     }
+
+    // Return list of fuel poses for use in Object Detection simulation. Read only.
+    public synchronized List<Pose3d> getFuelPoses() {
+        if (fuels.isEmpty()) {
+            return List.of();
+        }
+        return fuels.stream().map(fuel -> new Pose3d(fuel.pos, Rotation3d.kZero)).toList();
+    }
 }

@@ -30,6 +30,7 @@ public class RobotSim {
     private static final RobotSim instance = new RobotSim();
 
     private final RobotState robotState = RobotState.getInstance();
+
     private final FuelSim fuelSim = new FuelSim();
 
     private MechanismPosePublisher posePublisher = null;
