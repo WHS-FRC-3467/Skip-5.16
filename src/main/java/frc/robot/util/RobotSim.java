@@ -137,7 +137,6 @@ public class RobotSim {
     public void updateSim() {
         fuelSim.updateSim();
 
-        if (posePublisher != null)
-            posePublisher.update();
+        if (posePublisher != null) posePublisher.update();
     }
 }

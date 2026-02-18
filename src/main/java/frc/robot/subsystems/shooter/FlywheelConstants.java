@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -35,10 +36,9 @@ public class FlywheelConstants {
 
     public static String NAME = "Flywheel";
 
-    public static final AngularVelocity MAX_VELOCITY =
-        RotationsPerSecond.of(85.9);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(85.9);
     public static final AngularAcceleration MAX_ACCELERATION =
-        RotationsPerSecondPerSecond.of(189.5);
+            RotationsPerSecondPerSecond.of(189.5);
 
     private static final double GEARING = (20.0 / 18.0);
 
@@ -75,7 +75,7 @@ public class FlywheelConstants {
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.MotorOutput.Inverted =
-            invert ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
+                invert ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
 
@@ -88,11 +88,10 @@ public class FlywheelConstants {
         config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
         config.MotionMagic.MotionMagicCruiseVelocity = MAX_VELOCITY.in(RotationsPerSecond);
         config.MotionMagic.MotionMagicAcceleration =
-            MAX_ACCELERATION.in(RotationsPerSecondPerSecond);
+                MAX_ACCELERATION.in(RotationsPerSecondPerSecond);
 
         return config;
     }
-
 
     /**
      * Creates and configures the left flywheel mechanism based on the current robot mode. Selects
@@ -104,16 +103,27 @@ public class FlywheelConstants {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                mechanism = new FlywheelMechanismReal("Left " + NAME,
-                    new MotorIOTalonFX("Left " + NAME, getFXConfig(true), Ports.leftFlywheelMain,
-                        new TalonFXFollower(Ports.leftFlywheelFollower, false)));
+                mechanism =
+                        new FlywheelMechanismReal(
+                                "Left " + NAME,
+                                new MotorIOTalonFX(
+                                        "Left " + NAME,
+                                        getFXConfig(true),
+                                        Ports.leftFlywheelMain,
+                                        new TalonFXFollower(Ports.leftFlywheelFollower, false)));
                 break;
             case SIM:
-                mechanism = new FlywheelMechanismSim("Left " + NAME,
-                    new MotorIOTalonFXSim("Left " + NAME, getFXConfig(true),
-                        Ports.leftFlywheelMain,
-                        new TalonFXFollower(Ports.leftFlywheelFollower, false)),
-                    DCMOTOR, MOI, TOLERANCE);
+                mechanism =
+                        new FlywheelMechanismSim(
+                                "Left " + NAME,
+                                new MotorIOTalonFXSim(
+                                        "Left " + NAME,
+                                        getFXConfig(true),
+                                        Ports.leftFlywheelMain,
+                                        new TalonFXFollower(Ports.leftFlywheelFollower, false)),
+                                DCMOTOR,
+                                MOI,
+                                TOLERANCE);
                 break;
             case REPLAY:
                 mechanism = new FlywheelMechanism<>("Left " + NAME, new MotorIO() {}) {};
@@ -135,16 +145,27 @@ public class FlywheelConstants {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                mechanism = new FlywheelMechanismReal("Right " + NAME,
-                    new MotorIOTalonFX("Right " + NAME, getFXConfig(false), Ports.rightFlywheelMain,
-                        new TalonFXFollower(Ports.rightFlywheelFollower, false)));
+                mechanism =
+                        new FlywheelMechanismReal(
+                                "Right " + NAME,
+                                new MotorIOTalonFX(
+                                        "Right " + NAME,
+                                        getFXConfig(false),
+                                        Ports.rightFlywheelMain,
+                                        new TalonFXFollower(Ports.rightFlywheelFollower, false)));
                 break;
             case SIM:
-                mechanism = new FlywheelMechanismSim("Right " + NAME,
-                    new MotorIOTalonFXSim("Right " + NAME, getFXConfig(false),
-                        Ports.rightFlywheelMain,
-                        new TalonFXFollower(Ports.rightFlywheelFollower, false)),
-                    DCMOTOR, MOI, TOLERANCE);
+                mechanism =
+                        new FlywheelMechanismSim(
+                                "Right " + NAME,
+                                new MotorIOTalonFXSim(
+                                        "Right " + NAME,
+                                        getFXConfig(false),
+                                        Ports.rightFlywheelMain,
+                                        new TalonFXFollower(Ports.rightFlywheelFollower, false)),
+                                DCMOTOR,
+                                MOI,
+                                TOLERANCE);
                 break;
             case REPLAY:
                 mechanism = new FlywheelMechanism<>("Right " + NAME, new MotorIO() {}) {};

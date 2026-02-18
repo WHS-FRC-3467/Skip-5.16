@@ -48,7 +48,7 @@ public class IntakeRollerConstants {
 
     public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(59.0);
     public static final AngularAcceleration MAX_ACCELERATION =
-        RotationsPerSecondPerSecond.of(110.0);
+            RotationsPerSecondPerSecond.of(110.0);
 
     private static final double GEARING = (24.0 / 12.0);
 
