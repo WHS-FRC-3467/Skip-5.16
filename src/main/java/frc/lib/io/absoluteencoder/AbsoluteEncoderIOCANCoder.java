@@ -15,8 +15,6 @@
 
 package frc.lib.io.absoluteencoder;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
@@ -25,18 +23,19 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import edu.wpi.first.units.measure.Angle;
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.Device;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Real hardware implementation of AbsoluteEncoderIO using CTRE CANcoder.
  *
- * <p>
- * Interfaces with a CTRE CANcoder absolute magnetic encoder over the CAN bus. Provides
+ * <p>Interfaces with a CTRE CANcoder absolute magnetic encoder over the CAN bus. Provides
  * high-resolution absolute position sensing for mechanisms like swerve modules, arms, and turrets.
  * Uses Phoenix 6 API with signal-based updates.
  */
 public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
     private static final Logger LOGGER =
-        Logger.getLogger(AbsoluteEncoderIOCANCoder.class.getName());
+            Logger.getLogger(AbsoluteEncoderIOCANCoder.class.getName());
 
     protected final CANcoder CANCoder;
 
@@ -50,24 +49,26 @@ public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
      * @param id CAN device identifier (ID and bus name)
      * @param configuration CANcoder configuration including magnet offset and sensor direction
      */
-    public AbsoluteEncoderIOCANCoder(
-        Device.CAN id,
-        CANcoderConfiguration configuration) {
+    public AbsoluteEncoderIOCANCoder(Device.CAN id, CANcoderConfiguration configuration) {
         CANCoder = new CANcoder(id.id(), new CANBus(id.bus()));
 
-        updateThread.CTRECheckErrorAndRetry(() -> CANCoder.getConfigurator().apply(configuration))
-            .exceptionally(ex -> {
-                LOGGER.log(Level.SEVERE, ex.toString(), ex);
-                return null;
-            });
+        updateThread
+                .CTRECheckErrorAndRetry(() -> CANCoder.getConfigurator().apply(configuration))
+                .exceptionally(
+                        ex -> {
+                            LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                            return null;
+                        });
 
         angle = CANCoder.getAbsolutePosition();
 
-        updateThread.CTRECheckErrorAndRetry(() -> angle.setUpdateFrequency(200))
-            .exceptionally(ex -> {
-                LOGGER.log(Level.SEVERE, ex.toString(), ex);
-                return null;
-            });
+        updateThread
+                .CTRECheckErrorAndRetry(() -> angle.setUpdateFrequency(200))
+                .exceptionally(
+                        ex -> {
+                            LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                            return null;
+                        });
     }
 
     @Override

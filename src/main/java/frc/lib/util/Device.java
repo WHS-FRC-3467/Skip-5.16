@@ -15,19 +15,43 @@
 
 package frc.lib.util;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 /**
  * Sealed interface representing different types of hardware devices on the robot. Provides
  * type-safe device port definitions for CAN, DIO, and PWM devices.
  */
-public sealed
-interface Device {
+public sealed interface Device {
     /**
      * CAN bus device with an ID and bus name.
      *
      * @param id the CAN ID of the device
      * @param bus the name of the CAN bus the device is connected to (e.g., "rio", "Drivetrain")
      */
-    record CAN(int id, String bus) implements Device {
+    final record CAN(int id, String bus) implements Device {
+        // bus -> { ids }
+        private static HashMap<String, HashSet<Integer>> ids = new HashMap<>();
+
+        public CAN(int id, String bus) {
+            if (id <= 0 || id > 63) {
+                throw new IllegalArgumentException(
+                        "Illegal CAN ID "
+                                + id
+                                + ". IDs must be between 1 and 63 inclusive (ID 0 is reserved).");
+            }
+
+            if (!ids.containsKey(bus)) {
+                HashSet<Integer> idSet = new HashSet<>();
+                idSet.add(id);
+                ids.put(bus, idSet);
+            } else if (ids.get(bus).contains(id)) {
+                throw new IllegalArgumentException("CAN ID Conflict on ID " + id);
+            }
+
+            this.id = id;
+            this.bus = bus;
+        }
     }
 
     /**
@@ -35,14 +59,12 @@ interface Device {
      *
      * @param id the DIO port ID on the roboRIO
      */
-    public record DIO(int id) implements Device {
-    }
+    public final record DIO(int id) implements Device {}
 
     /**
      * Pulse Width Modulation device with a port ID.
      *
      * @param id the PWM port ID on the roboRIO
      */
-    public record PWM(int id) implements Device {
-    }
+    public final record PWM(int id) implements Device {}
 }

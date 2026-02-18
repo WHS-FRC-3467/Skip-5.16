@@ -15,12 +15,6 @@
 
 package frc.lib.mechanisms;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -31,6 +25,11 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorInputsAutoLogged;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.PID;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import lombok.Getter;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Abstract base class for all robot mechanisms that use motors. Provides common functionality for
@@ -40,8 +39,7 @@ import frc.lib.util.PID;
  * @param <T> the type of MotorIO implementation used by this mechanism
  */
 public abstract class Mechanism<T extends MotorIO> {
-
-    protected final String name;
+    @Getter protected final String name;
     protected final MotorInputsAutoLogged inputs = new MotorInputsAutoLogged();
     protected final T io;
     private final List<TunablePidConfig> tunablePidConfigs = new ArrayList<>();
@@ -63,15 +61,15 @@ public abstract class Mechanism<T extends MotorIO> {
         private final int id;
 
         private TunablePidConfig(
-            PIDSlot slot,
-            LoggedTunableNumber kp,
-            LoggedTunableNumber ki,
-            LoggedTunableNumber kd,
-            LoggedTunableNumber ka,
-            LoggedTunableNumber kv,
-            LoggedTunableNumber kg,
-            LoggedTunableNumber ks,
-            int id) {
+                PIDSlot slot,
+                LoggedTunableNumber kp,
+                LoggedTunableNumber ki,
+                LoggedTunableNumber kd,
+                LoggedTunableNumber ka,
+                LoggedTunableNumber kv,
+                LoggedTunableNumber kg,
+                LoggedTunableNumber ks,
+                int id) {
             this.slot = slot;
             this.kp = kp;
             this.ki = ki;
@@ -92,19 +90,19 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void enableTunablePID(PIDSlot slot, PID defaultPid) {
         LoggedTunableNumber kp =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kP", defaultPid.P());
+                new LoggedTunableNumber(name + "/PID/" + slot + "/kP", defaultPid.P());
         LoggedTunableNumber ki =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kI", defaultPid.I());
+                new LoggedTunableNumber(name + "/PID/" + slot + "/kI", defaultPid.I());
         LoggedTunableNumber kd =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kD", defaultPid.D());
+                new LoggedTunableNumber(name + "/PID/" + slot + "/kD", defaultPid.D());
         LoggedTunableNumber ka =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kA", defaultPid.A());
+                new LoggedTunableNumber(name + "/PID/" + slot + "/kA", defaultPid.A());
         LoggedTunableNumber kv =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kV", defaultPid.V());
+                new LoggedTunableNumber(name + "/PID/" + slot + "/kV", defaultPid.V());
         LoggedTunableNumber kg =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kG", defaultPid.G());
+                new LoggedTunableNumber(name + "/PID/" + slot + "/kG", defaultPid.G());
         LoggedTunableNumber ks =
-            new LoggedTunableNumber(name + "/PID/" + slot + "/kS", defaultPid.S());
+                new LoggedTunableNumber(name + "/PID/" + slot + "/kS", defaultPid.S());
         int id = Objects.hash(this, slot);
         tunablePidConfigs.add(new TunablePidConfig(slot, kp, ki, kd, ka, kv, kg, ks, id));
     }
@@ -113,39 +111,36 @@ public abstract class Mechanism<T extends MotorIO> {
     public void periodic() {
         for (TunablePidConfig config : tunablePidConfigs) {
             LoggedTunableNumber.ifChanged(
-                config.id,
-                () -> io.setPID(
-                    config.slot,
-                    new PID(
-                        config.kp.get(),
-                        config.ki.get(),
-                        config.kd.get(),
-                        config.ka.get(),
-                        config.kv.get(),
-                        config.kg.get(),
-                        config.ks.get())),
-                config.kp,
-                config.ki,
-                config.kd,
-                config.ka,
-                config.kv,
-                config.kg,
-                config.ks);
+                    config.id,
+                    () ->
+                            io.setPID(
+                                    config.slot,
+                                    new PID(
+                                            config.kp.get(),
+                                            config.ki.get(),
+                                            config.kd.get(),
+                                            config.ka.get(),
+                                            config.kv.get(),
+                                            config.kg.get(),
+                                            config.ks.get())),
+                    config.kp,
+                    config.ki,
+                    config.kd,
+                    config.ka,
+                    config.kv,
+                    config.kg,
+                    config.ks);
         }
         io.updateInputs(inputs);
         Logger.processInputs(name, inputs);
     }
 
-    /**
-     * Sets the mechanism to coast mode.
-     */
+    /** Sets the mechanism to coast mode. */
     public void runCoast() {
         io.runCoast();
     }
 
-    /**
-     * Sets the mechanism to brake mode.
-     */
+    /** Sets the mechanism to brake mode. */
     public void runBrake() {
         io.runBrake();
     }
@@ -185,9 +180,7 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void runPosition(Angle position, PIDSlot slot) {
         io.runPosition(position, slot);
-
     }
-
 
     /**
      * Runs the mechanism at a target velocity.
@@ -196,8 +189,8 @@ public abstract class Mechanism<T extends MotorIO> {
      * @param acceleration Max acceleration.
      * @param slot PID slot index.
      */
-    public void runVelocity(AngularVelocity velocity, AngularAcceleration acceleration,
-        PIDSlot slot) {
+    public void runVelocity(
+            AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {
         io.runVelocity(velocity, acceleration, slot);
     }
 
@@ -274,19 +267,8 @@ public abstract class Mechanism<T extends MotorIO> {
         return inputs.velocityError;
     }
 
-    /**
-     * Closes the mechanism and releases resources.
-     */
+    /** Closes the mechanism and releases resources. */
     public void close() {
         io.close();
-    }
-
-    /**
-     * Supplier for the Pose3d of the mechanism
-     *
-     * @return Supplier for the Pose3d
-     */
-    public Supplier<Pose3d> getPoseSupplier() {
-        return () -> Pose3d.kZero;
     }
 }

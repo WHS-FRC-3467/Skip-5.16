@@ -23,7 +23,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -39,7 +38,6 @@ import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -50,7 +48,7 @@ public class IntakeRollerConstants {
 
     public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(59.0);
     public static final AngularAcceleration MAX_ACCELERATION =
-        RotationsPerSecondPerSecond.of(110.0);
+            RotationsPerSecondPerSecond.of(110.0);
 
     private static final double GEARING = (24.0 / 12.0);
 
@@ -95,7 +93,7 @@ public class IntakeRollerConstants {
         config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
         config.MotionMagic.MotionMagicCruiseVelocity = MAX_VELOCITY.in(RotationsPerSecond);
         config.MotionMagic.MotionMagicAcceleration =
-            MAX_ACCELERATION.in(RotationsPerSecondPerSecond);
+                MAX_ACCELERATION.in(RotationsPerSecondPerSecond);
 
         return config;
     }
@@ -110,13 +108,18 @@ public class IntakeRollerConstants {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeRoller));
+                mechanism =
+                        new FlywheelMechanismReal(
+                                NAME, new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeRoller));
                 break;
             case SIM:
-                mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeRoller),
-                    DCMOTOR, MOI, TOLERANCE);
+                mechanism =
+                        new FlywheelMechanismSim(
+                                NAME,
+                                new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeRoller),
+                                DCMOTOR,
+                                MOI,
+                                TOLERANCE);
                 break;
             case REPLAY:
                 mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}) {};

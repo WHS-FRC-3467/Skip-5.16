@@ -25,8 +25,10 @@ public interface DistanceSensorIO {
     abstract class DistanceSensorInputs {
         /** Whether the sensor is connected. */
         public boolean connected = false;
+
         /** Distance from the sensor to the nearest object */
         public Distance distance = null;
+
         /** The amount of ambient infrared light detected by the sensor. */
         public double ambientSignal = 0.0;
     }

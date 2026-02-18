@@ -8,9 +8,7 @@ import frc.lib.util.AutoRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
 
-/**
- * Autonomous routine for characterizing wheel radius. Used for tuning drivetrain odometry.
- */
+/** Autonomous routine for characterizing wheel radius. Used for tuning drivetrain odometry. */
 public class WheelCharacterizationAuto extends AutoRoutine {
     /**
      * Constructs a WheelCharacterizationAuto that runs wheel radius characterization routine.

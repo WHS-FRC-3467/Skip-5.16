@@ -89,9 +89,9 @@ public class LoggedTunableNumber implements DoubleSupplier {
      * Checks whether the number has changed since our last check
      *
      * @param id Unique identifier for the caller to avoid conflicts when shared between multiple
-     *        objects. Recommended approach is to pass the result of "hashCode()"
+     *     objects. Recommended approach is to pass the result of "hashCode()"
      * @return True if the number has changed since the last time this method was called, false
-     *         otherwise.
+     *     otherwise.
      */
     public boolean hasChanged(int id) {
         double currentValue = get();
@@ -108,16 +108,16 @@ public class LoggedTunableNumber implements DoubleSupplier {
      * Runs action if any of the tunableNumbers have changed
      *
      * @param id Unique identifier for the caller to avoid conflicts when shared between multiple *
-     *        objects. Recommended approach is to pass the result of "hashCode()"
+     *     objects. Recommended approach is to pass the result of "hashCode()"
      * @param action Callback to run when any of the tunable numbers have changed. Access tunable
-     *        numbers in order inputted in method
+     *     numbers in order inputted in method
      * @param tunableNumbers All tunable numbers to check
      */
     public static void ifChanged(
-        int id, Consumer<double[]> action, LoggedTunableNumber... tunableNumbers) {
+            int id, Consumer<double[]> action, LoggedTunableNumber... tunableNumbers) {
         if (Arrays.stream(tunableNumbers).anyMatch(tunableNumber -> tunableNumber.hasChanged(id))) {
             action.accept(
-                Arrays.stream(tunableNumbers).mapToDouble(LoggedTunableNumber::get).toArray());
+                    Arrays.stream(tunableNumbers).mapToDouble(LoggedTunableNumber::get).toArray());
         }
     }
 
