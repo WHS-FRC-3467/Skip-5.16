@@ -160,7 +160,7 @@ If your subsystem field name doesn't follow the convention (lowercase class name
 - **Generated Class**: `frc.robot.SmartDashboardCommands` (auto-generated in `build/generated/sources/annotationProcessor/java/main/`)
 - **Processing**: Runs at compile time via Java annotation processing API
 
-**Note**: The `SmartDashboardCommands.java` file in `src/main/java/frc/robot/` is provided as a reference example. During actual builds, the annotation processor will regenerate this file in the build directory. If you need to track it in source control for development purposes, keep the example in src and ensure it matches your annotated commands.
+**Note**: The generated `SmartDashboardCommands.java` file is created during the build process in the `build/generated/sources/annotationProcessor/` directory. It is not checked into source control. After building, you can view it there to see what was generated.
 
 ## Future Enhancements
 

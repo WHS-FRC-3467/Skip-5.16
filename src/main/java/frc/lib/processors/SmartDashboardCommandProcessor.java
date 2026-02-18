@@ -18,7 +18,7 @@ import frc.lib.util.SmartDashboardCommand;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +64,8 @@ public class SmartDashboardCommandProcessor extends AbstractProcessor {
         }
 
         // Collect all annotated methods grouped by their containing class
-        Map<TypeElement, List<MethodInfo>> subsystemCommands = new HashMap<>();
+        // Use LinkedHashMap to maintain insertion order for deterministic generated code
+        Map<TypeElement, List<MethodInfo>> subsystemCommands = new LinkedHashMap<>();
 
         for (Element element : roundEnv.getElementsAnnotatedWith(SmartDashboardCommand.class)) {
             if (!(element instanceof ExecutableElement)) {
@@ -152,8 +153,8 @@ public class SmartDashboardCommandProcessor extends AbstractProcessor {
         // Check if method has parameters (should have none for simple commands)
         if (!method.getParameters().isEmpty()) {
             processingEnv.getMessager().printMessage(
-                Diagnostic.Kind.WARNING,
-                "@SmartDashboardCommand method should not have parameters. "
+                Diagnostic.Kind.ERROR,
+                "@SmartDashboardCommand method must not have parameters. "
                     + "Commands with parameters cannot be registered on SmartDashboard.",
                 method);
             return false;
@@ -257,7 +258,7 @@ public class SmartDashboardCommandProcessor extends AbstractProcessor {
                 writer.println("        // Commands from " + subsystem.getQualifiedName());
 
                 for (MethodInfo method : methods) {
-                    writer.println("        SmartDashboard.putData(\"" + method.key + "\", "
+                    writer.println("        SmartDashboard.putData(\"" + escapeJavaString(method.key) + "\", "
                         + "container." + fieldName + "." + method.methodName + "());");
                 }
                 writer.println();
@@ -279,11 +280,52 @@ public class SmartDashboardCommandProcessor extends AbstractProcessor {
      * simple heuristics: lowercase first letter of class name.
      */
     private String getFieldNameForSubsystem(String className) {
-        // Simple heuristic: convert IntakeSuperstructure -> intakeSuperstructure, Drive -> drive
+        // Simple heuristic: convert IntakeSuperstructure -> intake, Drive -> drive
         if (className.isEmpty()) {
             return className;
         }
+
+        // Handle special cases
+        if (className.endsWith("Superstructure")) {
+            className = className.substring(0, className.length() - "Superstructure".length());
+        }
+
         return Character.toLowerCase(className.charAt(0)) + className.substring(1);
+    }
+
+    /**
+     * Escapes a string for use in Java source code. Handles backslashes, quotes, and other special
+     * characters that need to be escaped in string literals.
+     */
+    private String escapeJavaString(String str) {
+        if (str == null) {
+            return "null";
+        }
+
+        StringBuilder escaped = new StringBuilder();
+        for (char c : str.toCharArray()) {
+            switch (c) {
+                case '\\':
+                    escaped.append("\\\\");
+                    break;
+                case '"':
+                    escaped.append("\\\"");
+                    break;
+                case '\n':
+                    escaped.append("\\n");
+                    break;
+                case '\r':
+                    escaped.append("\\r");
+                    break;
+                case '\t':
+                    escaped.append("\\t");
+                    break;
+                default:
+                    escaped.append(c);
+                    break;
+            }
+        }
+        return escaped.toString();
     }
 
     /**
