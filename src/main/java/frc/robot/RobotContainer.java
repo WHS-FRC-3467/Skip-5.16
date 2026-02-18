@@ -48,13 +48,17 @@ import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.ButtonBoardOverrides;
 import frc.robot.util.RobotSim;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
 /**
@@ -82,6 +86,9 @@ public class RobotContainer {
     // Controller
     private final CommandXboxControllerExtended controller =
         new CommandXboxControllerExtended(0).withDeadband(0.1);
+
+    // Button board
+    private final ButtonBoardOverrides buttonBoard = new ButtonBoardOverrides(2);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
@@ -155,6 +162,7 @@ public class RobotContainer {
 
         // Configure the button bindings
         configureButtonBindings();
+        configureOverrideBindings();
         initializeDashboard();
         configureLEDTriggers();
     }
@@ -240,6 +248,45 @@ public class RobotContainer {
                 indexer.stopCommand(),
                 tower.stopCommand(),
                 intake.extendIntake()));
+    }
+
+    /**
+     * Configures button bindings for the button board. Maps board inputs to robot commands for
+     * teleop control. All buttons only apply while pressed.
+     */
+    private void configureOverrideBindings() {
+        // Button 1: Emergency stop all mechanisms (intake, indexer, tower, and shooter).
+        buttonBoard.emergencyStop().whileTrue(
+            Commands.parallel(
+                intake.stopLinear(),
+                intake.stopRoller(),
+                indexer.stopCommand(),
+                tower.stopCommand(),
+                shooter.setFlywheelSpeed(RadiansPerSecond.zero()),
+                shooter.setHoodAngle(Radians.zero())).repeatedly());
+
+        // Button 2: Stop spinning the shooter and lower the hood.
+        buttonBoard.shooterSpinDown().whileTrue(
+            Commands.parallel(
+                shooter.setFlywheelSpeed(RadiansPerSecond.zero()),
+                shooter.setHoodAngle(Radians.zero())).repeatedly());
+
+        // Button 3: Unjam the pathway by running the flywheels in reverse; only run the roller if
+        // it's extended.
+        buttonBoard.unjam().whileTrue(
+            Commands.parallel(
+                intake.ejectRoller().onlyWhile(intake.isExtended).repeatedly(),
+                indexer.eject(),
+                tower.eject()));
+
+        // Button 4: Forcibly retract the intake by applying negative current.
+        buttonBoard.forceRetractIntake().whileTrue(
+            intake.retractLinear());
+
+        // Button 5: Bypass vision and alignment requirements to force a shot with best guess of
+        // current pose.
+        buttonBoard.forceShot().whileTrue(
+            Commands.parallel()); // TODO: later tonight
     }
 
     /**
