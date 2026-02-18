@@ -45,6 +45,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.LoggedTunableBoolean;
+import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
@@ -139,13 +140,13 @@ public class Drive extends SubsystemBase {
      * The detection checks how consistent each wheel's translational velocity is compared to the
      * others. A wheel that is slipping is often an outlier.
      */
-    private static final double SKID_OUTLIER_SCALE = 1.35;
+    private static final LoggedTunableNumber SKID_OUTLIER_SCALE = new LoggedTunableNumber("Drive/SkidOutlierScale", 1.35);
 
     /*
      * At very low translation speeds, encoder quantization and noise can cause false positives. We
      * skip skid detection if the median translational speed is below this threshold.
      */
-    private static final double SKID_MIN_TRANSLATION_MPS = 0.15;
+    private static final LoggedTunableNumber SKID_MIN_TRANSLATION_MPS = new LoggedTunableNumber("Drive/SkidOutlierScale", 0.15);
 
     @AutoLogOutput(key = "Drive/Skid/BadWheelsLatest")
     private boolean[] skidBadWheelsLatest = new boolean[] {false, false, false, false};
@@ -583,14 +584,14 @@ public class Drive extends SubsystemBase {
         double medianTranslationalSpeedMetersPerSecond =
                 median(translationalSpeedMagnitudesMetersPerSecond);
 
-        if (medianTranslationalSpeedMetersPerSecond < SKID_MIN_TRANSLATION_MPS) {
+        if (medianTranslationalSpeedMetersPerSecond < SKID_MIN_TRANSLATION_MPS.get()) {
             return badWheels;
         }
 
         double minimumAcceptableSpeedMetersPerSecond =
-                medianTranslationalSpeedMetersPerSecond / SKID_OUTLIER_SCALE;
+                medianTranslationalSpeedMetersPerSecond / SKID_OUTLIER_SCALE.get();
         double maximumAcceptableSpeedMetersPerSecond =
-                medianTranslationalSpeedMetersPerSecond * SKID_OUTLIER_SCALE;
+                medianTranslationalSpeedMetersPerSecond * SKID_OUTLIER_SCALE.get();
 
         for (int i = 0; i < 4; i++) {
             double translationalSpeedMetersPerSecond =
