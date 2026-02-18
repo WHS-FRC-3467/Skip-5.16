@@ -17,13 +17,11 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 /**
  * A tunable boolean value that can be adjusted from the dashboard during tuning.
  *
- * <p>
- * When {@link frc.robot.Constants#tuningMode} is enabled, this class reads values from
+ * <p>When {@link frc.robot.Constants#tuningMode} is enabled, this class reads values from
  * NetworkTables, allowing real-time tuning without redeploying code. When tuning mode is disabled,
  * it returns the default value.
  *
- * <p>
- * Example usage:
+ * <p>Example usage:
  *
  * <pre>{@code
  * private static final LoggedTunableBoolean enableAutoAlign =
@@ -95,9 +93,9 @@ public class LoggedTunableBoolean implements BooleanSupplier {
      * Checks whether the boolean has changed since our last check
      *
      * @param id Unique identifier for the caller to avoid conflicts when shared between multiple
-     *        objects. Recommended approach is to pass the result of "hashCode()"
+     *     objects. Recommended approach is to pass the result of "hashCode()"
      * @return True if the boolean has changed since the last time this method was called, false
-     *         otherwise.
+     *     otherwise.
      */
     public boolean hasChanged(int id) {
         boolean currentValue = get();
@@ -114,18 +112,19 @@ public class LoggedTunableBoolean implements BooleanSupplier {
      * Runs action if any of the tunableBooleans have changed
      *
      * @param id Unique identifier for the caller to avoid conflicts when shared between multiple *
-     *        objects. Recommended approach is to pass the result of "hashCode()"
+     *     objects. Recommended approach is to pass the result of "hashCode()"
      * @param action Callback to run when any of the tunable booleans have changed. Access tunable
-     *        booleans in order inputted in method
+     *     booleans in order inputted in method
      * @param tunableBooleans All tunable booleans to check
      */
     public static void ifChanged(
-        int id, Consumer<boolean[]> action, LoggedTunableBoolean... tunableBooleans) {
+            int id, Consumer<boolean[]> action, LoggedTunableBoolean... tunableBooleans) {
         if (Arrays.stream(tunableBooleans)
-            .anyMatch(tunableBoolean -> tunableBoolean.hasChanged(id))) {
+                .anyMatch(tunableBoolean -> tunableBoolean.hasChanged(id))) {
             Boolean[] array =
-                Arrays.stream(tunableBooleans).map(LoggedTunableBoolean::get)
-                    .toArray(Boolean[]::new);
+                    Arrays.stream(tunableBooleans)
+                            .map(LoggedTunableBoolean::get)
+                            .toArray(Boolean[]::new);
             boolean[] array2 = new boolean[array.length];
             for (int i = 0; i < array.length; i++) {
                 array2[i] = array[i].booleanValue();

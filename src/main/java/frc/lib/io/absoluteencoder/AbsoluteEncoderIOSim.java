@@ -20,9 +20,9 @@ import edu.wpi.first.units.measure.Angle;
 /**
  * Simulation extension of AbsoluteEncoderIO for testing and simulation.
  *
- * <p>
- * Adds methods to programmatically set the encoder's simulated angle and velocity, allowing physics
- * simulation and test code to inject realistic encoder values without needing real hardware.
+ * <p>Adds methods to programmatically set the encoder's simulated angle and velocity, allowing
+ * physics simulation and test code to inject realistic encoder values without needing real
+ * hardware.
  */
 public interface AbsoluteEncoderIOSim extends AbsoluteEncoderIO {
     /**

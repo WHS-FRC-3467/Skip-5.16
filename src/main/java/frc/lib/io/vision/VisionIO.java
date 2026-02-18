@@ -15,21 +15,20 @@
 
 package frc.lib.io.vision;
 
-import org.littletonrobotics.junction.LogTable;
-import org.littletonrobotics.junction.inputs.LoggableInputs;
-import org.photonvision.targeting.PhotonPipelineResult;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
+import org.littletonrobotics.junction.LogTable;
+import org.littletonrobotics.junction.inputs.LoggableInputs;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 /**
  * Hardware interface for vision cameras that detect AprilTags for robot localization.
  *
- * <p>
- * This interface defines the contract for vision camera hardware, allowing the robot to read camera
- * results for pose estimation. Implementations handle vendor-specific camera APIs (PhotonVision,
- * Limelight, etc.) while the rest of the robot code remains hardware-agnostic.
+ * <p>This interface defines the contract for vision camera hardware, allowing the robot to read
+ * camera results for pose estimation. Implementations handle vendor-specific camera APIs
+ * (PhotonVision, Limelight, etc.) while the rest of the robot code remains hardware-agnostic.
  */
 public interface VisionIO {
     /**
@@ -39,12 +38,15 @@ public interface VisionIO {
     public static class VisionIOInputs implements LoggableInputs {
         /** Whether the camera is connected and responding */
         public boolean connected = false;
+
         /** Array of pipeline results from the camera since last update */
         public PhotonPipelineResult[] results = new PhotonPipelineResult[0];
 
         private boolean hasLoggedIntrinsics = false;
+
         /** Camera intrinsic matrix (3x3) */
         public double[] cameraMatrix = null;
+
         /** Camera distortion coefficients (8x1) */
         public double[] distCoeffs = null;
 

@@ -14,7 +14,6 @@
  */
 package frc.robot.subsystems.intake;
 
-
 public class IntakeSuperstructureConstants {
     /**
      * Creates and configures an {@link IntakeSuperstructure} subsystem. Combines the linear intake
@@ -24,8 +23,6 @@ public class IntakeSuperstructureConstants {
      */
     public static IntakeSuperstructure get() {
         return new IntakeSuperstructure(
-
-            IntakeLinearConstants.getMechanism(),
-            IntakeRollerConstants.getMechanism());
+                IntakeLinearConstants.getMechanism(), IntakeRollerConstants.getMechanism());
     }
 }

@@ -15,14 +15,11 @@
 
 package frc.lib.devices;
 
-import java.util.List;
 import com.ctre.phoenix6.controls.ControlRequest;
-
 import frc.lib.io.lights.LightsIO;
+import java.util.List;
 
-/**
- * Class for simplified Lights implementation
- */
+/** Class for simplified Lights implementation */
 public class Lights {
     private final LightsIO io;
 
