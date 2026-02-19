@@ -18,6 +18,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggerHelper;
 
 /**
  * Subsystem that controls the indexer floor and indexer centering mechanism for moving game pieces
@@ -36,26 +38,30 @@ public class IndexerSuperstructure extends SubsystemBase {
     private final FlywheelMechanism<?> centerIO;
 
     private static final LoggedTunableNumber FLOOR_SHOOT_RPS =
-        new LoggedTunableNumber(IndexerFloorConstants.NAME + "/ShootRPS",
-            IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
+            new LoggedTunableNumber(
+                    IndexerFloorConstants.NAME + "/ShootRPS",
+                    IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber FLOOR_EJECT_RPS =
-        new LoggedTunableNumber(IndexerFloorConstants.NAME + "/EjectRPS", -0.5);
+            new LoggedTunableNumber(IndexerFloorConstants.NAME + "/EjectRPS", -0.5);
 
     private static final LoggedTunableNumber FLOOR_FEED_RPS =
-        new LoggedTunableNumber(IndexerFloorConstants.NAME + "/FeedRPS",
-            IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
+            new LoggedTunableNumber(
+                    IndexerFloorConstants.NAME + "/FeedRPS",
+                    IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber CENTER_SHOOT_RPS =
-        new LoggedTunableNumber(IndexerCenterConstants.NAME + "/ShootRPS",
-            IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
+            new LoggedTunableNumber(
+                    IndexerCenterConstants.NAME + "/ShootRPS",
+                    IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber CENTER_EJECT_RPS =
-        new LoggedTunableNumber(IndexerCenterConstants.NAME + "/EjectRPS", -0.5);
+            new LoggedTunableNumber(IndexerCenterConstants.NAME + "/EjectRPS", -0.5);
 
     private static final LoggedTunableNumber CENTER_FEED_RPS =
-        new LoggedTunableNumber(IndexerCenterConstants.NAME + "/FeedRPS",
-            IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
+            new LoggedTunableNumber(
+                    IndexerCenterConstants.NAME + "/FeedRPS",
+                    IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     /**
      * Constructs an IndexerSuperstructure subsystem.
@@ -70,14 +76,15 @@ public class IndexerSuperstructure extends SubsystemBase {
 
     @Override
     public void periodic() {
+        LoggerHelper.recordCurrentCommand(this.getName(), this);
         floorIO.periodic();
         centerIO.periodic();
     }
 
     private void runVelocity(AngularVelocity floorVelocity, AngularVelocity centeringVelocity) {
         floorIO.runVelocity(floorVelocity, IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
-        centerIO.runVelocity(centeringVelocity, IndexerCenterConstants.MAX_ACCELERATION,
-            PIDSlot.SLOT_0);
+        centerIO.runVelocity(
+                centeringVelocity, IndexerCenterConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
     /**
@@ -86,10 +93,12 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return a command that stops the indexer
      */
     public Command stopCommand() {
-        return this.runOnce(() -> {
-            floorIO.runBrake();
-            centerIO.runBrake();
-        });
+        return this.runOnce(
+                        () -> {
+                            floorIO.runBrake();
+                            centerIO.runBrake();
+                        })
+                .withName("Stop");
     }
 
     private void stop() {
@@ -105,9 +114,12 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     public Command shoot() {
         return this.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(FLOOR_SHOOT_RPS.get()),
-                RotationsPerSecond.of(CENTER_SHOOT_RPS.get())),
-            () -> stop());
+                        () ->
+                                runVelocity(
+                                        RotationsPerSecond.of(FLOOR_SHOOT_RPS.get()),
+                                        RotationsPerSecond.of(CENTER_SHOOT_RPS.get())),
+                        () -> stop())
+                .withName("Shoot");
     }
 
     /**
@@ -118,9 +130,12 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     public Command feed() {
         return this.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(FLOOR_FEED_RPS.get()),
-                RotationsPerSecond.of(CENTER_FEED_RPS.get())),
-            () -> stop());
+                        () ->
+                                runVelocity(
+                                        RotationsPerSecond.of(FLOOR_FEED_RPS.get()),
+                                        RotationsPerSecond.of(CENTER_FEED_RPS.get())),
+                        () -> stop())
+                .withName("Feed");
     }
 
     /**
@@ -131,9 +146,12 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     public Command eject() {
         return this.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(FLOOR_EJECT_RPS.get()),
-                RotationsPerSecond.of(CENTER_EJECT_RPS.get())),
-            () -> stop());
+                        () ->
+                                runVelocity(
+                                        RotationsPerSecond.of(FLOOR_EJECT_RPS.get()),
+                                        RotationsPerSecond.of(CENTER_EJECT_RPS.get())),
+                        () -> stop())
+                .withName("Eject");
     }
 
     /**
@@ -143,7 +161,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     public boolean nearSetpoint() {
         return floorIO.getVelocityError().lte(IndexerFloorConstants.TOLERANCE)
-            && centerIO.getVelocityError().lte(IndexerCenterConstants.TOLERANCE);
+                && centerIO.getVelocityError().lte(IndexerCenterConstants.TOLERANCE);
     }
 
     /**
@@ -171,7 +189,8 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     public LinearVelocity getFloorLinearVelocity() {
         return MetersPerSecond.of(
-            floorIO.getVelocity().in(RadiansPerSecond) * IndexerFloorConstants.RADIUS.in(Meters));
+                floorIO.getVelocity().in(RadiansPerSecond)
+                        * IndexerFloorConstants.RADIUS.in(Meters));
     }
 
     /**
@@ -180,8 +199,9 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return The linear velocity in meters per second.
      */
     public LinearVelocity getCenteringLinearVelocity() {
-        return MetersPerSecond.of(centerIO.getVelocity().in(RadiansPerSecond)
-            * IndexerCenterConstants.RADIUS.in(Meters));
+        return MetersPerSecond.of(
+                centerIO.getVelocity().in(RadiansPerSecond)
+                        * IndexerCenterConstants.RADIUS.in(Meters));
     }
 
     /**
@@ -189,18 +209,20 @@ public class IndexerSuperstructure extends SubsystemBase {
      *
      * @param floorVelocity the desired linear velocity for the floor mechanism (meters per second)
      * @param centeringVelocity the desired linear velocity for the centering mechanism (meters per
-     *        second)
+     *     second)
      */
     public void setLinearVelocity(LinearVelocity floorVelocity, LinearVelocity centeringVelocity) {
-        floorIO.runVelocity(RadiansPerSecond.of(floorVelocity.in(MetersPerSecond)),
-            IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
-        centerIO.runVelocity(RadiansPerSecond.of(centeringVelocity.in(MetersPerSecond)),
-            IndexerCenterConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        floorIO.runVelocity(
+                RadiansPerSecond.of(floorVelocity.in(MetersPerSecond)),
+                IndexerFloorConstants.MAX_ACCELERATION,
+                PIDSlot.SLOT_0);
+        centerIO.runVelocity(
+                RadiansPerSecond.of(centeringVelocity.in(MetersPerSecond)),
+                IndexerCenterConstants.MAX_ACCELERATION,
+                PIDSlot.SLOT_0);
     }
 
-    /**
-     * Closes the indexer mechanism and releases resources.
-     */
+    /** Closes the indexer mechanism and releases resources. */
     public void close() {
         floorIO.close();
         centerIO.close();

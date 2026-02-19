@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import frc.lib.util.Device.CAN;
 
 public class AbsoluteEncoderIOCANCoderSim extends AbsoluteEncoderIOCANCoder
-    implements AbsoluteEncoderIOSim {
+        implements AbsoluteEncoderIOSim {
 
     private final CANcoderSimState simState;
 

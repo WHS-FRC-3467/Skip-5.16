@@ -23,12 +23,10 @@ import org.littletonrobotics.junction.Logger;
 /**
  * A Trigger that automatically logs state changes to AdvantageKit.
  *
- * <p>
- * This class extends WPILib's Trigger and adds automatic logging of the trigger's state whenever it
- * changes. The logging is handled internally without requiring external method calls.
+ * <p>This class extends WPILib's Trigger and adds automatic logging of the trigger's state whenever
+ * it changes. The logging is handled internally without requiring external method calls.
  *
- * <p>
- * Example usage:
+ * <p>Example usage:
  *
  * <pre>{@code
  * // In a subsystem, create a logged trigger that tracks when a beam break is triggered
@@ -53,10 +51,7 @@ public class LoggedTrigger extends Trigger {
         this.name = name;
     }
 
-
-    /**
-     * Internal BooleanSupplier wrapper that logs state changes.
-     */
+    /** Internal BooleanSupplier wrapper that logs state changes. */
     private static class LoggingBooleanSupplier implements BooleanSupplier {
         private final String logKey;
         private final BooleanSupplier condition;
@@ -86,20 +81,18 @@ public class LoggedTrigger extends Trigger {
     /**
      * Composes two logged triggers with logical AND.
      *
-     * <p>
-     * The resulting trigger uses a combined log name derived from both component triggers, so its
-     * AdvantageKit signal clearly represents the composite condition rather than reusing the base
-     * trigger's log key.
+     * <p>The resulting trigger uses a combined log name derived from both component triggers, so
+     * its AdvantageKit signal clearly represents the composite condition rather than reusing the
+     * base trigger's log key.
      *
      * @param trigger the condition to compose with
      * @return A trigger which is active when both component triggers are active.
      */
     public LoggedTrigger and(LoggedTrigger trigger) {
         String combinedName = this.name + "_AND_" + trigger.name;
-        return new LoggedTrigger(combinedName,
-            () -> (this.getAsBoolean() && trigger.getAsBoolean()));
+        return new LoggedTrigger(
+                combinedName, () -> (this.getAsBoolean() && trigger.getAsBoolean()));
     }
-
 
     /**
      * Creates a new debounced trigger from this trigger - it will become active when this trigger

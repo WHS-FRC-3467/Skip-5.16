@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
+
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -48,8 +49,7 @@ public class IndexerFloorConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(100.0, 0.0, 0.0)
-        .withV(0.0);
+    public static final PID SLOT0_PID = new PID(100.0, 0.0, 0.0).withV(0.0);
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the indexer.
@@ -96,16 +96,27 @@ public class IndexerFloorConstants {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                mechanism = new FlywheelMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.indexerFloor,
-                        new TalonFXFollower(Ports.indexerFloorFollower, true)));
+                mechanism =
+                        new FlywheelMechanismReal(
+                                NAME,
+                                new MotorIOTalonFX(
+                                        NAME,
+                                        getFXConfig(),
+                                        Ports.indexerFloor,
+                                        new TalonFXFollower(Ports.indexerFloorFollower, true)));
                 break;
             case SIM:
-                mechanism = new FlywheelMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexerFloor,
-                        new TalonFXFollower(Ports.indexerFloorFollower, true)),
-                    DCMOTOR, MOI,
-                    TOLERANCE);
+                mechanism =
+                        new FlywheelMechanismSim(
+                                NAME,
+                                new MotorIOTalonFXSim(
+                                        NAME,
+                                        getFXConfig(),
+                                        Ports.indexerFloor,
+                                        new TalonFXFollower(Ports.indexerFloorFollower, true)),
+                                DCMOTOR,
+                                MOI,
+                                TOLERANCE);
                 break;
             case REPLAY:
                 mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}) {};
@@ -116,5 +127,4 @@ public class IndexerFloorConstants {
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         return mechanism;
     }
-
 }

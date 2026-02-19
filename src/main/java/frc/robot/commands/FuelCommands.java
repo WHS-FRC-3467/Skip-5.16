@@ -14,12 +14,12 @@
  */
 package frc.robot.commands;
 
-import java.util.function.BooleanSupplier;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.tower.Tower;
+import java.util.function.BooleanSupplier;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -38,11 +38,9 @@ public class FuelCommands {
      * @return a command that feeds the tower until a laserCAN is tripped
      */
     public static Command stageFuel(IndexerSuperstructure indexer, Tower tower) {
-        return Commands.parallel(
-            indexer.feed(),
-            tower.feed())
-            .until(tower.isStaged)
-            .withName("StageFuel");
+        return Commands.parallel(indexer.feed(), tower.feed())
+                .until(tower.isStaged)
+                .withName("StageFuel");
     }
 
     /**
@@ -58,19 +56,22 @@ public class FuelCommands {
      * @param tower the tower subsystem
      * @param shooter the shooter superstructure
      * @param canShoot secondary check on whether the robot is properly aligned to the target,
-     *        independent of whether the shooter is at the proper state
+     *     independent of whether the shooter is at the proper state
      * @param duration the approximate duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer / tower after the given
-     *         duration
+     *     duration
      */
-    public static Command shootFuel(IndexerSuperstructure indexer, Tower tower,
-        ShooterSuperstructure shooter, BooleanSupplier canShoot, double duration) {
-        Command feed = Commands.parallel(
-            indexer.shoot(),
-            tower.shoot())
-            .until(() -> !canShoot.getAsBoolean());
+    public static Command shootFuel(
+            IndexerSuperstructure indexer,
+            Tower tower,
+            ShooterSuperstructure shooter,
+            BooleanSupplier canShoot,
+            double duration) {
+        Command feed =
+                Commands.parallel(indexer.shoot(), tower.shoot())
+                        .until(() -> !canShoot.getAsBoolean());
 
-        return shooter
-            .prepareShot(Commands.waitUntil(canShoot).andThen(feed)).withTimeout(duration);
+        return shooter.prepareShot(Commands.waitUntil(canShoot).andThen(feed))
+                .withTimeout(duration);
     }
 }

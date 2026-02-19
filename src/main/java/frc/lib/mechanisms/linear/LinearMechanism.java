@@ -6,7 +6,7 @@ package frc.lib.mechanisms.linear;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import java.util.Optional;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.BaseUnits;
@@ -15,6 +15,7 @@ import edu.wpi.first.units.measure.Distance;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.ControlType;
 import frc.lib.mechanisms.Mechanism;
+import java.util.Optional;
 
 /**
  * Abstract class for linear mechanisms, which are mechanisms that move in a straight line. This
@@ -31,20 +32,20 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
      * @param startingDistance Starting extension distance
      * @param drumRadius The radius of the drum causing linear motion
      * @param orientation The 3D orientation of the linear mechanism's axis of motion. The mechanism
-     *        extends along the positive X-axis in its local frame, then rotated by this
-     *        orientation. Uses WPILib's counter-clockwise positive convention around Y-axis:
-     *        <ul>
-     *        <li>Pitch of 0° = horizontal mechanism extending forward</li>
-     *        <li>Pitch of -90° (-π/2 radians) = vertical mechanism extending upward (elevator)</li>
-     *        <li>Pitch of 90° (π/2 radians) = vertical mechanism extending downward</li>
-     *        </ul>
+     *     extends along the positive X-axis in its local frame, then rotated by this orientation.
+     *     Uses WPILib's counter-clockwise positive convention around Y-axis:
+     *     <ul>
+     *       <li>Pitch of 0° = horizontal mechanism extending forward
+     *       <li>Pitch of -90° (-π/2 radians) = vertical mechanism extending upward (elevator)
+     *       <li>Pitch of 90° (π/2 radians) = vertical mechanism extending downward
+     *     </ul>
      */
     public record LinearMechCharacteristics(
-        Distance minDistance,
-        Distance maxDistance,
-        Distance startingDistance,
-        Distance drumRadius,
-        Rotation3d orientation) {}
+            Distance minDistance,
+            Distance maxDistance,
+            Distance startingDistance,
+            Distance drumRadius,
+            Rotation3d orientation) {}
 
     private final double drumRadiusMeters;
     private final LinearMechanismVisualizer visualizer;
@@ -82,9 +83,9 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
     // Checks if mechanism is near a goal position within a specified tolerance
     public boolean nearGoal(Distance goalPosition, Distance tolerance) {
         return MathUtil.isNear(
-            toDistance(getPosition()).in(BaseUnits.DistanceUnit),
-            goalPosition.in(BaseUnits.DistanceUnit),
-            tolerance.in(BaseUnits.DistanceUnit));
+                toDistance(getPosition()).in(BaseUnits.DistanceUnit),
+                goalPosition.in(BaseUnits.DistanceUnit),
+                tolerance.in(BaseUnits.DistanceUnit));
     }
 
     @Override

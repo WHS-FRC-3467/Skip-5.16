@@ -16,6 +16,7 @@
 package frc.lib.io.servo;
 
 import static edu.wpi.first.units.Units.Degrees;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import lombok.Getter;
@@ -25,8 +26,7 @@ public class ServoIOSim implements ServoIO {
     private final double minAngle;
     private final double maxAngle;
 
-    @Getter
-    private double goalPosition;
+    @Getter private double goalPosition;
 
     /**
      * Constructs a {@link ServoIOSim} object with the specified name and limits.
@@ -45,15 +45,14 @@ public class ServoIOSim implements ServoIO {
      * @param value Position from 0.0 to 1.0, corresponding to the range of full left to full right.
      */
     public void setScaledPosition(double value) {
-        var servoAngleRange = maxAngle - minAngle;
+        double servoAngleRange = maxAngle - minAngle;
         goalPosition = MathUtil.clamp(value, 0.0, 1.0) * servoAngleRange + minAngle;
     }
 
     /**
      * Set the servo angle.
      *
-     * <p>
-     * Servo angles that are out of the supported range of the servo simply "saturate" in that
+     * <p>Servo angles that are out of the supported range of the servo simply "saturate" in that
      * direction In other words, if the servo has a range of (X degrees to Y degrees) than angles of
      * less than X result in an angle of X being set and angles of more than Y degrees result in an
      * angle of Y being set.
@@ -67,8 +66,7 @@ public class ServoIOSim implements ServoIO {
     /**
      * Set the servo angle.
      *
-     * <p>
-     * Servo angles that are out of the supported range of the servo simply "saturate" in that
+     * <p>Servo angles that are out of the supported range of the servo simply "saturate" in that
      * direction In other words, if the servo has a range of (X degrees to Y degrees) than angles of
      * less than X result in an angle of X being set and angles of more than Y degrees result in an
      * angle of Y being set.

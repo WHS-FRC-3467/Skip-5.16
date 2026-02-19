@@ -20,14 +20,12 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
 /**
  * A dashboard chooser that integrates with AdvantageKit's logging system.
  *
- * <p>
- * This class wraps WPILib's SendableChooser to provide automatic logging of selected values. Unlike
- * the standard SendableChooser, this version works correctly with AdvantageKit's replay
+ * <p>This class wraps WPILib's SendableChooser to provide automatic logging of selected values.
+ * Unlike the standard SendableChooser, this version works correctly with AdvantageKit's replay
  * functionality, allowing you to replay autonomous selections and other dashboard choices from log
  * files.
  *
- * <p>
- * Example usage:
+ * <p>Example usage:
  *
  * <pre>{@code
  * LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Auto Mode");
@@ -48,23 +46,23 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
     private Consumer<V> listener = null;
 
     private final LoggableInputs inputs =
-        new LoggableInputs() {
-            @Override
-            public void toLog(LogTable table) {
-                table.put(key, selectedValue);
-            }
+            new LoggableInputs() {
+                @Override
+                public void toLog(LogTable table) {
+                    table.put(key, selectedValue);
+                }
 
-            @Override
-            public void fromLog(LogTable table) {
-                selectedValue = table.get(key, selectedValue);
-            }
-        };
+                @Override
+                public void fromLog(LogTable table) {
+                    selectedValue = table.get(key, selectedValue);
+                }
+            };
 
     /**
      * Creates a new LoggedDashboardChooser.
      *
      * @param key The SmartDashboard key, published to "/SmartDashboard/{key}" for NT or
-     *        "/DashboardInputs/{key}" when logged
+     *     "/DashboardInputs/{key}" when logged
      */
     public LoggedDashboardChooser(String key) {
         this.key = key;
@@ -91,9 +89,9 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
             mapField.setAccessible(true);
             options = (Map<String, V>) mapField.get(chooser);
         } catch (NoSuchFieldException
-            | SecurityException
-            | IllegalArgumentException
-            | IllegalAccessException e) {
+                | SecurityException
+                | IllegalArgumentException
+                | IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage());
         }
 
@@ -104,9 +102,9 @@ public class LoggedDashboardChooser<V> extends LoggedNetworkInput {
             defaultField.setAccessible(true);
             defaultString = (String) defaultField.get(chooser);
         } catch (NoSuchFieldException
-            | SecurityException
-            | IllegalArgumentException
-            | IllegalAccessException e) {
+                | SecurityException
+                | IllegalArgumentException
+                | IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage());
         }
 

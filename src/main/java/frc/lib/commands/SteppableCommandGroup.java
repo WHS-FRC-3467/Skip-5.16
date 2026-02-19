@@ -32,7 +32,7 @@ public class SteppableCommandGroup extends Command {
      * @param commands Commands to step through
      */
     public SteppableCommandGroup(
-        Trigger forwardTrigger, Trigger reverseTrigger, Command... commands) {
+            Trigger forwardTrigger, Trigger reverseTrigger, Command... commands) {
         this.forwardTrigger = forwardTrigger;
         this.reverseTrigger = reverseTrigger;
         addCommands(commands);
@@ -41,7 +41,7 @@ public class SteppableCommandGroup extends Command {
     public final void addCommands(Command... commands) {
         if (currentCommandIndex != -1) {
             throw new IllegalStateException(
-                "Commands cannot be added to a composition while it's running");
+                    "Commands cannot be added to a composition while it's running");
         }
 
         CommandScheduler.getInstance().registerComposedCommands(commands);

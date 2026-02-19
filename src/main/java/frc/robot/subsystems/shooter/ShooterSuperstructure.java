@@ -19,7 +19,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
@@ -35,15 +35,18 @@ import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
+import org.littletonrobotics.junction.Logger;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
 
     /** Distance from hub in meters -> hood angle in degrees */
     private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
+
     static {
         hoodAngleMap.put(1.05, 0.0);
         hoodAngleMap.put(1.66, 14.0);
@@ -55,7 +58,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /** Distance from hub in meters -> flywheel speed in rotations per second */
     private static final InterpolatingDoubleTreeMap hubFlywheelMap =
-        new InterpolatingDoubleTreeMap();
+            new InterpolatingDoubleTreeMap();
+
     static {
         hubFlywheelMap.put(1.05, 25.0);
         hubFlywheelMap.put(1.66, 25.0);
@@ -67,7 +71,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /** Distance from feed pose in meters -> flywheel speed in rotations per second */
     private static final InterpolatingDoubleTreeMap feedFlywheelMap =
-        new InterpolatingDoubleTreeMap();
+            new InterpolatingDoubleTreeMap();
+
     static {
         feedFlywheelMap.put(3.0, 17.0);
         feedFlywheelMap.put(4.0, 18.0);
@@ -88,28 +93,32 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
     public final LoggedTrigger readyToShoot =
-        new LoggedTrigger(this.getName() + "/readyToShoot", () -> {
-            double dist = robotState
-                .getDistanceToTarget().in(Meters);
-            return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
-                && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
-        });
+            new LoggedTrigger(
+                    this.getName() + "/readyToShoot",
+                    () -> {
+                        double dist = robotState.getDistanceToTarget().in(Meters);
+                        return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
+                                && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+                    });
 
     public final LoggedTrigger atHubSetpoints =
-        new LoggedTrigger(this.getName() + "/atHubSetpoints", () -> {
-            // Distance between robot and hub centers
-            // Assume the Robot is pressed against the Hub. Hardcoded as part of no vision fallback.
-            double dist = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
-            return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
-                && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
-        });
+            new LoggedTrigger(
+                    this.getName() + "/atHubSetpoints",
+                    () -> {
+                        // Distance between robot and hub centers
+                        // Assume the Robot is pressed against the Hub. Hardcoded as part of no
+                        // vision fallback.
+                        double dist = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
+                        return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
+                                && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+                    });
 
     private final LoggedTunableBoolean tuningMode =
-        new LoggedTunableBoolean(getName() + "/Tuning/Enable", false);
+            new LoggedTunableBoolean(getName() + "/Tuning/Enable", false);
     private final LoggedTunableNumber tuningFlywheelSpeedRPS =
-        new LoggedTunableNumber(getName() + "/Tuning/FlywheelSpeedRPS", 0.0);
+            new LoggedTunableNumber(getName() + "/Tuning/FlywheelSpeedRPS", 0.0);
     private final LoggedTunableNumber tuningHoodAngleDegrees =
-        new LoggedTunableNumber(getName() + "/Tuning/HoodAngleDegrees", 0.0);
+            new LoggedTunableNumber(getName() + "/Tuning/HoodAngleDegrees", 0.0);
 
     /**
      * Constructs a new ShooterSuperstructure subsystem with the specified hood and flywheel
@@ -120,9 +129,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @param rightFlywheelIO the right flywheel mechanism for spinning up shots
      */
     public ShooterSuperstructure(
-        RotaryMechanism<?, ?> hoodIO,
-        FlywheelMechanism<?> leftFlywheelIO,
-        FlywheelMechanism<?> rightFlywheelIO) {
+            RotaryMechanism<?, ?> hoodIO,
+            FlywheelMechanism<?> leftFlywheelIO,
+            FlywheelMechanism<?> rightFlywheelIO) {
         this.hoodIO = hoodIO;
         this.leftFlywheelIO = leftFlywheelIO;
         this.rightFlywheelIO = rightFlywheelIO;
@@ -135,13 +144,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private boolean isFlywheelAt(AngularVelocity velocity) {
         return MathUtil.isNear(
-            velocity.in(RotationsPerSecond),
-            leftFlywheelIO.getVelocity().in(RotationsPerSecond),
-            FlywheelConstants.TOLERANCE.in(RotationsPerSecond)) &&
-            MathUtil.isNear(
-                velocity.in(RotationsPerSecond),
-                rightFlywheelIO.getVelocity().in(RotationsPerSecond),
-                FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
+                        velocity.in(RotationsPerSecond),
+                        leftFlywheelIO.getVelocity().in(RotationsPerSecond),
+                        FlywheelConstants.TOLERANCE.in(RotationsPerSecond))
+                && MathUtil.isNear(
+                        velocity.in(RotationsPerSecond),
+                        rightFlywheelIO.getVelocity().in(RotationsPerSecond),
+                        FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     // Hood
@@ -170,8 +179,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     public AngularVelocity getAverageFlywheelVelocity() {
         return RotationsPerSecond.of(
-            (leftFlywheelIO.getVelocity().in(RotationsPerSecond) +
-                rightFlywheelIO.getVelocity().in(RotationsPerSecond)) / 2.0);
+                (leftFlywheelIO.getVelocity().in(RotationsPerSecond)
+                                + rightFlywheelIO.getVelocity().in(RotationsPerSecond))
+                        / 2.0);
     }
 
     /**
@@ -182,26 +192,25 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     public LinearVelocity getAverageLinearVelocity() {
         return MetersPerSecond.of(
-            getAverageFlywheelVelocity().in(RotationsPerSecond) * 2.0 * Math.PI
-                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
+                getAverageFlywheelVelocity().in(RotationsPerSecond)
+                        * 2.0
+                        * Math.PI
+                        * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
     }
 
     private AngularVelocity getDesiredFlywheelVelocity() {
-        InterpolatingDoubleTreeMap flywheelMap = switch (robotState.getTarget()) {
-            case HUB -> hubFlywheelMap;
-            case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
-        };
+        InterpolatingDoubleTreeMap flywheelMap =
+                switch (robotState.getTarget()) {
+                    case HUB -> hubFlywheelMap;
+                    case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
+                };
 
-        return RotationsPerSecond.of(
-            flywheelMap.get(
-                robotState.getDistanceToTarget().in(Meters)));
+        return RotationsPerSecond.of(flywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
     }
 
     private Angle getDesiredHoodAngle() {
         if (robotState.getTarget() == Target.HUB) {
-            return Degrees.of(
-                hoodAngleMap.get(
-                    robotState.getDistanceToTarget().in(Meters)));
+            return Degrees.of(hoodAngleMap.get(robotState.getDistanceToTarget().in(Meters)));
         }
 
         return Degrees.of(0.0);
@@ -223,10 +232,14 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @return Static non-updating HUB only shooter spin-up command.
      */
     public Command spinUpShooterToHubDistance(Distance distance) {
-        return Commands.run(() -> {
-            spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))));
-            setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
-        }, this).withName("Spin-Up Shooter to Distance");
+        return Commands.run(
+                        () -> {
+                            spinFlywheel(
+                                    RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))));
+                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
+                        },
+                        this)
+                .withName("Spin-Up Shooter to Distance");
     }
 
     /**
@@ -238,30 +251,33 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @return Dynamically-updating ALL TARGET shooter spin-up command.
      */
     public Command spinUpShooter() {
-        return Commands.run(() -> {
-            spinFlywheel(getDesiredFlywheelVelocity());
-            setHoodPosition(getDesiredHoodAngle());
-        }, this).withName("Spin-Up Shooter");
+        return Commands.run(
+                        () -> {
+                            spinFlywheel(getDesiredFlywheelVelocity());
+                            setHoodPosition(getDesiredHoodAngle());
+                        },
+                        this)
+                .withName("Spin-Up Shooter");
     }
 
     /**
      * Prepares the subsystem to shoot at the HUB, and runs a command while it is ready
      *
      * @param whileAtPosition A command that runs while the shooter is ready to shoot at the HUB. If
-     *        shooting is disrupted because shooter readiness drops, attempt a flywheel/hood
-     *        adjustment and, if successful, re-commence shooting. Only valid for HUB shots. This is
-     *        usually used for starting and stopping the indexer to ensure balls are not shot unless
-     *        we are confident we will make the shot. Shooter remains spun-up at the end of this
-     *        command.
+     *     shooting is disrupted because shooter readiness drops, attempt a flywheel/hood adjustment
+     *     and, if successful, re-commence shooting. Only valid for HUB shots. This is usually used
+     *     for starting and stopping the indexer to ensure balls are not shot unless we are
+     *     confident we will make the shot. Shooter remains spun-up at the end of this command.
      * @return The command sequence
      */
     public Command prepareShot(Command whileAtPosition) {
         return Commands.sequence(
-            Commands.parallel(
-                spinUpShooter(),
-                Commands.repeatingSequence(
-                    Commands.waitUntil(readyToShoot),
-                    whileAtPosition.until(readyToShoot.negate()))));
+                        Commands.parallel(
+                                spinUpShooter(),
+                                Commands.repeatingSequence(
+                                        Commands.waitUntil(readyToShoot),
+                                        whileAtPosition.until(readyToShoot.negate()))))
+                .withName("Prepare Shot");
     }
 
     /**
@@ -271,7 +287,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @return command that sets the hood angle
      */
     public Command setHoodAngle(Angle angle) {
-        return Commands.runOnce(() -> setHoodPosition(angle));
+        return Commands.runOnce(() -> setHoodPosition(angle)).withName("Set Hood Angle");
     }
 
     /**
@@ -281,31 +297,31 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @return command that sets the flywheel speed
      */
     public Command setFlywheelSpeed(AngularVelocity velocity) {
-        return Commands.runOnce(() -> spinFlywheel(velocity));
+        return Commands.runOnce(() -> spinFlywheel(velocity)).withName("Set Flywheel Speed");
     }
 
     @Override
     public void periodic() {
         if (tuningMode.get()) {
             if (tuningMode.hasChanged(hashCode())
-                || tuningFlywheelSpeedRPS.hasChanged(hashCode())
-                || tuningHoodAngleDegrees.hasChanged(hashCode())) {
+                    || tuningFlywheelSpeedRPS.hasChanged(hashCode())
+                    || tuningHoodAngleDegrees.hasChanged(hashCode())) {
                 spinFlywheel(RotationsPerSecond.of(tuningFlywheelSpeedRPS.get()));
                 setHoodPosition(Degrees.of(tuningHoodAngleDegrees.get()));
             }
 
-            Logger.recordOutput(getName() + "/Tuning/DistanceToTargetMeters",
-                robotState.getDistanceToTarget().in(Meters));
+            Logger.recordOutput(
+                    getName() + "/Tuning/DistanceToTargetMeters",
+                    robotState.getDistanceToTarget().in(Meters));
         }
+        LoggerHelper.recordCurrentCommand(this.getName(), this);
 
         leftFlywheelIO.periodic();
         rightFlywheelIO.periodic();
         hoodIO.periodic();
     }
 
-    /**
-     * Closes all underlying mechanisms and releases resources.
-     */
+    /** Closes all underlying mechanisms and releases resources. */
     @Override
     public void close() {
         leftFlywheelIO.close();

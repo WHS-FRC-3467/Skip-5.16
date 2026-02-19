@@ -30,24 +30,37 @@ import lombok.With;
  * @param G Gravity feedforward - compensates for gravity effects
  * @param S Static friction feedforward - overcomes static friction
  */
-@With public record PID(double P,double I,double D,double A,double V,double G,double S){
-/**
- * Constructs a PID record with only P, I, and D gains. All feedforward gains are set to 0.0.
- *
- * @param P Proportional gain
- * @param I Integral gain
- * @param D Derivative gain
- */
-public PID(double P,double I,double D){this(P,I,D,0.0,0.0,0.0,0.0);}
+@With
+public record PID(double P, double I, double D, double A, double V, double G, double S) {
+    /**
+     * Constructs a PID record with only P, I, and D gains. All feedforward gains are set to 0.0.
+     *
+     * @param P Proportional gain
+     * @param I Integral gain
+     * @param D Derivative gain
+     */
+    public PID(double P, double I, double D) {
+        this(P, I, D, 0.0, 0.0, 0.0, 0.0);
+    }
 
-/**
- * Constructs a PID record with all gains set to 0.0. Useful as a default starting point.
- */
-public PID(){this(0.0,0.0,0.0,0.0,0.0,0.0,0.0);}
+    /** Constructs a PID record with all gains set to 0.0. Useful as a default starting point. */
+    public PID() {
+        this(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    }
 
-/**
- * Converts this PID record to a CTRE Phoenix 6 SlotConfigs object.
- *
- * @return a SlotConfigs object with the gains from this PID
- */
-public SlotConfigs toSlotConfigs(){return new SlotConfigs().withKP(P).withKI(I).withKD(D).withKA(A).withKV(V).withKG(G).withKS(S);}}
+    /**
+     * Converts this PID record to a CTRE Phoenix 6 SlotConfigs object.
+     *
+     * @return a SlotConfigs object with the gains from this PID
+     */
+    public SlotConfigs toSlotConfigs() {
+        return new SlotConfigs()
+                .withKP(P)
+                .withKI(I)
+                .withKD(D)
+                .withKA(A)
+                .withKV(V)
+                .withKG(G)
+                .withKS(S);
+    }
+}

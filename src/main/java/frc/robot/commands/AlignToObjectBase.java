@@ -17,23 +17,23 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
-import java.util.Optional;
-import java.util.OptionalDouble;
-import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
-import frc.robot.subsystems.objectdetector.ObjectDetector;
-import lombok.Getter;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.util.LoggedTuneableProfiledPID;
+import frc.robot.subsystems.objectdetector.ObjectDetector;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import lombok.Getter;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Strategy layer that determines robot heading required to align robot with centroid of detected
  * contour. Communal for both teleop &amp; auto. Logs outputs for sim.
  */
 public abstract class AlignToObjectBase {
-    @Getter
-    private final LoggedTuneableProfiledPID angularController;
+    @Getter private final LoggedTuneableProfiledPID angularController;
     private final ObjectDetector objectDetector;
     private final ContourSelectionMode mode;
     private final double maxAngularSpeed; // rad/s
@@ -51,14 +51,17 @@ public abstract class AlignToObjectBase {
      * @param maxAngularSpeed the maximum angular speed in rad/s
      * @param maxAngularAcceleration the maximum angular acceleration in rad/s^2
      */
-    public AlignToObjectBase(ObjectDetector objectDetector, ContourSelectionMode mode,
-        double maxAngularSpeed, double maxAngularAcceleration) {
+    public AlignToObjectBase(
+            ObjectDetector objectDetector,
+            ContourSelectionMode mode,
+            double maxAngularSpeed,
+            double maxAngularAcceleration) {
         this.objectDetector = objectDetector;
         this.mode = mode;
         this.maxAngularSpeed = maxAngularSpeed;
         this.angularController =
-            new LoggedTuneableProfiledPID("AlignToObject", K_P, K_I, K_D, maxAngularSpeed,
-                maxAngularAcceleration);
+                new LoggedTuneableProfiledPID(
+                        "AlignToObject", K_P, K_I, K_D, maxAngularSpeed, maxAngularAcceleration);
         hasTarget = false;
     }
 
@@ -108,15 +111,14 @@ public abstract class AlignToObjectBase {
     }
 
     // Private helper for sim logging
-    private void logObjectAlign(Optional<ObjectDetectionObservation> observation,
-        double speedDegPerSec) {
+    private void logObjectAlign(
+            Optional<ObjectDetectionObservation> observation, double speedDegPerSec) {
         // Log for sim
         if (observation.isPresent()) {
-            Logger.recordOutput("VisionAlign/" + "ContourYawDeg",
-                observation.get().yaw().in(Degrees));
+            Logger.recordOutput(
+                    "VisionAlign/" + "ContourYawDeg", observation.get().yaw().in(Degrees));
         } else {
-            Logger.recordOutput("VisionAlign/" + "ContourYawDeg",
-                -9999.0);
+            Logger.recordOutput("VisionAlign/" + "ContourYawDeg", -9999.0);
         }
         Logger.recordOutput("VisionAlign/" + "OmegaCmdDegPerSec", speedDegPerSec);
         Logger.recordOutput("VisionAlign/" + "HasTarget", hasTarget);
