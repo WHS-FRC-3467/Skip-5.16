@@ -2,6 +2,9 @@ name: Simulate
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - copilot/add-wpilib-simulation-launch
 
 jobs:
   simulate:
