@@ -10,7 +10,7 @@ This script exercises the same workflow described in the simulation-tester agent
      Robot.simulationPeriodic() reads this entry and calls DriverStationSim.setEnabled(true).
   3. Trigger the "Intake Linear/Extend" SmartDashboard command by writing true to
      /SmartDashboard/Intake Linear/Extend/running.
-  4. Poll /AdvantageKit/Intake Linear/position until it reaches ~22.748 rad (MAX_DISTANCE /
+  4. Poll /AdvantageKit/Intake Linear/Position until it reaches ~22.748 rad (MAX_DISTANCE /
      DRUM_RADIUS = 11.375 in / 0.5 in).
   5. Print a JSON result and exit 0 (PASS) or 1 (FAIL).
 
@@ -61,7 +61,7 @@ NT_COMMAND_RUNNING = "/SmartDashboard/Intake Linear/Extend/running"
 
 # Read by this script ← AdvantageKit NT4Publisher logs MotorInputs.position (radians).
 # Published in Mechanism.periodic() via Logger.processInputs("Intake Linear", inputs).
-NT_POSITION = "/AdvantageKit/Intake Linear/position"
+NT_POSITION = "/AdvantageKit/Intake Linear/Position"
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
