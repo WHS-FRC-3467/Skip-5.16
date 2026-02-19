@@ -22,9 +22,14 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
 
@@ -63,6 +68,38 @@ public class IndexerSuperstructure extends SubsystemBase {
                     IndexerCenterConstants.NAME + "/FeedRPS",
                     IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
+    private final Trigger tuningModeEnabled =
+            new Trigger(new LoggedTunableBoolean(getName() + "/Tuning/Enable", false));
+    private final LoggedTunableNumber tuningModeFloorRPS =
+            new LoggedTunableNumber(getName() + "/Tuning/FloorSpeedRPS", 0.0);
+    private final LoggedTunableNumber tuningModeCenterRPS =
+            new LoggedTunableNumber(getName() + "/Tuning/CenteringSpeedRPS", 0.0);
+
+    private final Command tuningModeCommand =
+            Commands.sequence(
+                            Commands.runOnce(this::cancelCurrentCommandIfAny),
+                            createTuningRunCommand())
+                    .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
+                    .finallyDo(
+                            () ->
+                                    runVelocity(
+                                            RotationsPerSecond.zero(), RotationsPerSecond.zero()));
+
+    private void cancelCurrentCommandIfAny() {
+        var currentCommand = this.getCurrentCommand();
+        if (currentCommand == null) return;
+        CommandScheduler.getInstance().cancel(currentCommand);
+    }
+
+    private Command createTuningRunCommand() {
+        return this.run(
+                        () ->
+                                runVelocity(
+                                        RotationsPerSecond.of(tuningModeFloorRPS.getAsDouble()),
+                                        RotationsPerSecond.of(tuningModeCenterRPS.getAsDouble())))
+                .asProxy();
+    }
+
     /**
      * Constructs an IndexerSuperstructure subsystem.
      *
@@ -72,6 +109,7 @@ public class IndexerSuperstructure extends SubsystemBase {
     public IndexerSuperstructure(FlywheelMechanism<?> floorIO, FlywheelMechanism<?> centerIO) {
         this.floorIO = floorIO;
         this.centerIO = centerIO;
+        tuningModeEnabled.whileTrue(tuningModeCommand);
     }
 
     @Override
@@ -104,6 +142,22 @@ public class IndexerSuperstructure extends SubsystemBase {
     private void stop() {
         floorIO.runBrake();
         centerIO.runBrake();
+    }
+
+    /**
+     * Enables tuning mode by cancelling the currently running command (if any), scheduling a
+     * non-interruptible idle command, and applying the current tuning position setpoint.
+     */
+    void enableTuningMode() {
+        CommandScheduler.getInstance().schedule(tuningModeCommand);
+    }
+
+    /**
+     * Disables tuning mode by cancelling the tuning idle command and restoring the previously
+     * active command when one was captured.
+     */
+    void disableTuningMode() {
+        CommandScheduler.getInstance().cancel(tuningModeCommand);
     }
 
     /**
