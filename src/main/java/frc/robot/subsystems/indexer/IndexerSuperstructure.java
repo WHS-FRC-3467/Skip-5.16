@@ -21,9 +21,12 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 
 /**
@@ -32,6 +35,8 @@ import frc.lib.util.LoggedTunableNumber;
  * mechanism for velocity control.
  */
 public class IndexerSuperstructure extends SubsystemBase {
+    private static final String NAME = "Indexer";
+
     private final FlywheelMechanism<?> floorIO;
     private final FlywheelMechanism<?> centerIO;
 
@@ -57,6 +62,17 @@ public class IndexerSuperstructure extends SubsystemBase {
         new LoggedTunableNumber(IndexerCenterConstants.NAME + "/FeedRPS",
             IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
+    private static final LoggedTunableBoolean TUNING_MODE_ENABLED =
+        new LoggedTunableBoolean(NAME + "/Tuning/Enable", false);
+    private static final LoggedTunableNumber TUNING_MODE_FLOOR_RPS =
+        new LoggedTunableNumber(NAME + "/Tuning/FloorSpeedRPS", 0.0);
+    private static final LoggedTunableNumber TUNING_MODE_CENTER_RPS =
+        new LoggedTunableNumber(NAME + "/Tuning/CenteringSpeedRPS", 0.0);
+
+    private final Command tuningModeIdleCommand =
+        this.idle().withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    private Command lastScheduledCommand;
+
     /**
      * Constructs an IndexerSuperstructure subsystem.
      *
@@ -70,11 +86,41 @@ public class IndexerSuperstructure extends SubsystemBase {
 
     @Override
     public void periodic() {
+        LoggedTunableBoolean.ifChanged(
+            hashCode(),
+            enabled -> {
+                if (enabled[0]) {
+                    enableTuningMode();
+                } else {
+                    disableTuningMode();
+                }
+            },
+            TUNING_MODE_ENABLED);
+
+        LoggedTunableNumber.ifChanged(
+            hashCode(),
+            values -> {
+                if (!TUNING_MODE_ENABLED.getAsBoolean())
+                    return;
+                runTuningVelocity(
+                    RotationsPerSecond.of(values[0]), RotationsPerSecond.of(values[1]));
+            },
+            TUNING_MODE_FLOOR_RPS,
+            TUNING_MODE_CENTER_RPS);
         floorIO.periodic();
         centerIO.periodic();
     }
 
     private void runVelocity(AngularVelocity floorVelocity, AngularVelocity centeringVelocity) {
+        if (TUNING_MODE_ENABLED.get())
+            return;
+        floorIO.runVelocity(floorVelocity, IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        centerIO.runVelocity(
+            centeringVelocity, IndexerCenterConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+    }
+
+    private void runTuningVelocity(
+        AngularVelocity floorVelocity, AngularVelocity centeringVelocity) {
         floorIO.runVelocity(floorVelocity, IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
         centerIO.runVelocity(centeringVelocity, IndexerCenterConstants.MAX_ACCELERATION,
             PIDSlot.SLOT_0);
@@ -95,6 +141,26 @@ public class IndexerSuperstructure extends SubsystemBase {
     private void stop() {
         floorIO.runBrake();
         centerIO.runBrake();
+    }
+
+    void enableTuningMode() {
+        lastScheduledCommand = this.getCurrentCommand();
+        if (lastScheduledCommand != null) {
+            CommandScheduler.getInstance().cancel(lastScheduledCommand);
+        }
+
+        CommandScheduler.getInstance().schedule(tuningModeIdleCommand);
+        runTuningVelocity(
+            RotationsPerSecond.of(TUNING_MODE_FLOOR_RPS.get()),
+            RotationsPerSecond.of(TUNING_MODE_CENTER_RPS.get()));
+    }
+
+    void disableTuningMode() {
+        CommandScheduler.getInstance().cancel(tuningModeIdleCommand);
+        if (lastScheduledCommand != null) {
+            CommandScheduler.getInstance().schedule(lastScheduledCommand);
+            lastScheduledCommand = null;
+        }
     }
 
     /**

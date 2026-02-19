@@ -15,6 +15,7 @@
 
 package frc.robot.subsystems.indexer;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.AfterEach;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.TestUtil;
 
 public class IndexerTest {
@@ -32,6 +34,7 @@ public class IndexerTest {
     void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
+        CommandScheduler.getInstance().cancelAll();
         indexer = IndexerSuperstructureConstants.get();
 
         /* enable the robot */
@@ -45,6 +48,7 @@ public class IndexerTest {
     @AfterEach // this method will run after each test
     void shutdown() {
         try {
+            CommandScheduler.getInstance().cancelAll();
             indexer.close();
         } catch (Exception e) {
             fail("Failed to close IndexerSuperstructure subsystem: " + e.getMessage());
@@ -78,5 +82,16 @@ public class IndexerTest {
         } catch (Exception e) {
             fail("Failed to stop indexer: " + e.getMessage());
         }
+    }
+
+    @Test
+    void tuningModeToggleWithNoScheduledCommandDoesNotThrow() {
+        CommandScheduler.getInstance().cancelAll();
+
+        assertDoesNotThrow(
+            () -> {
+                indexer.enableTuningMode();
+                indexer.disableTuningMode();
+            });
     }
 }
