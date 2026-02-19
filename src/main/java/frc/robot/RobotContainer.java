@@ -266,7 +266,7 @@ public class RobotContainer {
                                 tower.stopCommand(),
                                 intake.extendIntake()));
 
-        robotState.enteringTrench.whileTrue(
+        robotState.enteringTrench.and(() -> DriverStation.isTeleop()).whileTrue(
                 Commands.sequence(
                                 // Force hood down
                                 shooter.setHoodAngle(Degrees.zero()),
