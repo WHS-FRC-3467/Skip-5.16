@@ -39,6 +39,7 @@ import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
+import frc.robot.RobotState.FieldRegion;
 import frc.robot.RobotState.Target;
 import org.littletonrobotics.junction.Logger;
 
@@ -112,6 +113,14 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
                                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
                     });
+
+    // Trigger determining whether hood is safe to actuate. Primarily for use in autos.
+    public final LoggedTrigger hoodSafe =
+            new LoggedTrigger(
+                    this.getName() + "/hoodSafe",
+                    () ->
+                            robotState.getFieldRegion() == FieldRegion.ALLIANCE_ZONE
+                                    && robotState.enteringTrench.negate().getAsBoolean());
 
     private final LoggedTunableBoolean tuningMode =
             new LoggedTunableBoolean(getName() + "/Tuning/Enable", false);
@@ -236,7 +245,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         () -> {
                             spinFlywheel(
                                     RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))));
-                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
+                            if (hoodSafe.getAsBoolean()) {
+                                setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
+                            }
                         },
                         this)
                 .withName("Spin-Up Shooter to Distance");
