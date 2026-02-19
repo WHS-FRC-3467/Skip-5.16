@@ -39,8 +39,6 @@ import frc.lib.util.LoggerHelper;
  * mechanism for velocity control.
  */
 public class IndexerSuperstructure extends SubsystemBase {
-    private static final String NAME = "Indexer";
-
     private final FlywheelMechanism<?> floorIO;
     private final FlywheelMechanism<?> centerIO;
 
@@ -70,12 +68,12 @@ public class IndexerSuperstructure extends SubsystemBase {
                     IndexerCenterConstants.NAME + "/FeedRPS",
                     IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
-    private static final Trigger TUNING_MODE_ENABLED =
-            new Trigger(new LoggedTunableBoolean(NAME + "/Tuning/Enable", false));
-    private static final LoggedTunableNumber TUNING_MODE_FLOOR_RPS =
-            new LoggedTunableNumber(NAME + "/Tuning/FloorSpeedRPS", 0.0);
-    private static final LoggedTunableNumber TUNING_MODE_CENTER_RPS =
-            new LoggedTunableNumber(NAME + "/Tuning/CenteringSpeedRPS", 0.0);
+    private final Trigger tuningModeEnabled =
+            new Trigger(new LoggedTunableBoolean(getName() + "/Tuning/Enable", false));
+    private final LoggedTunableNumber tuningModeFloorRPS =
+            new LoggedTunableNumber(getName() + "/Tuning/FloorSpeedRPS", 0.0);
+    private final LoggedTunableNumber tuningModeCenterRPS =
+            new LoggedTunableNumber(getName() + "/Tuning/CenteringSpeedRPS", 0.0);
 
     private final Command tuningModeCommand =
             Commands.sequence(
@@ -97,9 +95,8 @@ public class IndexerSuperstructure extends SubsystemBase {
         return this.run(
                         () ->
                                 runVelocity(
-                                        RotationsPerSecond.of(TUNING_MODE_FLOOR_RPS.getAsDouble()),
-                                        RotationsPerSecond.of(
-                                                TUNING_MODE_CENTER_RPS.getAsDouble())))
+                                        RotationsPerSecond.of(tuningModeFloorRPS.getAsDouble()),
+                                        RotationsPerSecond.of(tuningModeCenterRPS.getAsDouble())))
                 .asProxy();
     }
 
@@ -112,7 +109,7 @@ public class IndexerSuperstructure extends SubsystemBase {
     public IndexerSuperstructure(FlywheelMechanism<?> floorIO, FlywheelMechanism<?> centerIO) {
         this.floorIO = floorIO;
         this.centerIO = centerIO;
-        TUNING_MODE_ENABLED.whileTrue(tuningModeCommand);
+        tuningModeEnabled.whileTrue(tuningModeCommand);
     }
 
     @Override
