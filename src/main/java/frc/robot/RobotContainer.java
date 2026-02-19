@@ -18,6 +18,8 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -59,15 +61,6 @@ import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.ButtonBoardOverrides;
 import frc.robot.util.RobotSim;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.units.measure.Distance;
 
 /**
  * Container class for the robot that holds all subsystems, controllers, and command bindings. This
@@ -253,29 +246,33 @@ public class RobotContainer {
 
         // D-Pad Left: Take the Hub Shot, wind down flywheel, indexer, and tower on release
         // No vision fallback - do not trust the robot's pose (no automatic shoot when ready)
-        controller.povLeft()
-            .whileTrue(
-                // Shoot while superstructure is at the flywheel and hood setpoints
-                // Intake cycle not executed when located against the HUB
-                Commands.parallel(
-                    indexer.shoot(),
-                    tower.shoot(),
-                    Commands.run(() -> drive.stopWithX(), drive)) // Don't let joystick override
-                    .onlyWhile(shooter.atHubSetpoints)
-                    .repeatedly())
-            .onFalse(Commands.parallel(
-                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
-                indexer.stopCommand(),
-                tower.stopCommand(),
-                intake.extendIntake()));
+        controller
+                .povLeft()
+                .whileTrue(
+                        // Shoot while superstructure is at the flywheel and hood setpoints
+                        // Intake cycle not executed when located against the HUB
+                        Commands.parallel(
+                                        indexer.shoot(),
+                                        tower.shoot(),
+                                        Commands.run(
+                                                () -> drive.stopWithX(),
+                                                drive)) // Don't let joystick override
+                                .onlyWhile(shooter.atHubSetpoints)
+                                .repeatedly())
+                .onFalse(
+                        Commands.parallel(
+                                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                                indexer.stopCommand(),
+                                tower.stopCommand(),
+                                intake.extendIntake()));
 
         robotState.enteringTrench.whileTrue(
-            Commands.sequence(
-                // Force hood down
-                shooter.setHoodAngle(Degrees.zero()),
-                // Prevent hood from raising
-                shooter.idle())
-                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+                Commands.sequence(
+                                // Force hood down
+                                shooter.setHoodAngle(Degrees.zero()),
+                                // Prevent hood from raising
+                                shooter.idle())
+                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     }
 
     /**
@@ -284,49 +281,54 @@ public class RobotContainer {
      */
     private void configureOverrideBindings() {
         // Button 1: Emergency stop all mechanisms (intake, indexer, tower, and shooter).
-        buttonBoard.emergencyStop().whileTrue(
-            Commands.parallel(
-                intake.linearCoast(),
-                intake.stopRoller(),
-                indexer.stopCommand(),
-                tower.stopCommand(),
-                shooter.setFlywheelSpeed(RadiansPerSecond.zero())).repeatedly());
+        buttonBoard
+                .emergencyStop()
+                .whileTrue(
+                        Commands.parallel(
+                                        intake.linearCoast(),
+                                        intake.stopRoller(),
+                                        indexer.stopCommand(),
+                                        tower.stopCommand(),
+                                        shooter.setFlywheelSpeed(RadiansPerSecond.zero()))
+                                .repeatedly());
 
         // Button 2: Stop spinning the shooter and lower the hood.
-        buttonBoard.shooterSpinDown().whileTrue(
-            Commands.parallel(
-                shooter.setFlywheelSpeed(RadiansPerSecond.zero()),
-                shooter.setHoodAngle(Radians.zero())).repeatedly());
+        buttonBoard
+                .shooterSpinDown()
+                .whileTrue(
+                        Commands.parallel(
+                                        shooter.setFlywheelSpeed(RadiansPerSecond.zero()),
+                                        shooter.setHoodAngle(Radians.zero()))
+                                .repeatedly());
 
         // Button 3: Unjam the pathway by running the flywheels in reverse; only run the roller if
         // it's extended.
-        buttonBoard.unjam().whileTrue(
-            Commands.parallel(
-                intake.ejectRoller(),
-                indexer.eject(),
-                tower.eject()));
+        buttonBoard
+                .unjam()
+                .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
         // Button 4: Forcibly retract the intake by applying negative current.
-        buttonBoard.forceRetractIntake().whileTrue(
-            intake.retractIntake());
+        buttonBoard.forceRetractIntake().whileTrue(intake.retractIntake());
 
         // Button 5: Bypass shooter readiness and alignment requirements to force a shot with best
         // guess of current pose. Spin everything down afterwards.
-        buttonBoard.forceShot().whileTrue(
-            Commands.parallel(
-                Commands.run(() -> drive.stopWithX(), drive),
-                shooter.spinUpShooterToHubDistance(robotState.getDistanceToTarget()),
-                indexer.shoot(),
-                tower.shoot()))
-            .onFalse(
-                Commands.parallel(
-                    shooter.setFlywheelSpeed(RadiansPerSecond.zero()),
-                    indexer.stopCommand(),
-                    tower.stopCommand()));
+        buttonBoard
+                .forceShot()
+                .whileTrue(
+                        Commands.parallel(
+                                Commands.run(() -> drive.stopWithX(), drive),
+                                shooter.spinUpShooterToHubDistance(
+                                        robotState.getDistanceToTarget()),
+                                indexer.shoot(),
+                                tower.shoot()))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.setFlywheelSpeed(RadiansPerSecond.zero()),
+                                indexer.stopCommand(),
+                                tower.stopCommand()));
 
         // Button 6: X locks drive until button is unpressed and joystick commands new velocity.
-        buttonBoard.lockDrive().whileTrue(
-            Commands.run(() -> drive.stopWithX(), drive));
+        buttonBoard.lockDrive().whileTrue(Commands.run(() -> drive.stopWithX(), drive));
     }
 
     /**
