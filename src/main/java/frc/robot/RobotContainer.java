@@ -268,6 +268,14 @@ public class RobotContainer {
                 indexer.stopCommand(),
                 tower.stopCommand(),
                 intake.extendIntake()));
+
+        robotState.enteringTrench.whileTrue(
+            Commands.sequence(
+                // Force hood down
+                shooter.setHoodAngle(Degrees.zero()),
+                // Prevent hood from raising
+                shooter.idle())
+                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     }
 
     /**
