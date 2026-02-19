@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
+import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
@@ -93,7 +94,6 @@ public class VisionSubsystem extends SubsystemBase {
         }
 
         PhotonTrackedTarget bestTarget = result.getBestTarget();
-
         if (bestTarget.getBestCameraToTarget().getTranslation().getNorm() > MAX_DISTANCE_METERS) {
             return false;
         }
@@ -155,8 +155,14 @@ public class VisionSubsystem extends SubsystemBase {
             ArrayList<PhotonPipelineResult> rejectedResults = new ArrayList<>();
             ArrayList<Pose2d> acceptedPoses = new ArrayList<>();
             ArrayList<Pose2d> rejectedPoses = new ArrayList<>();
-
             for (var result : results) {
+
+                if (result.targets.size() == 1
+                        && Constants.FILTERED_TAGS.contains(result.targets.get(0).getFiducialId())) {
+                            rejectedResults.add(result);
+                    continue;
+                }
+
                 if (!preFilter(result)) {
                     rejectedResults.add(result);
                     continue;
