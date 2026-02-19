@@ -30,7 +30,6 @@ import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
-import frc.lib.util.LoggerHelper;
 
 /**
  * Subsystem that controls the indexer floor and indexer centering mechanism for moving game pieces
