@@ -2,13 +2,38 @@ name: Simulate
 
 on:
   workflow_dispatch:
+    inputs:
+      command_topic:
+        description: >
+          SmartDashboard NT topic to trigger (write true).
+          e.g. /SmartDashboard/Tower/Extend/running
+        required: false
+        default: '/SmartDashboard/Intake Linear/Extend/running'
+      assert_topic:
+        description: >
+          NT topic to poll for the expected value.
+          e.g. /AdvantageKit/Tower/Position
+        required: false
+        default: '/AdvantageKit/Intake Linear/Position'
+      assert_value:
+        description: 'Expected numeric value for the assert topic (e.g. 22.748)'
+        required: false
+        default: '22.748'
+      assert_tolerance:
+        description: 'Acceptable deviation from the expected value (e.g. 0.5)'
+        required: false
+        default: '0.5'
+      assert_timeout:
+        description: 'Seconds to wait for the assert topic to reach the expected value'
+        required: false
+        default: '15'
   push:
     branches:
       - copilot/add-wpilib-simulation-launch
 
 jobs:
   simulate:
-    name: Run Simulation + Intake Extend Test
+    name: Run Simulation Test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -72,17 +97,22 @@ jobs:
           echo "Enabling robot in teleop via /SimControl/Enable..."
           python3 scripts/nt_reader.py --set true /SimControl/Enable
 
-      - name: Schedule 'Intake Linear/Extend' command
+      - name: Schedule command
         run: |
-          echo "Scheduling Intake Linear/Extend command..."
-          python3 scripts/nt_reader.py --set true "/SmartDashboard/Intake Linear/Extend/running"
+          TOPIC="${{ inputs.command_topic || '/SmartDashboard/Intake Linear/Extend/running' }}"
+          echo "Scheduling command: $TOPIC"
+          python3 scripts/nt_reader.py --set true "$TOPIC"
 
-      - name: Assert intake linear position ≈ 22.748 rad
+      - name: Assert NT topic reaches expected value
         run: |
-          echo "Polling /AdvantageKit/Intake Linear/Position until ≈ 22.748 rad..."
+          TOPIC="${{ inputs.assert_topic || '/AdvantageKit/Intake Linear/Position' }}"
+          VALUE="${{ inputs.assert_value || '22.748' }}"
+          TOL="${{ inputs.assert_tolerance || '0.5' }}"
+          TIMEOUT="${{ inputs.assert_timeout || '15' }}"
+          echo "Asserting $TOPIC ≈ $VALUE (±$TOL) within ${TIMEOUT}s..."
           python3 scripts/nt_reader.py \
-            --wait 22.748 --tolerance 0.5 --timeout 15 \
-            "/AdvantageKit/Intake Linear/Position"
+            --wait "$VALUE" --tolerance "$TOL" --timeout "$TIMEOUT" \
+            "$TOPIC"
 
       - name: Stop simulation
         if: always()

@@ -7,11 +7,16 @@ tools: ['changes', 'codebase', 'findTestFiles', 'openSimpleBrowser', 'problems',
 # WPILib Simulation Testing Agent
 
 You validate FRC robot code by running the WPILib Java simulation and checking that subsystems
-behave correctly through NetworkTables. The single tool for all NT interaction is
-`scripts/nt_reader.py` — it can list topics, read values, write values, and poll until a
-condition is met. You never need to edit it.
+behave correctly through NetworkTables. **Choose the right path for your environment:**
 
-## Workflow
+| Environment | How to run simulation | How to interact with NT |
+|---|---|---|
+| **Developer machine** (VS Code, display available) | `./gradlew simulateJava` in a terminal | `python3 scripts/nt_reader.py` directly |
+| **Copilot sandbox / CI** (no display, FRC Maven DNS-blocked) | Trigger `.github/workflows/simulate.yml` in GitHub Actions | Pass test parameters as `workflow_dispatch` inputs to the workflow |
+
+---
+
+## Path A — Developer machine (local)
 
 ### Step 1 — Start the simulation
 
@@ -19,11 +24,7 @@ condition is met. You never need to edit it.
 ./gradlew simulateJava
 ```
 
-Wait until the terminal shows `Robot program starting` before continuing (usually 20–60 s on first
-run; much faster after Gradle caches the build).
-
-> **Headless / CI:** The `CI` environment variable disables the sim GUI automatically
-> (`wpi.sim.addGui().defaultEnabled = !System.getenv("CI")` in `build.gradle`).
+Wait until `Robot program starting` appears (20–60 s first run; faster after Gradle caches).
 
 ### Step 2 — Install the NT helper (once)
 
@@ -33,22 +34,21 @@ pip install pyntcore
 
 ### Step 3 — Use `scripts/nt_reader.py` for all NT operations
 
-`nt_reader.py` is your single generic tool. It connects to `localhost:5810`, performs the
-requested operation, prints JSON to stdout, and exits.
+`nt_reader.py` is your single generic tool — no editing required, all parameters come from
+CLI flags. It prints JSON to stdout and exits with code `0` (success) or `1` (fail).
 
-#### List every published topic
+**List every published topic** (useful for finding exact spellings):
 ```bash
 python3 scripts/nt_reader.py
 ```
 
-#### Read one or more topic values
+**Read one or more topics:**
 ```bash
 python3 scripts/nt_reader.py "/AdvantageKit/Intake Linear/Position"
 python3 scripts/nt_reader.py "/AdvantageKit/Tower/Position" "/AdvantageKit/Indexer/Velocity"
 ```
 
-#### Write (publish) a value to a topic
-`--set` accepts `true`/`false` (boolean), a numeric string (double), or any other string.
+**Write a value to a topic** (`--set`):
 ```bash
 # Enable the robot in teleop
 python3 scripts/nt_reader.py --set true /SimControl/Enable
@@ -63,30 +63,20 @@ python3 scripts/nt_reader.py --set 50.0 "/Tuning/IntakeRoller/IntakeRPS"
 python3 scripts/nt_reader.py --set false /SimControl/Enable
 ```
 
-#### Poll until a topic reaches an expected value
+**Poll until a topic reaches an expected value** (`--wait`):
 ```bash
-# Assert intake linear position reaches ~22.748 rad within 15 s
 python3 scripts/nt_reader.py \
     --wait 22.748 --tolerance 0.5 --timeout 15 \
     "/AdvantageKit/Intake Linear/Position"
-
-# Assert shooter velocity reaches 100 rad/s within 10 s
-python3 scripts/nt_reader.py \
-    --wait 100.0 --tolerance 2.0 --timeout 10 \
-    "/AdvantageKit/ShooterLeft/Velocity"
 ```
 
-Exit code `0` = condition met; `1` = timed out or connection failed.
-
-### Step 4 — Validate any subsystem
-
-To test **any** command on **any** subsystem, chain three `nt_reader.py` calls:
+### Step 4 — Generic test pattern (any subsystem, any command)
 
 ```bash
 # 1. Enable teleop
 python3 scripts/nt_reader.py --set true /SimControl/Enable
 
-# 2. Schedule the command (use the SmartDashboard key registered in RobotContainer)
+# 2. Schedule the command (SmartDashboard key registered in RobotContainer)
 python3 scripts/nt_reader.py --set true "/SmartDashboard/<SubsystemName>/<CommandName>/running"
 
 # 3. Assert the expected NT value
@@ -94,7 +84,62 @@ python3 scripts/nt_reader.py --wait <EXPECTED> --tolerance <TOL> --timeout <SECS
     "/AdvantageKit/<MechanismName>/<Field>"
 ```
 
-No Python editing required — just change the topic paths and expected values on the command line.
+---
+
+## Path B — Copilot sandbox / CI (no local simulation)
+
+When `./gradlew simulateJava` cannot run locally (FRC Maven DNS-blocked, no display), the
+simulation runs in GitHub Actions via `.github/workflows/simulate.yml`.
+
+The workflow accepts `workflow_dispatch` inputs so you can test **any** command and topic without
+editing any file. Use the `gh` CLI to trigger it:
+
+```bash
+# Generic pattern — substitute your own values:
+gh workflow run simulate.yml \
+  --ref <branch> \
+  --field command_topic="/SmartDashboard/<SubsystemName>/<CommandName>/running" \
+  --field assert_topic="/AdvantageKit/<MechanismName>/<Field>" \
+  --field assert_value="<expected>" \
+  --field assert_tolerance="<tolerance>" \
+  --field assert_timeout="<seconds>"
+```
+
+**Example: Intake Linear Extend (same as the push-triggered default)**
+```bash
+gh workflow run simulate.yml \
+  --ref copilot/add-wpilib-simulation-launch \
+  --field command_topic="/SmartDashboard/Intake Linear/Extend/running" \
+  --field assert_topic="/AdvantageKit/Intake Linear/Position" \
+  --field assert_value="22.748" \
+  --field assert_tolerance="0.5" \
+  --field assert_timeout="15"
+```
+
+**Example: Tower Extend**
+```bash
+gh workflow run simulate.yml \
+  --ref <branch> \
+  --field command_topic="/SmartDashboard/Tower/Extend/running" \
+  --field assert_topic="/AdvantageKit/Tower/Position" \
+  --field assert_value="5.0" \
+  --field assert_tolerance="0.2" \
+  --field assert_timeout="10"
+```
+
+After triggering, monitor the run:
+```bash
+gh run list --workflow=simulate.yml --limit 5
+gh run watch   # stream logs of the most recent run
+```
+
+The workflow prints JSON output for each step. Look for the "Assert NT topic reaches expected
+value" step — it exits `0` on success and `1` on timeout.
+
+> **Workflow inputs and defaults:** If omitted, all inputs default to the
+> Intake Linear Extend test (the same test that runs automatically on every push to this branch).
+> This means `push` events always run the regression test while `workflow_dispatch` without inputs
+> also re-runs the same test.
 
 ---
 
@@ -102,16 +147,16 @@ No Python editing required — just change the topic paths and expected values o
 
 | NT path | What it contains |
 |---|---|
-| `/SimControl/Enable` | **Write `true`** to enable robot in teleop; **`false`** to disable |
+| `/SimControl/Enable` | **Write `true`** to enable robot in teleop; `false` to disable |
 | `/SmartDashboard/<Name>/running` | **Write `true`** to schedule a command registered with `SmartDashboard.putData()` |
-| `/AdvantageKit/<MechanismName>/Position` | Motor shaft position (radians) — logged by AdvantageKit |
+| `/AdvantageKit/<MechanismName>/Position` | Motor shaft position (radians) |
 | `/AdvantageKit/<MechanismName>/Velocity` | Motor shaft velocity (rad/s) |
 | `/AdvantageKit/<MechanismName>/AppliedVolts` | Applied voltage (V) |
 | `/AdvantageKit/<MechanismName>/SupplyCurrentAmps` | Supply current (A) |
 | `/AdvantageKit/RealOutputs/<Name>/CurrentCommand` | Active command name (string) |
 | `/Tuning/<MechanismName>/<param>` | `LoggedTunableNumber` values — writable when `tuningMode = true` |
 
-### Common mechanism names (match the `NAME` constant in each `*Constants.java`)
+### Common mechanism names
 
 | Subsystem | Mechanism name in NT |
 |---|---|
@@ -123,38 +168,13 @@ No Python editing required — just change the topic paths and expected values o
 
 ---
 
-## Example: Intake Linear Extend (full sequence)
-
-```bash
-# 1. Enable teleop
-python3 scripts/nt_reader.py --set true /SimControl/Enable
-
-# 2. Schedule the Extend command
-python3 scripts/nt_reader.py --set true "/SmartDashboard/Intake Linear/Extend/running"
-
-# 3. Assert motor position reaches ~22.748 rad
-python3 scripts/nt_reader.py \
-    --wait 22.748 --tolerance 0.5 --timeout 15 \
-    "/AdvantageKit/Intake Linear/Position"
-```
-
-Expected output from step 3:
-```json
-{
-  "/AdvantageKit/Intake Linear/Position": 22.7489
-}
-```
-
----
-
 ## Tips
 
-1. **List topics first** when working with an unfamiliar subsystem — `python3 scripts/nt_reader.py`
-   shows every published path so you can find the exact spelling.
+1. **List topics first** when working with an unfamiliar subsystem:
+   `python3 scripts/nt_reader.py` shows every published path.
 2. **AdvantageKit capitalises field names** (`Position`, `Velocity`, `AppliedVolts`, …).
 3. **Commands need teleop enabled** — the robot ignores `running` writes while disabled.
-4. **`--timeout` controls both connection and poll deadline** — increase it if the subsystem
-   moves slowly (e.g., `--timeout 30` for a slow elevator).
+4. **Increase `--timeout`** for slow-moving mechanisms (e.g., `--timeout 30` for an elevator).
 5. **Check the active command** with:
    ```bash
    python3 scripts/nt_reader.py "/AdvantageKit/RealOutputs/Intake Linear/CurrentCommand"
