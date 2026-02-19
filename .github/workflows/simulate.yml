@@ -7,18 +7,15 @@ on:
         description: >
           SmartDashboard NT topic to trigger (write true).
           e.g. /SmartDashboard/Tower/Extend/running
-        required: false
-        default: '/SmartDashboard/Intake Linear/Extend/running'
+        required: true
       assert_topic:
         description: >
           NT topic to poll for the expected value.
           e.g. /AdvantageKit/Tower/Position
-        required: false
-        default: '/AdvantageKit/Intake Linear/Position'
+        required: true
       assert_value:
-        description: 'Expected numeric value for the assert topic (e.g. 22.748)'
-        required: false
-        default: '22.748'
+        description: 'Expected numeric value for the assert topic (e.g. 5.0)'
+        required: true
       assert_tolerance:
         description: 'Acceptable deviation from the expected value (e.g. 0.5)'
         required: false
@@ -27,9 +24,6 @@ on:
         description: 'Seconds to wait for the assert topic to reach the expected value'
         required: false
         default: '15'
-  push:
-    branches:
-      - copilot/add-wpilib-simulation-launch
 
 jobs:
   simulate:
@@ -99,20 +93,17 @@ jobs:
 
       - name: Schedule command
         run: |
-          TOPIC="${{ inputs.command_topic || '/SmartDashboard/Intake Linear/Extend/running' }}"
-          echo "Scheduling command: $TOPIC"
-          python3 scripts/nt_reader.py --set true "$TOPIC"
+          echo "Scheduling command: ${{ inputs.command_topic }}"
+          python3 scripts/nt_reader.py --set true "${{ inputs.command_topic }}"
 
       - name: Assert NT topic reaches expected value
         run: |
-          TOPIC="${{ inputs.assert_topic || '/AdvantageKit/Intake Linear/Position' }}"
-          VALUE="${{ inputs.assert_value || '22.748' }}"
-          TOL="${{ inputs.assert_tolerance || '0.5' }}"
-          TIMEOUT="${{ inputs.assert_timeout || '15' }}"
-          echo "Asserting $TOPIC ≈ $VALUE (±$TOL) within ${TIMEOUT}s..."
+          echo "Asserting ${{ inputs.assert_topic }} ≈ ${{ inputs.assert_value }} (±${{ inputs.assert_tolerance }}) within ${{ inputs.assert_timeout }}s..."
           python3 scripts/nt_reader.py \
-            --wait "$VALUE" --tolerance "$TOL" --timeout "$TIMEOUT" \
-            "$TOPIC"
+            --wait "${{ inputs.assert_value }}" \
+            --tolerance "${{ inputs.assert_tolerance }}" \
+            --timeout "${{ inputs.assert_timeout }}" \
+            "${{ inputs.assert_topic }}"
 
       - name: Stop simulation
         if: always()

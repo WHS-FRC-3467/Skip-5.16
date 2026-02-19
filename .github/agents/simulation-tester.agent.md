@@ -44,8 +44,8 @@ python3 scripts/nt_reader.py
 
 **Read one or more topics:**
 ```bash
-python3 scripts/nt_reader.py "/AdvantageKit/Intake Linear/Position"
-python3 scripts/nt_reader.py "/AdvantageKit/Tower/Position" "/AdvantageKit/Indexer/Velocity"
+python3 scripts/nt_reader.py "/AdvantageKit/<MechanismName>/<Field>"
+python3 scripts/nt_reader.py "/AdvantageKit/<MechanismName>/Position" "/AdvantageKit/<OtherMechanism>/Velocity"
 ```
 
 **Write a value to a topic** (`--set`):
@@ -54,10 +54,10 @@ python3 scripts/nt_reader.py "/AdvantageKit/Tower/Position" "/AdvantageKit/Index
 python3 scripts/nt_reader.py --set true /SimControl/Enable
 
 # Schedule a SmartDashboard command
-python3 scripts/nt_reader.py --set true "/SmartDashboard/Intake Linear/Extend/running"
+python3 scripts/nt_reader.py --set true "/SmartDashboard/<SubsystemName>/<CommandName>/running"
 
 # Change a tunable number
-python3 scripts/nt_reader.py --set 50.0 "/Tuning/IntakeRoller/IntakeRPS"
+python3 scripts/nt_reader.py --set 50.0 "/Tuning/<MechanismName>/<param>"
 
 # Disable the robot
 python3 scripts/nt_reader.py --set false /SimControl/Enable
@@ -66,8 +66,8 @@ python3 scripts/nt_reader.py --set false /SimControl/Enable
 **Poll until a topic reaches an expected value** (`--wait`):
 ```bash
 python3 scripts/nt_reader.py \
-    --wait 22.748 --tolerance 0.5 --timeout 15 \
-    "/AdvantageKit/Intake Linear/Position"
+    --wait <EXPECTED> --tolerance <TOL> --timeout <SECS> \
+    "/AdvantageKit/<MechanismName>/<Field>"
 ```
 
 ### Step 4 — Generic test pattern (any subsystem, any command)
@@ -91,11 +91,10 @@ python3 scripts/nt_reader.py --wait <EXPECTED> --tolerance <TOL> --timeout <SECS
 When `./gradlew simulateJava` cannot run locally (FRC Maven DNS-blocked, no display), the
 simulation runs in GitHub Actions via `.github/workflows/simulate.yml`.
 
-The workflow accepts `workflow_dispatch` inputs so you can test **any** command and topic without
-editing any file. Use the `gh` CLI to trigger it:
+The workflow is fully parameterized — pass any command topic, assert topic, and expected value
+as `workflow_dispatch` inputs via the `gh` CLI. No files need to be edited.
 
 ```bash
-# Generic pattern — substitute your own values:
 gh workflow run simulate.yml \
   --ref <branch> \
   --field command_topic="/SmartDashboard/<SubsystemName>/<CommandName>/running" \
@@ -105,41 +104,13 @@ gh workflow run simulate.yml \
   --field assert_timeout="<seconds>"
 ```
 
-**Example: Intake Linear Extend (same as the push-triggered default)**
-```bash
-gh workflow run simulate.yml \
-  --ref copilot/add-wpilib-simulation-launch \
-  --field command_topic="/SmartDashboard/Intake Linear/Extend/running" \
-  --field assert_topic="/AdvantageKit/Intake Linear/Position" \
-  --field assert_value="22.748" \
-  --field assert_tolerance="0.5" \
-  --field assert_timeout="15"
-```
-
-**Example: Tower Extend**
-```bash
-gh workflow run simulate.yml \
-  --ref <branch> \
-  --field command_topic="/SmartDashboard/Tower/Extend/running" \
-  --field assert_topic="/AdvantageKit/Tower/Position" \
-  --field assert_value="5.0" \
-  --field assert_tolerance="0.2" \
-  --field assert_timeout="10"
-```
-
 After triggering, monitor the run:
 ```bash
 gh run list --workflow=simulate.yml --limit 5
 gh run watch   # stream logs of the most recent run
 ```
 
-The workflow prints JSON output for each step. Look for the "Assert NT topic reaches expected
-value" step — it exits `0` on success and `1` on timeout.
-
-> **Workflow inputs and defaults:** If omitted, all inputs default to the
-> Intake Linear Extend test (the same test that runs automatically on every push to this branch).
-> This means `push` events always run the regression test while `workflow_dispatch` without inputs
-> also re-runs the same test.
+The "Assert NT topic reaches expected value" step exits `0` on success and `1` on timeout.
 
 ---
 
@@ -177,6 +148,6 @@ value" step — it exits `0` on success and `1` on timeout.
 4. **Increase `--timeout`** for slow-moving mechanisms (e.g., `--timeout 30` for an elevator).
 5. **Check the active command** with:
    ```bash
-   python3 scripts/nt_reader.py "/AdvantageKit/RealOutputs/Intake Linear/CurrentCommand"
+   python3 scripts/nt_reader.py "/AdvantageKit/RealOutputs/<SubsystemName>/CurrentCommand"
    ```
 
