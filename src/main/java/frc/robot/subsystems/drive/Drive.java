@@ -25,6 +25,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
+
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -43,6 +44,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
@@ -51,12 +53,14 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.RobotState;
 import frc.robot.util.LocalADStarAK;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
     public final RobotState robotState = RobotState.getInstance();
@@ -148,7 +152,7 @@ public class Drive extends SubsystemBase {
      * skip skid detection if the median translational speed is below this threshold.
      */
     private static final LoggedTunableNumber SKID_MIN_TRANSLATION_MPS =
-            new LoggedTunableNumber("Drive/SkidOutlierScale", 0.15);
+            new LoggedTunableNumber("Drive/SkidMinTranslationMPS", 0.15);
 
     @AutoLogOutput(key = "Drive/Skid/BadWheelsLatest")
     private boolean[] skidBadWheelsLatest = new boolean[] {false, false, false, false};
