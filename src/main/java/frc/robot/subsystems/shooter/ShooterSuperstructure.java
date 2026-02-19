@@ -39,6 +39,7 @@ import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
+import frc.robot.RobotState.FieldRegion;
 import frc.robot.RobotState.Target;
 import org.littletonrobotics.junction.Logger;
 
@@ -112,6 +113,14 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
                                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
                     });
+
+    // Trigger determining whether hood is safe to actuate. Primarily for use in autos.
+    public final LoggedTrigger hoodSafe =
+            new LoggedTrigger(
+                    this.getName() + "/hoodSafe",
+                    () ->
+                            robotState.getFieldRegion() == FieldRegion.ALLIANCE_ZONE
+                                    && robotState.enteringTrench.negate().getAsBoolean());
 
     private final LoggedTunableBoolean tuningMode =
             new LoggedTunableBoolean(getName() + "/Tuning/Enable", false);
@@ -224,9 +233,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Statically spins the flywheel and actuates the hood to the proper values for a HUB SHOT given
-     * a provided distance. ONLY valid for HUB shots. Perpetual command -- never spins down.
-     * Therefore, to end, this should be interrupted by a parent command group or timed-out.
-     * Primarily for use in autos.
+     * a provided distance. ONLY valid for HUB shots in the CURRENT ALLIANCE ZONE. If called in the
+     * trench or neutral zone, will spin flywheel to proper speed but keep the hood low to prevent
+     * collision. Perpetual command -- never spins down. Therefore, to end, this should be
+     * interrupted by a parent command group or timed-out. Primarily for use in autos.
      *
      * @param distance the distance from the desired robot shot position to the HUB.
      * @return Static non-updating HUB only shooter spin-up command.
@@ -236,7 +246,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         () -> {
                             spinFlywheel(
                                     RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))));
-                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
+                            if (hoodSafe.getAsBoolean()) {
+                                setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
+                            } else {
+                                setHoodPosition(Degrees.zero());
+                            }
                         },
                         this)
                 .withName("Spin-Up Shooter to Distance");
