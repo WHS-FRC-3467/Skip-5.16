@@ -285,8 +285,7 @@ public class RobotContainer {
                 .emergencyStop()
                 .whileTrue(
                         Commands.parallel(
-                                        intake.linearCoast(),
-                                        intake.stopRoller(),
+                                        intake.stopAll(),
                                         indexer.stopCommand(),
                                         tower.stopCommand(),
                                         shooter.setFlywheelSpeed(RadiansPerSecond.zero()))

@@ -212,6 +212,18 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 .withName("Eject Roller");
     }
 
+    /**  
+     * Creates a command to stop the roller and coast the intake.
+     * 
+     * @return A command that stops the intake
+    */
+    public Command stopAll() {
+        return Commands.runOnce(() -> {
+            this.stopRoller();
+            this.linearCoast();
+        }, this);
+    }
+
     @Override
     public void periodic() {
         LoggerHelper.recordCurrentCommand(this.getName(), this);
