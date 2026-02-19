@@ -24,12 +24,12 @@ import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.robot.RobotState;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import java.util.List;
-import java.util.Arrays;
 
 /**
  * Generates the Object Detection subsystem which consists of some number of Object Detection
@@ -40,14 +40,11 @@ public class ObjectDetector extends SubsystemBase {
     private final RobotState robotState = RobotState.getInstance();
     private final ObjectDetection objectDetection;
     private int maxDetectionsSize = 0;
-    private final static Translation2d INVALID_TRANSLATION = new Translation2d(-1, -1);
+    private static final Translation2d INVALID_TRANSLATION = new Translation2d(-1, -1);
 
-    @Getter
-    private List<Optional<ObjectDetectionObservation>> latestObjectObservation;
-    @Getter
-    private Optional<ObjectDetectionObservation> latestBigContourObservation;
-    @Getter
-    private Optional<ObjectDetectionObservation> latestLowContourObservation;
+    @Getter private List<Optional<ObjectDetectionObservation>> latestObjectObservation;
+    @Getter private Optional<ObjectDetectionObservation> latestBigContourObservation;
+    @Getter private Optional<ObjectDetectionObservation> latestLowContourObservation;
 
     /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
@@ -65,10 +62,15 @@ public class ObjectDetector extends SubsystemBase {
             PhotonTrackedTarget target) {
         // Attempt to generate full Object record using ML model
         Optional<ObjectDetectionObservation> observation =
-            objectDetection.getObjectObservation(target,
-                ObjectDetectorConstants.CAMERA0_TRANSFORM,
-                ObjectDetectorConstants.OBJECT0_HEIGHT_METERS, 1, 0, 1, 0,
-                robotState.getEstimatedPose());
+                objectDetection.getObjectObservation(
+                        target,
+                        ObjectDetectorConstants.CAMERA0_TRANSFORM,
+                        ObjectDetectorConstants.OBJECT0_HEIGHT_METERS,
+                        1,
+                        0,
+                        1,
+                        0,
+                        robotState.getEstimatedPose());
         // Return latest Object observation (full, partial, or empty record)
         return observation;
     }
@@ -78,7 +80,7 @@ public class ObjectDetector extends SubsystemBase {
             ContourSelectionMode selection) {
         // Attempt to generate partial Object record using Blob model
         Optional<ObjectDetectionObservation> observation =
-            objectDetection.getContourObservation(objectDetection.getTargets(), selection);
+                objectDetection.getContourObservation(objectDetection.getTargets(), selection);
         // Return latest Blob observation (partial or empty record)
         return observation;
     }
@@ -98,14 +100,14 @@ public class ObjectDetector extends SubsystemBase {
                     translation = detection.get().objectPose().get().getTranslation();
                 }
             }
-            Logger.recordOutput(prefix + "OBJECT DETECTION #" + i + " Calculated Coordinates",
-                translation);
+            Logger.recordOutput(
+                    prefix + "OBJECT DETECTION #" + i + " Calculated Coordinates", translation);
         }
     }
 
     // Private helper for logging Contour values. Object ID = -9999 for stale values.
-    private void logContourObservation(Optional<ObjectDetectionObservation> observation,
-        ContourSelectionMode mode) {
+    private void logContourObservation(
+            Optional<ObjectDetectionObservation> observation, ContourSelectionMode mode) {
         String prefix = "Detection/" + "Contour: " + mode + ": ";
         if (observation.isPresent()) {
             ObjectDetectionObservation obs = observation.get();
@@ -128,8 +130,9 @@ public class ObjectDetector extends SubsystemBase {
         if (objectDetection.getTargets().length > 0) {
             // Generate latest ML Object observations
             latestObjectObservation =
-                Arrays.stream(objectDetection.getTargets())
-                    .map(this::generateObjectObservation).toList();
+                    Arrays.stream(objectDetection.getTargets())
+                            .map(this::generateObjectObservation)
+                            .toList();
             // Generate latest Contour observations
             latestBigContourObservation = generateContourObservation(ContourSelectionMode.LARGEST);
             latestLowContourObservation = generateContourObservation(ContourSelectionMode.LOWEST);

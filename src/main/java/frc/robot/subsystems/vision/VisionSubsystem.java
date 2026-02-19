@@ -158,8 +158,9 @@ public class VisionSubsystem extends SubsystemBase {
             for (var result : results) {
 
                 if (result.targets.size() == 1
-                        && Constants.FILTERED_TAGS.contains(result.targets.get(0).getFiducialId())) {
-                            rejectedResults.add(result);
+                        && Constants.FILTERED_TAGS.contains(
+                                result.targets.get(0).getFiducialId())) {
+                    rejectedResults.add(result);
                     continue;
                 }
 
