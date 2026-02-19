@@ -233,9 +233,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Statically spins the flywheel and actuates the hood to the proper values for a HUB SHOT given
-     * a provided distance. ONLY valid for HUB shots. Perpetual command -- never spins down.
-     * Therefore, to end, this should be interrupted by a parent command group or timed-out.
-     * Primarily for use in autos.
+     * a provided distance. ONLY valid for HUB shots in the CURRENT ALLIANCE ZONE. If called in the 
+     * trench or neutral zone, will spin flywheel to proper speed but keep the hood low to prevent 
+     * collision. Perpetual command -- never spins down. Therefore, to end, this should be interrupted 
+     * by a parent command group or timed-out. Primarily for use in autos.
      *
      * @param distance the distance from the desired robot shot position to the HUB.
      * @return Static non-updating HUB only shooter spin-up command.
@@ -247,6 +248,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                                     RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))));
                             if (hoodSafe.getAsBoolean()) {
                                 setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
+                            }
+                            else {
+                                setHoodPosition(Degrees.zero());
                             }
                         },
                         this)
