@@ -8,6 +8,8 @@ jobs:
   simulate:
     name: Run Simulation
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -41,9 +43,10 @@ jobs:
           export DISPLAY=:99
           Xvfb :99 -screen 0 1024x768x24 &
           # CI env var disables the sim GUI (see build.gradle)
+          # --no-daemon ensures the process terminates cleanly when timeout kills it
           # Run for up to 60 seconds; exit code 124 means timed-out = success
           set +e
-          timeout 60 ./gradlew simulateJava --console=plain 2>&1
+          timeout 60 ./gradlew simulateJava --no-daemon --console=plain 2>&1
           EXIT_CODE=$?
           set -e
           if [ "$EXIT_CODE" -eq 0 ] || [ "$EXIT_CODE" -eq 124 ]; then
