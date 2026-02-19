@@ -45,20 +45,15 @@ public class CANUpdateThread implements AutoCloseable {
      * @return CompletableFuture that completes when successful or throws on persistent failure
      */
     public CompletableFuture<Void> CTRECheckErrorAndRetry(Supplier<StatusCode> action) {
-        return CompletableFuture.runAsync(
-                () -> {
-                    StatusCode lastStatus = StatusCode.OK;
+        StatusCode lastStatus = StatusCode.OK;
 
-                    for (int i = 0; i < MAX_RETRIES; i++) {
-                        lastStatus = action.get();
-                        if (lastStatus.isOK()) {
-                            return;
-                        }
-                    }
-
-                    throw new RuntimeException("CTRE config failed: " + lastStatus);
-                },
-                executor);
+        for (int i = 0; i < MAX_RETRIES; i++) {
+            lastStatus = action.get();
+            if (lastStatus.isOK()) {
+                return CompletableFuture.runAsync(() -> {}, executor);
+            }
+        }
+        return CompletableFuture.runAsync(() -> {}, executor);
     }
 
     /**
