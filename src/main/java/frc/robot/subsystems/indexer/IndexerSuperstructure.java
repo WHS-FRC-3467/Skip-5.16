@@ -165,11 +165,18 @@ public class IndexerSuperstructure extends SubsystemBase {
     }
 
     void disableTuningMode() {
-        CommandScheduler.getInstance().cancel(tuningModeIdleCommand);
-        if (lastScheduledCommand != null) {
-            CommandScheduler.getInstance().schedule(lastScheduledCommand);
-            lastScheduledCommand = null;
+        Command currentCommand = this.getCurrentCommand();
+        boolean wasTuningIdleActive = currentCommand == tuningModeIdleCommand;
+
+        if (wasTuningIdleActive) {
+            CommandScheduler.getInstance().cancel(tuningModeIdleCommand);
         }
+
+        if (wasTuningIdleActive && lastScheduledCommand != null) {
+            CommandScheduler.getInstance().schedule(lastScheduledCommand);
+        }
+
+        lastScheduledCommand = null;
     }
 
     /**
