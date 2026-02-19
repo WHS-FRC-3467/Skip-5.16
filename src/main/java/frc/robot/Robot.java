@@ -287,7 +287,6 @@ public class Robot extends LoggedRobot {
             DriverStationSim.setEnabled(ntEnable);
             if (ntEnable) {
                 DriverStationSim.setAutonomous(false); // teleop mode
-                DriverStationSim.setDSAttached(true);
             }
             DriverStationSim.notifyNewData();
         }
