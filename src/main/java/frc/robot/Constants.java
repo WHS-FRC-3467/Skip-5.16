@@ -18,6 +18,8 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 
+import java.util.List;
+
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -111,4 +113,5 @@ public final class Constants {
     public static final Transform3d RIGHT_SHOOTER_EXIT_TRANSFORM =
             new Transform3d(
                     Inches.of(-7.346), Inches.of(-3.84), Inches.of(22), new Rotation3d(0, 0, 0));
-}
+    public static final List<Integer> FILTERED_TAGS = List.of(1, 12, 22, 23, 28, 17, 7, 6);
+                }
