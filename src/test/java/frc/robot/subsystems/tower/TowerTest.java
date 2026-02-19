@@ -95,9 +95,9 @@ public class TowerTest {
         CommandScheduler.getInstance().cancelAll();
 
         assertDoesNotThrow(
-            () -> {
-                tower.enableTuningMode();
-                tower.disableTuningMode();
-            });
+                () -> {
+                    tower.enableTuningMode();
+                    tower.disableTuningMode();
+                });
     }
 }

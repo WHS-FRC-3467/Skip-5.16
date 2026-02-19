@@ -69,14 +69,14 @@ public class IndexerSuperstructure extends SubsystemBase {
                     IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableBoolean TUNING_MODE_ENABLED =
-        new LoggedTunableBoolean(NAME + "/Tuning/Enable", false);
+            new LoggedTunableBoolean(NAME + "/Tuning/Enable", false);
     private static final LoggedTunableNumber TUNING_MODE_FLOOR_RPS =
-        new LoggedTunableNumber(NAME + "/Tuning/FloorSpeedRPS", 0.0);
+            new LoggedTunableNumber(NAME + "/Tuning/FloorSpeedRPS", 0.0);
     private static final LoggedTunableNumber TUNING_MODE_CENTER_RPS =
-        new LoggedTunableNumber(NAME + "/Tuning/CenteringSpeedRPS", 0.0);
+            new LoggedTunableNumber(NAME + "/Tuning/CenteringSpeedRPS", 0.0);
 
     private final Command tuningModeIdleCommand =
-        this.idle().withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+            this.idle().withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
     private Command lastScheduledCommand;
 
     /**
@@ -93,41 +93,45 @@ public class IndexerSuperstructure extends SubsystemBase {
     @Override
     public void periodic() {
         LoggedTunableBoolean.ifChanged(
-            hashCode(),
-            enabled -> {
-                if (enabled[0]) {
-                    enableTuningMode();
-                } else {
-                    disableTuningMode();
-                }
-            },
-            TUNING_MODE_ENABLED);
+                hashCode(),
+                enabled -> {
+                    if (enabled[0]) {
+                        enableTuningMode();
+                    } else {
+                        disableTuningMode();
+                    }
+                },
+                TUNING_MODE_ENABLED);
 
         LoggedTunableNumber.ifChanged(
-            hashCode(),
-            values -> {
-                if (!TUNING_MODE_ENABLED.getAsBoolean())
-                    return;
-                runTuningVelocity(
-                    RotationsPerSecond.of(values[0]), RotationsPerSecond.of(values[1]));
-            },
-            TUNING_MODE_FLOOR_RPS,
-            TUNING_MODE_CENTER_RPS);
+                hashCode(),
+                values -> {
+                    if (!TUNING_MODE_ENABLED.getAsBoolean()) return;
+                    runTuningVelocity(
+                            RotationsPerSecond.of(values[0]), RotationsPerSecond.of(values[1]));
+                },
+                TUNING_MODE_FLOOR_RPS,
+                TUNING_MODE_CENTER_RPS);
         LoggerHelper.recordCurrentCommand(this.getName(), this);
         floorIO.periodic();
         centerIO.periodic();
     }
 
     private void runVelocity(AngularVelocity floorVelocity, AngularVelocity centeringVelocity) {
-        if (TUNING_MODE_ENABLED.get())
-            return;
         floorIO.runVelocity(floorVelocity, IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
         centerIO.runVelocity(
-            centeringVelocity, IndexerCenterConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+                centeringVelocity, IndexerCenterConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
+    /**
+     * Runs indexer motors directly from tuning setpoints. This path is used by tuning mode updates
+     * so both floor and centering speeds can be adjusted live.
+     *
+     * @param floorVelocity target floor angular velocity
+     * @param centeringVelocity target centering angular velocity
+     */
     private void runTuningVelocity(
-        AngularVelocity floorVelocity, AngularVelocity centeringVelocity) {
+            AngularVelocity floorVelocity, AngularVelocity centeringVelocity) {
         floorIO.runVelocity(floorVelocity, IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
         centerIO.runVelocity(
                 centeringVelocity, IndexerCenterConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
@@ -152,6 +156,10 @@ public class IndexerSuperstructure extends SubsystemBase {
         centerIO.runBrake();
     }
 
+    /**
+     * Enables tuning mode by cancelling the currently running command (if any), scheduling a
+     * non-interruptible idle command, and applying the current tuning speed setpoints.
+     */
     void enableTuningMode() {
         lastScheduledCommand = this.getCurrentCommand();
         if (lastScheduledCommand != null) {
@@ -160,10 +168,14 @@ public class IndexerSuperstructure extends SubsystemBase {
 
         CommandScheduler.getInstance().schedule(tuningModeIdleCommand);
         runTuningVelocity(
-            RotationsPerSecond.of(TUNING_MODE_FLOOR_RPS.get()),
-            RotationsPerSecond.of(TUNING_MODE_CENTER_RPS.get()));
+                RotationsPerSecond.of(TUNING_MODE_FLOOR_RPS.get()),
+                RotationsPerSecond.of(TUNING_MODE_CENTER_RPS.get()));
     }
 
+    /**
+     * Disables tuning mode by cancelling the tuning idle command and restoring the previously
+     * active command when one was captured.
+     */
     void disableTuningMode() {
         CommandScheduler.getInstance().cancel(tuningModeIdleCommand);
         if (lastScheduledCommand != null) {

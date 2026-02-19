@@ -84,9 +84,9 @@ public class IndexerTest {
         CommandScheduler.getInstance().cancelAll();
 
         assertDoesNotThrow(
-            () -> {
-                indexer.enableTuningMode();
-                indexer.disableTuningMode();
-            });
+                () -> {
+                    indexer.enableTuningMode();
+                    indexer.disableTuningMode();
+                });
     }
 }

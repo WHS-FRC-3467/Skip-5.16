@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import frc.lib.devices.DistanceSensor;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -132,7 +131,6 @@ public class Tower extends SubsystemBase {
     }
 
     private void runVelocity(AngularVelocity velocity) {
-        if (TUNING_MODE_ENABLED.get()) return;
         io.runVelocity(velocity, TowerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
@@ -193,6 +191,10 @@ public class Tower extends SubsystemBase {
         io.runBrake();
     }
 
+    /**
+     * Enables tuning mode by cancelling the currently running command (if any), scheduling a
+     * non-interruptible idle command, and applying the current tuning position setpoint.
+     */
     void enableTuningMode() {
         lastScheduledCommand = this.getCurrentCommand();
         if (lastScheduledCommand != null) {
@@ -203,6 +205,10 @@ public class Tower extends SubsystemBase {
         io.runPosition(Degrees.of(TUNING_MODE_POSITION_DEGREES.get()), PIDSlot.SLOT_0);
     }
 
+    /**
+     * Disables tuning mode by cancelling the tuning idle command and restoring the previously
+     * active command when one was captured.
+     */
     void disableTuningMode() {
         CommandScheduler.getInstance().cancel(tuningModeIdleCommand);
         if (lastScheduledCommand != null) {
