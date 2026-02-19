@@ -239,7 +239,7 @@ public class RobotContainer {
                 Commands.parallel(
                     indexer.shoot(),
                     tower.shoot(),
-                    Commands.runOnce(() -> drive.stopWithX()))
+                    Commands.run(() -> drive.stopWithX(), drive)) // Don't let joystick override
                     .onlyWhile(shooter.atHubSetpoints)
                     .repeatedly())
             .onFalse(Commands.parallel(
@@ -285,7 +285,7 @@ public class RobotContainer {
         // guess of current pose. Spin everything down afterwards.
         buttonBoard.forceShot().whileTrue(
             Commands.parallel(
-                Commands.runOnce(() -> drive.stopWithX()),
+                Commands.run(() -> drive.stopWithX(), drive),
                 shooter.spinUpShooterToHubDistance(robotState.getDistanceToTarget()),
                 indexer.shoot(),
                 tower.shoot()))
@@ -295,9 +295,9 @@ public class RobotContainer {
                     indexer.stopCommand(),
                     tower.stopCommand()));
 
-        // Button 6: X lock drive.
+        // Button 6: X locks drive until button is unpressed and joystick commands new velocity.
         buttonBoard.lockDrive().whileTrue(
-            Commands.run(() -> drive.stopWithX()));
+            Commands.run(() -> drive.stopWithX(), drive));
     }
 
     /**
