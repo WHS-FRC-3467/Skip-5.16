@@ -40,7 +40,7 @@ scheduled until it is enabled. `Robot.simulationPeriodic()` watches the NT entry
 python3 - <<'EOF'
 import ntcore, time
 inst = ntcore.NetworkTableInstance.getDefault()
-inst.startClient4("enable"); inst.setServer("localhost", 1735)
+inst.startClient4("enable"); inst.setServer("localhost", 5810)
 while not inst.isConnected(): time.sleep(0.05)
 inst.getBooleanTopic("/SimControl/Enable").publish().set(True)
 inst.flush(); time.sleep(0.5)
@@ -135,7 +135,7 @@ FAIL, and prints a JSON result object:
 python3 - <<'EOF'
 import ntcore, time
 inst = ntcore.NetworkTableInstance.getDefault()
-inst.startClient4("agent"); inst.setServer("localhost", 1735)
+inst.startClient4("agent"); inst.setServer("localhost", 5810)
 while not inst.isConnected(): time.sleep(0.05)
 inst.getBooleanTopic("/SimControl/Enable").publish().set(True)
 inst.flush(); time.sleep(0.5)
@@ -145,7 +145,7 @@ EOF
 python3 - <<'EOF'
 import ntcore, time
 inst = ntcore.NetworkTableInstance.getDefault()
-inst.startClient4("agent"); inst.setServer("localhost", 1735)
+inst.startClient4("agent"); inst.setServer("localhost", 5810)
 while not inst.isConnected(): time.sleep(0.05)
 inst.getBooleanTopic("/SmartDashboard/Intake Linear/Extend/running").publish().set(True)
 inst.flush(); time.sleep(3)

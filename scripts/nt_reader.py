@@ -2,7 +2,7 @@
 """
 Read values from NetworkTables while a WPILib simulation (or real robot) is running.
 
-The WPILib simulation starts an NT4 server on localhost:1735. This script connects
+The WPILib simulation starts an NT4 server on localhost:5810. This script connects
 as a client, optionally waits until a topic reaches an expected value, and then
 prints the results as JSON so Copilot (or any other caller) can parse them easily.
 
@@ -74,13 +74,44 @@ def _connect(host: str, port: int, timeout: float) -> ntcore.NetworkTableInstanc
     return inst
 
 
-def _get_value(inst: ntcore.NetworkTableInstance, topic_path: str):
-    """Return the current value for a topic, or None if unavailable."""
-    entry = inst.getEntry(topic_path)
-    value = entry.getValue()
-    if value is None or not value.isValid():
-        return None
-    return value.value()
+def _subscribe_double(inst: ntcore.NetworkTableInstance, topic_path: str) -> "ntcore.DoubleSubscriber":
+    """Create and return an active double subscriber for topic_path."""
+    return inst.getDoubleTopic(topic_path).subscribe(float("-inf"))
+
+
+def _read_subscriber(sub: "ntcore.DoubleSubscriber") -> float | None:
+    """Read the latest value from a double subscriber, returning None if not yet received."""
+    v = sub.get()
+    return v if v != float("-inf") else None
+
+
+def _get_value(inst: ntcore.NetworkTableInstance, topic_path: str, settle: float = 0.3):
+    """Subscribe to a topic, wait ``settle`` seconds, and return its current value.
+
+    Creates a typed double subscriber (the most common type for robot telemetry)
+    and falls back to boolean and string if the topic is not a double.
+
+    Uses typed subscribers rather than getValue().isValid() because getValue()
+    returns an 'invalid' object on pyntcore 2026.x even when the topic has a value.
+    """
+    _SENTINEL_D = float("-inf")
+    sub_d = inst.getDoubleTopic(topic_path).subscribe(_SENTINEL_D)
+    sub_b = inst.getBooleanTopic(topic_path).subscribe(None)
+    sub_s = inst.getStringTopic(topic_path).subscribe("__NT4_MISSING__")
+
+    deadline = time.monotonic() + settle
+    while time.monotonic() < deadline:
+        v = sub_d.get()
+        if v != _SENTINEL_D:
+            return v
+        b = sub_b.get()
+        if b is not None:
+            return b
+        s = sub_s.get()
+        if s != "__NT4_MISSING__":
+            return s
+        time.sleep(0.02)
+    return None
 
 
 def _serialisable(v):
@@ -142,8 +173,8 @@ def main() -> None:
     parser.add_argument(
         "--port",
         type=int,
-        default=1735,
-        help="NT4 server port (default: 1735).",
+        default=5810,
+        help="NT4 server port (default: 5810).",
     )
     args = parser.parse_args()
 
@@ -155,28 +186,40 @@ def main() -> None:
     try:
         if not args.topics:
             # List all topics.
+            # NT4 clients only receive topic announcements for subscribed prefixes.
+            # Subscribe to the common WPILib root tables so the server sends their topics.
+            _discovery_subs = [
+                inst.getDoubleTopic(f"/{pfx}/__discovery__").subscribe(float("-inf"))
+                for pfx in ["AdvantageKit", "SmartDashboard", "Tuning", "SimControl"]
+            ]
+            time.sleep(0.4)
             topics = inst.getTopics("")
-            names = sorted(t.getName() for t in topics)
+            names = sorted(t.getName() for t in topics if not t.getName().endswith("__discovery__"))
             print(json.dumps(names, indent=2))
             return
 
         if args.wait is not None:
-            # Poll until the value reaches the expected value.
+            # Create a subscription upfront so the server starts sending values immediately.
             topic_path = args.topics[0]
+            sub_d = inst.getDoubleTopic(topic_path).subscribe(float("-inf"))
             print(
                 f"Waiting for {topic_path} ≈ {args.wait} (±{args.tolerance}) …",
                 file=sys.stderr,
             )
             deadline = time.monotonic() + args.timeout
             while time.monotonic() < deadline:
-                v = _get_value(inst, topic_path)
+                raw = sub_d.get()
+                v = raw if raw != float("-inf") else None
+                if v is None:
+                    v = _get_value(inst, topic_path, settle=0.0)
                 if v is not None and abs(float(v) - args.wait) <= args.tolerance:
                     print(json.dumps({topic_path: _serialisable(v)}, indent=2))
                     return
                 time.sleep(0.05)
 
             # Timed out — print whatever we have so the caller can see the actual value.
-            v = _get_value(inst, topic_path)
+            raw = sub_d.get()
+            v = raw if raw != float("-inf") else _get_value(inst, topic_path, settle=0.0)
             print(
                 f"ERROR: Timed out after {args.timeout}s. "
                 f"Last value: {v}",
@@ -187,11 +230,14 @@ def main() -> None:
 
         else:
             # Read each requested topic once.
-            # Allow a short settling time so subscriptions can receive their first value.
-            time.sleep(0.3)
+            # Create all subscriptions first so the server starts sending values,
+            # then wait once for all of them to arrive.
+            subs = {p: inst.getDoubleTopic(p).subscribe(float("-inf")) for p in args.topics}
+            time.sleep(0.4)
             results = {}
             for topic_path in args.topics:
-                v = _get_value(inst, topic_path)
+                raw = subs[topic_path].get()
+                v = raw if raw != float("-inf") else _get_value(inst, topic_path, settle=0.0)
                 results[topic_path] = _serialisable(v)
             print(json.dumps(results, indent=2))
 

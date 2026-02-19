@@ -5,7 +5,7 @@ motor position reaches ~22.748 radians.
 
 This script exercises the same workflow described in the simulation-tester agent:
 
-  1. Connect to the NT4 server at localhost:1735 (started by the simulation).
+  1. Connect to the NT4 server at localhost:5810 (started by the simulation).
   2. Enable the robot in teleop by writing true to /SimControl/Enable.
      Robot.simulationPeriodic() reads this entry and calls DriverStationSim.setEnabled(true).
   3. Trigger the "Intake Linear/Extend" SmartDashboard command by writing true to
@@ -90,18 +90,14 @@ def connect(host: str, port: int, timeout: float) -> ntcore.NetworkTableInstance
     return inst
 
 
-def read_double(inst: ntcore.NetworkTableInstance, path: str) -> float | None:
-    """Return the current value of a double NT topic, or None if unavailable."""
-    entry = inst.getEntry(path)
-    value = entry.getValue()
-    if value is None or not value.isValid():
-        return None
-    raw = value.value()
-    # AdvantageKit 2026 logs Angle as a plain double in radians.
-    # If this returns bytes (struct format), inspect the topic type in AdvantageScope.
-    if isinstance(raw, (int, float)):
-        return float(raw)
-    return None
+def read_double(sub: "ntcore.DoubleSubscriber") -> float | None:
+    """Return the current value from a DoubleSubscriber, or None if not yet received.
+
+    Uses a typed subscriber (created once by the caller) rather than getEntry().getDouble()
+    because getEntry() is not guaranteed to have active subscriptions on pyntcore 2026.x.
+    """
+    v = sub.get()
+    return v if v != float("-inf") else None
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -113,7 +109,7 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--host", default="localhost", help="NT4 server hostname")
-    parser.add_argument("--port", type=int, default=1735, help="NT4 server port")
+    parser.add_argument("--port", type=int, default=5810, help="NT4 server port (default: 5810)")
     parser.add_argument(
         "--connect-timeout",
         type=float,
@@ -135,6 +131,9 @@ def main() -> None:
     # Publishers kept alive for the duration of the test.
     enable_pub = inst.getBooleanTopic(NT_SIM_ENABLE).publish()
     cmd_pub = inst.getBooleanTopic(NT_COMMAND_RUNNING).publish()
+    # Create the position subscriber immediately so the server starts sending values
+    # before we need them.  Using float("-inf") as sentinel (no valid motor angle is -∞).
+    pos_sub = inst.getDoubleTopic(NT_POSITION).subscribe(float("-inf"))
 
     try:
         # ── Step 1: Enable the robot in teleop ────────────────────────────────
@@ -166,7 +165,7 @@ def main() -> None:
         deadline = time.monotonic() + args.test_timeout
         last_pos = None
         while time.monotonic() < deadline:
-            pos = read_double(inst, NT_POSITION)
+            pos = read_double(pos_sub)
             if pos is not None:
                 last_pos = pos
                 if abs(pos - EXPECTED_POSITION_RAD) <= POSITION_TOLERANCE_RAD:
