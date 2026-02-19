@@ -122,7 +122,9 @@ test {
 // AdvantageKit log replay from the command line. Set the
 // value to "true" to enable the sim GUI by default (this
 // is the standard WPILib behavior).
-wpi.sim.addGui().defaultEnabled = true
+// In CI environments (where the CI env var is set), the GUI is
+// automatically disabled to support headless simulation testing.
+wpi.sim.addGui().defaultEnabled = !System.getenv("CI")
 wpi.sim.addDriverstation()
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')

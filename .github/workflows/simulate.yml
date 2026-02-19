@@ -1,0 +1,55 @@
+name: Simulate
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  simulate:
+    name: Run Simulation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties', 'vendordeps/**') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Install virtual display
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y xvfb libxi6 libxrender1 libxrandr2
+
+      - name: Run simulation (headless, 60-second smoke test)
+        run: |
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1024x768x24 &
+          # CI env var disables the sim GUI (see build.gradle)
+          # Run for up to 60 seconds; exit code 124 means timed-out = success
+          set +e
+          timeout 60 ./gradlew simulateJava --console=plain 2>&1
+          EXIT_CODE=$?
+          set -e
+          if [ "$EXIT_CODE" -eq 0 ] || [ "$EXIT_CODE" -eq 124 ]; then
+            echo "Simulation completed successfully (exit code: $EXIT_CODE)"
+            exit 0
+          else
+            echo "Simulation failed with exit code: $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
