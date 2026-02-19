@@ -278,7 +278,7 @@ public class RobotContainer {
         // Button 1: Emergency stop all mechanisms (intake, indexer, tower, and shooter).
         buttonBoard.emergencyStop().whileTrue(
             Commands.parallel(
-                intake.stopLinear(),
+                intake.linearCoast(),
                 intake.stopRoller(),
                 indexer.stopCommand(),
                 tower.stopCommand(),
@@ -294,13 +294,13 @@ public class RobotContainer {
         // it's extended.
         buttonBoard.unjam().whileTrue(
             Commands.parallel(
-                intake.ejectRoller().onlyWhile(intake.isExtended).repeatedly(),
+                intake.ejectRoller(),
                 indexer.eject(),
                 tower.eject()));
 
         // Button 4: Forcibly retract the intake by applying negative current.
         buttonBoard.forceRetractIntake().whileTrue(
-            intake.retractLinear());
+            intake.retractIntake());
 
         // Button 5: Bypass shooter readiness and alignment requirements to force a shot with best
         // guess of current pose. Spin everything down afterwards.
