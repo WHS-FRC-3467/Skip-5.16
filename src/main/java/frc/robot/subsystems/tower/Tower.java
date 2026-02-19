@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.lib.devices.DistanceSensor;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -53,9 +54,9 @@ public class Tower extends SubsystemBase {
 
     // Tuning Mode
     private static final LoggedTunableBoolean TUNING_MODE_ENABLED =
-        new LoggedTunableBoolean(TowerConstants.NAME + "/Tuning/Enable", false);
+            new LoggedTunableBoolean(TowerConstants.NAME + "/Tuning/Enable", false);
     private static final LoggedTunableNumber TUNING_MODE_POSITION_DEGREES =
-        new LoggedTunableNumber(TowerConstants.NAME + "/Tuning/PositionDegrees", 0.0);
+            new LoggedTunableNumber(TowerConstants.NAME + "/Tuning/PositionDegrees", 0.0);
 
     private final FlywheelMechanism<?> io;
 
@@ -63,7 +64,7 @@ public class Tower extends SubsystemBase {
     private final DistanceSensor laserCAN2 = TowerConstants.getLaserCAN2();
 
     private final Command tuningModeIdleCommand =
-        this.idle().withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+            this.idle().withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
 
     public final LoggedTrigger laserCAN1Tripped =
             new LoggedTrigger(
@@ -98,24 +99,23 @@ public class Tower extends SubsystemBase {
     @Override
     public void periodic() {
         LoggedTunableBoolean.ifChanged(
-            hashCode(),
-            enabled -> {
-                if (enabled[0]) {
-                    enableTuningMode();
-                } else {
-                    disableTuningMode();
-                }
-            },
-            TUNING_MODE_ENABLED);
+                hashCode(),
+                enabled -> {
+                    if (enabled[0]) {
+                        enableTuningMode();
+                    } else {
+                        disableTuningMode();
+                    }
+                },
+                TUNING_MODE_ENABLED);
 
         LoggedTunableNumber.ifChanged(
-            hashCode(),
-            pos -> {
-                if (!TUNING_MODE_ENABLED.getAsBoolean())
-                    return;
-                io.runPosition(Degrees.of(pos[0]), PIDSlot.SLOT_0);
-            },
-            TUNING_MODE_POSITION_DEGREES);
+                hashCode(),
+                pos -> {
+                    if (!TUNING_MODE_ENABLED.getAsBoolean()) return;
+                    io.runPosition(Degrees.of(pos[0]), PIDSlot.SLOT_0);
+                },
+                TUNING_MODE_POSITION_DEGREES);
         LoggerHelper.recordCurrentCommand(this.getName(), this);
         io.periodic();
         laserCAN1.periodic();
@@ -132,8 +132,7 @@ public class Tower extends SubsystemBase {
     }
 
     private void runVelocity(AngularVelocity velocity) {
-        if (TUNING_MODE_ENABLED.get())
-            return;
+        if (TUNING_MODE_ENABLED.get()) return;
         io.runVelocity(velocity, TowerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
@@ -194,7 +193,7 @@ public class Tower extends SubsystemBase {
         io.runBrake();
     }
 
-    public void enableTuningMode() {
+    void enableTuningMode() {
         lastScheduledCommand = this.getCurrentCommand();
         if (lastScheduledCommand != null) {
             CommandScheduler.getInstance().cancel(lastScheduledCommand);
@@ -204,13 +203,14 @@ public class Tower extends SubsystemBase {
         io.runPosition(Degrees.of(TUNING_MODE_POSITION_DEGREES.get()), PIDSlot.SLOT_0);
     }
 
-    public void disableTuningMode() {
+    void disableTuningMode() {
         CommandScheduler.getInstance().cancel(tuningModeIdleCommand);
         if (lastScheduledCommand != null) {
             CommandScheduler.getInstance().schedule(lastScheduledCommand);
             lastScheduledCommand = null;
         }
     }
+
     /** Closes the underlying flywheel mechanism and releases resources. */
     public void close() {
         io.close();
