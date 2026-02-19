@@ -15,15 +15,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties', 'vendordeps/**') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-
       - name: Grant execute permission
         run: chmod +x gradlew
       - name: Build Robot Code
