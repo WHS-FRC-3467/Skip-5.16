@@ -6,8 +6,7 @@ package frc.lib.commands;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -19,6 +18,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public abstract class AlignToPoseBase extends Command {
     private final RobotState robotState = RobotState.getInstance();
@@ -47,12 +48,12 @@ public abstract class AlignToPoseBase extends Command {
      * @param angularController PID controller for angular motion
      */
     public AlignToPoseBase(
-        Drive drive,
-        Supplier<Pose2d> targetPose,
-        AlignMode mode,
-        DoubleSupplier joystickInput,
-        LoggedTuneableProfiledPID linearController,
-        LoggedTuneableProfiledPID angularController) {
+            Drive drive,
+            Supplier<Pose2d> targetPose,
+            AlignMode mode,
+            DoubleSupplier joystickInput,
+            LoggedTuneableProfiledPID linearController,
+            LoggedTuneableProfiledPID angularController) {
         this.drive = drive;
         this.targetPose = targetPose;
         this.mode = mode;
@@ -68,14 +69,14 @@ public abstract class AlignToPoseBase extends Command {
     @Override
     public void initialize() {
         ChassisSpeeds fieldVelocity =
-            ChassisSpeeds.fromRobotRelativeSpeeds(drive.getChassisSpeeds(),
-                robotState.getEstimatedPose().getRotation());
+                ChassisSpeeds.fromRobotRelativeSpeeds(
+                        drive.getChassisSpeeds(), robotState.getEstimatedPose().getRotation());
 
         linearController.reset(0.0);
 
         angularController.reset(
-            robotState.getEstimatedPose().getRotation().getRadians(),
-            fieldVelocity.omegaRadiansPerSecond);
+                robotState.getEstimatedPose().getRotation().getRadians(),
+                fieldVelocity.omegaRadiansPerSecond);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -93,45 +94,44 @@ public abstract class AlignToPoseBase extends Command {
         switch (mode) {
             case STRAFE:
                 offsetVector =
-                    new Translation2d(linearController.calculate(relativePose2d.getX()), 0);
+                        new Translation2d(linearController.calculate(relativePose2d.getX()), 0);
 
                 // Calculate total linear velocity
                 linearVelocity =
-                    getLinearVelocityFromJoysticks(0,
-                        -joystickInput.getAsDouble()).times(drive.getMaxLinearSpeedMetersPerSec())
-                        .plus(offsetVector)
-                        .rotateBy(targetRotation2d);
+                        getLinearVelocityFromJoysticks(0, -joystickInput.getAsDouble())
+                                .times(drive.getMaxLinearSpeedMetersPerSec())
+                                .plus(offsetVector)
+                                .rotateBy(targetRotation2d);
                 break;
 
             case APPROACH:
                 offsetVector =
-                    new Translation2d(0, linearController.calculate(relativePose2d.getY()));
+                        new Translation2d(0, linearController.calculate(relativePose2d.getY()));
 
                 // Calculate total linear velocity
                 linearVelocity =
-                    getLinearVelocityFromJoysticks(-joystickInput.getAsDouble(),
-                        0).times(drive.getMaxLinearSpeedMetersPerSec())
-                        .plus(offsetVector)
-                        .rotateBy(targetRotation2d);
+                        getLinearVelocityFromJoysticks(-joystickInput.getAsDouble(), 0)
+                                .times(drive.getMaxLinearSpeedMetersPerSec())
+                                .plus(offsetVector)
+                                .rotateBy(targetRotation2d);
                 break;
 
             default:
                 break;
         }
 
-        double angularOutput = angularController.calculate(
-            robotState.getEstimatedPose().getRotation().getRadians(),
-            targetPose.get().getRotation().getRadians());
+        double angularOutput =
+                angularController.calculate(
+                        robotState.getEstimatedPose().getRotation().getRadians(),
+                        targetPose.get().getRotation().getRadians());
 
         // Convert to field relative speeds & send command
         ChassisSpeeds speeds =
-            new ChassisSpeeds(
-                linearVelocity.getX(),
-                linearVelocity.getY(),
-                angularOutput);
+                new ChassisSpeeds(linearVelocity.getX(), linearVelocity.getY(), angularOutput);
 
-        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds,
-            robotState.getEstimatedPose().getRotation()));
+        drive.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                        speeds, robotState.getEstimatedPose().getRotation()));
     }
 
     // Returns true when the command should end.
@@ -146,8 +146,8 @@ public abstract class AlignToPoseBase extends Command {
 
         // Return new linear velocity
         return new Pose2d(new Translation2d(), linearDirection)
-            .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
-            .getTranslation();
+                .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+                .getTranslation();
     }
 
     /**

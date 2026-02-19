@@ -21,7 +21,6 @@ import com.ctre.phoenix6.StatusSignal;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -33,15 +32,14 @@ import java.util.function.DoubleSupplier;
 /**
  * Provides an interface for asynchronously reading high-frequency measurements to a set of queues.
  *
- * <p>
- * This version is intended for Phoenix 6 devices on both the RIO and CANivore buses. When using a
- * CANivore, the thread uses the "waitForAll" blocking method to enable more consistent sampling.
+ * <p>This version is intended for Phoenix 6 devices on both the RIO and CANivore buses. When using
+ * a CANivore, the thread uses the "waitForAll" blocking method to enable more consistent sampling.
  * This also allows Phoenix Pro users to benefit from lower latency between devices using CANivore
  * time synchronization.
  */
 public class PhoenixOdometryThread extends Thread {
     private final Lock signalsLock = new ReentrantLock(); // Prevents conflicts when registering
-                                                          // signals
+    // signals
     private BaseStatusSignal[] phoenixSignals = new BaseStatusSignal[0];
     private final List<DoubleSupplier> genericSignals = new ArrayList<>();
     private final List<Queue<Double>> phoenixQueues = new ArrayList<>();
@@ -49,7 +47,7 @@ public class PhoenixOdometryThread extends Thread {
     private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
     private static boolean isCANFD =
-        new CANBus(DriveConstants.drivetrainConstants.CANBusName).isNetworkFD();
+            new CANBus(DriveConstants.drivetrainConstants.CANBusName).isNetworkFD();
     private static PhoenixOdometryThread instance = null;
 
     /**
@@ -149,13 +147,12 @@ public class PhoenixOdometryThread extends Thread {
                     // that is not CAN FD, regardless of Pro licensing. No reasoning for this
                     // behavior is provided by the documentation.
                     Thread.sleep((long) (1000.0 / Drive.ODOMETRY_FREQUENCY));
-                    if (phoenixSignals.length > 0)
-                        BaseStatusSignal.refreshAll(phoenixSignals);
+                    if (phoenixSignals.length > 0) BaseStatusSignal.refreshAll(phoenixSignals);
                 }
             } catch (InterruptedException e) {
                 DriverStation.reportError(
-                    "Phoenix odometry thread interrupted: " + e.getMessage(),
-                    e.getStackTrace());
+                        "Phoenix odometry thread interrupted: " + e.getMessage(),
+                        e.getStackTrace());
                 Thread.currentThread().interrupt(); // Restore interrupt status
             } finally {
                 signalsLock.unlock();

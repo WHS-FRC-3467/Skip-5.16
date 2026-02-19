@@ -17,6 +17,7 @@ package frc.robot.subsystems.tower;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -28,6 +29,8 @@ import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggerHelper;
+import frc.lib.util.LoggerHelper;
 
 /**
  * Subsystem that controls the tower mechanism that transfers game pieces from the indexer to the
@@ -37,15 +40,17 @@ import frc.lib.util.LoggedTunableNumber;
 public class Tower extends SubsystemBase {
 
     private static final LoggedTunableNumber SHOOT_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/ShootRPS",
-            TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
+            new LoggedTunableNumber(
+                    TowerConstants.NAME + "/ShootRPS",
+                    TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber EJECT_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/EjectRPS", -0.5);
+            new LoggedTunableNumber(TowerConstants.NAME + "/EjectRPS", -0.5);
 
     private static final LoggedTunableNumber FEED_RPS =
-        new LoggedTunableNumber(TowerConstants.NAME + "/FeedRPS",
-            TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
+            new LoggedTunableNumber(
+                    TowerConstants.NAME + "/FeedRPS",
+                    TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     // Tuning Mode
     private static final LoggedTunableBoolean TUNING_MODE_ENABLED =
@@ -62,16 +67,23 @@ public class Tower extends SubsystemBase {
         this.idle().withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
 
     public final LoggedTrigger laserCAN1Tripped =
-        new LoggedTrigger(TowerConstants.LASERCAN1_NAME,
-            () -> laserCAN1.betweenDistance(TowerConstants.MINIMUM_TRIP_DISTANCE,
-                TowerConstants.MAXIMUM_TRIP_DISTANCE));
+            new LoggedTrigger(
+                    TowerConstants.LASERCAN1_NAME,
+                    () ->
+                            laserCAN1.betweenDistance(
+                                    TowerConstants.MINIMUM_TRIP_DISTANCE,
+                                    TowerConstants.MAXIMUM_TRIP_DISTANCE));
     public final LoggedTrigger laserCAN2Tripped =
-        new LoggedTrigger(TowerConstants.LASERCAN2_NAME,
-            () -> laserCAN2.betweenDistance(TowerConstants.MINIMUM_TRIP_DISTANCE,
-                TowerConstants.MAXIMUM_TRIP_DISTANCE));
+            new LoggedTrigger(
+                    TowerConstants.LASERCAN2_NAME,
+                    () ->
+                            laserCAN2.betweenDistance(
+                                    TowerConstants.MINIMUM_TRIP_DISTANCE,
+                                    TowerConstants.MAXIMUM_TRIP_DISTANCE));
 
-    public final LoggedTrigger isStaged = new LoggedTrigger(TowerConstants.NAME + "/IsStaged",
-        laserCAN1Tripped.or(laserCAN2Tripped));
+    public final LoggedTrigger isStaged =
+            new LoggedTrigger(
+                    TowerConstants.NAME + "/IsStaged", laserCAN1Tripped.or(laserCAN2Tripped));
 
     private Command lastScheduledCommand;
 
@@ -105,6 +117,7 @@ public class Tower extends SubsystemBase {
                 io.runPosition(Degrees.of(pos[0]), PIDSlot.SLOT_0);
             },
             TUNING_MODE_POSITION_DEGREES);
+        LoggerHelper.recordCurrentCommand(this.getName(), this);
         io.periodic();
         laserCAN1.periodic();
         laserCAN2.periodic();
@@ -142,8 +155,8 @@ public class Tower extends SubsystemBase {
      */
     public Command shoot() {
         return this.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get())),
-            () -> stop());
+                        () -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get())), () -> stop())
+                .withName("Shoot");
     }
 
     /**
@@ -153,9 +166,8 @@ public class Tower extends SubsystemBase {
      * @return a command that runs the tower at feeding speed
      */
     public Command feed() {
-        return this.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(FEED_RPS.get())),
-            () -> stop());
+        return this.startEnd(() -> runVelocity(RotationsPerSecond.of(FEED_RPS.get())), () -> stop())
+                .withName("Feed");
     }
 
     /**
@@ -166,8 +178,8 @@ public class Tower extends SubsystemBase {
      */
     public Command eject() {
         return this.startEnd(
-            () -> runVelocity(RotationsPerSecond.of(EJECT_RPS.get())),
-            () -> stop());
+                        () -> runVelocity(RotationsPerSecond.of(EJECT_RPS.get())), () -> stop())
+                .withName("Eject");
     }
 
     /**
@@ -176,7 +188,7 @@ public class Tower extends SubsystemBase {
      * @return a command that stops the tower
      */
     public Command stopCommand() {
-        return this.runOnce(() -> io.runBrake());
+        return this.runOnce(() -> io.runBrake()).withName("Stop");
     }
 
     private void stop() {
@@ -200,10 +212,8 @@ public class Tower extends SubsystemBase {
             lastScheduledCommand = null;
         }
     }
-
     /** Closes the underlying flywheel mechanism and releases resources. */
     public void close() {
         io.close();
     }
-
 }

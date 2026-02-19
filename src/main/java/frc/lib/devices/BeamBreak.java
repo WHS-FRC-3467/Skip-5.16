@@ -15,9 +15,9 @@
 
 package frc.lib.devices;
 
-import org.littletonrobotics.junction.Logger;
 import frc.lib.io.beambreak.BeamBreakIO;
 import frc.lib.io.beambreak.BeamBreakInputsAutoLogged;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Wrapper class for beam break sensors that detect when an object breaks an infrared beam. Commonly
@@ -40,9 +40,7 @@ public class BeamBreak {
         this.io = io;
     }
 
-    /**
-     * Call this method periodically to update sensor readings and log data.
-     */
+    /** Call this method periodically to update sensor readings and log data. */
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs(name, inputs);
@@ -56,5 +54,4 @@ public class BeamBreak {
     public boolean isBroken() {
         return inputs.isBroken;
     }
-
 }

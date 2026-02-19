@@ -18,6 +18,7 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Kilograms;
+
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -40,7 +41,6 @@ import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -58,6 +58,8 @@ public class IntakeLinearConstants {
     public static final Distance DRUM_RADIUS = Inches.of(0.5);
     public static final Mass CARRIAGE_MASS = Kilograms.of(.1);
 
+    public static final Distance TOLERANCE = Inches.of(2);
+
     public static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
 
     // Orientation for the linear mechanism.
@@ -66,14 +68,13 @@ public class IntakeLinearConstants {
     // Pitch of 0 degrees would be horizontal extending forward.
     // Roll and yaw can be used for mechanisms that extend in other directions.
     public static final Rotation3d ORIENTATION =
-        new Rotation3d(0.0, Degrees.of(0.0).in(Units.Radians), 0.0);
+            new Rotation3d(0.0, Degrees.of(0.0).in(Units.Radians), 0.0);
 
     public static final LinearMechCharacteristics CHARACTERISTICS =
-        new LinearMechCharacteristics(MIN_DISTANCE, MAX_DISTANCE,
-            STARTING_DISTANCE, DRUM_RADIUS, ORIENTATION);
+            new LinearMechCharacteristics(
+                    MIN_DISTANCE, MAX_DISTANCE, STARTING_DISTANCE, DRUM_RADIUS, ORIENTATION);
 
     public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
-
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the intake linear
@@ -121,13 +122,21 @@ public class IntakeLinearConstants {
         LinearMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
-                mechanism = new LinearMechanismReal(NAME,
-                    new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeLinear), CHARACTERISTICS);
+                mechanism =
+                        new LinearMechanismReal(
+                                NAME,
+                                new MotorIOTalonFX(NAME, getFXConfig(), Ports.intakeLinear),
+                                CHARACTERISTICS);
                 break;
             case SIM:
-                mechanism = new LinearMechanismSim(NAME,
-                    new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeLinear),
-                    DCMOTOR, CARRIAGE_MASS, false, CHARACTERISTICS);
+                mechanism =
+                        new LinearMechanismSim(
+                                NAME,
+                                new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.intakeLinear),
+                                DCMOTOR,
+                                CARRIAGE_MASS,
+                                false,
+                                CHARACTERISTICS);
                 break;
             case REPLAY:
                 mechanism = new LinearMechanism<>(NAME, CHARACTERISTICS, new MotorIO() {}) {};

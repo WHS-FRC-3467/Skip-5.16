@@ -4,22 +4,20 @@
 
 package frc.lib.util;
 
-import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import lombok.Getter;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Utility for tracking and visualizing game piece positions in simulation.
  *
- * <p>
- * This class helps visualize game pieces (balls, cones, cubes) in AdvantageScope during simulation
- * and testing. It tracks a 3D pose and logs it for visualization, making it easier to debug intake,
- * scoring, and game piece manipulation mechanisms.
+ * <p>This class helps visualize game pieces (balls, cones, cubes) in AdvantageScope during
+ * simulation and testing. It tracks a 3D pose and logs it for visualization, making it easier to
+ * debug intake, scoring, and game piece manipulation mechanisms.
  *
- * <p>
- * Example usage:
+ * <p>Example usage:
  *
  * <pre>{@code
  * // Create a visualizer for a note
@@ -38,8 +36,7 @@ public class GamePieceVisualizer {
 
     private final String name;
 
-    @Getter
-    Pose3d gamePiecePose = new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
+    @Getter Pose3d gamePiecePose = new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
 
     /**
      * Creates a new game piece visualizer at the specified pose.
@@ -51,7 +48,6 @@ public class GamePieceVisualizer {
         this.name = name;
         this.gamePiecePose = pose3d;
         Logger.recordOutput(name + " Visualizer", this.gamePiecePose);
-
     }
 
     /**
@@ -64,9 +60,7 @@ public class GamePieceVisualizer {
         Logger.recordOutput(name + " Visualizer", this.gamePiecePose);
     }
 
-    /**
-     * Hides the game piece by setting its pose to the origin.
-     */
+    /** Hides the game piece by setting its pose to the origin. */
     public void hide() {
         this.gamePiecePose = new Pose3d();
         Logger.recordOutput(name + " Visualizer", this.gamePiecePose);

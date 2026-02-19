@@ -25,13 +25,11 @@ import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
 /**
  * Configuration wrapper for Grapple Robotics LaserCAN distance sensors.
  *
- * <p>
- * Provides a simplified interface for configuring LaserCAN sensors, including ranging mode, timing
- * budget, and region of interest. LaserCANs use time-of-flight sensing to measure distances
+ * <p>Provides a simplified interface for configuring LaserCAN sensors, including ranging mode,
+ * timing budget, and region of interest. LaserCANs use time-of-flight sensing to measure distances
  * accurately from 10mm to 4000mm.
  *
- * <p>
- * Example usage:
+ * <p>Example usage:
  *
  * <pre>{@code
  * try (LaserCANConfigurator laser = new LaserCANConfigurator(10)) {

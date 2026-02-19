@@ -18,8 +18,8 @@ public class LoggerHelper {
     public static void recordCurrentCommand(String name, SubsystemBase subsystem) {
         final var currentCommand = subsystem.getCurrentCommand();
         Logger.recordOutput(
-            name + "/Current Command",
-            currentCommand == null ? "None" : currentCommand.getName());
+                name + "/Current Command",
+                currentCommand == null ? "None" : currentCommand.getName());
     }
 
     /**

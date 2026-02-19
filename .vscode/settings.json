@@ -85,9 +85,9 @@
     " */",
   ],
   "editor.formatOnSave": true,
-  "java.format.settings.url": "./style.xml",
   "[java]": {
-    "editor.detectIndentation": false
+    "editor.detectIndentation": false,
+    "editor.defaultFormatter": "josevseb.google-java-format-for-vs-code"
   },
   "java.project.sourcePaths": [
     "src/main/java",
@@ -96,5 +96,6 @@
   "java.project.referencedLibraries": [
     "processor/build/libs/**/*.jar"
   ],
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.format.settings.google.extra": "--aosp"
 }

@@ -64,8 +64,8 @@ public class FieldUtil {
      */
     public static Pose2d apply(Pose2d pose) {
         return shouldFlip()
-            ? new Pose2d(apply(pose.getTranslation()), apply(pose.getRotation()))
-            : pose;
+                ? new Pose2d(apply(pose.getTranslation()), apply(pose.getRotation()))
+                : pose;
     }
 
     /**
@@ -76,7 +76,7 @@ public class FieldUtil {
      */
     public static Translation3d apply(Translation3d translation) {
         return new Translation3d(
-            applyX(translation.getX()), applyY(translation.getY()), translation.getZ());
+                applyX(translation.getX()), applyY(translation.getY()), translation.getZ());
     }
 
     /**
@@ -106,11 +106,9 @@ public class FieldUtil {
      */
     public static boolean shouldFlip() {
         return !Constants.disableHAL
-            && DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
+                && DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
     }
-
-
 
     // /**
     // * Whether or not a pose needs to be flipped

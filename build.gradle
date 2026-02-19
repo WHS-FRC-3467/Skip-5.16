@@ -213,7 +213,7 @@ spotless {
     java {
         // Target all Java files
         target '**/*.java'
-        eclipse().configFile(rootProject.file('style.xml'))
+        googleJavaFormat().aosp()
         // Other common rules
         removeUnusedImports()
         trimTrailingWhitespace()
@@ -232,7 +232,7 @@ spotless {
     // Configuration for miscellaneous files (e.g., Gradle files, Markdown)
     format 'misc', {
         target '**/*.gradle', '**/*.md', '**/.gitignore'
-        indentWithSpaces()
+        leadingTabsToSpaces()
         trimTrailingWhitespace()
         endWithNewline()
     }

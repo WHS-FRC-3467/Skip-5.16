@@ -6,20 +6,19 @@ import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
-import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.units.measure.*;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.util.PID;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Wrapper around a rotational {@link Mechanism} that exposes linear (distance-based) control and
  * feedback.
  *
- * <p>
- * This is useful for mechanisms such as elevators, winches, or drivetrains where linear motion is
- * derived from a rotating element with a known radius. The class transparently converts between
+ * <p>This is useful for mechanisms such as elevators, winches, or drivetrains where linear motion
+ * is derived from a rotating element with a known radius. The class transparently converts between
  * linear and angular units while delegating all standard motor control to the underlying mechanism.
- * </p>
  *
  * @param <T> The mechanism type being wrapped
  */
@@ -64,16 +63,14 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
      * @param slot PID slot to use
      */
     public void runLinearVelocity(
-        LinearVelocity velocity,
-        LinearAcceleration acceleration,
-        PIDSlot slot) {
+            LinearVelocity velocity, LinearAcceleration acceleration, PIDSlot slot) {
 
         AngularVelocity angularVelocity =
-            RadiansPerSecond.of(velocity.in(MetersPerSecond) / radiusMeters);
+                RadiansPerSecond.of(velocity.in(MetersPerSecond) / radiusMeters);
 
         AngularAcceleration angularAcceleration =
-            RadiansPerSecondPerSecond.of(
-                acceleration.in(MetersPerSecondPerSecond) / radiusMeters);
+                RadiansPerSecondPerSecond.of(
+                        acceleration.in(MetersPerSecondPerSecond) / radiusMeters);
 
         mechanism.runVelocity(angularVelocity, angularAcceleration, slot);
     }
@@ -118,9 +115,7 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
         return MetersPerSecond.of(radPerSec * radiusMeters);
     }
 
-    /**
-     * Periodic update hook. Should be called regularly by the robot loop.
-     */
+    /** Periodic update hook. Should be called regularly by the robot loop. */
     public void periodic() {
         mechanism.periodic();
 
@@ -128,19 +123,14 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
         Logger.recordOutput(mechanism.getName() + "/LinearPositionError", getLinearPositionError());
         Logger.recordOutput(mechanism.getName() + "/LinearVelocity", getLinearVelocity());
         Logger.recordOutput(mechanism.getName() + "/LinearVelocityError", getLinearVelocityError());
-
     }
 
-    /**
-     * Sets the mechanism to coast mode.
-     */
+    /** Sets the mechanism to coast mode. */
     public void runCoast() {
         mechanism.runCoast();
     }
 
-    /**
-     * Sets the mechanism to brake mode.
-     */
+    /** Sets the mechanism to brake mode. */
     public void runBrake() {
         mechanism.runBrake();
     }
@@ -190,9 +180,7 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
      * @param slot PID slot to use
      */
     public void runVelocity(
-        AngularVelocity velocity,
-        AngularAcceleration acceleration,
-        PIDSlot slot) {
+            AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {
 
         mechanism.runVelocity(velocity, acceleration, slot);
     }
@@ -270,9 +258,7 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
         return mechanism.getVelocityError();
     }
 
-    /**
-     * Closes the mechanism and releases resources.
-     */
+    /** Closes the mechanism and releases resources. */
     public void close() {
         mechanism.close();
     }

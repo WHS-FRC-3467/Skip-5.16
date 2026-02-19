@@ -18,14 +18,15 @@ package frc.robot.subsystems.indexer;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.TestUtil;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class IndexerTest {
     IndexerSuperstructure indexer;
@@ -57,10 +58,7 @@ public class IndexerTest {
 
     @Test // marks this method as a test
     void shoot() {
-        TestUtil.runTest(
-            indexer.shoot(),
-            5,
-            indexer);
+        TestUtil.runTest(indexer.shoot(), 5, indexer);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
             assertTrue(indexer.nearSetpoint());
@@ -71,10 +69,7 @@ public class IndexerTest {
 
     @Test
     void stop() {
-        TestUtil.runTest(
-            indexer.stopCommand(),
-            2,
-            indexer);
+        TestUtil.runTest(indexer.stopCommand(), 2, indexer);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
