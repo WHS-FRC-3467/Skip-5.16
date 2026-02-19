@@ -1,0 +1,96 @@
+name: Simulate
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  simulate:
+    name: Run Simulation + Intake Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties', 'vendordeps/**') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Install virtual display and Python dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y xvfb libxi6 libxrender1 libxrandr2
+          pip install pyntcore --quiet
+
+      - name: Start Xvfb virtual display
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 &
+          export DISPLAY=:99
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Start simulation in background
+        run: |
+          # CI env var is set automatically by GitHub Actions, which disables the sim GUI
+          # (see build.gradle: wpi.sim.addGui().defaultEnabled = !System.getenv("CI"))
+          ./gradlew simulateJava --no-daemon --console=plain &
+          SIM_PID=$!
+          echo "SIM_PID=$SIM_PID" >> $GITHUB_ENV
+          echo "Simulation started with PID $SIM_PID"
+
+      - name: Wait for simulation to be ready
+        run: |
+          echo "Waiting for NT4 server to become available on port 5810..."
+          TIMEOUT=120
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            if nc -z localhost 5810 2>/dev/null; then
+              echo "NT4 server is up after ${ELAPSED}s"
+              break
+            fi
+            sleep 2
+            ELAPSED=$((ELAPSED + 2))
+          done
+          if [ $ELAPSED -ge $TIMEOUT ]; then
+            echo "ERROR: NT4 server did not start within ${TIMEOUT}s"
+            exit 1
+          fi
+          # Extra settle time for the robot to finish initializing
+          sleep 5
+
+      - name: Run Intake Extend integration test
+        run: |
+          echo "Running sim_test_intake_extend.py..."
+          python3 scripts/sim_test_intake_extend.py \
+            --connect-timeout 30 \
+            --test-timeout 15
+          TEST_EXIT=$?
+          echo "Test exit code: $TEST_EXIT"
+          exit $TEST_EXIT
+
+      - name: Stop simulation
+        if: always()
+        run: |
+          if [ -n "$SIM_PID" ]; then
+            kill $SIM_PID 2>/dev/null || true
+            wait $SIM_PID 2>/dev/null || true
+          fi
+          # Also kill any lingering Java simulation processes
+          pkill -f "simulateJava" 2>/dev/null || true
+          pkill -f "frc.robot.Main" 2>/dev/null || true
