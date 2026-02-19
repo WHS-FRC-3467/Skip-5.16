@@ -8,10 +8,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Radians;
 
-import java.util.Comparator;
-import java.util.function.Supplier;
-import org.photonvision.estimation.TargetModel;
-import org.photonvision.simulation.VisionTargetSim;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -30,8 +26,12 @@ import frc.lib.io.objectdetection.*;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.util.RobotSim;
+import java.util.Comparator;
+import java.util.function.Supplier;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.photonvision.estimation.TargetModel;
+import org.photonvision.simulation.VisionTargetSim;
 
 /**
  * Configuration constants for the object detection subsystem.
@@ -50,15 +50,19 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectDetectorConstants {
-    private final static RobotState robotState = RobotState.getInstance();
+    private static final RobotState robotState = RobotState.getInstance();
     // Object detection camera #0
     // Extrinsics
     // Transform sign convention: +X -> towards other alliance's station, +Y -> towards center of
     // field from starting starboard edge, +theta -> right-hand rule.
     public static final String CAMERA0_NAME = "Detection Camera #0";
     public static final Transform3d CAMERA0_TRANSFORM =
-        new Transform3d(Units.Inches.of(8), Units.Inches.of(0), Units.Inches.of(30),
-            new Rotation3d(Units.Degrees.of(0.0), Units.Degrees.of(0.0), Units.Degrees.of(0.0)));
+            new Transform3d(
+                    Units.Inches.of(8),
+                    Units.Inches.of(0),
+                    Units.Inches.of(30),
+                    new Rotation3d(
+                            Units.Degrees.of(0.0), Units.Degrees.of(0.0), Units.Degrees.of(0.0)));
 
     // Intrinsics
     public static final int CAMERA0_RESOLUTION_WIDTH = 1600;
@@ -117,40 +121,59 @@ public class ObjectDetectorConstants {
                     CAMERA0_LATENCY_STDDEV);
 
     // Target constants
-    public final static String OBJECT0_NAME = "FUEL";
-    public final static double OBJECT0_HEIGHT_METERS = 0.150114;
+    public static final String OBJECT0_NAME = "FUEL";
+    public static final double OBJECT0_HEIGHT_METERS = 0.150114;
 
     // Dynamic supplier for moving sim targets
     // Only publish FUEL to OBject Detection VisionSystemSim that are roughly within 8m of the
     // camera & its FOV -- publish nearest values first
     public static Supplier<VisionTargetSim[]> visionTargetSimSupplier =
-        () -> {
-            var robotPose = robotState.getEstimatedPose();
-            var cameraPose = robotPose.transformBy(new Transform2d(CAMERA0_TRANSFORM.getX(),
-                CAMERA0_TRANSFORM.getY(), CAMERA0_TRANSFORM.getRotation().toRotation2d()));
-            var fuels = RobotSim.getInstance().getFuelSim().getFuelPoses();
-            double halfFov = CAMERA0_FOV.in(Radians) / 2.0;
-            return fuels.stream()
-                .filter(pose -> pose != null)
-                .filter(pose -> pose.getTranslation().toTranslation2d()
-                    .getDistance(cameraPose.getTranslation()) < 8.0)
-                .filter(pose -> {
-                    var fieldRel = pose.getTranslation().toTranslation2d()
-                        .minus(cameraPose.getTranslation());
-                    var cameraRel = fieldRel.rotateBy(cameraPose.getRotation().unaryMinus());
-                    if (cameraRel.getX() <= 0) {
-                        return false;
-                    }
-                    double yaw =
-                        Math.atan2(cameraRel.getY(), cameraRel.getX());
-                    return Math.abs(yaw) < halfFov;
-                })
-                .sorted(Comparator.comparingDouble(pose -> pose.getTranslation().toTranslation2d()
-                    .getDistance(cameraPose.getTranslation())))
-                .limit(15)
-                .map(pose -> new VisionTargetSim(pose, new TargetModel(OBJECT0_HEIGHT_METERS)))
-                .toArray(VisionTargetSim[]::new);
-        };
+            () -> {
+                var robotPose = robotState.getEstimatedPose();
+                var cameraPose =
+                        robotPose.transformBy(
+                                new Transform2d(
+                                        CAMERA0_TRANSFORM.getX(),
+                                        CAMERA0_TRANSFORM.getY(),
+                                        CAMERA0_TRANSFORM.getRotation().toRotation2d()));
+                var fuels = RobotSim.getInstance().getFuelSim().getFuelPoses();
+                double halfFov = CAMERA0_FOV.in(Radians) / 2.0;
+                return fuels.stream()
+                        .filter(pose -> pose != null)
+                        .filter(
+                                pose ->
+                                        pose.getTranslation()
+                                                        .toTranslation2d()
+                                                        .getDistance(cameraPose.getTranslation())
+                                                < 8.0)
+                        .filter(
+                                pose -> {
+                                    var fieldRel =
+                                            pose.getTranslation()
+                                                    .toTranslation2d()
+                                                    .minus(cameraPose.getTranslation());
+                                    var cameraRel =
+                                            fieldRel.rotateBy(
+                                                    cameraPose.getRotation().unaryMinus());
+                                    if (cameraRel.getX() <= 0) {
+                                        return false;
+                                    }
+                                    double yaw = Math.atan2(cameraRel.getY(), cameraRel.getX());
+                                    return Math.abs(yaw) < halfFov;
+                                })
+                        .sorted(
+                                Comparator.comparingDouble(
+                                        pose ->
+                                                pose.getTranslation()
+                                                        .toTranslation2d()
+                                                        .getDistance(cameraPose.getTranslation())))
+                        .limit(15)
+                        .map(
+                                pose ->
+                                        new VisionTargetSim(
+                                                pose, new TargetModel(OBJECT0_HEIGHT_METERS)))
+                        .toArray(VisionTargetSim[]::new);
+            };
 
     /**
      * Creates and configures an ObjectDetector subsystem based on the current robot mode. Selects
