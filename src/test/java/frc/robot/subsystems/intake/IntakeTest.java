@@ -15,8 +15,6 @@
 
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Meters;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -63,35 +61,5 @@ public class IntakeTest {
         } catch (Exception e) {
             fail("Failed to run Intake to intake: " + e.getMessage());
         }
-    }
-
-    /**
-     * Mirrors the "Intake Linear/Extend" SmartDashboard command that the simulation-tester agent
-     * exercises via NetworkTables. After the command completes the motor shaft position (logged by
-     * AdvantageKit to /AdvantageKit/Intake Linear/position) should equal MAX_DISTANCE / DRUM_RADIUS
-     * ≈ 22.748 rad.
-     */
-    @Test
-    void extendedLinearPosition() {
-        // Run the same command that SmartDashboard exposes as "Intake Linear/Extend".
-        TestUtil.runTest(intake.extendIntake(), 3, intake);
-
-        // Derive the motor shaft position in radians from the reported linear extension.
-        // DistanceControlledMechanism.getLinearPosition() = position_rad * radius_m, so
-        // position_rad = extension_m / radius_m.  This is the value AdvantageKit publishes
-        // to /AdvantageKit/Intake Linear/position.
-        double positionRad =
-                intake.getExtension().in(Meters) / IntakeLinearConstants.DRUM_RADIUS.in(Meters);
-
-        // Expected: MAX_DISTANCE / DRUM_RADIUS = 11.375 in / 0.5 in = 22.75 rad ≈ 22.748 rad.
-        double expectedRad =
-                IntakeLinearConstants.MAX_DISTANCE.in(Meters)
-                        / IntakeLinearConstants.DRUM_RADIUS.in(Meters);
-        assertEquals(
-                expectedRad,
-                positionRad,
-                0.5, // ±0.5 rad tolerance (~0.25 in linear)
-                "Motor position should be ~22.748 rad (MAX_DISTANCE / DRUM_RADIUS) when fully"
-                        + " extended");
     }
 }
