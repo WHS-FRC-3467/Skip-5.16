@@ -20,9 +20,11 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
 import com.pathplanner.lib.commands.PathfindingCommand;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.Threads;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -53,6 +55,9 @@ public class Robot extends LoggedRobot {
     private boolean checkedHubGameData = false; // whether we've checked for hub game data at the
     // start of the first alliance phase
     private Field2d fieldMap = new Field2d();
+
+    // Tracks the previous /SimControl/Enable value so we only call DriverStationSim when it changes.
+    private boolean lastNtEnable = false;
 
     public Robot() {
         CanBridge.runTCP(); // Used for configuring LaserCANs via Grapplehook
@@ -264,5 +269,27 @@ public class Robot extends LoggedRobot {
     @Override
     public void simulationPeriodic() {
         RobotSim.getInstance().updateSim();
+
+        // Allow external NT clients (e.g. the Copilot simulation-tester agent or
+        // scripts/sim_test_intake_extend.py) to enable the robot in teleop without
+        // requiring the Sim GUI to be open.
+        //
+        // Usage: publish a boolean true to /SimControl/Enable from any NT4 client.
+        // The entry is only acted upon when its value actually changes, so normal
+        // Sim GUI operation is unaffected when this entry is absent.
+        boolean ntEnable =
+                NetworkTableInstance.getDefault()
+                        .getTable("SimControl")
+                        .getEntry("Enable")
+                        .getBoolean(false);
+        if (ntEnable != lastNtEnable) {
+            lastNtEnable = ntEnable;
+            DriverStationSim.setEnabled(ntEnable);
+            if (ntEnable) {
+                DriverStationSim.setAutonomous(false); // teleop mode
+                DriverStationSim.setDSAttached(true);
+            }
+            DriverStationSim.notifyNewData();
+        }
     }
 }

@@ -28,13 +28,43 @@ Wait until the terminal shows `Robot program starting` before continuing — thi
 > headless environment add `-PsimNoGui` to suppress the GUI and keep the NT server running:
 > `./gradlew simulateJava -PsimNoGui`
 
-### Step 2 — Enable the robot
+### Step 2 — Enable the robot in teleop
 
-In the Sim GUI **Driver Station** panel:
-1. Set mode to **Teleoperated** (or **Autonomous** for auto testing).
-2. Click **Enable**.
+The WPILib simulation starts with the robot **disabled**; commands will not be
+scheduled until it is enabled. `Robot.simulationPeriodic()` watches the NT entry
+`/SimControl/Enable`. Publish `true` to that entry and the robot will switch into
+**teleop enabled** mode automatically — no Sim GUI interaction needed.
 
-The robot code will now run its periodic loops and publish values to NetworkTables.
+```bash
+# One-liner via nt_reader.py (write-and-exit pattern):
+python3 - <<'EOF'
+import ntcore, time
+inst = ntcore.NetworkTableInstance.getDefault()
+inst.startClient4("enable"); inst.setServer("localhost", 1735)
+while not inst.isConnected(): time.sleep(0.05)
+inst.getBooleanTopic("/SimControl/Enable").publish().set(True)
+inst.flush(); time.sleep(0.5)
+EOF
+```
+
+Alternatively, open the Sim GUI **Driver Station** panel, set mode to
+**Teleoperated**, and click **Enable** — the `/SimControl/Enable` NT mechanism is
+only used for headless / automated testing.
+
+The robot code that reads this entry lives in `Robot.simulationPeriodic()`:
+```java
+boolean ntEnable = NetworkTableInstance.getDefault()
+        .getTable("SimControl").getEntry("Enable").getBoolean(false);
+if (ntEnable != lastNtEnable) {
+    lastNtEnable = ntEnable;
+    DriverStationSim.setEnabled(ntEnable);
+    if (ntEnable) {
+        DriverStationSim.setAutonomous(false); // teleop
+        DriverStationSim.setDSAttached(true);
+    }
+    DriverStationSim.notifyNewData();
+}
+```
 
 ### Step 3 — Read NetworkTables values
 
@@ -73,6 +103,67 @@ Compare the printed values to the expected behavior. If something is wrong:
 
 ---
 
+## Example: Intake Linear Extend test
+
+This end-to-end scenario verifies that the intake linear mechanism reaches full
+extension (~22.748 rad) after the "Intake Linear/Extend" command is scheduled.
+
+### Automated (headless) — single command
+
+```bash
+# Start the sim in one terminal, then run:
+python3 scripts/sim_test_intake_extend.py
+```
+
+The script handles all four steps automatically (connect → enable teleop →
+schedule command → assert position → disable). It exits `0` on PASS and `1` on
+FAIL, and prints a JSON result object:
+
+```json
+{
+  "result": "PASS",
+  "position_rad": 22.7500,
+  "expected_rad": 22.748,
+  "tolerance_rad": 0.5
+}
+```
+
+### Manual step-by-step (using nt_reader.py)
+
+```bash
+# 1. Enable teleop
+python3 - <<'EOF'
+import ntcore, time
+inst = ntcore.NetworkTableInstance.getDefault()
+inst.startClient4("agent"); inst.setServer("localhost", 1735)
+while not inst.isConnected(): time.sleep(0.05)
+inst.getBooleanTopic("/SimControl/Enable").publish().set(True)
+inst.flush(); time.sleep(0.5)
+EOF
+
+# 2. Trigger the "Intake Linear/Extend" SmartDashboard command
+python3 - <<'EOF'
+import ntcore, time
+inst = ntcore.NetworkTableInstance.getDefault()
+inst.startClient4("agent"); inst.setServer("localhost", 1735)
+while not inst.isConnected(): time.sleep(0.05)
+inst.getBooleanTopic("/SmartDashboard/Intake Linear/Extend/running").publish().set(True)
+inst.flush(); time.sleep(3)
+EOF
+
+# 3. Read the motor position (should be ~22.748 rad)
+python3 scripts/nt_reader.py --wait 22.748 --tolerance 0.5 --timeout 5 \
+    "/AdvantageKit/Intake Linear/position"
+```
+
+### JUnit equivalent
+
+`src/test/java/frc/robot/subsystems/intake/IntakeTest.java` contains
+`extendedLinearPosition()` which runs the same check in-process (no running sim
+needed) — use `./gradlew test` to run it.
+
+---
+
 ## NetworkTables topic reference for this codebase
 
 | NT path prefix | What it contains |
@@ -81,6 +172,7 @@ Compare the printed values to the expected behavior. If something is wrong:
 | `/AdvantageKit/RealOutputs/{SubsystemName}/` | AdvantageKit-logged robot outputs in SIM mode |
 | `/Tuning/{SubsystemName}/{param}` | `LoggedTunableNumber` values (PID gains, velocity setpoints, etc.) — only published when `Constants.tuningMode = true` |
 | `/SmartDashboard/` | Standard WPILib dashboard values |
+| `/SimControl/Enable` | **Write `true` here** to enable the robot in teleop without the Sim GUI (read by `Robot.simulationPeriodic()`) |
 
 ### Common subsystem names
 
