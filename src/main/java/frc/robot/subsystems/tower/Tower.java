@@ -30,7 +30,6 @@ import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
-import frc.lib.util.LoggerHelper;
 
 /**
  * Subsystem that controls the tower mechanism that transfers game pieces from the indexer to the
