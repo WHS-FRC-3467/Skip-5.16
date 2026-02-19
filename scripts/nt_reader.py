@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Read values from NetworkTables while a WPILib simulation (or real robot) is running.
+Generic NetworkTables helper for WPILib simulation testing.
 
 The WPILib simulation starts an NT4 server on localhost:5810. This script connects
-as a client, optionally waits until a topic reaches an expected value, and then
-prints the results as JSON so Copilot (or any other caller) can parse them easily.
+as a client and can read, write, or wait on any NT topic. Copilot uses it as a
+command-line tool so it never needs to edit this file — all parameters come from
+CLI flags and positional arguments.
 
 Install the required library once:
     pip install pyntcore
@@ -15,16 +16,23 @@ Usage examples:
     python3 scripts/nt_reader.py
 
   Read one or more specific topics:
-    python3 scripts/nt_reader.py /AdvantageKit/IntakeRoller/velocity
-    python3 scripts/nt_reader.py /Tuning/IntakeRoller/IntakeRPS /AdvantageKit/IntakeRoller/velocity
+    python3 scripts/nt_reader.py /AdvantageKit/Intake Linear/Position
+    python3 scripts/nt_reader.py /AdvantageKit/IntakeRoller/Velocity /AdvantageKit/Tower/Position
 
-  Poll until /AdvantageKit/IntakeRoller/velocity equals 10.0 (within ±0.5), timeout 5 s:
-    python3 scripts/nt_reader.py --wait 10.0 --tolerance 0.5 --timeout 5 /AdvantageKit/IntakeRoller/velocity
+  Write (publish) a value to a topic:
+    python3 scripts/nt_reader.py --set true  /SimControl/Enable
+    python3 scripts/nt_reader.py --set true  "/SmartDashboard/Intake Linear/Extend/running"
+    python3 scripts/nt_reader.py --set 0.0   /Tuning/IntakeRoller/IntakeRPS
+    python3 scripts/nt_reader.py --set false /SimControl/Enable
+
+  Poll until a topic reaches an expected value (useful for assertions):
+    python3 scripts/nt_reader.py --wait 22.748 --tolerance 0.5 --timeout 15 \\
+        "/AdvantageKit/Intake Linear/Position"
 
 Exit codes:
-  0 — success (connected and all requested values read / --wait condition met)
+  0 — success (connected; value written, read, or --wait condition met)
   1 — connection timeout or --wait condition not met within --timeout seconds
-  2 — robotpy-ntcore is not installed
+  2 — pyntcore is not installed
 """
 
 import argparse
@@ -32,9 +40,6 @@ import json
 import sys
 import time
 
-# ---------------------------------------------------------------------------
-# Friendly error if robotpy-ntcore is missing
-# ---------------------------------------------------------------------------
 try:
     import ntcore
 except ImportError:
@@ -51,9 +56,9 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 def _connect(host: str, port: int, timeout: float) -> ntcore.NetworkTableInstance:
-    """Create an NT4 client instance and wait until it connects."""
+    """Create an NT4 client instance and block until connected or timeout."""
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.startClient4("copilot-nt-reader")
+    inst.startClient4("copilot-nt-tool")
     inst.setServer(host, port)
 
     print(f"Connecting to NT4 server at {host}:{port} …", file=sys.stderr)
@@ -69,30 +74,43 @@ def _connect(host: str, port: int, timeout: float) -> ntcore.NetworkTableInstanc
         time.sleep(0.05)
 
     print("Connected.", file=sys.stderr)
-    # Give the server a moment to push topic announcements.
-    time.sleep(0.25)
+    time.sleep(0.25)  # allow topic announcements to arrive
     return inst
 
 
-def _subscribe_double(inst: ntcore.NetworkTableInstance, topic_path: str) -> "ntcore.DoubleSubscriber":
-    """Create and return an active double subscriber for topic_path."""
-    return inst.getDoubleTopic(topic_path).subscribe(float("-inf"))
+def _parse_set_value(raw: str):
+    """Parse a --set string into bool, float, or str in that priority order."""
+    if raw.lower() == "true":
+        return True
+    if raw.lower() == "false":
+        return False
+    try:
+        return float(raw)
+    except ValueError:
+        return raw
 
 
-def _read_subscriber(sub: "ntcore.DoubleSubscriber") -> float | None:
-    """Read the latest value from a double subscriber, returning None if not yet received."""
-    v = sub.get()
-    return v if v != float("-inf") else None
+def _publish_value(inst: ntcore.NetworkTableInstance, topic_path: str, value) -> None:
+    """Publish value to topic_path using the appropriate typed publisher."""
+    if isinstance(value, bool):
+        pub = inst.getBooleanTopic(topic_path).publish()
+        pub.set(value)
+    elif isinstance(value, float):
+        pub = inst.getDoubleTopic(topic_path).publish()
+        pub.set(value)
+    else:
+        pub = inst.getStringTopic(topic_path).publish()
+        pub.set(str(value))
+    inst.flush()
+    time.sleep(0.5)  # give robot code one or two loops to react
+    print(json.dumps({topic_path: value}))
 
 
 def _get_value(inst: ntcore.NetworkTableInstance, topic_path: str, settle: float = 0.3):
-    """Subscribe to a topic, wait ``settle`` seconds, and return its current value.
+    """Subscribe to a topic, wait settle seconds, and return its current value.
 
-    Creates a typed double subscriber (the most common type for robot telemetry)
-    and falls back to boolean and string if the topic is not a double.
-
-    Uses typed subscribers rather than getValue().isValid() because getValue()
-    returns an 'invalid' object on pyntcore 2026.x even when the topic has a value.
+    Tries double first (most robot telemetry), then boolean, then string.
+    Uses typed subscribers because getValue().isValid() is unreliable on pyntcore 2026.x.
     """
     _SENTINEL_D = float("-inf")
     sub_d = inst.getDoubleTopic(topic_path).subscribe(_SENTINEL_D)
@@ -115,7 +133,7 @@ def _get_value(inst: ntcore.NetworkTableInstance, topic_path: str, settle: float
 
 
 def _serialisable(v):
-    """Convert non-JSON-serialisable NT values (e.g. numpy arrays) to plain Python."""
+    """Convert non-JSON-serialisable NT values to plain Python."""
     try:
         json.dumps(v)
         return v
@@ -129,7 +147,7 @@ def _serialisable(v):
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Read NetworkTables values from a running WPILib simulation.",
+        description="Generic NetworkTables read/write tool for WPILib simulation testing.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -138,8 +156,18 @@ def main() -> None:
         nargs="*",
         metavar="TOPIC",
         help=(
-            "NT topic path(s) to read, e.g. /AdvantageKit/IntakeRoller/velocity. "
-            "If omitted, all published topics are listed."
+            "NT topic path(s). With --set: exactly one topic to write. "
+            "With --wait: exactly one topic to poll. "
+            "Without flags: topics to read (omit to list all topics)."
+        ),
+    )
+    parser.add_argument(
+        "--set",
+        metavar="VALUE",
+        dest="set_value",
+        help=(
+            "Write VALUE to the topic and exit. "
+            "'true'/'false' → boolean, numeric string → double, anything else → string."
         ),
     )
     parser.add_argument(
@@ -148,7 +176,7 @@ def main() -> None:
         metavar="EXPECTED",
         help=(
             "Block until the first TOPIC equals EXPECTED (numeric) within --tolerance. "
-            "Requires exactly one topic to be specified."
+            "Requires exactly one topic."
         ),
     )
     parser.add_argument(
@@ -161,9 +189,9 @@ def main() -> None:
     parser.add_argument(
         "--timeout",
         type=float,
-        default=5.0,
+        default=10.0,
         metavar="SECS",
-        help="Seconds to wait for connection and --wait condition (default: 5).",
+        help="Seconds to wait for connection / --wait condition (default: 10).",
     )
     parser.add_argument(
         "--host",
@@ -178,28 +206,22 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    if args.set_value is not None and len(args.topics) != 1:
+        parser.error("--set requires exactly one TOPIC.")
     if args.wait is not None and len(args.topics) != 1:
-        parser.error("--wait requires exactly one TOPIC to be specified.")
+        parser.error("--wait requires exactly one TOPIC.")
 
     inst = _connect(args.host, args.port, args.timeout)
 
     try:
-        if not args.topics:
-            # List all topics.
-            # NT4 clients only receive topic announcements for subscribed prefixes.
-            # Subscribe to the common WPILib root tables so the server sends their topics.
-            _discovery_subs = [
-                inst.getDoubleTopic(f"/{pfx}/__discovery__").subscribe(float("-inf"))
-                for pfx in ["AdvantageKit", "SmartDashboard", "Tuning", "SimControl"]
-            ]
-            time.sleep(0.4)
-            topics = inst.getTopics("")
-            names = sorted(t.getName() for t in topics if not t.getName().endswith("__discovery__"))
-            print(json.dumps(names, indent=2))
+        # ── Write mode ────────────────────────────────────────────────────────
+        if args.set_value is not None:
+            value = _parse_set_value(args.set_value)
+            _publish_value(inst, args.topics[0], value)
             return
 
+        # ── Wait/poll mode ────────────────────────────────────────────────────
         if args.wait is not None:
-            # Create a subscription upfront so the server starts sending values immediately.
             topic_path = args.topics[0]
             sub_d = inst.getDoubleTopic(topic_path).subscribe(float("-inf"))
             print(
@@ -209,37 +231,42 @@ def main() -> None:
             deadline = time.monotonic() + args.timeout
             while time.monotonic() < deadline:
                 raw = sub_d.get()
-                v = raw if raw != float("-inf") else None
-                if v is None:
-                    v = _get_value(inst, topic_path, settle=0.0)
+                v = raw if raw != float("-inf") else _get_value(inst, topic_path, settle=0.0)
                 if v is not None and abs(float(v) - args.wait) <= args.tolerance:
                     print(json.dumps({topic_path: _serialisable(v)}, indent=2))
                     return
                 time.sleep(0.05)
 
-            # Timed out — print whatever we have so the caller can see the actual value.
             raw = sub_d.get()
             v = raw if raw != float("-inf") else _get_value(inst, topic_path, settle=0.0)
             print(
-                f"ERROR: Timed out after {args.timeout}s. "
-                f"Last value: {v}",
+                f"ERROR: Timed out after {args.timeout}s. Last value: {v}",
                 file=sys.stderr,
             )
             print(json.dumps({topic_path: _serialisable(v)}, indent=2))
             sys.exit(1)
 
-        else:
-            # Read each requested topic once.
-            # Create all subscriptions first so the server starts sending values,
-            # then wait once for all of them to arrive.
-            subs = {p: inst.getDoubleTopic(p).subscribe(float("-inf")) for p in args.topics}
-            time.sleep(0.4)
-            results = {}
-            for topic_path in args.topics:
-                raw = subs[topic_path].get()
-                v = raw if raw != float("-inf") else _get_value(inst, topic_path, settle=0.0)
-                results[topic_path] = _serialisable(v)
-            print(json.dumps(results, indent=2))
+        # ── List mode (no topics given) ────────────────────────────────────────
+        if not args.topics:
+            _discovery_subs = [
+                inst.getDoubleTopic(f"/{pfx}/__discovery__").subscribe(float("-inf"))
+                for pfx in ["AdvantageKit", "SmartDashboard", "Tuning", "SimControl"]
+            ]
+            time.sleep(0.5)
+            topics = inst.getTopics("")
+            names = sorted(t.getName() for t in topics if not t.getName().endswith("__discovery__"))
+            print(json.dumps(names, indent=2))
+            return
+
+        # ── Read mode (one or more topics) ────────────────────────────────────
+        subs = {p: inst.getDoubleTopic(p).subscribe(float("-inf")) for p in args.topics}
+        time.sleep(0.4)
+        results = {}
+        for topic_path in args.topics:
+            raw = subs[topic_path].get()
+            v = raw if raw != float("-inf") else _get_value(inst, topic_path, settle=0.0)
+            results[topic_path] = _serialisable(v)
+        print(json.dumps(results, indent=2))
 
     finally:
         inst.stopClient()

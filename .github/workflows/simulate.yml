@@ -67,13 +67,22 @@ jobs:
           # Extra settle time for the robot to finish initializing all subsystems
           sleep 5
 
-      - name: Run Intake Extend integration test
+      - name: Enable robot in teleop
         run: |
-          echo "Running sim_test_intake_extend.py..."
-          python3 scripts/sim_test_intake_extend.py \
-            --connect-timeout 30 \
-            --test-timeout 15
-          echo "Test exit code: $?"
+          echo "Enabling robot in teleop via /SimControl/Enable..."
+          python3 scripts/nt_reader.py --set true /SimControl/Enable
+
+      - name: Schedule 'Intake Linear/Extend' command
+        run: |
+          echo "Scheduling Intake Linear/Extend command..."
+          python3 scripts/nt_reader.py --set true "/SmartDashboard/Intake Linear/Extend/running"
+
+      - name: Assert intake linear position ≈ 22.748 rad
+        run: |
+          echo "Polling /AdvantageKit/Intake Linear/Position until ≈ 22.748 rad..."
+          python3 scripts/nt_reader.py \
+            --wait 22.748 --tolerance 0.5 --timeout 15 \
+            "/AdvantageKit/Intake Linear/Position"
 
       - name: Stop simulation
         if: always()
