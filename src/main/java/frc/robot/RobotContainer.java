@@ -58,7 +58,6 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
 /**
@@ -236,10 +235,10 @@ public class RobotContainer {
         controller.povLeft()
             .whileTrue(
                 // Shoot while superstructure is at the flywheel and hood setpoints
+                // Intake cycle not executed when located against the HUB
                 Commands.parallel(
                     indexer.shoot(),
                     tower.shoot(),
-                    intake.cycle(),
                     Commands.runOnce(() -> drive.stopWithX()))
                     .onlyWhile(shooter.atHubSetpoints)
                     .repeatedly())
@@ -252,7 +251,7 @@ public class RobotContainer {
 
     /**
      * Configures button bindings for the button board. Maps board inputs to robot commands for
-     * teleop control. All buttons only apply while pressed.
+     * teleop control. All bindings only apply while actively pressed.
      */
     private void configureOverrideBindings() {
         // Button 1: Emergency stop all mechanisms (intake, indexer, tower, and shooter).
@@ -262,8 +261,7 @@ public class RobotContainer {
                 intake.stopRoller(),
                 indexer.stopCommand(),
                 tower.stopCommand(),
-                shooter.setFlywheelSpeed(RadiansPerSecond.zero()),
-                shooter.setHoodAngle(Radians.zero())).repeatedly());
+                shooter.setFlywheelSpeed(RadiansPerSecond.zero())).repeatedly());
 
         // Button 2: Stop spinning the shooter and lower the hood.
         buttonBoard.shooterSpinDown().whileTrue(
@@ -283,10 +281,23 @@ public class RobotContainer {
         buttonBoard.forceRetractIntake().whileTrue(
             intake.retractLinear());
 
-        // Button 5: Bypass vision and alignment requirements to force a shot with best guess of
-        // current pose.
+        // Button 5: Bypass shooter readiness and alignment requirements to force a shot with best
+        // guess of current pose. Spin everything down afterwards.
         buttonBoard.forceShot().whileTrue(
-            Commands.parallel()); // TODO: later tonight
+            Commands.parallel(
+                Commands.runOnce(() -> drive.stopWithX()),
+                shooter.spinUpShooterToHubDistance(robotState.getDistanceToTarget()),
+                indexer.shoot(),
+                tower.shoot()))
+            .onFalse(
+                Commands.parallel(
+                    shooter.setFlywheelSpeed(RadiansPerSecond.zero()),
+                    indexer.stopCommand(),
+                    tower.stopCommand()));
+
+        // Button 6: X lock drive.
+        buttonBoard.lockDrive().whileTrue(
+            Commands.run(() -> drive.stopWithX()));
     }
 
     /**

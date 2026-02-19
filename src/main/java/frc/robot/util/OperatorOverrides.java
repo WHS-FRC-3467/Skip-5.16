@@ -30,7 +30,7 @@ public interface OperatorOverrides {
     // Force retract intake
     Trigger forceRetractIntake();
 
-    // Bypass vision check and shoot
+    // Bypass readiness/alignment check and shoot
     Trigger forceShot();
 
     // X-lock drivetrain
