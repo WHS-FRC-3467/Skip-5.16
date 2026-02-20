@@ -34,7 +34,7 @@ import frc.robot.Robot;
 /** Add your docs here. */
 public class IndexerFloorConstants {
 
-    public static String NAME = "IndexerFloor";
+    public static String NAME = "Indexer Floor";
 
     public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(60);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second).times(10);
