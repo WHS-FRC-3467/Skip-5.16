@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.4,
-        "y": 0.78
+        "x": 2.719315263908701,
+        "y": 2.2171184022824537
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4000000000000004,
-        "y": 0.78
+        "x": 1.6842225392296717,
+        "y": 2.24299572039943
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Shoot-Right-End"
     },
     {
       "anchor": {
-        "x": 1.7,
-        "y": 0.78
+        "x": 0.4851024305555556,
+        "y": 0.6361016167534717
       },
       "prevControl": {
-        "x": 2.6999999999999993,
-        "y": 0.78
+        "x": 1.1796148359486442,
+        "y": 0.71623395149786
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "PreloadShoot-Right-End"
+      "linkedName": "OutpostIntakeEnd"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 46.0
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": "Right",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 46.0
+    "rotation": 44.40525548478151
   },
   "useDefaultConstraints": true
 }

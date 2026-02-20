@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 1.8,
-        "y": 6.0
+        "x": 2.5769900142653355,
+        "y": 5.969329529237618
       },
       "prevControl": {
-        "x": 0.8,
-        "y": 6.0
+        "x": 1.5769900142653355,
+        "y": 5.969329529237618
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "PreloadShoot-Left-End"
+      "linkedName": "Shoot-Left-End"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -37.0
+    "rotation": -41.830506480958434
   },
   "reversed": false,
   "folder": "Left",

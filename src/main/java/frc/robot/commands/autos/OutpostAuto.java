@@ -58,21 +58,14 @@ public class OutpostAuto extends AutoRoutine {
         switch (start) {
             case LEFT ->
                     expectedPaths =
-                            List.of(
-                                    "PreloadShoot-Left",
-                                    "Left-Preload-To-Outpost",
-                                    "Outpost-Shoot");
+                            List.of();
             case CENTER ->
                     expectedPaths =
-                            List.of(
-                                    "PreloadShoot-Center",
-                                    "Center-Preload-To-Outpost",
-                                    "Outpost-Shoot");
+                            List.of();
             case RIGHT ->
                     expectedPaths =
                             List.of(
-                                    "PreloadShoot-Right",
-                                    "Right-Preload-To-Outpost",
+                                    "StartRight-Outpost",
                                     "Outpost-Shoot");
             default -> expectedPaths = List.of();
         }
@@ -90,11 +83,8 @@ public class OutpostAuto extends AutoRoutine {
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Initialize intake
                     intake.retractIntake().withTimeout(1.25),
-                    // Take preload shot
-                    AutoCommands.makePreloadShot(
-                            drive, indexer, tower, shooter, pathPlannerPaths.get(0)),
                     // Go to the OUTPOST and intake FUEL
-                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                    AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     // Wait for FUEL to be dumped
                     Commands.waitSeconds(3),
                     Commands.either(
@@ -104,7 +94,7 @@ public class OutpostAuto extends AutoRoutine {
                             RobotBase::isSimulation),
                     // Drive to shooting location and shoot all FUEL
                     AutoCommands.makeFullShot(
-                            drive, intake, indexer, tower, shooter, pathPlannerPaths.get(2)),
+                            drive, intake, indexer, tower, shooter, pathPlannerPaths.get(1)),
                     // Re-initialize intake for tele-op
                     intake.retractIntake().withTimeout(1.25));
         }

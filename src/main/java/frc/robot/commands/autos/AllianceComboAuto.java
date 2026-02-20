@@ -60,7 +60,7 @@ public class AllianceComboAuto extends AutoRoutine {
                                     "StartLeft-NearDepot",
                                     "Through-Depot",
                                     "Depot-Shoot",
-                                    "LeftShoot-Outpost",
+                                    "LeftShoot-To-Outpost",
                                     "Outpost-Shoot");
             case CENTER ->
                 // DEPOT FIRST
@@ -69,13 +69,13 @@ public class AllianceComboAuto extends AutoRoutine {
                                     "StartCenter-NearDepot",
                                     "Through-Depot",
                                     "Depot-Shoot",
-                                    "LeftShoot-Outpost",
+                                    "LeftShoot-To-Outpost",
                                     "Outpost-Shoot");
             case RIGHT ->
                 // OUTPOST FIRST
                     expectedPaths =
                             List.of(
-                                    "StartLeft-Outpost",
+                                    "StartRight-Outpost",
                                     "Outpost-Shoot",
                                     "RightShoot-NearDepot",
                                     "Through-Depot",
