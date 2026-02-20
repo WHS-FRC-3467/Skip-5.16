@@ -75,6 +75,7 @@ public class MotorIOTalonFX implements MotorIO {
 
     private final CANUpdateThread updateThread = new CANUpdateThread();
     private final Alert[] followerOnWrongBusAlert;
+    private final Alert[] disconnectAlerts;
 
     private volatile TalonFXConfiguration currentConfig;
     protected volatile Angle goalPosition = Rotations.of(0.0);
@@ -104,10 +105,16 @@ public class MotorIOTalonFX implements MotorIO {
                         });
 
         // Initialize lists
+        disconnectAlerts = new Alert[followerData.length + 1];
+        disconnectAlerts[0] = new Alert(name + " is disconnected!", AlertType.kError);
+
         followerOnWrongBusAlert = new Alert[followerData.length];
         followers = new TalonFX[followerData.length];
 
         for (int i = 0; i < followerData.length; i++) {
+            disconnectAlerts[i + 1] =
+                    new Alert(name + " follower " + i + " is disconnected!", AlertType.kError);
+
             Device.CAN id = followerData[i].id();
 
             if (!id.bus().equals(main.bus())) {
@@ -265,6 +272,11 @@ public class MotorIOTalonFX implements MotorIO {
                                 closedLoopReference,
                                 closedLoopReferenceSlope)
                         .isOK();
+
+        disconnectAlerts[0].set(!inputs.connected);
+        for (int i = 0; i < followers.length; i++) {
+            disconnectAlerts[i + 1].set(!followers[i].isConnected());
+        }
 
         inputs.position = position.getValue();
         inputs.velocity = velocity.getValue();
