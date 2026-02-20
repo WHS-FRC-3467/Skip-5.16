@@ -56,7 +56,8 @@ public class Robot extends LoggedRobot {
     // start of the first alliance phase
     private Field2d fieldMap = new Field2d();
 
-    // Tracks the previous /SimControl/Enable value so we only call DriverStationSim when it changes.
+    // Tracks the previous /SimControl/Enable value so we only call DriverStationSim when it
+    // changes.
     private boolean lastNtEnable = false;
 
     public Robot() {
@@ -113,7 +114,11 @@ public class Robot extends LoggedRobot {
             if (constants.DriveMotorType != DriveMotorArrangement.TalonFX_Integrated
                     || constants.SteerMotorType != SteerMotorArrangement.TalonFX_Integrated) {
                 throw new RuntimeException(
-                        "You are using an unsupported swerve configuration, which this template does not support without manual customization. The 2025 release of Phoenix supports some swerve configurations which were not available during 2025 beta testing, preventing any development and support from the AdvantageKit developers.");
+                        "You are using an unsupported swerve configuration, which this template"
+                                + " does not support without manual customization. The 2025 release of"
+                                + " Phoenix supports some swerve configurations which were not"
+                                + " available during 2025 beta testing, preventing any development and"
+                                + " support from the AdvantageKit developers.");
             }
         }
 
@@ -282,12 +287,10 @@ public class Robot extends LoggedRobot {
                         .getTable("SimControl")
                         .getEntry("Enable")
                         .getBoolean(false);
-        if (ntEnable != lastNtEnable) {
-            lastNtEnable = ntEnable;
+
+        if (ntEnable == true) {
             DriverStationSim.setEnabled(ntEnable);
-            if (ntEnable) {
-                DriverStationSim.setAutonomous(false); // teleop mode
-            }
+            DriverStationSim.setTest(ntEnable);
             DriverStationSim.notifyNewData();
         }
     }

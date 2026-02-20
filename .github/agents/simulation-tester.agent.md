@@ -150,4 +150,3 @@ The "Assert NT topic reaches expected value" step exits `0` on success and `1` o
    ```bash
    python3 scripts/nt_reader.py "/AdvantageKit/RealOutputs/<SubsystemName>/CurrentCommand"
    ```
-
