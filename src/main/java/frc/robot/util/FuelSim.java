@@ -691,7 +691,7 @@ public class FuelSim {
     public void setHopperFuel(int numFuel) {
         int previousAmount = getHeldFuel();
         // Clamp the new set amount of fuel
-        int amountFuel = MathUtil.clamp(numFuel, 0, 50);
+        int amountFuel = MathUtil.clamp(numFuel, 0, HOPPER_CAPACITY);
         if (amountFuel < previousAmount) {
             for (int i = amountFuel; i < previousAmount; i++) {
                 hopperFuel.remove(hopperFuel.size() - 1);
@@ -1137,5 +1137,13 @@ public class FuelSim {
         yVel += fieldSpeeds.vyMetersPerSecond;
 
         return new Translation3d(xVel, yVel, verticalVel);
+    }
+
+    // Return list of fuel poses for use in Object Detection simulation. Read only.
+    public synchronized List<Pose3d> getFuelPoses() {
+        if (fuels.isEmpty()) {
+            return List.of();
+        }
+        return fuels.stream().map(fuel -> new Pose3d(fuel.pos, Rotation3d.kZero)).toList();
     }
 }

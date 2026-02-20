@@ -59,42 +59,30 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
         // Suppliers for dynamic sim object position updates
         this.robotPoseSupplier = robotPoseSupplier;
         this.visionTargetSupplier = visionTargetSupplier;
-
-        // Initialize sim vision targets on field
-        // Current vision targets
-        visionTargets = visionTargetSupplier.get();
-        // Add current vision targets to the sim field
-        visionSim.addVisionTargets(target_name, visionTargets);
-        // Retrieve the vision targets on the sim field in a set and then convert it to a list for
-        // easy indexing
-        targetSet = visionSim.getVisionTargets();
-        targetList = new ArrayList<>(targetSet);
-        // Initialize sim target pose logging; update in periodic below for AScope
-        for (VisionTargetSim target : targetList) {
-            Logger.recordOutput("TARGET POSE" + targetList.indexOf(target), target.getPose());
-        }
     }
 
     // Update the robot's pose in the sim and use the super's implementation to update inputs
     @Override
     public void updateInputs(ObjectDetectionIOInputs inputs) {
-        // Update robot & target poses
+        // Update target & robot poses + camera observations
+        updateTargetPoses();
         visionSim.update(robotPoseSupplier.get());
-        // updateTargetPoses();
         super.updateInputs(inputs);
     }
 
-    // Private helper for simulating moving game pieces. Calls can have performance impact.
-    @SuppressWarnings("unused")
+    // Private helper for simulating moving game pieces.
     private void updateTargetPoses() {
         visionSim.clearVisionTargets();
         visionTargets = visionTargetSupplier.get();
-        visionSim.addVisionTargets(target_name, visionTargets);
-        // Log updated target poses for AScope
-        targetSet = visionSim.getVisionTargets();
-        targetList = new ArrayList<>(targetSet);
-        for (VisionTargetSim target : targetList) {
-            Logger.recordOutput("TARGET POSE" + targetList.indexOf(target), target.getPose());
+        if (visionTargets.length > 0) {
+            visionSim.addVisionTargets(target_name, visionTargets);
+            // Log updated target poses for AScope
+            targetSet = visionSim.getVisionTargets();
+            targetList = new ArrayList<>(targetSet);
+            for (int i = 0; i < targetList.size(); i++) {
+                VisionTargetSim target = targetList.get(i);
+                Logger.recordOutput("TARGET POSE " + i, target.getPose());
+            }
         }
     }
 }
