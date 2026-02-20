@@ -15,6 +15,7 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -78,8 +79,9 @@ public class BasicNeutralAuto extends AutoRoutine {
                             ? AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0))
                             : AutoCommands.resetSimOdom(
                                     drive, pathPlannerPaths.get(0).mirrorPath()),
-                    // Initialize intake to starting position
+                    // Initialize intake & hood to starting positions
                     intake.retractIntake().withTimeout(1.25),
+                    shooter.setHoodAngle(Degrees.zero()).withTimeout(1.25),
                     // Drive to the neutral zone
                     start == StartPosition.LEFT
                             ? AutoBuilder.followPath(pathPlannerPaths.get(0))

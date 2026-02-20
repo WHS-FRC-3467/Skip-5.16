@@ -19,11 +19,16 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.devices.DistanceSensor;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTrigger;
+import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
 
@@ -47,10 +52,40 @@ public class Tower extends SubsystemBase {
                     TowerConstants.NAME + "/FeedRPS",
                     TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
+    // Tuning Mode
+    private static final Trigger TUNING_MODE_ENABLED =
+            new Trigger(new LoggedTunableBoolean(TowerConstants.NAME + "/Tuning/Enable", false));
+    private static final LoggedTunableNumber TUNING_MODE_SPEED_RPS =
+            new LoggedTunableNumber(TowerConstants.NAME + "/Tuning/SpeedRPS", 0.0);
+
     private final FlywheelMechanism<?> io;
 
     private final DistanceSensor laserCAN1 = TowerConstants.getLaserCAN1();
     private final DistanceSensor laserCAN2 = TowerConstants.getLaserCAN2();
+
+    private final Command tuningModeCommand =
+            Commands.sequence(
+                            Commands.runOnce(this::cancelCurrentCommandIfAny),
+                            createTuningRunCommand())
+                    // Prevent interruptions
+                    .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
+                    // Stop after tuning mode is disabled for safety/convenience
+                    .finallyDo(() -> runVelocity(RotationsPerSecond.zero()));
+
+    private void cancelCurrentCommandIfAny() {
+        var currentCommand = this.getCurrentCommand();
+        if (currentCommand == null) return;
+        CommandScheduler.getInstance().cancel(currentCommand);
+    }
+
+    private Command createTuningRunCommand() {
+        // Proxy prevents the sequence from requiring this subsystem.
+        return this.run(
+                        () ->
+                                runVelocity(
+                                        RotationsPerSecond.of(TUNING_MODE_SPEED_RPS.getAsDouble())))
+                .asProxy();
+    }
 
     public final LoggedTrigger laserCAN1Tripped =
             new LoggedTrigger(
@@ -78,6 +113,7 @@ public class Tower extends SubsystemBase {
      */
     public Tower(FlywheelMechanism<?> io) {
         this.io = io;
+        TUNING_MODE_ENABLED.whileTrue(tuningModeCommand);
     }
 
     @Override
@@ -156,6 +192,22 @@ public class Tower extends SubsystemBase {
 
     private void stop() {
         io.runBrake();
+    }
+
+    /**
+     * Enables tuning mode by cancelling the currently running command (if any), scheduling a
+     * non-interruptible idle command, and applying the current tuning position setpoint.
+     */
+    void enableTuningMode() {
+        CommandScheduler.getInstance().schedule(tuningModeCommand);
+    }
+
+    /**
+     * Disables tuning mode by cancelling the tuning idle command and restoring the previously
+     * active command when one was captured.
+     */
+    void disableTuningMode() {
+        CommandScheduler.getInstance().cancel(tuningModeCommand);
     }
 
     /** Closes the underlying flywheel mechanism and releases resources. */
