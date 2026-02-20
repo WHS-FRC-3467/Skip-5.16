@@ -6,16 +6,15 @@ package frc.lib.io.objectdetection;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Units;
+
 import frc.lib.devices.AprilTagCamera.CameraProperties;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
+
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
+
+import java.util.function.Supplier;
 
 /** An object detection sim class that utilizes the PhotonVision implementation for tests. */
 public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
@@ -26,8 +25,6 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
     private final Supplier<VisionTargetSim[]> visionTargetSupplier;
 
     private VisionTargetSim[] visionTargets;
-    private Set<VisionTargetSim> targetSet;
-    private List<VisionTargetSim> targetList;
 
     public ObjectDetectionIOSim(
             CameraProperties cameraProperties,
@@ -76,13 +73,6 @@ public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {
         visionTargets = visionTargetSupplier.get();
         if (visionTargets.length > 0) {
             visionSim.addVisionTargets(target_name, visionTargets);
-            // Log updated target poses for AScope
-            targetSet = visionSim.getVisionTargets();
-            targetList = new ArrayList<>(targetSet);
-            for (int i = 0; i < targetList.size(); i++) {
-                VisionTargetSim target = targetList.get(i);
-                Logger.recordOutput("TARGET POSE " + i, target.getPose());
-            }
         }
     }
 }
