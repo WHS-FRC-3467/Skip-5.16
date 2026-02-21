@@ -29,6 +29,12 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.behaviortree.ActionNode;
+import frc.lib.behaviortree.BehaviorTree;
+import frc.lib.behaviortree.ConditionNode;
+import frc.lib.behaviortree.NodeStatus;
+import frc.lib.behaviortree.SelectorNode;
+import frc.lib.behaviortree.SequenceNode;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
@@ -93,6 +99,28 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final RotaryMechanism<?, ?> hoodIO;
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
+
+    /**
+     * Behavior tree that supervises shooter setpoints each robot loop.
+     *
+     * <p>The tree makes two decisions every tick:
+     *
+     * <ol>
+     *   <li><b>SpinFlywheel</b> — always sets the flywheel to the velocity interpolated from the
+     *       robot's current distance to its target.
+     *   <li><b>HoodControl</b> — selects the hood angle using a priority selector:
+     *       <ul>
+     *         <li><em>HoodSafety</em>: if the hood is NOT safe to actuate (trench or neutral zone),
+     *             retract it to zero degrees.
+     *         <li><em>SetHoodAngle</em>: otherwise, set the hood to the interpolated angle for the
+     *             current distance.
+     *       </ul>
+     * </ol>
+     *
+     * <p>Access this tree from outside the subsystem via {@link #getDecisionTree()} for
+     * visualization or inspection.
+     */
+    private final BehaviorTree shooterDecisionTree;
     public final LoggedTrigger readyToShoot =
             new LoggedTrigger(
                     this.getName() + "/readyToShoot",
@@ -144,6 +172,51 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         this.hoodIO = hoodIO;
         this.leftFlywheelIO = leftFlywheelIO;
         this.rightFlywheelIO = rightFlywheelIO;
+
+        // Build the shooter decision tree.
+        //
+        // Every tick the tree:
+        //   1. Sets the flywheel velocity based on robot distance to target.
+        //   2. Sets the hood angle — retracting it when the hood is not safe to
+        //      raise (trench / neutral zone), otherwise using the target angle.
+        //
+        // The tree is ticked inside supervisorTreeCommand(), which can be used
+        // as a drop-in replacement for spinUpShooter() anywhere that decision
+        // logging / visualization is desired.
+        shooterDecisionTree =
+                new BehaviorTree(
+                        getName() + "/Decision",
+                        new SequenceNode(
+                                "SpinUp",
+                                // Step 1 — always update flywheel setpoint
+                                new ActionNode(
+                                        "SpinFlywheel",
+                                        () -> {
+                                            spinFlywheel(getDesiredFlywheelVelocity());
+                                            return NodeStatus.SUCCESS;
+                                        }),
+                                // Step 2 — decide hood angle
+                                new SelectorNode(
+                                        "HoodControl",
+                                        // Priority A: retract if hood cannot be safely raised
+                                        new SequenceNode(
+                                                "HoodSafety",
+                                                new ConditionNode(
+                                                        "HoodNotSafe",
+                                                        () -> !hoodSafe.getAsBoolean()),
+                                                new ActionNode(
+                                                        "RetractHood",
+                                                        () -> {
+                                                            setHoodPosition(Degrees.zero());
+                                                            return NodeStatus.SUCCESS;
+                                                        })),
+                                        // Priority B: set desired angle for current distance
+                                        new ActionNode(
+                                                "SetHoodAngle",
+                                                () -> {
+                                                    setHoodPosition(getDesiredHoodAngle());
+                                                    return NodeStatus.SUCCESS;
+                                                }))));
     }
 
     private void spinFlywheel(AngularVelocity velocity) {
@@ -275,7 +348,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Prepares the subsystem to shoot at the HUB, and runs a command while it is ready
+     * Prepares the subsystem to shoot at the HUB, and runs a command while it is ready.
+     *
+     * <p>Internally uses {@link #supervisorTreeCommand()} so shooter decisions are logged to
+     * AdvantageKit and visible in the Behavior Tree Viewer in real time.
      *
      * @param whileAtPosition A command that runs while the shooter is ready to shoot at the HUB. If
      *     shooting is disrupted because shooter readiness drops, attempt a flywheel/hood adjustment
@@ -287,7 +363,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public Command prepareShot(Command whileAtPosition) {
         return Commands.sequence(
                         Commands.parallel(
-                                spinUpShooter(),
+                                supervisorTreeCommand(),
                                 Commands.repeatingSequence(
                                         Commands.waitUntil(readyToShoot),
                                         whileAtPosition.until(readyToShoot.negate()))))
@@ -312,6 +388,64 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     public Command setFlywheelSpeed(AngularVelocity velocity) {
         return Commands.runOnce(() -> spinFlywheel(velocity)).withName("Set Flywheel Speed");
+    }
+
+    /**
+     * Creates a command that holds the shooter subsystem without actuating anything.
+     *
+     * <p>Useful as the final step of a sequence that needs to prevent any other command from
+     * changing the hood position (e.g., after forcing the hood down when entering the trench). The
+     * hood is continuously re-commanded to {@code Degrees.zero()} on every execute() tick to hold
+     * this subsystem requirement and resist any position drift or interference.
+     *
+     * @return a perpetual command that keeps the hood retracted
+     */
+    public Command idle() {
+        return this.run(() -> setHoodPosition(Degrees.zero())).withName("Idle");
+    }
+
+    /**
+     * Creates a command that runs the {@linkplain #shooterDecisionTree shooter decision tree} every
+     * robot loop, providing a fully-logged, visualizable alternative to {@link #spinUpShooter()}.
+     *
+     * <p>On initialization the tree is reset so it starts from a clean state. On end (interrupted
+     * or finished) the flywheel is stopped and the hood is retracted to zero for safety.
+     *
+     * <p>The tree makes decisions every 20 ms loop:
+     *
+     * <ol>
+     *   <li>Set the flywheel to the interpolated velocity for the current distance-to-target.
+     *   <li>Set the hood to the interpolated angle — or retract it when the hood is not safe to
+     *       raise (trench / neutral zone).
+     * </ol>
+     *
+     * <p>Real-time execution is visible in the Behavior Tree Viewer at
+     * {@code http://localhost:5800/behaviortree/index.html} (simulation) or
+     * {@code http://roboRIO-3467-FRC.local:5800/behaviortree/index.html} (real robot).
+     *
+     * @return a perpetual command that ticks the shooter decision tree
+     */
+    public Command supervisorTreeCommand() {
+        return this.run(() -> shooterDecisionTree.tick())
+                .beforeStarting(Commands.runOnce(shooterDecisionTree::reset))
+                .finallyDo(
+                        () -> {
+                            spinFlywheel(RotationsPerSecond.zero());
+                            setHoodPosition(Degrees.zero());
+                        })
+                .withName("Shooter Supervisor");
+    }
+
+    /**
+     * Returns the shooter's behavior tree for external access.
+     *
+     * <p>Useful for wiring the tree into dashboard visualizations or for inspection during
+     * development.
+     *
+     * @return the {@link BehaviorTree} instance that supervises shooter setpoints
+     */
+    public BehaviorTree getDecisionTree() {
+        return shooterDecisionTree;
     }
 
     @Override
