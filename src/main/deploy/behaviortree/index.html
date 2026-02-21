@@ -6,13 +6,23 @@
   NetworkTables server via WebSocket (NT4 protocol) and displays the tree with
   color-coded node states.
 
-  Access in simulation:  http://localhost:5800/behaviortree/index.html
-  Access on robot:       http://roboRIO-3467-FRC.local:5800/behaviortree/index.html
+  The robot code (DeployFileServer) serves this file on port 5800, so you can
+  open it directly in a browser — no external hosting needed.
+
+  HOW TO OPEN:
+    Simulation:   http://localhost:5800/behaviortree/index.html
+                  (start the simulator with ./gradlew simulateJava first)
+
+    Real robot:   http://roboRIO-3467-FRC.local:5800/behaviortree/index.html
+                  (replace 3467 with your team number if different)
+
+  The NT4 WebSocket (port 5810) is separate from this HTTP server (port 5800).
+  The page connects to NT4 automatically using the same hostname it was loaded from.
 
   Colors:
     Green  = SUCCESS  (node completed its task)
     Red    = FAILURE  (node failed its task)
-    Yellow = RUNNING  (node is still executing)
+    Orange = RUNNING  (node is still executing — pulses)
     Gray   = IDLE     (not yet evaluated this tick)
 -->
 <html lang="en">
@@ -149,7 +159,8 @@
         color: #555;
         font-size: 1rem;
         text-align: center;
-        margin-top: 60px;
+        margin-top: 40px;
+        padding: 0 16px;
       }
 
       /* ── Tree Rendering ── */
@@ -341,7 +352,32 @@
     </header>
 
     <main>
-      <div id="placeholder">Connect to the robot to see the behavior tree.</div>
+      <div id="placeholder">
+        <div style="max-width:520px;margin:0 auto;text-align:left;background:#16213e;border:1px solid #0f3460;border-radius:8px;padding:24px 28px;">
+          <h2 style="color:#e94560;margin-bottom:12px;">🌳 Behavior Tree Viewer</h2>
+          <p style="color:#9ca3af;margin-bottom:16px;line-height:1.6;">
+            Waiting for behavior tree data from the robot.
+            Make sure the simulator or robot code is running and that a
+            <code style="background:#0f3460;padding:1px 5px;border-radius:3px;">BehaviorTree</code>
+            instance has been ticked at least once.
+          </p>
+          <p style="color:#6b7280;font-size:0.85rem;margin-bottom:6px;font-weight:600;letter-spacing:.05em;">HOW TO OPEN THIS PAGE</p>
+          <table style="font-size:0.85rem;border-collapse:collapse;width:100%;">
+            <tr>
+              <td style="padding:4px 8px 4px 0;color:#9ca3af;white-space:nowrap;">Simulation:</td>
+              <td><code style="background:#0f3460;padding:2px 6px;border-radius:3px;color:#93c5fd;">http://localhost:5800/behaviortree/index.html</code></td>
+            </tr>
+            <tr>
+              <td style="padding:4px 8px 4px 0;color:#9ca3af;white-space:nowrap;">Real robot:</td>
+              <td><code style="background:#0f3460;padding:2px 6px;border-radius:3px;color:#93c5fd;">http://roboRIO-3467-FRC.local:5800/behaviortree/index.html</code></td>
+            </tr>
+          </table>
+          <p style="color:#6b7280;font-size:0.8rem;margin-top:14px;">
+            The file is served by <strong style="color:#9ca3af;">DeployFileServer</strong> on port 5800.
+            NT4 data arrives on port 5810 automatically.
+          </p>
+        </div>
+      </div>
       <div id="tree-container" style="display:none"></div>
     </main>
 

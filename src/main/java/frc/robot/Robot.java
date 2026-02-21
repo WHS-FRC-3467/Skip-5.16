@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.lib.util.DeployFileServer;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.Elastic;
 import frc.robot.util.HubState;
@@ -121,6 +122,11 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
+        // Serve deploy directory files on port 5800 so browser tools like the
+        // Behavior Tree Viewer (http://localhost:5800/behaviortree/index.html) work
+        // in both simulation and on the real robot.
+        DeployFileServer.start(5800);
+
         /*
          * Due to the nature of how Java works, the first run of a pathfinding command could have a
          * significantly higher delay compared with subsequent runs. To help alleviate this issue,
