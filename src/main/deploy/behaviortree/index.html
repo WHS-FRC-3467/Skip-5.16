@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<!--
+  Behavior Tree Viewer
+  ====================
+  Real-time visualization of behavior tree execution. Connects to the robot's
+  NetworkTables server via WebSocket (NT4 protocol) and displays the tree with
+  color-coded node states.
+
+  Access in simulation:  http://localhost:5800/behaviortree/index.html
+  Access on robot:       http://roboRIO-3467-FRC.local:5800/behaviortree/index.html
+
+  Colors:
+    Green  = SUCCESS  (node completed its task)
+    Red    = FAILURE  (node failed its task)
+    Yellow = RUNNING  (node is still executing)
+    Gray   = IDLE     (not yet evaluated this tick)
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Behavior Tree Viewer</title>
+    <style>
+      /* ── Base Layout ── */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #1a1a2e;
+        color: #e0e0e0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        background: #16213e;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border-bottom: 2px solid #0f3460;
+        flex-wrap: wrap;
+      }
+
+      header h1 {
+        font-size: 1.4rem;
+        color: #e94560;
+        white-space: nowrap;
+      }
+
+      .connection-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .connection-bar label {
+        font-size: 0.85rem;
+        color: #aaa;
+      }
+
+      .connection-bar input {
+        background: #0f3460;
+        border: 1px solid #374151;
+        color: #e0e0e0;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        width: 220px;
+      }
+
+      .btn {
+        padding: 6px 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .btn-connect {
+        background: #0f3460;
+        color: #e0e0e0;
+        border: 1px solid #374151;
+      }
+
+      .btn-connect:hover {
+        background: #1a4a80;
+      }
+
+      /* ── Status Pill ── */
+      .status-pill {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+
+      .status-connecting {
+        background: #374151;
+        color: #aaa;
+      }
+      .status-connected {
+        background: #065f46;
+        color: #6ee7b7;
+      }
+      .status-disconnected {
+        background: #7f1d1d;
+        color: #fca5a5;
+      }
+
+      /* ── Tree Selector ── */
+      .tree-selector {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .tree-selector label {
+        font-size: 0.85rem;
+        color: #aaa;
+      }
+
+      .tree-selector select {
+        background: #0f3460;
+        border: 1px solid #374151;
+        color: #e0e0e0;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+      }
+
+      /* ── Main Content ── */
+      main {
+        flex: 1;
+        padding: 20px;
+        overflow: auto;
+      }
+
+      #placeholder {
+        color: #555;
+        font-size: 1rem;
+        text-align: center;
+        margin-top: 60px;
+      }
+
+      /* ── Tree Rendering ── */
+      #tree-container {
+        font-size: 0.9rem;
+      }
+
+      .tree-row {
+        display: flex;
+        align-items: center;
+        margin: 3px 0;
+      }
+
+      /* Indent spacers */
+      .tree-indent {
+        display: inline-flex;
+        align-items: center;
+        width: 28px;
+        flex-shrink: 0;
+        position: relative;
+      }
+
+      /* Vertical line for non-last children */
+      .tree-indent.has-sibling::before {
+        content: "";
+        position: absolute;
+        left: 13px;
+        top: -4px;
+        bottom: -4px;
+        width: 1px;
+        background: #374151;
+      }
+
+      /* Branch connector */
+      .tree-connector {
+        display: inline-flex;
+        align-items: center;
+        width: 28px;
+        flex-shrink: 0;
+        position: relative;
+        color: #555;
+        font-size: 1rem;
+      }
+
+      .tree-connector::before {
+        content: "";
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        width: 14px;
+        height: 1px;
+        background: #374151;
+      }
+
+      .tree-connector::after {
+        content: "";
+        position: absolute;
+        left: 13px;
+        top: -4px;
+        bottom: 50%;
+        width: 1px;
+        background: #374151;
+      }
+
+      /* Node box */
+      .node-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        min-width: 140px;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+        cursor: default;
+      }
+
+      /* Node type icon */
+      .node-icon {
+        font-size: 1rem;
+        flex-shrink: 0;
+      }
+
+      /* Node name */
+      .node-name {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      /* Node type label */
+      .node-type {
+        font-size: 0.7rem;
+        opacity: 0.65;
+        white-space: nowrap;
+      }
+
+      /* ── Node Status Colors ── */
+      .node-SUCCESS {
+        background: #052e16;
+        border-color: #16a34a;
+        color: #86efac;
+      }
+
+      .node-FAILURE {
+        background: #450a0a;
+        border-color: #dc2626;
+        color: #fca5a5;
+      }
+
+      .node-RUNNING {
+        background: #431407;
+        border-color: #ea580c;
+        color: #fdba74;
+        animation: pulse-running 1s ease-in-out infinite;
+      }
+
+      .node-IDLE {
+        background: #1f2937;
+        border-color: #374151;
+        color: #9ca3af;
+      }
+
+      @keyframes pulse-running {
+        0%,
+        100% {
+          border-color: #ea580c;
+        }
+        50% {
+          border-color: #f97316;
+          box-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
+        }
+      }
+
+      /* ── Legend ── */
+      .legend {
+        display: flex;
+        gap: 16px;
+        padding: 10px 20px;
+        background: #16213e;
+        border-top: 1px solid #0f3460;
+        flex-wrap: wrap;
+        font-size: 0.78rem;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+      }
+
+      /* ── Stats Bar ── */
+      .stats {
+        padding: 6px 20px;
+        background: #0f1929;
+        border-top: 1px solid #0f3460;
+        font-size: 0.75rem;
+        color: #6b7280;
+        display: flex;
+        gap: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>🌳 Behavior Tree Viewer</h1>
+
+      <div class="connection-bar">
+        <label for="host-input">NT Server:</label>
+        <input type="text" id="host-input" value="localhost" placeholder="localhost or roboRIO-XXXX-FRC.local" />
+        <button class="btn btn-connect" onclick="reconnect()">Connect</button>
+        <span id="status-pill" class="status-pill status-disconnected">Disconnected</span>
+      </div>
+
+      <div class="tree-selector">
+        <label for="tree-select">Tree:</label>
+        <select id="tree-select" onchange="selectTree(this.value)">
+          <option value="">-- waiting for data --</option>
+        </select>
+      </div>
+    </header>
+
+    <main>
+      <div id="placeholder">Connect to the robot to see the behavior tree.</div>
+      <div id="tree-container" style="display:none"></div>
+    </main>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#16a34a;"></div>
+        SUCCESS
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#dc2626;"></div>
+        FAILURE
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ea580c;"></div>
+        RUNNING (animated)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#374151;"></div>
+        IDLE
+      </div>
+    </div>
+
+    <div class="stats">
+      <span id="stat-ticks">Ticks: 0</span>
+      <span id="stat-nodes">Nodes: 0</span>
+      <span id="stat-tree">Tree: none</span>
+      <span id="stat-time">Last update: --</span>
+    </div>
+
+    <script>
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Minimal MessagePack decoder
+      //  Only decodes the subset used by NT4: nil, bool, int, uint, str, array
+      // ═══════════════════════════════════════════════════════════════════════
+      function decodeMsgpack(buffer, startOffset) {
+        let offset = startOffset || 0;
+        const view = new DataView(buffer);
+        const utf8 = new TextDecoder();
+
+        function readBytes(n) {
+          const bytes = new Uint8Array(buffer, offset, n);
+          offset += n;
+          return bytes;
+        }
+
+        function decode() {
+          const b = view.getUint8(offset++);
+
+          // Positive fixint  0x00–0x7f
+          if (b <= 0x7f) return b;
+          // Negative fixint  0xe0–0xff
+          if (b >= 0xe0) return b - 256;
+          // Fixstr  0xa0–0xbf
+          if ((b & 0xe0) === 0xa0) {
+            const len = b & 0x1f;
+            const bytes = readBytes(len);
+            return utf8.decode(bytes);
+          }
+          // Fixarray  0x90–0x9f
+          if ((b & 0xf0) === 0x90) {
+            const len = b & 0x0f;
+            const arr = [];
+            for (let i = 0; i < len; i++) arr.push(decode());
+            return arr;
+          }
+          // Fixmap  0x80–0x8f
+          if ((b & 0xf0) === 0x80) {
+            const len = b & 0x0f;
+            const map = {};
+            for (let i = 0; i < len; i++) {
+              const k = decode();
+              map[k] = decode();
+            }
+            return map;
+          }
+
+          switch (b) {
+            case 0xc0: return null;
+            case 0xc2: return false;
+            case 0xc3: return true;
+
+            // Unsigned integers
+            case 0xcc: return view.getUint8(offset++);
+            case 0xcd: { const v = view.getUint16(offset); offset += 2; return v; }
+            case 0xce: { const v = view.getUint32(offset); offset += 4; return v; }
+            case 0xcf: {
+              const hi = view.getUint32(offset);
+              const lo = view.getUint32(offset + 4);
+              offset += 8;
+              return hi * 0x100000000 + lo;
+            }
+
+            // Signed integers
+            case 0xd0: { const v = view.getInt8(offset++); return v; }
+            case 0xd1: { const v = view.getInt16(offset); offset += 2; return v; }
+            case 0xd2: { const v = view.getInt32(offset); offset += 4; return v; }
+            case 0xd3: {
+              const hi = view.getInt32(offset);
+              const lo = view.getUint32(offset + 4);
+              offset += 8;
+              return hi * 0x100000000 + lo;
+            }
+
+            // Floats
+            case 0xca: { const v = view.getFloat32(offset); offset += 4; return v; }
+            case 0xcb: { const v = view.getFloat64(offset); offset += 8; return v; }
+
+            // Strings
+            case 0xd9: { const len = view.getUint8(offset++); const b2 = readBytes(len); return utf8.decode(b2); }
+            case 0xda: { const len = view.getUint16(offset); offset += 2; const b2 = readBytes(len); return utf8.decode(b2); }
+            case 0xdb: { const len = view.getUint32(offset); offset += 4; const b2 = readBytes(len); return utf8.decode(b2); }
+
+            // Binary
+            case 0xc4: { const len = view.getUint8(offset++); const b2 = readBytes(len); return b2; }
+            case 0xc5: { const len = view.getUint16(offset); offset += 2; const b2 = readBytes(len); return b2; }
+            case 0xc6: { const len = view.getUint32(offset); offset += 4; const b2 = readBytes(len); return b2; }
+
+            // Arrays
+            case 0xdc: { const len = view.getUint16(offset); offset += 2; const arr = []; for (let i = 0; i < len; i++) arr.push(decode()); return arr; }
+            case 0xdd: { const len = view.getUint32(offset); offset += 4; const arr = []; for (let i = 0; i < len; i++) arr.push(decode()); return arr; }
+
+            // Maps
+            case 0xde: { const len = view.getUint16(offset); offset += 2; const m = {}; for (let i = 0; i < len; i++) { const k = decode(); m[k] = decode(); } return m; }
+            case 0xdf: { const len = view.getUint32(offset); offset += 4; const m = {}; for (let i = 0; i < len; i++) { const k = decode(); m[k] = decode(); } return m; }
+
+            default:
+              console.warn('msgpack: unknown type 0x' + b.toString(16) + ' at offset ' + (offset-1));
+              return null;
+          }
+        }
+
+        const value = decode();
+        return { value, bytesRead: offset - (startOffset || 0) };
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Minimal NT4 WebSocket Client
+      //  Subscribes to /BehaviorTree/ prefix and calls callbacks on updates.
+      // ═══════════════════════════════════════════════════════════════════════
+      class NT4Client {
+        constructor(host, onTopicAnnounce, onValueUpdate, onConnect, onDisconnect) {
+          this.host = host;
+          this.onTopicAnnounce = onTopicAnnounce;
+          this.onValueUpdate = onValueUpdate;
+          this.onConnect = onConnect;
+          this.onDisconnect = onDisconnect;
+          this.topics = new Map();   // id → {name, type}
+          this.subuid = 0;
+          this.ws = null;
+          this.reconnectTimer = null;
+          this.stopped = false;
+        }
+
+        connect() {
+          this.stopped = false;
+          this._tryConnect();
+        }
+
+        disconnect() {
+          this.stopped = true;
+          clearTimeout(this.reconnectTimer);
+          if (this.ws) {
+            this.ws.close();
+            this.ws = null;
+          }
+        }
+
+        _tryConnect() {
+          const url = 'ws://' + this.host + ':5810/nt/behaviortree-viewer';
+          try {
+            this.ws = new WebSocket(url, ['v4.1.networktables.first.wpi.edu']);
+            this.ws.binaryType = 'arraybuffer';
+          } catch (e) {
+            this._scheduleReconnect();
+            return;
+          }
+
+          this.ws.onopen = () => {
+            this.topics.clear();
+            this.onConnect();
+            // Subscribe to all /BehaviorTree/ topics
+            this._send([{
+              method: 'subscribe',
+              params: {
+                topics: [{ name: '/BehaviorTree/' }],
+                subuid: ++this.subuid,
+                options: { prefix: true, periodic: 0.02 }
+              }
+            }]);
+          };
+
+          this.ws.onmessage = (event) => {
+            if (typeof event.data === 'string') {
+              this._handleText(event.data);
+            } else {
+              this._handleBinary(event.data);
+            }
+          };
+
+          this.ws.onclose = () => {
+            this.onDisconnect();
+            if (!this.stopped) this._scheduleReconnect();
+          };
+
+          this.ws.onerror = () => {
+            // onclose will fire after onerror
+          };
+        }
+
+        _scheduleReconnect() {
+          this.reconnectTimer = setTimeout(() => {
+            if (!this.stopped) this._tryConnect();
+          }, 2000);
+        }
+
+        _send(msgs) {
+          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(msgs));
+          }
+        }
+
+        _handleText(data) {
+          try {
+            const msgs = JSON.parse(data);
+            for (const msg of (Array.isArray(msgs) ? msgs : [msgs])) {
+              if (msg.method === 'announce') {
+                const p = msg.params;
+                this.topics.set(p.id, { name: p.name, type: p.type });
+                this.onTopicAnnounce(p);
+              }
+            }
+          } catch (e) {
+            // Ignore malformed messages
+          }
+        }
+
+        _handleBinary(data) {
+          // NT4 binary frame may contain multiple concatenated msgpack messages
+          let offset = 0;
+          while (offset < data.byteLength) {
+            try {
+              const { value, bytesRead } = decodeMsgpack(data, offset);
+              offset += bytesRead;
+              if (bytesRead === 0) break; // safety: avoid infinite loop
+
+              // NT4 value message: [topicId, serverTimestamp_us, typeId, value]
+              if (Array.isArray(value) && value.length === 4) {
+                const topicId = value[0];
+                const rawValue = value[3];
+                const topic = this.topics.get(topicId);
+                if (topic) {
+                  this.onValueUpdate(topic.name, rawValue, topic.type);
+                }
+              }
+            } catch (e) {
+              break; // Stop parsing this frame on error
+            }
+          }
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Application State
+      // ═══════════════════════════════════════════════════════════════════════
+      const state = {
+        // Map of treeName → { names: [], types: [], statuses: [], depths: [] }
+        trees: new Map(),
+        selectedTree: null,
+        tickCount: 0,
+        lastUpdateTime: null,
+        client: null,
+      };
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  NT4 Callbacks
+      // ═══════════════════════════════════════════════════════════════════════
+      function onTopicAnnounce(params) {
+        // Extract tree name from /BehaviorTree/<name>/...
+        const match = params.name.match(/^\/BehaviorTree\/([^/]+)\//);
+        if (!match) return;
+
+        const treeName = match[1];
+        if (!state.trees.has(treeName)) {
+          state.trees.set(treeName, { names: [], types: [], statuses: [], depths: [] });
+          updateTreeSelector();
+        }
+      }
+
+      function onValueUpdate(topicName, value, topicType) {
+        const match = topicName.match(/^\/BehaviorTree\/([^/]+)\/(.+)$/);
+        if (!match) return;
+
+        const treeName = match[1];
+        const field = match[2];
+
+        if (!state.trees.has(treeName)) {
+          state.trees.set(treeName, { names: [], types: [], statuses: [], depths: [] });
+          updateTreeSelector();
+        }
+
+        const treeData = state.trees.get(treeName);
+
+        if (field === 'NodeNames' && Array.isArray(value)) {
+          treeData.names = value;
+        } else if (field === 'NodeTypes' && Array.isArray(value)) {
+          treeData.types = value;
+        } else if (field === 'NodeStatuses' && Array.isArray(value)) {
+          treeData.statuses = value;
+          state.tickCount++;
+        } else if (field === 'NodeDepths' && Array.isArray(value)) {
+          treeData.depths = value.map(Number);
+        }
+
+        // Refresh when we have enough data for the selected tree
+        if (treeName === state.selectedTree) {
+          state.lastUpdateTime = new Date();
+          renderTree();
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Tree Selection
+      // ═══════════════════════════════════════════════════════════════════════
+      function updateTreeSelector() {
+        const sel = document.getElementById('tree-select');
+        const current = sel.value;
+
+        sel.innerHTML = '';
+        if (state.trees.size === 0) {
+          sel.innerHTML = '<option value="">-- waiting for data --</option>';
+          return;
+        }
+
+        for (const name of state.trees.keys()) {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          sel.appendChild(opt);
+        }
+
+        // Restore selection or pick first available
+        if (state.trees.has(current)) {
+          sel.value = current;
+        } else {
+          sel.value = [...state.trees.keys()][0];
+          state.selectedTree = sel.value;
+        }
+
+        if (!state.selectedTree && state.trees.size > 0) {
+          state.selectedTree = [...state.trees.keys()][0];
+          sel.value = state.selectedTree;
+        }
+      }
+
+      function selectTree(name) {
+        state.selectedTree = name;
+        renderTree();
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Tree Renderer
+      // ═══════════════════════════════════════════════════════════════════════
+
+      // Maps node type to an icon for quick visual scanning
+      const TYPE_ICONS = {
+        Sequence:  '→',   // "all must succeed in order"
+        Selector:  '?',   // "try until one works"
+        Parallel:  '⇉',  // "all at once"
+        Inverter:  '¬',   // "NOT"
+        Repeat:    '↺',   // "loop"
+        Condition: '◆',  // "check"
+        Action:    '▶',   // "do"
+        Command:   '⚡',  // "WPILib command"
+      };
+
+      function renderTree() {
+        const container = document.getElementById('tree-container');
+        const placeholder = document.getElementById('placeholder');
+
+        const treeData = state.trees.get(state.selectedTree);
+        if (!treeData || treeData.names.length === 0) {
+          container.style.display = 'none';
+          placeholder.style.display = 'block';
+          placeholder.textContent = 'Waiting for tree data from "' + state.selectedTree + '"...';
+          return;
+        }
+
+        placeholder.style.display = 'none';
+        container.style.display = 'block';
+
+        const { names, types, statuses, depths } = treeData;
+        const count = names.length;
+
+        // Determine which depths have a sibling below (for drawing vertical lines)
+        // For each node at index i, check if there's a later node at the same depth
+        // that is at the same or shallower parent.
+        const hasLowerSibling = new Array(count).fill(false);
+        const depthLastSeen = {};
+        for (let i = count - 1; i >= 0; i--) {
+          const d = depths[i];
+          if (depthLastSeen[d] !== undefined) {
+            hasLowerSibling[i] = true;
+          }
+          // Clear any depths deeper than current (we've gone back up)
+          for (const key of Object.keys(depthLastSeen)) {
+            if (Number(key) > d) delete depthLastSeen[key];
+          }
+          depthLastSeen[d] = i;
+        }
+
+        let html = '';
+        for (let i = 0; i < count; i++) {
+          const depth = depths[i] || 0;
+          const name = names[i] || '?';
+          const type = types[i] || 'Action';
+          const status = statuses[i] || 'IDLE';
+          const icon = TYPE_ICONS[type] || '•';
+
+          html += '<div class="tree-row">';
+
+          // Indentation + connecting lines
+          for (let d = 0; d < depth; d++) {
+            if (d < depth - 1) {
+              // Intermediate depth: vertical line if there's a sibling below
+              const showLine = hasLowerSiblingAtDepth(i, d + 1, depths, count);
+              html += '<div class="tree-indent' + (showLine ? ' has-sibling' : '') + '"></div>';
+            } else {
+              // Last depth level: L-shaped connector
+              html += '<div class="tree-connector"></div>';
+            }
+          }
+
+          // Node box
+          html += '<div class="node-box node-' + status + '">';
+          html += '<span class="node-icon" title="' + type + '">' + icon + '</span>';
+          html += '<span class="node-name">' + escapeHtml(name) + '</span>';
+          html += '<span class="node-type">' + type + '</span>';
+          html += '</div>';
+
+          html += '</div>';
+        }
+
+        container.innerHTML = html;
+
+        // Update stats
+        document.getElementById('stat-ticks').textContent = 'Ticks: ' + state.tickCount;
+        document.getElementById('stat-nodes').textContent = 'Nodes: ' + count;
+        document.getElementById('stat-tree').textContent = 'Tree: ' + (state.selectedTree || 'none');
+        document.getElementById('stat-time').textContent = state.lastUpdateTime
+          ? 'Last update: ' + state.lastUpdateTime.toLocaleTimeString()
+          : 'Last update: --';
+      }
+
+      /**
+       * Returns true if there is a node AFTER index i that has exactly the given depth,
+       * meaning the vertical line should continue downward.
+       */
+      function hasLowerSiblingAtDepth(i, targetDepth, depths, count) {
+        for (let j = i + 1; j < count; j++) {
+          if (depths[j] === targetDepth) return true;
+          if (depths[j] < targetDepth) return false; // went back up, no sibling
+        }
+        return false;
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Connection Management
+      // ═══════════════════════════════════════════════════════════════════════
+      function setStatus(text, cssClass) {
+        const pill = document.getElementById('status-pill');
+        pill.textContent = text;
+        pill.className = 'status-pill ' + cssClass;
+      }
+
+      function reconnect() {
+        const host = document.getElementById('host-input').value.trim() || 'localhost';
+        state.trees.clear();
+        state.selectedTree = null;
+        state.tickCount = 0;
+        updateTreeSelector();
+
+        if (state.client) {
+          state.client.disconnect();
+        }
+
+        setStatus('Connecting…', 'status-connecting');
+
+        state.client = new NT4Client(
+          host,
+          onTopicAnnounce,
+          onValueUpdate,
+          () => setStatus('Connected', 'status-connected'),
+          () => setStatus('Disconnected – retrying…', 'status-disconnected')
+        );
+        state.client.connect();
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Startup
+      // ═══════════════════════════════════════════════════════════════════════
+
+      // Auto-detect host from URL (useful when loaded from the robot web server)
+      (function autoDetectHost() {
+        const hostname = window.location.hostname;
+        if (hostname && hostname !== '' && hostname !== '127.0.0.1') {
+          document.getElementById('host-input').value = hostname;
+        }
+      })();
+
+      // Connect on load
+      reconnect();
+    </script>
+  </body>
+</html>
