@@ -655,11 +655,16 @@
       //  NT4 Callbacks
       // ═══════════════════════════════════════════════════════════════════════
       function onTopicAnnounce(params) {
-        // Extract tree name from /BehaviorTree/<name>/...
-        const match = params.name.match(/^\/BehaviorTree\/([^/]+)\//);
-        if (!match) return;
+        // Extract tree name from /BehaviorTree/<treeName>/<field>
+        // Use last-slash split so tree names containing '/' work correctly
+        // (e.g. "ShooterSuperstructure/Decision" → topic path has 4 segments).
+        if (!params.name.startsWith('/BehaviorTree/')) return;
+        const inner = params.name.slice('/BehaviorTree/'.length);
+        const lastSlash = inner.lastIndexOf('/');
+        if (lastSlash < 0) return;
+        const treeName = inner.slice(0, lastSlash);
+        if (!treeName) return;
 
-        const treeName = match[1];
         if (!state.trees.has(treeName)) {
           state.trees.set(treeName, { names: [], types: [], statuses: [], depths: [] });
           updateTreeSelector();
@@ -667,11 +672,16 @@
       }
 
       function onValueUpdate(topicName, value, topicType) {
-        const match = topicName.match(/^\/BehaviorTree\/([^/]+)\/(.+)$/);
-        if (!match) return;
-
-        const treeName = match[1];
-        const field = match[2];
+        // Use last-slash split so tree names containing '/' work correctly
+        // (e.g. /BehaviorTree/ShooterSuperstructure/Decision/NodeNames →
+        //   treeName = "ShooterSuperstructure/Decision", field = "NodeNames")
+        if (!topicName.startsWith('/BehaviorTree/')) return;
+        const inner = topicName.slice('/BehaviorTree/'.length);
+        const lastSlash = inner.lastIndexOf('/');
+        if (lastSlash < 0) return;
+        const treeName = inner.slice(0, lastSlash);
+        const field = inner.slice(lastSlash + 1);
+        if (!treeName) return;
 
         if (!state.trees.has(treeName)) {
           state.trees.set(treeName, { names: [], types: [], statuses: [], depths: [] });
@@ -761,7 +771,7 @@
         if (!treeData || treeData.names.length === 0) {
           container.style.display = 'none';
           placeholder.style.display = 'block';
-          placeholder.textContent = 'Waiting for tree data from "' + state.selectedTree + '"...';
+          // Do NOT overwrite the help-box HTML — just leave the placeholder visible.
           return;
         }
 
