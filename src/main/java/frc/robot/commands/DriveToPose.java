@@ -15,13 +15,16 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
+
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggedTuneableProfiledPID;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
+
+import org.littletonrobotics.junction.Logger;
+
 import java.util.Optional;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * Command to autonomously drive the robot to a target pose on the field.
@@ -55,8 +58,6 @@ public class DriveToPose extends Command {
      *
      * @param drive The drive subsystem to control
      * @param targetPose Supplier providing the target pose to drive to
-     * @param linearController Profiled PID controller for linear motion
-     * @param angularController Profiled PID controller for angular motion
      */
     public DriveToPose(Drive drive, Supplier<Pose2d> targetPose) {
         this.drive = drive;
