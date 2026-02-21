@@ -100,8 +100,7 @@ public class ObjectDetector extends SubsystemBase {
                     translation = detection.get().objectPose().get().getTranslation();
                 }
             }
-            Logger.recordOutput(
-                    prefix + "OBJECT DETECTION #" + i + " Calculated Coordinates", translation);
+            Logger.recordOutput(prefix + i, translation);
         }
     }
 
