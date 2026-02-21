@@ -34,7 +34,7 @@ import java.util.List;
 public class DepotAuto extends AutoRoutine {
     /**
      * Constructs a DepotAuto routine that drive to depot, collects from depot, and shoots collected
-     * fuel. Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
+     * fuel. Path selection is based on the starting position (LEFT, or CENTER).
      *
      * @param drive the drive subsystem
      * @param intake the intake subsystem
@@ -58,7 +58,7 @@ public class DepotAuto extends AutoRoutine {
             case CENTER ->
                     expectedPaths =
                             List.of("StartCenter-NearDepot", "Through-Depot", "Depot-Shoot");
-            case RIGHT -> expectedPaths = List.of();
+            case RIGHT -> expectedPaths = List.of(); // No right side Depot Only Auto
             default -> expectedPaths = List.of();
         }
 
@@ -75,10 +75,9 @@ public class DepotAuto extends AutoRoutine {
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Initialize intake
                     intake.retractIntake().withTimeout(1.25),
-                    // Drive to depot
-                    AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    // Run through depot while intaking FUEL
+                    // Drive to depot and start intake, then run through depot while intaking FUEL
                     AutoCommands.driveAndIntake(
+                            AutoBuilder.followPath(pathPlannerPaths.get(0)),
                             intake,
                             AutoBuilder.followPath(pathPlannerPaths.get(1)),
                             Seconds.of(0.5)),

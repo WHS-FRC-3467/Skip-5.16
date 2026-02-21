@@ -17,7 +17,6 @@ package frc.robot.commands.autos;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
@@ -31,8 +30,9 @@ import java.util.List;
 /* Autos that are on our Alliance side and collect fuel in two places. */
 public class AllianceComboAuto extends AutoRoutine {
     /**
-     * Constructs a AllianceComboAuto routine that collects from depot (LEFT, CENTER) or outpost (RIGHT), and shoots collected
-     * fuel. Then collects from outpost (LEFT, CENTER) or depot (RIGHT). Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
+     * Constructs a AllianceComboAuto routine that collects from depot (LEFT, CENTER) or outpost
+     * (RIGHT), and shoots collected fuel. Then collects from outpost (LEFT, CENTER) or depot
+     * (RIGHT). Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
      *
      * @param drive the drive subsystem
      * @param intake the intake subsystem
@@ -50,11 +50,10 @@ public class AllianceComboAuto extends AutoRoutine {
             StartPosition start) {
 
         // Choose path names based on start position
-        // TODO: Add the additional paths in Pathplanner
         List<String> expectedPaths;
         switch (start) {
             case LEFT ->
-                // DEPOT FIRST
+                    // DEPOT FIRST
                     expectedPaths =
                             List.of(
                                     "StartLeft-NearDepot",
@@ -63,7 +62,7 @@ public class AllianceComboAuto extends AutoRoutine {
                                     "LeftShoot-To-Outpost",
                                     "Outpost-Shoot");
             case CENTER ->
-                // DEPOT FIRST
+                    // DEPOT FIRST
                     expectedPaths =
                             List.of(
                                     "StartCenter-NearDepot",
@@ -72,10 +71,10 @@ public class AllianceComboAuto extends AutoRoutine {
                                     "LeftShoot-To-Outpost",
                                     "Outpost-Shoot");
             case RIGHT ->
-                // OUTPOST FIRST
+                    // OUTPOST FIRST
                     expectedPaths =
                             List.of(
-                                    "StartRight-Outpost",
+                                    "StartRight-To-Outpost",
                                     "Outpost-Shoot",
                                     "RightShoot-NearDepot",
                                     "Through-Depot",
@@ -91,7 +90,6 @@ public class AllianceComboAuto extends AutoRoutine {
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null)) {
-            // TODO: May split into multiple auto files and/or create larger auto segments
             loadCommands(
                     // Reset odometry
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
@@ -99,44 +97,52 @@ public class AllianceComboAuto extends AutoRoutine {
                     intake.retractIntake().withTimeout(1.25),
 
                     // Drive to depot/outpost and collect fuel
-                    (start != StartPosition.RIGHT 
-                        // LEFT, CENTER start: Run through DEPOT while intaking FUEL
-                        ? Commands.sequence(
-                            AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                            AutoCommands.driveAndIntake(
-                                intake,
-                                AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                                Seconds.of(0.5)))
-                        // RIGHT START: OUTPOST
-                        : Commands.sequence(
-                            // Go to the OUTPOST
-                            AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                            // Wait for FUEL to be dumped
-                            Commands.waitSeconds(3))),
-
+                    (start != StartPosition.RIGHT
+                            // LEFT, CENTER start: Run through DEPOT while intaking FUEL
+                            ? Commands.sequence(
+                                    AutoCommands.driveAndIntake(
+                                            AutoBuilder.followPath(pathPlannerPaths.get(0)),
+                                            intake,
+                                            AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                                            Seconds.of(0.5)))
+                            // RIGHT START: OUTPOST
+                            : AutoCommands.driveAndCollectAtOutpost(
+                                    AutoBuilder.followPath(pathPlannerPaths.get(0)))),
                     // Drive to shooting location and shoot all FUEL
                     AutoCommands.makeFullShot(
-                            drive, intake, indexer, tower, shooter, pathPlannerPaths.get((start == StartPosition.RIGHT ? 1 : 2))),
-                    
+                            drive,
+                            intake,
+                            indexer,
+                            tower,
+                            shooter,
+                            pathPlannerPaths.get((start == StartPosition.RIGHT ? 1 : 2))),
+
                     // Go to other FUEL location
                     Commands.sequence(
-                        (start == StartPosition.RIGHT 
-                            // RIGHT start: Run to DEPOT, then through it while intaking FUEL
-                            ? Commands.sequence(
-                                AutoBuilder.followPath(pathPlannerPaths.get(2)),
-                                AutoCommands.driveAndIntake(
+                            (start == StartPosition.RIGHT
+                                    // RIGHT start: Run to DEPOT, then through it while intaking
+                                    // FUEL
+                                    ? AutoCommands.driveAndIntake(
+                                            AutoBuilder.followPath(pathPlannerPaths.get(2)),
+                                            intake,
+                                            AutoBuilder.followPath(pathPlannerPaths.get(3)),
+                                            Seconds.of(0.5))
+                                    // LEFT start: go to outpost and wait 3 seconds
+                                    : Commands.parallel(
+                                            // Retract intake to press the robot against outpost
+                                            // wall
+                                            intake.retractIntake().withTimeout(1.25),
+                                            AutoCommands.driveAndCollectAtOutpost(
+                                                    AutoBuilder.followPath(
+                                                            pathPlannerPaths.get(3))))),
+                            // Drive to shooting location and shoot all FUEL
+                            AutoCommands.makeFullShot(
+                                    drive,
                                     intake,
-                                    AutoBuilder.followPath(pathPlannerPaths.get(3)),
-                                    Seconds.of(0.5)))
-                            // LEFT start: go to outpost and wait 3 seconds
-                            : Commands.sequence(
-                                // Go to the OUTPOST and intake FUEL
-                                AutoBuilder.followPath(pathPlannerPaths.get(3)),
-                                // Wait for FUEL to be dumped
-                                Commands.waitSeconds(3))),
-                        // Drive to shooting location and shoot all FUEL
-                        AutoCommands.makeFullShot(
-                        drive, intake, indexer, tower, shooter, pathPlannerPaths.get(4))),
+                                    indexer,
+                                    tower,
+                                    shooter,
+                                    pathPlannerPaths.get(4))),
 
                     // Re-initialize intake for tele-op
                     intake.retractIntake().withTimeout(1.25));

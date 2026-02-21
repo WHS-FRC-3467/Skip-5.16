@@ -25,10 +25,11 @@ import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
+import frc.robot.util.RobotSim;
 
 /**
  * Class containing useful individual commands or small-group command sequences that can be strung
- * together into larger command units (AutoSegments). Command logic layer.
+ * together into larger autos (that extend AutoRoutine). Command logic layer.
  */
 public class AutoCommands {
     private static final RobotState robotState = RobotState.getInstance();
@@ -176,12 +177,38 @@ public class AutoCommands {
      *     intake
      */
     public static Command driveAndIntake(
-            IntakeSuperstructure intake, Command pathCommand, Time afterPathWait) {
-        // Drive to near the intaking location, start up intake, and drive into the FUEL. Once the
+            Command approachPathCommand,
+            IntakeSuperstructure intake,
+            Command pathCommand,
+            Time afterPathWait) {
+        // Drive to near the intaking location and start up intake, and drive into the FUEL. Once
+        // the
         // intaking path is complete, stop the intake.
         return Commands.sequence(
-                intake.extendIntake().withTimeout(1.25),
+                // Roll out intake (times out at 1.25 seconds)
+                // WHILE following the path that takes the robot near the fuel location.
+                Commands.parallel(intake.extendIntake().withTimeout(1.25), approachPathCommand),
+                // Collect FUEL
                 pathCommand,
                 Commands.waitSeconds(afterPathWait.in(Seconds)));
+    }
+
+    /**
+     * Drive to the outpost (via pathCommand), and wait up to 3 seconds for FUEL to be dumped.
+     *
+     * @param pathCommand The command that follows the desired path to the outpost.
+     * @return A command that follows a path (to the outpost), stops the robot, and waits 3 seconds.
+     */
+    public static Command driveAndCollectAtOutpost(Command pathCommand) {
+        return Commands.sequence(
+                // Go to the OUTPOST
+                pathCommand,
+                // Wait for FUEL to be dumped
+                Commands.waitSeconds(3),
+                Commands.either(
+                        Commands.runOnce(
+                                () -> RobotSim.getInstance().getFuelSim().fillHopperBy(20)),
+                        Commands.none(),
+                        RobotBase::isSimulation));
     }
 }

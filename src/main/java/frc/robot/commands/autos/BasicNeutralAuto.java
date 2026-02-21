@@ -19,15 +19,12 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
-import frc.robot.util.RobotSim;
 import java.util.List;
 
 public class BasicNeutralAuto extends AutoRoutine {
@@ -52,7 +49,10 @@ public class BasicNeutralAuto extends AutoRoutine {
                                     "Through-Depot",
                                     "Through-Depot-Reverse",
                                     "UnderTrench-Run-Left");
-            case CENTER -> expectedPaths = List.of(); // TODO: Strategy for center start position
+            case CENTER ->
+                    expectedPaths =
+                            List.of(); // Currently no Neutral Zone auto strategy for the center
+            // position
             case RIGHT ->
                     expectedPaths =
                             List.of(
@@ -82,12 +82,12 @@ public class BasicNeutralAuto extends AutoRoutine {
                     // Initialize intake & hood to starting positions
                     intake.retractIntake().withTimeout(1.25),
                     shooter.setHoodAngle(Degrees.zero()).withTimeout(1.25),
-                    // Drive to the neutral zone
-                    start == StartPosition.LEFT
-                            ? AutoBuilder.followPath(pathPlannerPaths.get(0))
-                            : AutoBuilder.followPath(pathPlannerPaths.get(0).mirrorPath()),
                     // Sweep neutral zone while intaking
                     AutoCommands.driveAndIntake(
+                            // Drive to the neutral zone
+                            start == StartPosition.LEFT
+                                    ? AutoBuilder.followPath(pathPlannerPaths.get(0))
+                                    : AutoBuilder.followPath(pathPlannerPaths.get(0).mirrorPath()),
                             intake,
                             start == StartPosition.LEFT
                                     ? AutoBuilder.followPath(pathPlannerPaths.get(1))
@@ -105,24 +105,16 @@ public class BasicNeutralAuto extends AutoRoutine {
                                     : pathPlannerPaths.get(2).mirrorPath()),
                     // Re-initialize intake for depot / outpost run
                     intake.retractIntake().withTimeout(1.25),
-                    // Run to depot / outpost
-                    AutoBuilder.followPath(pathPlannerPaths.get(3)),
-                    // Sweep through depot while intaking OR wait for FUEL to be dumped
+                    // Sweep through DEPOT while intaking OR wait at the OUTPOST for FUEL to be
+                    // dumped
                     start == StartPosition.LEFT
                             ? AutoCommands.driveAndIntake(
+                                    AutoBuilder.followPath(pathPlannerPaths.get(3)),
                                     intake,
                                     AutoBuilder.followPath(pathPlannerPaths.get(4)),
                                     Seconds.of(0.0))
-                            : Commands.sequence(
-                                    Commands.waitSeconds(3),
-                                    Commands.either(
-                                            Commands.runOnce(
-                                                    () ->
-                                                            RobotSim.getInstance()
-                                                                    .getFuelSim()
-                                                                    .setHopperFuel(20)),
-                                            Commands.none(),
-                                            RobotBase::isSimulation)),
+                            : AutoCommands.driveAndCollectAtOutpost(
+                                    AutoBuilder.followPath(pathPlannerPaths.get(3))),
                     // Reverse back through depot / outpost to shooting location & shoot FUEL
                     start == StartPosition.LEFT
                             ? AutoCommands.makePreloadShot(

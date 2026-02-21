@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.4809272467861838,
-        "y": 5.969329529237618
+        "x": 0.85,
+        "y": 5.969
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4809272467861838,
-        "y": 5.969329529237618
+        "x": 1.85,
+        "y": 5.969
       },
       "isLocked": false,
       "linkedName": "ThroughDepot-End"
