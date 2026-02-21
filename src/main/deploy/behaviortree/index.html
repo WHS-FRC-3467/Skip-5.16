@@ -558,11 +558,12 @@
           this.ws.onopen = () => {
             this.topics.clear();
             this.onConnect();
-            // Subscribe to all /BehaviorTree/ topics
+            // Subscribe to all /BehaviorTree/ topics.
+            // NT4.1 spec: "topics" must be an array of STRINGS (not objects).
             this._send([{
               method: 'subscribe',
               params: {
-                topics: [{ name: '/BehaviorTree/' }],
+                topics: ['/BehaviorTree/'],
                 subuid: ++this.subuid,
                 options: { prefix: true, periodic: 0.02 }
               }
@@ -618,6 +619,7 @@
           // NT4 binary frame may contain multiple concatenated msgpack messages
           let offset = 0;
           while (offset < data.byteLength) {
+            const frameStart = offset;
             try {
               const { value, bytesRead } = decodeMsgpack(data, offset);
               offset += bytesRead;
@@ -633,7 +635,8 @@
                 }
               }
             } catch (e) {
-              break; // Stop parsing this frame on error
+              // Skip this message and advance past it; don't discard the whole frame
+              if (offset === frameStart) break; // couldn't advance at all — stop
             }
           }
         }
@@ -713,7 +716,7 @@
       // ═══════════════════════════════════════════════════════════════════════
       function updateTreeSelector() {
         const sel = document.getElementById('tree-select');
-        const current = sel.value;
+        const current = state.selectedTree; // use state, not the DOM value
 
         sel.innerHTML = '';
         if (state.trees.size === 0) {
@@ -728,15 +731,10 @@
           sel.appendChild(opt);
         }
 
-        // Restore selection or pick first available
-        if (state.trees.has(current)) {
+        // Restore previous selection or auto-select the first available tree
+        if (current && state.trees.has(current)) {
           sel.value = current;
         } else {
-          sel.value = [...state.trees.keys()][0];
-          state.selectedTree = sel.value;
-        }
-
-        if (!state.selectedTree && state.trees.size > 0) {
           state.selectedTree = [...state.trees.keys()][0];
           sel.value = state.selectedTree;
         }
