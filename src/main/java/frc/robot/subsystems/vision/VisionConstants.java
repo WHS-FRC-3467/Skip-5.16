@@ -62,6 +62,7 @@ import org.photonvision.simulation.VisionSystemSim;
 public class VisionConstants {
     // Extrinsics
     public static final String FRONT_NAME = "front";
+    public static final String LEFT_NAME = "left";
     public static final String RIGHT_NAME = "right";
     public static final String BACK_NAME = "back";
 
@@ -250,6 +251,19 @@ public class VisionConstants {
                     FRONT_LATENCY,
                     FRONT_LATENCY_STDDEV);
 
+    public static final CameraProperties LEFT =
+            new CameraProperties(
+                    LEFT_NAME,
+                    LEFT_TRANSFORM,
+                    LEFT_MATRIX,
+                    LEFT_DIST_COEFFS,
+                    LEFT_RESOLUTION_WIDTH,
+                    LEFT_RESOLUTION_HEIGHT,
+                    LEFT_STDDEV_FACTOR,
+                    LEFT_FOV,
+                    LEFT_FPS,
+                    LEFT_LATENCY,
+                    LEFT_LATENCY_STDDEV);
 
     public static final CameraProperties RIGHT =
             new CameraProperties(
