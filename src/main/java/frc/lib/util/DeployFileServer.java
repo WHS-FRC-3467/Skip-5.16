@@ -33,15 +33,14 @@ import java.util.logging.Logger;
  * A lightweight HTTP file server that serves files from the WPILib deploy directory.
  *
  * <p>This server allows browser-based tools (like the Behavior Tree Viewer) to be loaded directly
- * from the robot or simulation without needing any external hosting. The deploy directory maps
- * URL paths to files: a request for {@code /behaviortree/index.html} returns
- * {@code deploy/behaviortree/index.html}.
+ * from the robot or simulation without needing any external hosting. The deploy directory maps URL
+ * paths to files: a request for {@code /behaviortree/index.html} returns {@code
+ * deploy/behaviortree/index.html}.
  *
  * <p>Call {@link #start(int)} once from {@code robotInit()} to launch the server in a background
  * daemon thread so it never blocks the robot loop.
  *
- * <p>Default port is {@code 5800}, which is in the WPILib-reserved range (5800–5809) for team
- * use.
+ * <p>Default port is {@code 5800}, which is in the WPILib-reserved range (5800–5809) for team use.
  *
  * <p>Access the Behavior Tree Viewer at:
  *

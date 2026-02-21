@@ -121,6 +121,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * visualization or inspection.
      */
     private final BehaviorTree shooterDecisionTree;
+
     public final LoggedTrigger readyToShoot =
             new LoggedTrigger(
                     this.getName() + "/readyToShoot",
@@ -419,9 +420,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      *       raise (trench / neutral zone).
      * </ol>
      *
-     * <p>Real-time execution is visible in the Behavior Tree Viewer at
-     * {@code http://localhost:5800/behaviortree/index.html} (simulation) or
-     * {@code http://roboRIO-3467-FRC.local:5800/behaviortree/index.html} (real robot).
+     * <p>Real-time execution is visible in the Behavior Tree Viewer at {@code
+     * http://localhost:5800/behaviortree/index.html} (simulation) or {@code
+     * http://roboRIO-3467-FRC.local:5800/behaviortree/index.html} (real robot).
      *
      * @return a perpetual command that ticks the shooter decision tree
      */

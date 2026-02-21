@@ -74,8 +74,8 @@ import org.littletonrobotics.junction.Logger;
  * }</pre>
  *
  * <p><b>Visualization:</b> Open {@code http://roboRIO-XXXX-FRC.local:5800/behaviortree/index.html}
- * in a browser (or {@code http://localhost:5800/behaviortree/index.html} in simulation) to see
- * the tree executing in real time. Nodes are color-coded: green = SUCCESS, red = FAILURE, yellow =
+ * in a browser (or {@code http://localhost:5800/behaviortree/index.html} in simulation) to see the
+ * tree executing in real time. Nodes are color-coded: green = SUCCESS, red = FAILURE, yellow =
  * RUNNING, gray = not yet evaluated.
  */
 public class BehaviorTree {

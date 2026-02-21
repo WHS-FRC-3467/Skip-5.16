@@ -233,8 +233,7 @@ public class BehaviorTreeTest {
     @Test
     void repeatNodeSucceedsAfterNRepetitions() {
         // This action succeeds every time it's called
-        var node =
-                new RepeatNode("Repeat3", 3, new ActionNode("Once", () -> NodeStatus.SUCCESS));
+        var node = new RepeatNode("Repeat3", 3, new ActionNode("Once", () -> NodeStatus.SUCCESS));
 
         // First two ticks return RUNNING (only 1 success each, need 3 total)
         assertEquals(NodeStatus.RUNNING, node.tick());
@@ -270,7 +269,9 @@ public class BehaviorTreeTest {
                                 () -> {
                                     callCount[0]++;
                                     // Succeed after 2 ticks
-                                    return callCount[0] >= 2 ? NodeStatus.SUCCESS : NodeStatus.RUNNING;
+                                    return callCount[0] >= 2
+                                            ? NodeStatus.SUCCESS
+                                            : NodeStatus.RUNNING;
                                 }),
                         new ConditionNode("True", () -> true));
 
@@ -301,10 +302,8 @@ public class BehaviorTreeTest {
                                 new SequenceNode(
                                         "ShootIfReady",
                                         new ConditionNode("BallStaged", () -> ballStaged[0]),
-                                        new ConditionNode(
-                                                "ShooterReady", () -> shooterReady[0]),
-                                        new ActionNode(
-                                                "Shoot", () -> NodeStatus.SUCCESS)),
+                                        new ConditionNode("ShooterReady", () -> shooterReady[0]),
+                                        new ActionNode("Shoot", () -> NodeStatus.SUCCESS)),
                                 new ActionNode("Intake", () -> NodeStatus.SUCCESS)));
 
         // Ball staged and shooter ready → should shoot (SUCCESS via first branch)
