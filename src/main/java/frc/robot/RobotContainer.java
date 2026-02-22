@@ -201,11 +201,29 @@ public class RobotContainer {
                                                 .onlyWhile(robotState.facingTarget)
                                                 .repeatedly())))
                 .onFalse(
-                        Commands.parallel(
-                                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
-                                indexer.stopCommand(),
-                                tower.stopCommand(),
-                                intake.extendIntake()));
+                        Commands.sequence(
+                                Commands.parallel(
+                                        shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                                        indexer.stopCommand(),
+                                        tower.stopCommand()),
+                                Commands.either(
+                                        // Within proximity of trench, prepare for travel beneath
+                                        // bar
+                                        Commands.parallel(
+                                                        // Lock drive, prepare mechanisms
+                                                        Commands.run(drive::stopWithX, drive)
+                                                                .until(
+                                                                        () ->
+                                                                                shooter.getHoodAngle()
+                                                                                        .lte(
+                                                                                                HoodConstants
+                                                                                                        .TOLERANCE)),
+                                                        shooter.setHoodAngle(Degrees.zero()),
+                                                        intake.retractIntake())
+                                                .withTimeout(1.0),
+                                        // Not within proximity of trench, standard operation
+                                        intake.extendIntake(),
+                                        robotState.enteringTrench)));
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.extendIntake()).onFalse(intake.stopRoller());
@@ -257,6 +275,8 @@ public class RobotContainer {
                                 tower.stopCommand(),
                                 intake.extendIntake()));
 
+        // Brings down hood near trench but doesn't block shooting; shoot trigger on false cleans up for
+        // travel
         robotState
                 .enteringTrench
                 .and(() -> DriverStation.isTeleop())
@@ -266,7 +286,7 @@ public class RobotContainer {
                                         shooter.setHoodAngle(Degrees.zero()),
                                         // Prevent hood from raising
                                         shooter.idle())
-                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+                                .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
     }
 
     /**
@@ -277,6 +297,11 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Expel", indexer.eject());
         SmartDashboard.putData("Indexer/Feed", indexer.feed());
         SmartDashboard.putData("Indexer/Stop", indexer.stopCommand());
+
+        SmartDashboard.putData("Tower/Expel", tower.eject());
+        SmartDashboard.putData("Tower/Feed", tower.feed());
+        SmartDashboard.putData("Tower/Shoot", tower.shoot());
+        SmartDashboard.putData("Tower/Stop", tower.stopCommand());
 
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());

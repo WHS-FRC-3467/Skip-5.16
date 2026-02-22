@@ -17,6 +17,7 @@ package frc.robot.subsystems.tower;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -105,6 +106,15 @@ public class Tower extends SubsystemBase {
     public final LoggedTrigger isStaged =
             new LoggedTrigger(
                     TowerConstants.NAME + "/IsStaged", laserCAN1Tripped.or(laserCAN2Tripped));
+
+    public final LoggedTrigger isShooting =
+            new LoggedTrigger(
+                    TowerConstants.NAME + "/IsShooting",
+                    () ->
+                            MathUtil.isNear(
+                                    SHOOT_RPS.getAsDouble(),
+                                    getSpeed(),
+                                    TowerConstants.TOLERANCE.in(RotationsPerSecond)));
 
     /**
      * Constructs a new Tower subsystem with the specified flywheel mechanism.
