@@ -114,7 +114,6 @@ public class RobotContainer {
         // Default - No Auto
         autoChooser.addDefaultOption("None", new NoneAuto());
 
-        // TODO: Neutral Zone Autos - updated auto coming soon
         autoChooser.addOption(
                 "BasicNeutralAuto-Left",
                 new BasicNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
@@ -146,6 +145,14 @@ public class RobotContainer {
         autoChooser.addOption(
                 "Outpost-Then-DepotAuto-Right",
                 new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+
+        // Double Neutral Zone Autos
+        autoChooser.addOption(
+                "DoubleNeutralAuto-Left",
+                new DoubleNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption(
+                "DoubleNeutralAuto-Right",
+                new DoubleNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
         // Drivebase Characterization Autos
         autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
