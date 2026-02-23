@@ -157,7 +157,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Creates a command sequence to extend the intake. Starts the roller, applies positive current
-     * to extend, then waits until extended. - may need verification.
+     * to extend, then waits until extended.
      *
      * @return A command sequence that extends the intake
      */

@@ -31,7 +31,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
@@ -44,7 +43,6 @@ import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
 import frc.robot.RobotState.FieldRegion;
 import frc.robot.RobotState.Target;
-
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {

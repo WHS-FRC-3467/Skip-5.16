@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -259,7 +258,7 @@ public class RobotContainer {
                 IndexerSuperstructureConstants.NAME + "/Stop", indexer.stopCommand());
 
         // Intake Commands
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.intake());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Intake", intake.intake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Coast", intake.linearCoast());
