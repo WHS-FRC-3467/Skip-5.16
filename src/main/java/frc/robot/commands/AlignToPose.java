@@ -4,34 +4,165 @@
 
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+
 import edu.wpi.first.math.geometry.Pose2d;
-import frc.lib.commands.AlignToPoseBase;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.util.LoggedTuneableProfiledPID;
+import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class AlignToPose extends AlignToPoseBase {
-
+public class AlignToPose extends Command {
     private static final LoggedTuneableProfiledPID linearController =
             new LoggedTuneableProfiledPID("DriveToPose/LinearController", 3.0, 0, 0.1, 3.0, 0.0);
 
     private static final LoggedTuneableProfiledPID angularController =
             new LoggedTuneableProfiledPID("DriveToPose/AngularController", 3.0, 0, 0, 0, 0);
 
+    private final RobotState robotState = RobotState.getInstance();
+
+    private final Drive drive;
+    private final Supplier<Pose2d> targetPose;
+    private final DoubleSupplier joystickInput;
+
+    public enum AlignMode {
+        APPROACH, // Driver controls forward/backward movement while aligning
+        STRAFE // Driver controls left/right movement while aligning
+    }
+
+    private final AlignMode mode;
+
     /**
-     * Creates a command to align the robot to a target pose while allowing translational movement.
+     * Constructs an AlignToPose command.
      *
-     * @param drive the Drive subsystem to control robot movement
-     * @param targetPose a Supplier that provides the target pose to align to
-     * @param mode the alignment mode (e.g., align translation, rotation, or both)
-     * @param joystickInput a DoubleSupplier providing driver input for translational movement
+     * @param drive The drive subsystem to use
+     * @param targetPose Supplier for the target pose to align to
+     * @param mode Alignment mode (APPROACH or STRAFE)
+     * @param joystickInput Supplier for driver joystick input
      */
     public AlignToPose(
             Drive drive,
             Supplier<Pose2d> targetPose,
             AlignMode mode,
             DoubleSupplier joystickInput) {
-        super(drive, targetPose, mode, joystickInput, linearController, angularController);
+        this.drive = drive;
+        this.targetPose = targetPose;
+        this.mode = mode;
+        this.joystickInput = joystickInput;
+
+        angularController.enableContinuousInput(-Math.PI, Math.PI);
+        addRequirements(drive);
+    }
+
+    // Called when the command is initially scheduled.
+    @Override
+    public void initialize() {
+        ChassisSpeeds fieldVelocity =
+                ChassisSpeeds.fromRobotRelativeSpeeds(
+                        drive.getChassisSpeeds(), robotState.getEstimatedPose().getRotation());
+
+        linearController.reset(0.0);
+
+        angularController.reset(
+                robotState.getEstimatedPose().getRotation().getRadians(),
+                fieldVelocity.omegaRadiansPerSecond);
+    }
+
+    // Called every time the scheduler runs while the command is scheduled.
+    @Override
+    public void execute() {
+        // Checks if tunable values for PID have changed and updates them if so
+        linearController.updatePID();
+        angularController.updatePID();
+
+        var relativePose2d = robotState.getEstimatedPose().relativeTo(targetPose.get());
+        var targetRotation2d = targetPose.get().getRotation();
+        var linearVelocity = new Translation2d();
+        var offsetVector = new Translation2d();
+
+        switch (mode) {
+            case STRAFE:
+                offsetVector =
+                        new Translation2d(linearController.calculate(relativePose2d.getX()), 0);
+
+                // Calculate total linear velocity
+                linearVelocity =
+                        getLinearVelocityFromJoysticks(0, -joystickInput.getAsDouble())
+                                .times(drive.getMaxLinearSpeedMetersPerSec())
+                                .plus(offsetVector)
+                                .rotateBy(targetRotation2d);
+                break;
+
+            case APPROACH:
+                offsetVector =
+                        new Translation2d(0, linearController.calculate(relativePose2d.getY()));
+
+                // Calculate total linear velocity
+                linearVelocity =
+                        getLinearVelocityFromJoysticks(-joystickInput.getAsDouble(), 0)
+                                .times(drive.getMaxLinearSpeedMetersPerSec())
+                                .plus(offsetVector)
+                                .rotateBy(targetRotation2d);
+                break;
+
+            default:
+                break;
+        }
+
+        double angularOutput =
+                angularController.calculate(
+                        robotState.getEstimatedPose().getRotation().getRadians(),
+                        targetPose.get().getRotation().getRadians());
+
+        // Convert to field relative speeds & send command
+        ChassisSpeeds speeds =
+                new ChassisSpeeds(linearVelocity.getX(), linearVelocity.getY(), angularOutput);
+
+        drive.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                        speeds, robotState.getEstimatedPose().getRotation()));
+    }
+
+    // Returns true when the command should end.
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+
+    private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
+        double linearMagnitude = Math.pow(Math.hypot(x, y), 2);
+        Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
+
+        // Return new linear velocity
+        return new Pose2d(new Translation2d(), linearDirection)
+                .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+                .getTranslation();
+    }
+
+    /**
+     * Gets the current distance error to the target pose.
+     *
+     * @return The distance error in meters
+     */
+    public Distance getDistanceError() {
+        return Meters.of(linearController.getPositionError());
+    }
+
+    /**
+     * Gets the current angular error to the target pose.
+     *
+     * @return The angular error in radians
+     */
+    public Angle getAngularError() {
+        return Radians.of(angularController.getPositionError());
     }
 }

@@ -30,6 +30,8 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
     /** Radius used to convert between angular and linear motion (meters). */
     private final double radiusMeters;
 
+    private String key;
+
     /**
      * Creates a distance-controlled wrapper around a rotational mechanism.
      *
@@ -39,9 +41,22 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
     public DistanceControlledMechanism(T mechanism, Distance radius) {
         this.mechanism = mechanism;
         this.radiusMeters = radius.in(Meters);
+        this.key = mechanism.getName();
+
         if (this.radiusMeters <= 0.0) {
             throw new IllegalArgumentException("radius must be greater than 0 meters");
         }
+    }
+
+    /**
+     * Sets an explicit key to log linear values with
+     *
+     * @param key The key to use
+     * @return This object
+     */
+    public DistanceControlledMechanism<T> withKey(String key) {
+        this.key = key;
+        return this;
     }
 
     /**
@@ -119,10 +134,10 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
     public void periodic() {
         mechanism.periodic();
 
-        Logger.recordOutput(mechanism.getName() + "/LinearPosition", getLinearPosition());
-        Logger.recordOutput(mechanism.getName() + "/LinearPositionError", getLinearPositionError());
-        Logger.recordOutput(mechanism.getName() + "/LinearVelocity", getLinearVelocity());
-        Logger.recordOutput(mechanism.getName() + "/LinearVelocityError", getLinearVelocityError());
+        Logger.recordOutput(key + "/LinearPosition", getLinearPosition());
+        Logger.recordOutput(key + "/LinearPositionError", getLinearPositionError());
+        Logger.recordOutput(key + "/LinearVelocity", getLinearVelocity());
+        Logger.recordOutput(key + "/LinearVelocityError", getLinearVelocityError());
     }
 
     /** Sets the mechanism to coast mode. */

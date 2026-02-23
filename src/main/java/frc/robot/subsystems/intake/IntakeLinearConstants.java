@@ -171,6 +171,7 @@ public class IntakeLinearConstants {
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
 
-        return new DistanceControlledMechanism<>(mechanism, DRUM_RADIUS);
+        return new DistanceControlledMechanism<LinearMechanism<?>>(mechanism, DRUM_RADIUS)
+                .withKey("IntakeSuperstructure/Linear");
     }
 }
