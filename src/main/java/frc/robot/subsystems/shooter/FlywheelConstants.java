@@ -29,7 +29,6 @@ import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
 import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
-import frc.robot.Robot;
 
 /** Add your docs here. */
 public class FlywheelConstants {
@@ -42,7 +41,7 @@ public class FlywheelConstants {
 
     private static final double GEARING = (20.0 / 18.0);
 
-    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(2.0);
+    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(200.0);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(2);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.001);
@@ -50,7 +49,7 @@ public class FlywheelConstants {
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(10.0, 0.0, 0.0);
+    public static final PID SLOT0_PID = new PID(12.0, 0.0, 0.0).withS(4.0);
 
     /**
      * Creates a TalonFX motor controller configuration for the flywheel mechanism. Configures
@@ -62,12 +61,12 @@ public class FlywheelConstants {
     public static TalonFXConfiguration getFXConfig(boolean invert) {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
-        config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
+        config.CurrentLimits.SupplyCurrentLimitEnable = false;
         config.CurrentLimits.SupplyCurrentLimit = 40.0;
         config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
         config.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
-        config.CurrentLimits.StatorCurrentLimitEnable = Robot.isReal();
+        config.CurrentLimits.StatorCurrentLimitEnable = false;
         config.CurrentLimits.StatorCurrentLimit = 80.0;
 
         config.Voltage.PeakForwardVoltage = 12.0;
@@ -84,6 +83,9 @@ public class FlywheelConstants {
         config.Feedback.RotorToSensorRatio = 1.0;
 
         config.Feedback.SensorToMechanismRatio = GEARING;
+
+        config.TorqueCurrent.PeakForwardTorqueCurrent = 80;
+        config.TorqueCurrent.PeakReverseTorqueCurrent = -80;
 
         config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
         config.MotionMagic.MotionMagicCruiseVelocity = MAX_VELOCITY.in(RotationsPerSecond);

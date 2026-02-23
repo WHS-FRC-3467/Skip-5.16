@@ -44,7 +44,7 @@ public class IndexerCenterConstants {
 
     public static final String NAME = "IndexerCenter";
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(60);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(80);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second).times(10);
     public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 

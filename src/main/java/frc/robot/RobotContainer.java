@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.AutoRoutine;
@@ -49,6 +48,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
+import frc.robot.subsystems.vision.VisionConstants;
 
 /**
  * Container class for the robot that holds all subsystems, controllers, and command bindings. This
@@ -91,7 +91,7 @@ public class RobotContainer {
         intake = IntakeSuperstructureConstants.get();
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
-        // VisionConstants.create();
+        VisionConstants.create();
         // objectDetector = ObjectDetectorConstants.get();
         // leds = LEDsConstants.get();
 
@@ -117,8 +117,9 @@ public class RobotContainer {
         // indexer, tower, shooter, StartPosition.RIGHT));
 
         // // Basic Neutral Autos
-        // autoChooser.addOption("BasicNeutralAuto-Left", new BasicNeutralAuto(drive, intake,
-        // indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption(
+                "BasicNeutralAuto-Left",
+                new BasicNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
         // autoChooser.addOption("BasicNeutralAuto-Right", new BasicNeutralAuto(drive, intake,
         // indexer, tower, shooter, StartPosition.RIGHT));
 
@@ -147,6 +148,9 @@ public class RobotContainer {
 
         autoChooser.addOption("Wheel Slip Characterization", new WheelSlipAuto(drive));
 
+        autoChooser.addOption(
+                "Feedforward Characterization", new FeedforwardCharacterizationAuto(drive));
+
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
@@ -155,7 +159,7 @@ public class RobotContainer {
 
     /**
      * Configures button bindings for the Xbox controller. Maps controller inputs to robot commands
-     * for teleop control.
+     * for teleop control.`
      */
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
@@ -164,42 +168,52 @@ public class RobotContainer {
                         drive,
                         () -> -controller.getLeftY(),
                         () -> -controller.getLeftX(),
-                        () -> -controller.getRightX()));
+                        () -> -controller.getRightX() * 0.75));
 
         // Right Trigger: Shoot/Pass
-        // controller.rightTrigger().whileTrue(
-        // Commands.parallel(
-        // // Aim towards target
-        // DriveCommands.staticAimTowardsTarget(drive),
-        // // Prepare shooter superstructure
-        // shooter.prepareShot(
-        // // While shooter superstructure is prepared,
-        // // and drivetrain is aiming towards the target,
-        // // shoot
-        // Commands.parallel(
-        // indexer.shoot(),
-        // tower.shoot(),
-        // intake.cycle())
-        // .onlyWhile(robotState.facingTarget)
-        // .repeatedly())))
-        // .onFalse(Commands.parallel(
-        // shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
-        // indexer.stopCommand(),
-        // tower.stopCommand(),
-        // intake.extendLinear()));
+        controller
+                .rightTrigger()
+                .whileTrue(
+                        Commands.parallel(
+                                        // // Aim towards target
+                                        DriveCommands.staticAimTowardsTarget(drive),
+                                        // Prepare shooter superstructure
+                                        shooter.spinUpShooter(),
+                                        Commands.parallel(indexer.shoot(), tower.shoot())
+                                                .onlyWhile((robotState.facingTarget))
+                                        // shooter.prepareShot(
+                                        //         // While shooter superstructure is prepared,
+                                        //         // and drivetrain is aiming towards the target,
+                                        //         // shoot
+                                        //         Commands.parallel(
+                                        //                         indexer.shoot(),
+                                        //                         tower.shoot())
+                                        //                 .onlyWhile(robotState.facingTarget)
+                                        //                 .repeatedly())
+                                        )
+                                .repeatedly())
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stowAndStopShooter(),
+                                indexer.stopCommand(),
+                                tower.stopCommand()));
 
         // Left Trigger: Intake
-        controller.leftTrigger().onTrue(intake.extendIntake()).onFalse(intake.stopRoller());
+        controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
 
         // Right Bumper: Trench Align
+        // controller
+        //         .rightBumper()
+        //         .whileTrue(
+        //                 DriveCommands.joystickDriveAtAngle(
+        //                         drive,
+        //                         () -> -controller.getLeftY(),
+        //                         () -> -controller.getLeftX(),
+        //                         robotState::getTunnelAssistHeading));
+        controller.rightBumper().onTrue(intake.retractIntake());
         controller
                 .rightBumper()
-                .whileTrue(
-                        DriveCommands.joystickDriveAtAngle(
-                                drive,
-                                () -> -controller.getLeftY(),
-                                () -> -controller.getLeftX(),
-                                robotState::getTunnelAssistHeading));
+                .onFalse(Commands.sequence(Commands.waitSeconds(0.25), intake.extendIntake()));
 
         // D-Pad Up: Force Intake Linear Slide Back
         controller.povUp().onTrue(intake.retractIntake());
@@ -227,7 +241,7 @@ public class RobotContainer {
                         Commands.parallel(
                                         indexer.shoot(),
                                         tower.shoot(),
-                                        intake.cycle(),
+                                        // intake.cycle(),
                                         Commands.runOnce(() -> drive.stopWithX()))
                                 .onlyWhile(shooter.atHubSetpoints)
                                 .repeatedly())
@@ -235,16 +249,17 @@ public class RobotContainer {
                         Commands.parallel(
                                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                                 indexer.stopCommand(),
-                                tower.stopCommand(),
-                                intake.extendIntake()));
+                                tower.stopCommand()
+                                // ,intake.intake()
+                                ));
 
-        robotState.enteringTrench.whileTrue(
-                Commands.sequence(
-                                // Force hood down
-                                shooter.setHoodAngle(Degrees.zero()),
-                                // Prevent hood from raising
-                                shooter.idle())
-                        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        // robotState.enteringTrench.whileTrue(
+        //         Commands.sequence(
+        //                         // Force hood down
+        //                         shooter.setHoodAngle(Degrees.zero()),
+        //                         // Prevent hood from raising
+        //                         shooter.idle())
+        //                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     }
 
     /**
@@ -256,12 +271,14 @@ public class RobotContainer {
         SmartDashboard.putData("Indexer/Feed", indexer.feed());
         SmartDashboard.putData("Indexer/Stop", indexer.stopCommand());
 
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.extendIntake());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Extend", intake.intake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
 
         SmartDashboard.putData("Tower/Stop", tower.stopCommand());
         SmartDashboard.putData("Tower/Shoot", tower.shoot());
+
+        SmartDashboard.putData("Shooter/Stop", shooter.stopFlywheels());
 
         SmartDashboard.putData(shooter.getName() + "/Ready", shooter.spinUpShooter());
         SmartDashboard.putData(
@@ -281,6 +298,8 @@ public class RobotContainer {
                 "Face Target",
                 DriveCommands.joystickDriveFacingTarget(
                         drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+
+        SmartDashboard.putData("Intake Linear/Home", intake.homeLinear());
 
         // if (Constants.currentMode == Mode.SIM) {
         // var fuelSim = RobotSim.getInstance().getFuelSim();

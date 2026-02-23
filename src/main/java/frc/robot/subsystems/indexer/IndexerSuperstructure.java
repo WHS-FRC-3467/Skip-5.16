@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableNumber;
+import frc.lib.util.LoggerHelper;
 
 /**
  * Subsystem that controls the indexer floor and indexer centering mechanism for moving game pieces
@@ -75,6 +76,7 @@ public class IndexerSuperstructure extends SubsystemBase {
 
     @Override
     public void periodic() {
+        LoggerHelper.recordCurrentCommand(this.getName(), this);
         floorIO.periodic();
         centerIO.periodic();
     }

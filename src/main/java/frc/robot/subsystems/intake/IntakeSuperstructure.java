@@ -14,8 +14,10 @@
  */
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.MathUtil;
@@ -35,11 +37,9 @@ import java.util.function.Supplier;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 10.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 30.0);
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -10.0);
-    private static final LoggedTunableNumber LINEAR_CURRENT =
-            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/LinearTorqueCurrent", 40.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -30.0);
 
     private final DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO;
     private final FlywheelMechanism<?> intakeRollerIO;
@@ -102,20 +102,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     }
 
     /**
-     * Creates a command to hold the intake linear mechanism in its current position using position
-     * control.
-     *
-     * @return A command that holds the linear mechanism in its current position
-     */
-    private Command holdLinear() {
-        return this.runOnce(
-                        () ->
-                                intakeLinearIO.runPosition(
-                                        intakeLinearIO.getPosition(), PIDSlot.SLOT_0))
-                .withName("Hold Linear");
-    }
-
-    /**
      * Creates a command to extend the intake linear mechanism by applying positive current.
      *
      * @return A command that extends the linear mechanism
@@ -123,10 +109,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private Command extendLinear() {
         return Commands.sequence(
                         this.runOnce(
-                                () -> intakeLinearIO.runCurrent(Amps.of(LINEAR_CURRENT.get()))),
-                        Commands.waitSeconds(.1),
-                        Commands.waitUntil(isExtended).withTimeout(2.0),
-                        holdLinear())
+                                () ->
+                                        intakeLinearIO.runLinearPosition(
+                                                IntakeLinearConstants.MAX_DISTANCE,
+                                                PIDSlot.SLOT_0)),
+                        Commands.waitUntil(isExtended))
                 .withName("Extend Linear");
     }
 
@@ -136,12 +123,21 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @return A command that retracts the linear mechanism
      */
     private Command retractLinear() {
-        return Commands.sequence(
-                        this.runOnce(
-                                () -> intakeLinearIO.runCurrent(Amps.of(-LINEAR_CURRENT.get()))),
-                        Commands.waitSeconds(.1),
-                        Commands.waitUntil(isRetracted).withTimeout(2.0),
-                        holdLinear())
+        return Commands.parallel(
+                        Commands.runOnce(
+                                () ->
+                                        intakeRollerIO.runVelocity(
+                                                RotationsPerSecond.of(
+                                                        ROLLER_INTAKE_RPS.getAsDouble()),
+                                                IntakeRollerConstants.MAX_ACCELERATION,
+                                                PIDSlot.SLOT_0)),
+                        Commands.sequence(
+                                this.runOnce(
+                                        () ->
+                                                intakeLinearIO.runLinearPosition(
+                                                        IntakeLinearConstants.MIN_DISTANCE,
+                                                        PIDSlot.SLOT_0))),
+                        Commands.waitUntil(isRetracted).withTimeout(2.0))
                 .withName("Retract Linear");
     }
 
@@ -165,10 +161,20 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      *
      * @return A command sequence that extends the intake
      */
-    public Command extendIntake() {
+    public Command intake() {
         return Commands.sequence(
                         runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
                         extendLinear())
+                .withName("Intake");
+    }
+
+    /**
+     * Creates a command sequence to extend the intake without the roller moving.
+     *
+     * @return A command sequence that extends the intake
+     */
+    public Command extendIntake() {
+        return Commands.sequence(runRoller(() -> RotationsPerSecond.zero()), extendLinear())
                 .withName("Extend Intake");
     }
 
@@ -179,7 +185,32 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @return A repeating command that cycles the linear mechanism
      */
     public Command cycle() {
-        return Commands.repeatingSequence(extendLinear(), retractLinear()).withName("Cycle");
+        return Commands.sequence(
+                runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
+                Commands.repeatingSequence(
+                        Commands.deadline(
+                                Commands.waitSeconds(0.2)
+                                        .andThen(
+                                                Commands.waitUntil(
+                                                        () ->
+                                                                intakeLinearIO
+                                                                        .getLinearVelocity()
+                                                                        .lt(
+                                                                                InchesPerSecond.of(
+                                                                                        1.0)))),
+                                this.runOnce(
+                                        () ->
+                                                intakeLinearIO.runLinearPosition(
+                                                        IntakeLinearConstants.MIN_DISTANCE.plus(
+                                                                Inches.of(1.0)),
+                                                        PIDSlot.SLOT_0))),
+                        Commands.sequence(
+                                extendLinear(),
+                                Commands.waitUntil(
+                                        () ->
+                                                intakeLinearIO
+                                                        .getLinearPositionError()
+                                                        .lte(IntakeLinearConstants.TOLERANCE)))));
     }
 
     /**
@@ -210,6 +241,19 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         () -> runRoller(() -> RotationsPerSecond.of(-ROLLER_EJECT_RPS.get())),
                         this::stopRoller)
                 .withName("Eject Roller");
+    }
+
+    public Command homeLinear() {
+        return Commands.sequence(
+                this.runOnce(
+                        () ->
+                                intakeLinearIO.runLinearVelocity(
+                                        IntakeLinearConstants.CRUISE_VELOCITY.unaryMinus(),
+                                        IntakeLinearConstants.MAX_ACCELERATION,
+                                        PIDSlot.SLOT_0)),
+                Commands.waitUntil(
+                        () -> intakeLinearIO.getLinearVelocity().lt(InchesPerSecond.of(0.2))),
+                this.runOnce(() -> intakeLinearIO.setEncoderPosition(Rotations.zero())));
     }
 
     @Override
