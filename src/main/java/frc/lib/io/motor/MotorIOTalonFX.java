@@ -26,6 +26,7 @@ import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -75,6 +76,8 @@ public class MotorIOTalonFX implements MotorIO {
 
     private final CANUpdateThread updateThread = new CANUpdateThread();
     private final Alert[] followerOnWrongBusAlert;
+    private final Alert[] disconnectAlerts;
+    private final Debouncer[] disconnectDebouncers;
 
     private volatile TalonFXConfiguration currentConfig;
     protected volatile Angle goalPosition = Rotations.of(0.0);
@@ -104,10 +107,20 @@ public class MotorIOTalonFX implements MotorIO {
                         });
 
         // Initialize lists
+        disconnectAlerts = new Alert[followerData.length + 1];
+        disconnectAlerts[0] = new Alert(name + " is disconnected!", AlertType.kError);
+
+        disconnectDebouncers = new Debouncer[followerData.length + 1];
+        disconnectDebouncers[0] = new Debouncer(0.5);
+
         followerOnWrongBusAlert = new Alert[followerData.length];
         followers = new TalonFX[followerData.length];
 
         for (int i = 0; i < followerData.length; i++) {
+            disconnectAlerts[i + 1] =
+                    new Alert(name + " follower " + i + " is disconnected!", AlertType.kError);
+            disconnectDebouncers[i + 1] = new Debouncer(0.5);
+
             Device.CAN id = followerData[i].id();
 
             if (!id.bus().equals(main.bus())) {
@@ -254,6 +267,12 @@ public class MotorIOTalonFX implements MotorIO {
                                 closedLoopReference,
                                 closedLoopReferenceSlope)
                         .isOK();
+
+        disconnectAlerts[0].set(disconnectDebouncers[0].calculate(!inputs.connected));
+        for (int i = 0; i < followers.length; i++) {
+            disconnectAlerts[i + 1].set(
+                    disconnectDebouncers[i + 1].calculate(!followers[i].isConnected()));
+        }
 
         inputs.position = position.getValue();
         inputs.velocity = velocity.getValue();

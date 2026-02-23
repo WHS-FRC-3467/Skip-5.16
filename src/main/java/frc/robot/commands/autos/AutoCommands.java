@@ -31,6 +31,8 @@ import frc.robot.subsystems.tower.Tower;
  * together into larger command units (AutoSegments). Command logic layer.
  */
 public class AutoCommands {
+    private static final RobotState robotState = RobotState.getInstance();
+
     /**
      * Resets the robot's odometry to the starting pose of the specified path. Handles alliance
      * flipping if necessary. ONLY RUNS IN SIMULATION.
@@ -41,7 +43,6 @@ public class AutoCommands {
      */
     public static Command resetSimOdom(Drive drive, PathPlannerPath path) {
         if (RobotBase.isSimulation()) {
-            final RobotState robotState = RobotState.getInstance();
             return drive.runOnce(
                     () -> {
                         Pose2d pose = path.getStartingHolonomicPose().get();
@@ -76,7 +77,6 @@ public class AutoCommands {
             Tower tower,
             ShooterSuperstructure shooter,
             double duration) {
-        final var robotState = RobotState.getInstance();
         return Commands.deadline(
                 FuelCommands.shootFuel(indexer, tower, shooter, robotState.facingTarget, duration),
                 DriveCommands.joystickDriveAtAngle(
