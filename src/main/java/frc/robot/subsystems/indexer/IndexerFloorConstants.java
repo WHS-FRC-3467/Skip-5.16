@@ -7,7 +7,7 @@ package frc.robot.subsystems.indexer;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -36,8 +36,9 @@ public class IndexerFloorConstants {
 
     public static String NAME = "Indexer Floor";
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(60);
-    public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second).times(10);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(100.0);
+    public static final AngularAcceleration MAX_ACCELERATION =
+            RotationsPerSecondPerSecond.of(153.5);
 
     private static final double GEARING = (48.0 / 22.0) * (24.0 / 36.0) * (17.0 / 18.0);
 
@@ -49,7 +50,7 @@ public class IndexerFloorConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(100.0, 0.0, 0.0).withV(0.0);
+    public static final PID SLOT0_PID = new PID(10.0, 0.0, 0.0);
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the indexer.
@@ -70,8 +71,8 @@ public class IndexerFloorConstants {
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
 
-        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
 
@@ -103,17 +104,13 @@ public class IndexerFloorConstants {
                                         NAME,
                                         getFXConfig(),
                                         Ports.indexerFloor,
-                                        new TalonFXFollower(Ports.indexerFloorFollower, true)));
+                                        new TalonFXFollower(Ports.indexerFloorFollower, false)));
                 break;
             case SIM:
                 mechanism =
                         new FlywheelMechanismSim(
                                 NAME,
-                                new MotorIOTalonFXSim(
-                                        NAME,
-                                        getFXConfig(),
-                                        Ports.indexerFloor,
-                                        new TalonFXFollower(Ports.indexerFloorFollower, true)),
+                                new MotorIOTalonFXSim(NAME, getFXConfig(), Ports.indexerFloor),
                                 DCMOTOR,
                                 MOI,
                                 TOLERANCE);

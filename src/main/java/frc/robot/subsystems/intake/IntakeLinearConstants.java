@@ -18,16 +18,24 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.wpilibj.RobotBase;
+
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
@@ -41,6 +49,7 @@ import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -51,11 +60,15 @@ public class IntakeLinearConstants {
 
     public static final double GEARING = (42.0 / 12.0);
 
-    public static final Distance MIN_DISTANCE = Inches.of(0.0);
-    public static final Distance MAX_DISTANCE = Inches.of(11.375);
-    public static final Distance STARTING_DISTANCE = Inches.of(0.0);
+    public static final Distance MIN_DISTANCE = Inches.of(0.1);
+    public static final Distance MAX_DISTANCE = Inches.of(11.4);
+    public static final Distance STARTING_DISTANCE = Inches.of(0.1);
 
-    public static final Distance DRUM_RADIUS = Inches.of(0.5);
+    public static final LinearVelocity CRUISE_VELOCITY = MetersPerSecond.of(3.83);
+
+    public static final LinearAcceleration MAX_ACCELERATION = MetersPerSecondPerSecond.of(999.0);
+
+    public static final Distance DRUM_RADIUS = Inches.of(0.511);
     public static final Mass CARRIAGE_MASS = Kilograms.of(.1);
 
     public static final Distance TOLERANCE = Inches.of(2);
@@ -74,7 +87,7 @@ public class IntakeLinearConstants {
             new LinearMechCharacteristics(
                     MIN_DISTANCE, MAX_DISTANCE, STARTING_DISTANCE, DRUM_RADIUS, ORIENTATION);
 
-    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
+    public static final PID SLOT0_PID = new PID(500.0, 0.0, 20.0).withS(14.0);
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the intake linear
@@ -97,11 +110,23 @@ public class IntakeLinearConstants {
         config.Voltage.PeakReverseVoltage = -12.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        config.MotorOutput.Inverted =
+                RobotBase.isSimulation()
+                        ? InvertedValue.CounterClockwise_Positive
+                        : InvertedValue.Clockwise_Positive;
 
-        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+                MAX_DISTANCE.in(Meters) / DRUM_RADIUS.in(Meters);
 
-        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
+                MIN_DISTANCE.in(Meters) / DRUM_RADIUS.in(Meters);
+
+        config.MotionMagic.MotionMagicCruiseVelocity =
+                CRUISE_VELOCITY.in(MetersPerSecond) / DRUM_RADIUS.in(Meters);
+        config.MotionMagic.MotionMagicAcceleration =
+                MAX_ACCELERATION.in(MetersPerSecondPerSecond) / DRUM_RADIUS.in(Meters);
 
         config.Feedback.RotorToSensorRatio = 1.0;
 

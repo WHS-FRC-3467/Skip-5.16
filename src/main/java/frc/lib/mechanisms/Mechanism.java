@@ -223,6 +223,15 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
+     * Gets the applied voltage draw of the mechanism.
+     *
+     * @return The applied voltage
+     */
+    public Voltage getAppliedVoltage() {
+        return inputs.appliedVoltage;
+    }
+
+    /**
      * Getter for angle of the motor
      *
      * @return Angle of the motor or fused encoder

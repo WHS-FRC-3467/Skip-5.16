@@ -23,11 +23,14 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.wpilibj.RobotBase;
+
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
@@ -44,7 +47,7 @@ public class IndexerCenterConstants {
 
     public static final String NAME = "Indexer Center";
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(60);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(80);
     public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second).times(10);
     public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
@@ -76,8 +79,11 @@ public class IndexerCenterConstants {
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
 
-        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        config.MotorOutput.Inverted =
+                RobotBase.isSimulation()
+                        ? InvertedValue.CounterClockwise_Positive
+                        : InvertedValue.Clockwise_Positive;
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
 

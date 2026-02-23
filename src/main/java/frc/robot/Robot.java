@@ -22,7 +22,6 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -108,7 +107,11 @@ public class Robot extends LoggedRobot {
             if (constants.DriveMotorType != DriveMotorArrangement.TalonFX_Integrated
                     || constants.SteerMotorType != SteerMotorArrangement.TalonFX_Integrated) {
                 throw new RuntimeException(
-                        "You are using an unsupported swerve configuration, which this template does not support without manual customization. The 2025 release of Phoenix supports some swerve configurations which were not available during 2025 beta testing, preventing any development and support from the AdvantageKit developers.");
+                        "You are using an unsupported swerve configuration, which this template"
+                                + " does not support without manual customization. The 2025 release of"
+                                + " Phoenix supports some swerve configurations which were not"
+                                + " available during 2025 beta testing, preventing any development and"
+                                + " support from the AdvantageKit developers.");
             }
         }
 
@@ -149,7 +152,7 @@ public class Robot extends LoggedRobot {
     public void robotPeriodic() {
         // Optionally switch the thread to high priority to improve loop
         // timing (see the template project documentation for details)
-        Threads.setCurrentThreadPriority(true, 99);
+        // Threads.setCurrentThreadPriority(true, 99);
 
         // Runs the Scheduler. This is responsible for polling buttons, adding
         // newly-scheduled commands, running already-scheduled commands, removing
@@ -159,7 +162,7 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().run();
 
         // Return to non-RT thread priority (do not modify the first argument)
-        Threads.setCurrentThreadPriority(false, 10);
+        // Threads.setCurrentThreadPriority(false, 10);
 
         // Driver Elastic Dashboard - Update the robot's pose on the main fieldmap
         fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());

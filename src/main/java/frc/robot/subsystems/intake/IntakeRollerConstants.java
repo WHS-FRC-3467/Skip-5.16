@@ -18,7 +18,6 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Second;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -47,8 +46,9 @@ public class IntakeRollerConstants {
 
     public static final String NAME = "Intake Roller";
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(75.0);
-    public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(59.0);
+    public static final AngularAcceleration MAX_ACCELERATION =
+            RotationsPerSecondPerSecond.of(110.0);
 
     private static final double GEARING = (24.0 / 12.0);
 
@@ -58,7 +58,7 @@ public class IntakeRollerConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.1);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
+    public static final PID SLOT0_PID = new PID(5.0, 0.0, 0.0);
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the intake roller.
@@ -79,7 +79,7 @@ public class IntakeRollerConstants {
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
 
-        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;

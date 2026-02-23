@@ -16,7 +16,9 @@
 package frc.lib.util;
 
 import au.grapplerobotics.ConfigurationFailedException;
+
 import com.ctre.phoenix6.StatusCode;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;

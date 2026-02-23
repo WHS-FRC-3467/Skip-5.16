@@ -47,8 +47,8 @@ public class HoodConstants {
 
     public static final Angle TOLERANCE = Degrees.of(1.0);
 
-    public static final AngularVelocity CRUISE_VELOCITY = RadiansPerSecond.of(10);
-    public static final AngularAcceleration ACCELERATION = RadiansPerSecondPerSecond.of(100);
+    public static final AngularVelocity CRUISE_VELOCITY = RadiansPerSecond.of(187.75);
+    public static final AngularAcceleration ACCELERATION = RadiansPerSecondPerSecond.of(293.0);
 
     private static final double GEARING = (48.0 / 14.0) * (164.0 / 10.0);
 
@@ -68,7 +68,7 @@ public class HoodConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.25);
 
     // Positional PID
-    public static final PID SLOT0_PID = new PID(10.0, 2.0, 8.0).withS(0.07).withV(0.1);
+    public static final PID SLOT0_PID = new PID(800.0, 0.0, 20.0).withS(8.0);
 
     /**
      * Creates a TalonFX motor controller configuration for the hood mechanism. Configures current
