@@ -116,7 +116,7 @@ public class AllianceComboAuto extends AutoRoutine {
                             tower,
                             shooter,
                             pathPlannerPaths.get((start == StartPosition.RIGHT ? 1 : 2))),
-
+                    Commands.waitSeconds(0.2),
                     // Go to other FUEL location
                     Commands.sequence(
                             (start == StartPosition.RIGHT

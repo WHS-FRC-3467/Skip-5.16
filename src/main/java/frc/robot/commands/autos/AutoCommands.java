@@ -158,18 +158,20 @@ public class AutoCommands {
             ShooterSuperstructure shooter,
             PathPlannerPath path) {
         return Commands.sequence(
-                new ParallelDeadlineGroup(
-                        AutoBuilder.followPath(path), AutoCommands.prepareHubShot(path, shooter)),
-                new ParallelDeadlineGroup(
-                        FuelCommands.shootFuel(
-                                indexer, tower, shooter, () -> true, 5.0), // ~ 10 bps
-                        intake.cycle())); // TODO: more testing
+                        new ParallelDeadlineGroup(
+                                AutoBuilder.followPath(path),
+                                AutoCommands.prepareHubShot(path, shooter)),
+                        new ParallelDeadlineGroup(
+                                FuelCommands.shootFuel(
+                                        indexer, tower, shooter, () -> true, 5.5), // ~ 10 bps
+                                intake.cycle()))
+                .andThen(shooter.coastFlywheel()); // TODO: more testing
     }
 
     /**
      * Drive to the end of the drive path, extend the intake, and drive into the FUEL with rollers
      * running. Once the intaking path is complete, stop the intake. This AutoSegment only linearly
-     * actuates the intake while the robot is stationary. Non-blocking command.
+     * actuates the intake during approachPath. Non-blocking command.
      *
      * @param intake Intake subsystem
      * @param pathCommand The command that follows the desired path

@@ -314,6 +314,19 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Commands.runOnce(() -> spinFlywheel(velocity)).withName("Set Flywheel Speed");
     }
 
+    /**
+     * Creates a command to coast the flywheel. Use after shooting in auto.
+     *
+     * @return command that coasts the flywheel.
+     */
+    public Command coastFlywheel() {
+        return Commands.runOnce(
+                () -> {
+                    leftFlywheelIO.runCoast();
+                    rightFlywheelIO.runCoast();
+                });
+    }
+
     @Override
     public void periodic() {
         if (tuningMode.get()) {
