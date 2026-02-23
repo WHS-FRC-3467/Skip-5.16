@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
@@ -25,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * Simple 3D physics simulator for "fuel" (game pieces) used in simulation and testing.
@@ -425,11 +425,15 @@ public class FuelSim {
 
         fuelPublisher =
                 NetworkTableInstance.getDefault()
-                        .getStructArrayTopic(tableKey + "/Fuels", Translation3d.struct)
+                        .getStructArrayTopic(tableKey + "/Fuel", Translation3d.struct)
                         .publish();
         fuelInHopperPublisher =
                 NetworkTableInstance.getDefault()
-                        .getStructArrayTopic(tableKey + "/FuelsInHopper", Translation3d.struct)
+                        .getStructArrayTopic(tableKey + "/FuelInHopper", Translation3d.struct)
+                        .publish();
+        fuelInHopperCountPublisher =
+                NetworkTableInstance.getDefault()
+                        .getIntegerTopic(tableKey + "/FuelInHopperCount")
                         .publish();
     }
 
@@ -520,6 +524,7 @@ public class FuelSim {
 
     protected StructArrayPublisher<Translation3d> fuelPublisher;
     protected StructArrayPublisher<Translation3d> fuelInHopperPublisher;
+    protected IntegerPublisher fuelInHopperCountPublisher;
 
     /** Adds array of `Translation3d`'s to NetworkTables at tableKey + "/Fuels" */
     public void logFuels() {
@@ -599,7 +604,7 @@ public class FuelSim {
         if (!running) return;
 
         stepSim();
-        Logger.recordOutput("FuelSim/NumberInHopper", hopperFuel.size());
+        fuelInHopperCountPublisher.accept(hopperFuel.size());
     }
 
     /** Run the simulation forward 1 time step (0.02s) */

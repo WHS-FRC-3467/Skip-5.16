@@ -1,13 +1,13 @@
 {
   "hubs": [
     {
-      "x": -8,
-      "y": -8,
-      "width": 1936,
-      "height": 1168,
+      "x": 0,
+      "y": 38,
+      "width": 1470,
+      "height": 830,
       "state": {
         "sidebar": {
-          "width": 300,
+          "width": 328,
           "expanded": [
             "/AdvantageKit/RealOutputs/Sim",
             "/AdvantageKit/RealOutputs/VisionProcessor/front_left",
@@ -22,7 +22,6 @@
             "/AdvantageKit/Drive/Module0",
             "/AdvantageKit/RealOutputs/SwerveChassisSpeeds/Setpoints",
             "/AdvantageKit/RealOutputs/SwerveChassisSpeeds/Measured",
-            "/AdvantageKit/RealOutputs/SwerveStates/Measured",
             "/AdvantageKit/RealOutputs/SwerveStates/Setpoints/0",
             "/AdvantageKit/RealOutputs/SwerveStates/SetpointsOptimized/0",
             "/AdvantageKit/Detection Camera #0/Targets",
@@ -41,10 +40,7 @@
             "/SmartDashboard/IntakeLinear",
             "/SmartDashboard/Hood Angle",
             "/TunableNumbers",
-            "/AdvantageKit/RealOutputs/Intake Linear",
-            "/AdvantageKit/RealOutputs/ShooterSuperstructure",
             "/AdvantageKit/RealOutputs",
-            "/AdvantageKit/RealOutputs/VisionProcessor",
             "/AdvantageKit/RealOutputs/VisionProcessor/front_right/Results"
           ]
         },
@@ -58,6 +54,114 @@
               "controllerUUID": "zk8xqgcs0ajzlmcufzyihee9gcp696io",
               "renderer": "",
               "controlsHeight": 0
+            },
+            {
+              "type": 2,
+              "title": "2D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/EstimatedPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "bumpers": ""
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/OdometryPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/back//Poses/Accepted",
+                    "logType": "Pose2d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff0000"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/back//TagPoses/Accepted",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff0000",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/front//Poses/Accepted",
+                    "logType": "Pose2d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#0000ff"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/front//TagPoses/Accepted",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#0000ff",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/left//Poses/Accepted",
+                    "logType": "Pose2d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff8c00"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/left//TagPoses/Accepted",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff8c00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/right//Poses/Accepted",
+                    "logType": "Pose2d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ffff"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/right//TagPoses/Accepted",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ffff",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "field": "FRC:2026 Field",
+                "orientation": 0,
+                "size": "large"
+              },
+              "controllerUUID": "lr97ttyo8t3o6kjejljfo0mrcqojxfys",
+              "renderer": null,
+              "controlsHeight": 200
             },
             {
               "type": 3,
@@ -74,8 +178,140 @@
                     }
                   },
                   {
+                    "type": "component",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/MechanismPoses",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/OdometryPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "Platypus",
+                      "color": "#00ff00"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/MechanismPoses",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/back//Poses/Accepted",
+                    "logType": "Pose2d[]",
+                    "visible": true,
+                    "options": {
+                      "model": "Platypus",
+                      "color": "#ff0000"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/back//TagPoses/Accepted",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff0000",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/MechanismPoses",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/front//Poses/Accepted",
+                    "logType": "Pose2d[]",
+                    "visible": true,
+                    "options": {
+                      "model": "Platypus",
+                      "color": "#0000ff"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/front//TagPoses/Accepted",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#0000ff",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/MechanismPoses",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/left//Poses/Accepted",
+                    "logType": "Pose2d[]",
+                    "visible": true,
+                    "options": {
+                      "model": "Platypus",
+                      "color": "#ff8c00"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/left//TagPoses/Accepted",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff8c00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/MechanismPoses",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/right//Poses/Accepted",
+                    "logType": "Pose2d[]",
+                    "visible": true,
+                    "options": {
+                      "model": "Platypus",
+                      "color": "#00ffff"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/right//TagPoses/Accepted",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ffff",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/MechanismPoses",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
                     "type": "gamePiece",
-                    "logKey": "NT:/AdvantageKit/RealOutputs/Fuel Simulation/Fuels",
+                    "logKey": "NT:/Fuel Simulation/Fuel",
                     "logType": "Translation3d[]",
                     "visible": true,
                     "options": {
@@ -83,23 +319,12 @@
                     }
                   },
                   {
-                    "type": "ghost",
-                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/front_right//Poses/Accepted/0",
-                    "logType": "Pose2d",
-                    "visible": false,
+                    "type": "gamePiece",
+                    "logKey": "NT:/Fuel Simulation/FuelInHopper",
+                    "logType": "Translation3d[]",
+                    "visible": true,
                     "options": {
-                      "model": "Platypus",
-                      "color": "#00ff00"
-                    }
-                  },
-                  {
-                    "type": "ghost",
-                    "logKey": "NT:/AdvantageKit/RealOutputs/VisionProcessor/front_right//Poses/Accepted/0",
-                    "logType": "Pose2d",
-                    "visible": false,
-                    "options": {
-                      "model": "Platypus",
-                      "color": "#ff0000"
+                      "variant": "Fuel"
                     }
                   }
                 ],
@@ -107,17 +332,17 @@
               },
               "controllerUUID": "s5cbzwvpm1kfiztzvv4zg2z2245xfx1r",
               "renderer": {
-                "cameraIndex": -2,
+                "cameraIndex": -3,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -1.5125323457141175,
-                  3.3582664325617206,
-                  -3.9973548757010158
+                  9.683390031424645,
+                  1.5748000000000018,
+                  3.602810912692996
                 ],
                 "cameraTarget": [
-                  -1.6018955751781805,
-                  1.7332791130770981,
-                  -1.8926718414357557
+                  0,
+                  0.5,
+                  0
                 ]
               },
               "controlsHeight": 317
@@ -239,11 +464,20 @@
                   },
                   {
                     "type": "stripes",
-                    "logKey": "NT:/AdvantageKit/RealOutputs/Intake Linear/isLinearStopped",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/IntakeSuperstructure/IsExtended",
                     "logType": "Boolean",
                     "visible": true,
                     "options": {
                       "color": "#e48b32"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/IntakeSuperstructure/IsRetracted",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#3b875a"
                     }
                   }
                 ],
@@ -271,7 +505,17 @@
                 "leftSources": [
                   {
                     "type": "stepped",
-                    "logKey": "NT:/AdvantageKit/Indexer/TorqueCurrent",
+                    "logKey": "NT:/AdvantageKit/Tower/TorqueCurrent",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/Indexer Center/TorqueCurrent",
                     "logType": "Number",
                     "visible": true,
                     "options": {
@@ -281,11 +525,11 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "NT:/AdvantageKit/Tower/TorqueCurrent",
+                    "logKey": "NT:/AdvantageKit/Indexer Floor/TorqueCurrent",
                     "logType": "Number",
                     "visible": true,
                     "options": {
-                      "color": "#af2437",
+                      "color": "#3b875a",
                       "size": "normal"
                     }
                   }
@@ -303,11 +547,21 @@
                   },
                   {
                     "type": "stepped",
-                    "logKey": "NT:/AdvantageKit/Indexer/Velocity",
+                    "logKey": "NT:/AdvantageKit/Indexer Floor/Velocity",
                     "logType": "Number",
                     "visible": true,
                     "options": {
                       "color": "#c0b487",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/Indexer Center/Velocity",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#d993aa",
                       "size": "normal"
                     }
                   }
@@ -315,7 +569,16 @@
                 "discreteSources": [
                   {
                     "type": "stripes",
-                    "logKey": "NT:/AdvantageKit/Indexer/ControlType",
+                    "logKey": "NT:/AdvantageKit/Tower/ControlType",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/AdvantageKit/Indexer Floor/ControlType",
                     "logType": "String",
                     "visible": true,
                     "options": {
@@ -324,11 +587,11 @@
                   },
                   {
                     "type": "stripes",
-                    "logKey": "NT:/AdvantageKit/Tower/ControlType",
+                    "logKey": "NT:/AdvantageKit/Indexer Center/ControlType",
                     "logType": "String",
                     "visible": true,
                     "options": {
-                      "color": "#80588e"
+                      "color": "#858584"
                     }
                   }
                 ],
