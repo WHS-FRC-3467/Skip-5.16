@@ -151,7 +151,7 @@ public class LinearMechanismVisualizer {
     }
 
     private void update() {
-        SmartDashboard.putData(name + " Visualizer", mechanism);
+        SmartDashboard.putData("Mechanism Visualizers/" + name + " Visualizer", mechanism);
     }
 
     /**

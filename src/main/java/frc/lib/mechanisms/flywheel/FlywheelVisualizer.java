@@ -88,7 +88,7 @@ public class FlywheelVisualizer {
      */
     public void setAngle(Angle angle) {
         roller.setAngle(angle.in(Degrees));
-        SmartDashboard.putData(name + " Visualizer", mechanism); // Creates mech2d in SmartDashboard
+        update();
     }
 
     /**
@@ -98,5 +98,9 @@ public class FlywheelVisualizer {
      */
     public void setColor(Color color) {
         mechanism.setBackgroundColor(new Color8Bit(color));
+    }
+
+    private void update() {
+        SmartDashboard.putData("Mechanism Visualizers/" + name + " Visualizer", mechanism);
     }
 }
