@@ -253,16 +253,16 @@ public class RobotContainer {
                                 // ,intake.intake()
                                 ));
 
-        robotState
-                .enteringTrench
-                .and(() -> DriverStation.isTeleop())
-                .whileTrue(
-                        Commands.sequence(
-                                        // Force hood down
-                                        shooter.setHoodAngle(Degrees.zero()),
-                                        // Prevent hood from raising
-                                        shooter.idle())
-                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        // robotState
+        //         .enteringTrench
+        //         .and(() -> DriverStation.isTeleop())
+        //         .whileTrue(
+        //                 Commands.sequence(
+        //                                 // Force hood down
+        //                                 shooter.setHoodAngle(Degrees.zero()),
+        //                                 // Prevent hood from raising
+        //                                 shooter.idle())
+        //                         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     }
 
     /**
