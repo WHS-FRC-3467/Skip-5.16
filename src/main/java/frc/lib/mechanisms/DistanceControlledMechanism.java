@@ -173,8 +173,8 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
      *
      * @param dutyCycle Fractional output between 0 and 1
      */
-    public void runDutyCycle(double dutyCycle) {
-        mechanism.runDutyCycle(dutyCycle);
+    public void runDutyCycle(double dutyCycle, boolean ignoringSoftLimits) {
+        mechanism.runDutyCycle(dutyCycle, ignoringSoftLimits);
     }
 
     /**

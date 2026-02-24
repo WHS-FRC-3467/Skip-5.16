@@ -168,8 +168,8 @@ public abstract class Mechanism<T extends MotorIO> {
      *
      * @param dutyCycle Fractional output between 0 and 1.
      */
-    public void runDutyCycle(double dutyCycle) {
-        io.runDutyCycle(dutyCycle);
+    public void runDutyCycle(double dutyCycle, boolean ignoringSoftLimits) {
+        io.runDutyCycle(dutyCycle, ignoringSoftLimits);
     }
 
     /**

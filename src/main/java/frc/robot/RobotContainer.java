@@ -202,10 +202,7 @@ public class RobotContainer {
                                 () -> -controller.getLeftX(),
                                 robotState::getTunnelAssistHeading));
 
-        controller.rightBumper().onTrue(intake.retractIntake());
-        controller
-                .rightBumper()
-                .onFalse(Commands.sequence(Commands.waitSeconds(0.25), intake.extendIntake()));
+        controller.rightBumper().onTrue(intake.retractIntake()).onFalse(intake.extendIntake());
 
         // D-Pad Up: Force Intake Linear Slide Back
         controller.povUp().onTrue(intake.retractIntake());
@@ -259,7 +256,6 @@ public class RobotContainer {
         // Intake Commands
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Intake", intake.intake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Cycle", intake.cycle());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Coast", intake.linearCoast());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Home", intake.homeLinear());
 

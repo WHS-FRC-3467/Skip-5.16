@@ -105,7 +105,8 @@ public class HubState {
             // Fall back to the default alliance (Blue) and report the missing game-specific
             // message.
             DriverStation.reportError(
-                    "HubState: game specific message is null or empty; defaulting active hub alliance to BLUE.",
+                    "HubState: game specific message is null or empty; defaulting active hub"
+                            + " alliance to BLUE.",
                     false);
             firstActiveAlliance = Alliance.Blue;
         }
@@ -152,6 +153,7 @@ public class HubState {
             activeAlliance = DriverStation.getAlliance().orElse(Alliance.Blue);
         } else if ((matchTime > HUB_CHANGE_TIMES[1]) && (matchTime <= HUB_CHANGE_TIMES[0])) {
             // First Shift
+            setFirstActiveAlliance();
             activeAlliance = firstActiveAlliance;
         } else if (matchTime > HUB_CHANGE_TIMES[2] && matchTime <= HUB_CHANGE_TIMES[1]) {
             // Second Shift - switch from first shift

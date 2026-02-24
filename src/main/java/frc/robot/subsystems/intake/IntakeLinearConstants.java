@@ -61,7 +61,7 @@ public class IntakeLinearConstants {
     public static final Distance MAX_DISTANCE = Inches.of(11.4);
     public static final Distance STARTING_DISTANCE = Inches.of(0.1);
 
-    public static final LinearVelocity CRUISE_VELOCITY = MetersPerSecond.of(3.83);
+    public static final LinearVelocity CRUISE_VELOCITY = MetersPerSecond.of(2.53);
 
     public static final LinearAcceleration MAX_ACCELERATION = MetersPerSecondPerSecond.of(999.0);
 

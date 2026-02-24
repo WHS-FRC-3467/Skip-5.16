@@ -18,6 +18,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -25,6 +26,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
@@ -45,7 +47,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 public class RobotState {
 
     private static final LoggedTunableNumber SHOOT_TOLERANCE_DEGREES =
-            new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 1.0);
+            new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 5.0);
     private static final LoggedTunableNumber MAX_HOOD_RETRACT_TIME =
             new LoggedTunableNumber("RobotState/MaxHoodRetractTime", 0.2);
 
@@ -55,10 +57,11 @@ public class RobotState {
     @Getter(lazy = true)
     private static final RobotState instance = new RobotState();
 
-    @Setter
-    @Getter
+    @Setter @Getter private boolean drivetrainAngled = false;
+
     @AutoLogOutput(key = "Drive/DrivetrainAngled")
-    private boolean drivetrainAngled = false;
+    private final Trigger drivetrainAngledTrigger =
+            new Trigger(() -> drivetrainAngled).debounce(0.5, DebounceType.kFalling);
 
     @Getter
     @AutoLogOutput(key = "Drive/FacingTarget")
@@ -161,6 +164,7 @@ public class RobotState {
      * @param observation the odometry observation to add
      */
     public void addOdometryObservation(OdometryObservation observation) {
+        if (DriverStation.isDisabled() || drivetrainAngledTrigger.getAsBoolean()) return;
         poseEstimator.addOdometryObservation(observation);
     }
 
@@ -172,9 +176,11 @@ public class RobotState {
      */
     public void addVisionObservation(VisionPoseObservation observation) {
         // // Only add vision observation if robot is not angled (i.e. when going over a bump)
-        // if (drivetrainAngled) {
-        //     return;
-        // }
+
+        if (DriverStation.isDisabled() || drivetrainAngledTrigger.getAsBoolean()) {
+            resetPose(observation.robotPose());
+            return;
+        }
         poseEstimator.addVisionObservation(observation);
     }
 

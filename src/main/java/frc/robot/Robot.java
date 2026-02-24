@@ -224,6 +224,8 @@ public class Robot extends LoggedRobot {
             autonomousCommand.cancel();
         }
 
+        HubState.getInstance().setFirstActiveAlliance();
+
         // Switch to Teleop tab in Elastic Dashboard
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(0);

@@ -23,6 +23,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -98,8 +99,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
 
-    private final Debouncer readyToShootDebounder =
-            new Debouncer(0.25, Debouncer.DebounceType.kBoth);
+    private final Debouncer readyToShootDebounder = new Debouncer(0.1, DebounceType.kFalling);
 
     public final LoggedTrigger shooterWithinTolerance =
             new LoggedTrigger(

@@ -123,20 +123,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @return A command that retracts the linear mechanism
      */
     private Command retractLinear() {
-        return Commands.parallel(
-                        Commands.runOnce(
-                                () ->
-                                        intakeRollerIO.runVelocity(
-                                                RotationsPerSecond.of(
-                                                        ROLLER_INTAKE_RPS.getAsDouble()),
-                                                IntakeRollerConstants.MAX_ACCELERATION,
-                                                PIDSlot.SLOT_0)),
-                        Commands.sequence(
-                                this.runOnce(
-                                        () ->
-                                                intakeLinearIO.runLinearPosition(
-                                                        IntakeLinearConstants.MIN_DISTANCE,
-                                                        PIDSlot.SLOT_0))),
+        return Commands.sequence(
+                        runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
+                        this.runOnce(() -> intakeLinearIO.runDutyCycle(-0.25, false)),
                         Commands.waitUntil(isRetracted).withTimeout(2.0))
                 .withName("Retract Linear");
     }
@@ -245,15 +234,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     public Command homeLinear() {
         return Commands.sequence(
-                this.runOnce(
-                        () ->
-                                intakeLinearIO.runLinearVelocity(
-                                        IntakeLinearConstants.CRUISE_VELOCITY.unaryMinus(),
-                                        IntakeLinearConstants.MAX_ACCELERATION,
-                                        PIDSlot.SLOT_0)),
+                this.runOnce(() -> intakeLinearIO.runDutyCycle(-0.4, true)),
                 Commands.waitUntil(
                         () -> intakeLinearIO.getLinearVelocity().lt(InchesPerSecond.of(0.2))),
-                this.runOnce(() -> intakeLinearIO.setEncoderPosition(Rotations.zero())));
+                this.runOnce(() -> intakeLinearIO.setEncoderPosition(Rotations.zero())),
+                this.runOnce(() -> intakeLinearIO.runDutyCycle(0.0, false)));
     }
 
     @Override

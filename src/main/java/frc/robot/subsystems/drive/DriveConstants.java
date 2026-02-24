@@ -379,5 +379,5 @@ public class DriveConstants {
      * vision-based pose updates are ignored to prevent inaccurate pose estimation while the robot
      * is on an incline or bump.
      */
-    public static final Angle ANGLED_TOLERANCE = Degrees.of(2.0);
+    public static final Angle ANGLED_TOLERANCE = Degrees.of(3.0);
 }

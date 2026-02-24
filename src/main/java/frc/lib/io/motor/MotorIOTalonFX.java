@@ -365,9 +365,12 @@ public class MotorIOTalonFX implements MotorIO {
      * @param dutyCycle Fractional output between -1 and 1.
      */
     @Override
-    public void runDutyCycle(double dutyCycle) {
+    public void runDutyCycle(double dutyCycle, boolean ignoringSoftLimits) {
         double dutyCyclePercent = MathUtil.clamp(dutyCycle, -1.0, 1.0);
-        motor.setControl(dutyCycleControl.withOutput(dutyCyclePercent));
+        motor.setControl(
+                dutyCycleControl
+                        .withOutput(dutyCyclePercent)
+                        .withIgnoreSoftwareLimits(ignoringSoftLimits));
     }
 
     /**

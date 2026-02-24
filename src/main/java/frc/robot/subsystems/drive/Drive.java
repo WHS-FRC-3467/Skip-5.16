@@ -28,6 +28,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -434,7 +435,13 @@ public class Drive extends SubsystemBase {
      *     the drivetrain is sufficiently angled; {@code false} otherwise.
      */
     public boolean isAngled() {
-        return Math.abs(gyroIO.getPitch()) > DriveConstants.ANGLED_TOLERANCE.in(Degrees)
-                || Math.abs(gyroIO.getRoll()) > DriveConstants.ANGLED_TOLERANCE.in(Degrees);
+        double pitch = MathUtil.inputModulus(gyroIO.getPitch(), -180.0, 180.0);
+        double roll = MathUtil.inputModulus(gyroIO.getRoll(), -180.0, 180.0);
+        double tolerance = DriveConstants.ANGLED_TOLERANCE.in(Degrees);
+
+        double absPitch = Math.abs(pitch);
+        double absRollFrom180 = Math.abs(roll) - 180.0;
+
+        return absPitch > tolerance || Math.abs(absRollFrom180) > tolerance;
     }
 }

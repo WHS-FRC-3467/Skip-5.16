@@ -15,6 +15,8 @@
 
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.Radians;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -24,6 +26,7 @@ import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
+import frc.robot.subsystems.drive.DriveConstants;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -114,7 +117,15 @@ public class VisionSubsystem extends SubsystemBase {
         double x = pose.getX();
         double y = pose.getY();
         double z = pose.getZ();
-        return !(z > MAX_Z_METERS || x < 0.0 || x > FIELD_LENGTH || y < 0.0 || y > FIELD_WIDTH);
+        double pitch = Math.abs(pose.getRotation().getY());
+        double roll = Math.abs(pose.getRotation().getX());
+        return !(z > MAX_Z_METERS
+                || x < 0.0
+                || x > FIELD_LENGTH
+                || y < 0.0
+                || y > FIELD_WIDTH
+                || pitch > DriveConstants.ANGLED_TOLERANCE.in(Radians)
+                || roll > DriveConstants.ANGLED_TOLERANCE.in(Radians));
     }
 
     private final RobotState robotState = RobotState.getInstance();
