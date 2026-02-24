@@ -285,14 +285,14 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      *     confident we will make the shot. Shooter remains spun-up at the end of this command.
      * @return The command sequence
      */
-    public Command prepareShot(Command whileAtPosition) {
+    public Command shootFuel(Command whileAtPosition) {
         return Commands.sequence(
                         Commands.parallel(
                                 spinUpShooter(),
                                 Commands.repeatingSequence(
                                         Commands.waitUntil(readyToShoot),
                                         whileAtPosition.until(readyToShoot.negate()))))
-                .withName("Prepare Shot");
+                .withName("Shoot Fuel");
     }
 
     /**

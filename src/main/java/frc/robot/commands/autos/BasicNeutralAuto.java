@@ -95,7 +95,7 @@ public class BasicNeutralAuto extends AutoRoutine {
                                     : AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
                             Seconds.of(0.0)),
                     // Run back under the trench and shoot
-                    AutoCommands.shotRoutine(
+                    AutoCommands.moveToShot(
                             drive,
                             intake,
                             indexer,
@@ -119,9 +119,9 @@ public class BasicNeutralAuto extends AutoRoutine {
                                     AutoBuilder.followPath(pathPlannerPaths.get(3))),
                     // Reverse back through depot / outpost to shooting location & shoot FUEL
                     start == StartPosition.LEFT
-                            ? AutoCommands.shotRoutine(
+                            ? AutoCommands.moveToShot(
                                     drive, intake, indexer, tower, shooter, pathPlannerPaths.get(5))
-                            : AutoCommands.shotRoutine(
+                            : AutoCommands.moveToShot(
                                     drive,
                                     intake,
                                     indexer,

@@ -79,7 +79,8 @@ public class AutoCommands {
             ShooterSuperstructure shooter,
             double duration) {
         return Commands.deadline(
-                FuelCommands.shootFuel(indexer, tower, shooter, robotState.facingTarget, duration),
+                FuelCommands.prepareShot(
+                        indexer, tower, shooter, robotState.facingTarget, duration),
                 DriveCommands.joystickDriveAtAngle(
                         drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget));
     }
@@ -107,11 +108,9 @@ public class AutoCommands {
     }
 
     /**
-     * Drive to shooting location while spinning up shooter but not feeding game pieces. Once at
-     * target position, with the shooter still spinning, verify subsystem process variables. Upon
-     * confirmation of shooter-ready process variables, bring up the tower and indexer to begin shooting. 
-     * Shoot all FUEL for 5.5s. Bring down shooter, tower, and indexer to finish. If path doesn't complete
-     * in 3.5s, attempt a shot anyway.
+     * Drive to shooting location while STATICALLY spinning up shooter to setpoints associated with
+     * ANTICIPATED POSE at end of path but NOT feeding game pieces. Once at ANTICIPATED POSE, with
+     * the shooter still spinning at ANTICIPATED SETPOINTS, call {@code FuelCommands.prepareShot()}.
      *
      * @param drive The Drive subsystem
      * @param intake The IntakeSuperStructure subsystem
@@ -122,7 +121,7 @@ public class AutoCommands {
      *     end pose
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
-    public static Command shotRoutine(
+    public static Command moveToShot(
             Drive drive,
             IntakeSuperstructure intake,
             IndexerSuperstructure indexer,
@@ -130,14 +129,15 @@ public class AutoCommands {
             ShooterSuperstructure shooter,
             PathPlannerPath path) {
         return Commands.sequence(
-                        new ParallelDeadlineGroup(
-                                AutoBuilder.followPath(path),
-                                AutoCommands.prepareHubShot(path, shooter)),
-                        new ParallelDeadlineGroup(
-                                FuelCommands.shootFuel(
-                                        indexer, tower, shooter, () -> true, 5.5), // ~ 10 bps
-                                intake.cycle()))
-                .andThen(shooter.coastFlywheel());
+                new ParallelDeadlineGroup(
+                        AutoBuilder.followPath(path), AutoCommands.prepareHubShot(path, shooter)),
+                new ParallelDeadlineGroup(
+                        FuelCommands.prepareShot(
+                                indexer,
+                                tower,
+                                shooter,
+                                () -> true,
+                                5.5))); // TODO: hopper agitation
     }
 
     /**

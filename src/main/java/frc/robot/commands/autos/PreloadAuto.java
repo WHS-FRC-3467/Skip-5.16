@@ -56,7 +56,7 @@ public class PreloadAuto extends AutoRoutine {
                     // Initialize intake
                     intake.retractIntake(),
                     // Take preload shot
-                    AutoCommands.shotRoutine(
+                    AutoCommands.moveToShot(
                             drive, intake, indexer, tower, shooter, pathPlannerPaths.get(0)));
     }
 }

@@ -82,7 +82,7 @@ public class DepotAuto extends AutoRoutine {
                             AutoBuilder.followPath(pathPlannerPaths.get(1)),
                             Seconds.of(0.5)),
                     // Drive to shooting location and shoot all FUEL
-                    AutoCommands.shotRoutine(
+                    AutoCommands.moveToShot(
                             drive, intake, indexer, tower, shooter, pathPlannerPaths.get(2)),
                     // Re-initialize intake for tele-op
                     intake.retractIntake().withTimeout(1.25));
