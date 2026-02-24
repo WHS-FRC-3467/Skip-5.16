@@ -173,6 +173,7 @@ public class IntakeLinearConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
 
         return new DistanceControlledMechanism<LinearMechanism<?>>(mechanism, DRUM_RADIUS)
                 .withKey("IntakeSuperstructure/Linear");
