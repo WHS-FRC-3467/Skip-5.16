@@ -125,14 +125,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
                     });
 
-    // Trigger determining whether hood is safe to actuate. Primarily for use in autos.
-    public final LoggedTrigger hoodSafe =
-            new LoggedTrigger(
-                    this.getName() + "/hoodSafe",
-                    () ->
-                            robotState.getFieldRegion() == FieldRegion.ALLIANCE_ZONE
-                                    && robotState.enteringTrench.negate().getAsBoolean());
-
     private final LoggedTunableBoolean tuningMode =
             new LoggedTunableBoolean(getName() + "/Tuning/Enable", false);
     private final LoggedTunableNumber tuningFlywheelSpeedRPS =
@@ -174,7 +166,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     // Hood
-
     private void setHoodPosition(Angle angle) {
         hoodIO.runPosition(angle, PIDSlot.SLOT_0);
     }
@@ -257,7 +248,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         () -> {
                             spinFlywheel(
                                     RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))));
-                            if (hoodSafe.getAsBoolean()) {
+                            if (robotState.hoodSafe.getAsBoolean()) {
                                 setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
                             } else {
                                 setHoodPosition(Degrees.zero());
