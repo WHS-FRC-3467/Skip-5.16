@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -33,6 +34,7 @@ import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
+
 import java.util.function.Supplier;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
@@ -42,7 +44,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -30.0);
 
     private static final LoggedTunableNumber SLOW_LINEAR_SPEED_IPS =
-            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowLinearSpeedIPS", 10.0);
+            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowLinearSpeedIPS", -2.0);
     private static final LoggedTunableNumber SLOW_LINEAR_DELAY_S =
             new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowLinearDelay", 1.0);
 
