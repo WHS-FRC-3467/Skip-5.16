@@ -258,6 +258,7 @@ public class RobotContainer {
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Coast", intake.linearCoast());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Home", intake.homeLinear());
+        SmartDashboard.putData(IntakeLinearConstants.NAME + "/SlowRetract", intake.slowRetract());
 
         // Tower Commands
         SmartDashboard.putData(TowerConstants.NAME + "/Stop", tower.stopCommand());

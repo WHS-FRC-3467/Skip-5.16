@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -33,6 +34,7 @@ import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
+
 import java.util.function.Supplier;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
@@ -40,6 +42,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 30.0);
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -30.0);
+
+    private static final LoggedTunableNumber SLOW_LINEAR_SPEED_IPS =
+            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowLinearSpeedIPS", -2.0);
+    private static final LoggedTunableNumber SLOW_LINEAR_DELAY_S =
+            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowLinearDelay", 1.0);
 
     private final DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO;
     private final FlywheelMechanism<?> intakeRollerIO;
@@ -127,6 +134,33 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
                         this.runOnce(() -> intakeLinearIO.runDutyCycle(-0.25, false)),
                         Commands.waitUntil(isRetracted).withTimeout(2.0))
+                .withName("Retract Linear");
+    }
+
+    public Command slowRetract() {
+        return Commands.sequence(
+                        Commands.waitSeconds(SLOW_LINEAR_DELAY_S.get()),
+                        this.runOnce(
+                                () ->
+                                        intakeRollerIO.runVelocity(
+                                                RotationsPerSecond.of(
+                                                        ROLLER_INTAKE_RPS.getAsDouble()),
+                                                IntakeRollerConstants.MAX_ACCELERATION,
+                                                PIDSlot.SLOT_0)),
+                        this.runOnce(
+                                () ->
+                                        intakeLinearIO.runLinearVelocity(
+                                                InchesPerSecond.of(
+                                                        SLOW_LINEAR_SPEED_IPS.getAsDouble()),
+                                                IntakeLinearConstants.MAX_ACCELERATION,
+                                                PIDSlot.SLOT_1)),
+                        Commands.waitUntil(isRetracted),
+                        stopRoller(),
+                        this.runOnce(
+                                () ->
+                                        intakeLinearIO.runLinearPosition(
+                                                IntakeLinearConstants.MIN_DISTANCE,
+                                                PIDSlot.SLOT_0)))
                 .withName("Retract Linear");
     }
 
