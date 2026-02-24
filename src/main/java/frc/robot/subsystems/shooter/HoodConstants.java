@@ -79,8 +79,6 @@ public class HoodConstants {
     // Positional PID
     public static final PID SLOT0_PID = getPID();
 
-
-
     /**
      * Creates a TalonFX motor controller configuration for the hood mechanism. Configures current
      * limits, voltage limits, neutral mode, soft limits, gearing ratios, feedback sensor source,

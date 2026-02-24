@@ -36,6 +36,7 @@ import frc.lib.util.LoggedDashboardChooser;
 import frc.robot.Constants.PathConstants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -83,6 +84,7 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
     public final Field2d autoPreviewField = new Field2d();
+    Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
 
     private final Trigger isAutonomous = new Trigger(DriverStation::isAutonomous);
 
@@ -178,10 +180,13 @@ public class RobotContainer {
         controller
                 .rightTrigger()
                 .whileTrue(
-                    Commands.parallel(
-                        DriveCommands.staticAimTowardsTarget(drive),
-                        shooter.spinUpShooter(),
-                        Commands.parallel(indexer.shoot(), tower.shoot()).onlyWhile(shooter.readyToShoot.and(robotState.facingTarget)).repeatedly()))
+                        Commands.parallel(
+                                DriveCommands.staticAimTowardsTarget(drive),
+                                shooter.spinUpShooter(),
+                                Commands.parallel(indexer.shoot(), tower.shoot())
+                                        .onlyWhile(
+                                                shooter.readyToShoot.and(robotState.facingTarget))
+                                        .repeatedly()))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(), indexer.stopCommand(), tower.stopCommand()));
@@ -277,6 +282,11 @@ public class RobotContainer {
                 "Face Target",
                 DriveCommands.joystickDriveFacingTarget(
                         drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+        SmartDashboard.putData(
+                "Drive to Start Pose",
+                new DriveToPose(drive, () -> startPose)
+                        .withDistanceTolerance(Meters.of(0.04))
+                        .withAngularTolerance(Degrees.of(3)));
     }
 
     /** Creates and/or binds triggers to LED states */
@@ -313,7 +323,7 @@ public class RobotContainer {
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
         try {
-            Pose2d startPose = autoPreviewField.getObject("path").getPoses().get(0);
+            startPose = autoPreviewField.getObject("path").getPoses().get(0);
             autoPreviewField.getObject("startPose").setPose(startPose);
 
             Distance distanceFromStartPose =
@@ -351,6 +361,7 @@ public class RobotContainer {
                             < PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees));
 
         } catch (Exception e) {
+            startPose = robotState.getEstimatedPose();
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start", -1);
             SmartDashboard.putBoolean("Auto Pose Check/Robot Position Within Tolerance", false);
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start", -1);

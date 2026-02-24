@@ -116,7 +116,7 @@ public class Robot extends LoggedRobot {
         }
 
         // Instantiate our RobotContainer. This will perform all our button bindings,
-        // and put our autonomous chooser on the dashboard.
+        // Checks and displays the robot's starting pose for autonomous mode.
         robotContainer = new RobotContainer();
 
         DriverStation.silenceJoystickConnectionWarning(!Robot.isReal());
@@ -166,6 +166,9 @@ public class Robot extends LoggedRobot {
 
         // Driver Elastic Dashboard - Update the robot's pose on the main fieldmap
         fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
+        // Update auto tab
+        robotContainer.checkStartPose();
+        robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
 
     /** This function is called once when the robot is disabled. */
@@ -179,15 +182,9 @@ public class Robot extends LoggedRobot {
         checkedHubGameData = false;
     }
 
-    /**
-     * This function is called periodically when disabled. Checks and displays the robot's starting
-     * pose for autonomous mode.
-     */
+    /** This function is called periodically when disabled. */
     @Override
-    public void disabledPeriodic() {
-        robotContainer.checkStartPose();
-        robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
-    }
+    public void disabledPeriodic() {}
 
     /**
      * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
