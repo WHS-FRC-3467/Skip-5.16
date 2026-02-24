@@ -60,6 +60,8 @@ public class RobotState {
     @AutoLogOutput(key = "Drive/DrivetrainAngled")
     private boolean drivetrainAngled = false;
 
+    @Getter
+    @AutoLogOutput(key = "Drive/FacingTarget")
     public final Trigger facingTarget =
             new Trigger(
                     () ->
@@ -169,10 +171,10 @@ public class RobotState {
      * @param observation the vision observation to add
      */
     public void addVisionObservation(VisionPoseObservation observation) {
-        // Only add vision observation if robot is not angled (i.e. when going over a bump)
-        if (drivetrainAngled) {
-            return;
-        }
+        // // Only add vision observation if robot is not angled (i.e. when going over a bump)
+        // if (drivetrainAngled) {
+        //     return;
+        // }
         poseEstimator.addVisionObservation(observation);
     }
 

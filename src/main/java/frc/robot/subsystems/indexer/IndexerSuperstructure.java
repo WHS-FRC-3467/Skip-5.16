@@ -126,22 +126,17 @@ public class IndexerSuperstructure extends SubsystemBase {
     }
 
     /**
-     * Creates a command to stop the indexer by applying brake mode.
+     * Creates a command to stop the indexer by applying coast mode.
      *
      * @return a command that stops the indexer
      */
     public Command stopCommand() {
-        return this.runOnce(
-                        () -> {
-                            floorIO.runBrake();
-                            centerIO.runBrake();
-                        })
-                .withName("Stop");
+        return this.runOnce((this::stop)).withName("Stop Indexer");
     }
 
     private void stop() {
-        floorIO.runBrake();
-        centerIO.runBrake();
+        floorIO.runCoast();
+        centerIO.runCoast();
     }
 
     /**

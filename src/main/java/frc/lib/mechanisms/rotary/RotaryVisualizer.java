@@ -111,7 +111,7 @@ public class RotaryVisualizer {
     }
 
     private void update() {
-        SmartDashboard.putData(name + " Visualizer", mechanism);
+        SmartDashboard.putData("Mechanism Visualizers/" + name + " Visualizer", mechanism);
     }
 
     /**

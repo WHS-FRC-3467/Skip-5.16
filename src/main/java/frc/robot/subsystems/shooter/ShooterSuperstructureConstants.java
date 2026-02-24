@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ShooterSuperstructureConstants {
+
+    public static final String NAME = "Shooter Superstructure";
+
     /**
      * Creates and configures a complete ShooterSuperstructure subsystem. Combines hood and both
      * flywheel mechanisms into a unified shooter system.

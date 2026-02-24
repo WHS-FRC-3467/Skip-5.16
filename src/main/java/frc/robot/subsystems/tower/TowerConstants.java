@@ -18,7 +18,7 @@ package frc.robot.subsystems.tower;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Millimeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
 import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
@@ -51,8 +51,9 @@ import frc.robot.Robot;
 public class TowerConstants {
     public static String NAME = "Tower";
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(2 * Math.PI);
-    public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(116.6);
+    public static final AngularAcceleration MAX_ACCELERATION =
+            RotationsPerSecondPerSecond.of(406.0);
 
     private static final double GEARING = (36.0 / 12.0);
 
