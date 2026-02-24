@@ -86,9 +86,10 @@ public class AutoCommands {
     }
 
     /**
-     * Prepares the shooter for shooting at THE HUB at the end of the provided path. Only valid to
-     * prepare shots for THE HUB. Perpetual command -- never spins down. Therefore, to end, this
-     * should be interrupted by a parent command group or timed-out. Primarily for use in autos.
+     * Statically prepares the shooter for shooting at THE HUB at the end of the provided path. Only
+     * valid to prepare shots for THE HUB. Perpetual command -- never spins down. Therefore, to end,
+     * this should be interrupted by a parent command group or timed-out. Primarily for use in
+     * autos.
      *
      * @param path the path to drive, the shooter will prepare to shoot at the end of this path.
      * @param shooter the shooter subsystem
