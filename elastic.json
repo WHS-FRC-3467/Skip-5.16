@@ -36,14 +36,14 @@
             }
           },
           {
-            "title": "Hub Active Trigger",
+            "title": "Can Shoot!",
             "x": 1200.0,
             "y": 0.0,
             "width": 300.0,
             "height": 800.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/AdvantageKit/RealOutputs/Hub/Hub Active Trigger",
+              "topic": "/SmartDashboard/Can Shoot!",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
