@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableBoolean;
@@ -131,7 +132,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return a command that stops the indexer
      */
     public Command stopCommand() {
-        return this.runOnce((this::stop)).withName("Stop Indexer");
+        return this.runOnce(this::stop).withName("Stop Indexer");
     }
 
     private void stop() {
