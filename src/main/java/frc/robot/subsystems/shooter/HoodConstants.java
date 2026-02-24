@@ -22,6 +22,7 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.wpilibj.RobotBase;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
@@ -47,8 +48,8 @@ public class HoodConstants {
 
     public static final Angle TOLERANCE = Degrees.of(1.0);
 
-    public static final AngularVelocity CRUISE_VELOCITY = RadiansPerSecond.of(10);
-    public static final AngularAcceleration ACCELERATION = RadiansPerSecondPerSecond.of(100);
+    public static final AngularVelocity CRUISE_VELOCITY = RadiansPerSecond.of(187.75);
+    public static final AngularAcceleration ACCELERATION = RadiansPerSecondPerSecond.of(293.0);
 
     private static final double GEARING = (48.0 / 14.0) * (164.0 / 10.0);
 
@@ -65,10 +66,18 @@ public class HoodConstants {
                     ARM_LENGTH, MIN_ANGLE, MAX_ANGLE, STARTING_ANGLE, RotaryAxis.PITCH);
 
     public static final DCMotor DCMOTOR = DCMotor.getKrakenX60(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.25);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
+
+    private static PID getPID() {
+        if (RobotBase.isReal()) {
+            return new PID(800.0, 0.0, 20.0).withS(8.0);
+        } else {
+            return new PID(5.0, 0.0, 0.0).withS(8.0);
+        }
+    }
 
     // Positional PID
-    public static final PID SLOT0_PID = new PID(10.0, 2.0, 8.0).withS(0.07).withV(0.1);
+    public static final PID SLOT0_PID = getPID();
 
     /**
      * Creates a TalonFX motor controller configuration for the hood mechanism. Configures current

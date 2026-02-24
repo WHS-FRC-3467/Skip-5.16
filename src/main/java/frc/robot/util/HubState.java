@@ -17,6 +17,7 @@ package frc.robot.util;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.LoggedTrigger;
 import java.util.Arrays;
 import lombok.AccessLevel;
@@ -163,7 +164,12 @@ public class HubState {
             activeAlliance = (firstActiveAlliance == Alliance.Blue) ? Alliance.Red : Alliance.Blue;
         }
 
-        hubActive.getAsBoolean();
+        // Dashboard hub state shift indicator
+        // Turn green a few seconds beforehand to account for early scoring and reaction time.
+        // Stay green until it is not our turn. Uses SECONDS_BEFORE as the beforehand
+        SmartDashboard.putBoolean(
+                "Can Shoot!", hubActive.getAsBoolean() || hubChange.getAsBoolean());
+
         Logger.recordOutput("Hub/Time Until Next Phase", matchTime - nextSwitchTime(matchTime));
     }
 

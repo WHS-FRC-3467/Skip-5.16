@@ -1,6 +1,5 @@
 package frc.robot.util;
 
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 
@@ -9,7 +8,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -18,7 +16,6 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.RobotState;
 import java.util.ArrayList;
@@ -633,57 +630,6 @@ public class FuelSim {
      */
     public void spawnFuel(Translation3d pos, Translation3d vel) {
         fuels.add(new Fuel(pos, vel));
-    }
-
-    /**
-     * Spawns a fuel onto the field with a specified launch velocity and angles, accounting for
-     * robot movement
-     *
-     * @param launchVelocity Initial launch velocity
-     * @param hoodAngle Hood angle where 0 is launching horizontally and 90 degrees is launching
-     *     straight up
-     * @param turretYaw <i>Robot-relative</i> turret yaw
-     * @param launchHeight Height of the fuel to launch at. Make sure this is higher than your
-     *     robot's bumper height, or else it will collide with your robot immediately.
-     * @throws IllegalStateException if robot is not registered
-     */
-    public void launchFuel(
-            LinearVelocity launchVelocity,
-            Angle hoodAngle,
-            Angle turretYaw,
-            Distance launchHeight) {
-        if (robotPoseSupplier == null || robotFieldSpeedsSupplier == null) {
-            throw new IllegalStateException("Robot must be registered before launching fuel.");
-        }
-
-        Pose3d launchPose =
-                new Pose3d(this.robotPoseSupplier.get())
-                        .plus(
-                                new Transform3d(
-                                        new Translation3d(
-                                                Meters.zero(), Meters.zero(), launchHeight),
-                                        Rotation3d.kZero));
-        ChassisSpeeds fieldSpeeds = this.robotFieldSpeedsSupplier.get();
-
-        double horizontalVel = Math.cos(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
-        double verticalVel = Math.sin(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
-        double xVel =
-                horizontalVel
-                        * Math.cos(
-                                turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians));
-        double yVel =
-                horizontalVel
-                        * Math.sin(
-                                turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians));
-
-        xVel += fieldSpeeds.vxMetersPerSecond;
-        yVel += fieldSpeeds.vyMetersPerSecond;
-
-        // Spawn the launched fuel
-        // Release the last fuel from the fuel in hopper list, if any are present
-        if (!hopperFuel.isEmpty()) {
-            hopperFuel.remove(hopperFuel.size() - 1);
-        }
     }
 
     /**

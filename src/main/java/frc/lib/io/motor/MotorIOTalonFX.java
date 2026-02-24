@@ -169,18 +169,7 @@ public class MotorIOTalonFX implements MotorIO {
                                         supplyVoltage,
                                         supplyCurrent,
                                         torqueCurrent,
-                                        temperature))
-                .exceptionally(
-                        ex -> {
-                            LOGGER.log(Level.SEVERE, ex.toString(), ex);
-                            return null;
-                        });
-
-        updateThread
-                .CTRECheckErrorAndRetry(
-                        () ->
-                                BaseStatusSignal.setUpdateFrequencyForAll(
-                                        200,
+                                        temperature,
                                         closedLoopError,
                                         closedLoopReference,
                                         closedLoopReferenceSlope))

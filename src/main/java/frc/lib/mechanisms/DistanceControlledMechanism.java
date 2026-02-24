@@ -229,6 +229,15 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
     }
 
     /**
+     * Gets the applied voltage draw.
+     *
+     * @return Applied voltage
+     */
+    public Voltage getAppliedVoltage() {
+        return mechanism.getAppliedVoltage();
+    }
+
+    /**
      * Gets the angular position.
      *
      * @return Current angle
