@@ -138,7 +138,7 @@ public class AutoCommands {
                                 tower,
                                 shooter,
                                 () -> true,
-                                5.5))); // TODO: hopper agitation
+                                4.5))); // TODO: hopper agitation
     }
 
     /**
@@ -146,8 +146,9 @@ public class AutoCommands {
      * running. Once the intaking path is complete, stop the intake. This AutoSegment only linearly
      * actuates the intake during approachPath. Non-blocking command.
      *
+     * @param approachPathCommand Staging path to follow while simultaneously extending intake
      * @param intake Intake subsystem
-     * @param pathCommand The command that follows the desired path
+     * @param pathCommand The feeding path with intake already extended
      * @param afterPathWait The time to wait after the intaking path is complete before stopping the
      *     intake
      */
@@ -157,8 +158,7 @@ public class AutoCommands {
             Command pathCommand,
             Time afterPathWait) {
         // Drive to near the intaking location and start up intake, and drive into the FUEL. Once
-        // the
-        // intaking path is complete, stop the intake.
+        // the intaking path is complete, stop the intake.
         return Commands.sequence(
                 // Roll out intake (times out at 1.25 seconds)
                 // WHILE following the path that takes the robot near the fuel location.
@@ -185,5 +185,16 @@ public class AutoCommands {
                                 () -> RobotSim.getInstance().getFuelSim().fillHopperBy(20)),
                         Commands.none(),
                         RobotBase::isSimulation));
+    }
+
+    /**
+     * Makes the robot smaller by retracting the intake and lowering the hood.
+     *
+     * @param intake the intake superstructure subsystem
+     * @param shooter the shooter superstructure subsystem
+     * @return returns a timed command that retracts the intake and lowers the hood
+     */
+    public static Command makeSmall(IntakeSuperstructure intake, ShooterSuperstructure shooter) {
+        return Commands.parallel(intake.retractIntake(), shooter.retractHood()).withTimeout(1.25);
     }
 }

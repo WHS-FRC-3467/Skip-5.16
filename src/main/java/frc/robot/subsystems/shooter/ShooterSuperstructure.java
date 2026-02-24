@@ -340,6 +340,17 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Commands.sequence(stopFlywheels(), setHoodAngle(Rotations.zero()));
     }
 
+    /**
+     * A blocking command that lowers the hood and waits until it is zeroed. This should be included
+     * with a timeout to compensate for possible sensor error. Primarily for use in autos.
+     */
+    public Command retractHood() {
+        return setHoodAngle(Rotations.zero())
+                .andThen(
+                        Commands.waitUntil(
+                                () -> hoodIO.getPosition().lte(HoodConstants.TOLERANCE)));
+    }
+
     @Override
     public void periodic() {
         if (tuningMode.get()) {

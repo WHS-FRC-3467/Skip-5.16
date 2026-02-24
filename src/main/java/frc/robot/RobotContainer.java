@@ -160,6 +160,15 @@ public class RobotContainer {
                 "DoubleNeutralAuto-Right",
                 new DoubleNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
+        // Nashoba Neutral Zone Autos
+        autoChooser.addOption(
+                "NashobaNeutralAuto-Left",
+                new NashobaNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption(
+                "NashobaNeutralAuto-Right",
+                new NashobaNeutralAuto(
+                        drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+
         // Drivebase Characterization Autos
         autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
         autoChooser.addOption(
