@@ -180,7 +180,7 @@ public class RobotContainer {
                 .whileTrue(
                     Commands.parallel(
                         DriveCommands.staticAimTowardsTarget(drive),
-                        shooter.spinUpShooter().repeatedly(),
+                        shooter.spinUpShooter(),
                         Commands.parallel(indexer.shoot(), tower.shoot()).onlyWhile(shooter.readyToShoot.and(robotState.facingTarget)).repeatedly()))
                 .onFalse(
                         Commands.parallel(
