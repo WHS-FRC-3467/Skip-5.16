@@ -110,35 +110,7 @@ public class AutoCommands {
      * Drive to shooting location while spinning up shooter but not feeding game pieces. Once at
      * target position, with the shooter still spinning, verify subsystem process variables. Upon
      * confirmation of shooter-ready PVs, bring up the tower and indexer to begin shooting. Shoot
-     * the PRELOADED FUEL for 1.5s. Bring down shooter, tower, and indexer to finish. If path
-     * doesn't complete in 2.75s, attempt a shot anyway.
-     *
-     * @param drive The Drive subsystem
-     * @param indexer The IndexerSuperstructure subsystem
-     * @param tower The Tower subsystem
-     * @param shooter The ShooterSuperstructure subsystem
-     * @param path The path to drive to the shooting location, the robot will shoot from the path's
-     *     end pose
-     * @return a command that drives to the shooting location and attempts to shoot all the
-     *     PRELOADED FUEL
-     */
-    public static Command makePreloadShot(
-            Drive drive,
-            IndexerSuperstructure indexer,
-            Tower tower,
-            ShooterSuperstructure shooter,
-            PathPlannerPath path) {
-        return Commands.sequence(
-                new ParallelDeadlineGroup(
-                        AutoBuilder.followPath(path), AutoCommands.prepareHubShot(path, shooter)),
-                FuelCommands.shootFuel(indexer, tower, shooter, () -> true, 1.5));
-    }
-
-    /**
-     * Drive to shooting location while spinning up shooter but not feeding game pieces. Once at
-     * target position, with the shooter still spinning, verify subsystem process variables. Upon
-     * confirmation of shooter-ready PVs, bring up the tower and indexer to begin shooting. Shoot
-     * all FUEL for 5s. Bring down shooter, tower, and indexer to finish. If path doesn't complete
+     * all FUEL for 5.5s. Bring down shooter, tower, and indexer to finish. If path doesn't complete
      * in 3.5s, attempt a shot anyway.
      *
      * @param drive The Drive subsystem
@@ -165,7 +137,7 @@ public class AutoCommands {
                                 FuelCommands.shootFuel(
                                         indexer, tower, shooter, () -> true, 5.5), // ~ 10 bps
                                 intake.cycle()))
-                .andThen(shooter.coastFlywheel()); // TODO: more testing
+                .andThen(shooter.coastFlywheel()); 
     }
 
     /**

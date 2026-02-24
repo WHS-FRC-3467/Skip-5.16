@@ -339,6 +339,20 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 });
     }
 
+    public Command stopFlywheels() {
+        return this.runOnce(
+                () -> {
+                    spinUpTimer.stop();
+                    spinUpTimer.reset();
+                    leftFlywheelIO.runCoast();
+                    rightFlywheelIO.runCoast();
+                });
+    }
+
+    public Command stopAndStow() {
+        return Commands.sequence(stopFlywheels(), setHoodAngle(Rotations.zero()));
+    }
+
     @Override
     public void periodic() {
         if (tuningMode.get()) {

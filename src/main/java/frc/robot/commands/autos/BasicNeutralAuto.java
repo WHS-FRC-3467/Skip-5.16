@@ -120,10 +120,10 @@ public class BasicNeutralAuto extends AutoRoutine {
                                     AutoBuilder.followPath(pathPlannerPaths.get(3))),
                     // Reverse back through depot / outpost to shooting location & shoot FUEL
                     start == StartPosition.LEFT
-                            ? AutoCommands.makePreloadShot(
-                                    drive, indexer, tower, shooter, pathPlannerPaths.get(5))
-                            : AutoCommands.makePreloadShot(
-                                    drive, indexer, tower, shooter, pathPlannerPaths.get(4)),
+                            ? AutoCommands.makeFullShot(
+                                    drive, intake, indexer, tower, shooter, pathPlannerPaths.get(5))
+                            : AutoCommands.makeFullShot(
+                                    drive, intake, indexer, tower, shooter, pathPlannerPaths.get(4)),
                     // Re-initialize intake for tele-op
                     intake.retractIntake().withTimeout(1.25));
     }
