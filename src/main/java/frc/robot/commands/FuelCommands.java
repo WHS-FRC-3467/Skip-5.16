@@ -24,7 +24,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Utility class for FUEL manipulation commands anticipated for use in teleop or auto that require
+ * Utility class for FUEL manipulation commands anticipated for use in teleop OR auto that require
  * coordination of multiple subsystems.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

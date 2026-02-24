@@ -19,7 +19,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
@@ -96,7 +95,7 @@ public class BasicNeutralAuto extends AutoRoutine {
                                     : AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
                             Seconds.of(0.0)),
                     // Run back under the trench and shoot
-                    AutoCommands.makeFullShot(
+                    AutoCommands.shotRoutine(
                             drive,
                             intake,
                             indexer,
@@ -120,10 +119,15 @@ public class BasicNeutralAuto extends AutoRoutine {
                                     AutoBuilder.followPath(pathPlannerPaths.get(3))),
                     // Reverse back through depot / outpost to shooting location & shoot FUEL
                     start == StartPosition.LEFT
-                            ? AutoCommands.makeFullShot(
+                            ? AutoCommands.shotRoutine(
                                     drive, intake, indexer, tower, shooter, pathPlannerPaths.get(5))
-                            : AutoCommands.makeFullShot(
-                                    drive, intake, indexer, tower, shooter, pathPlannerPaths.get(4)),
+                            : AutoCommands.shotRoutine(
+                                    drive,
+                                    intake,
+                                    indexer,
+                                    tower,
+                                    shooter,
+                                    pathPlannerPaths.get(4)),
                     // Re-initialize intake for tele-op
                     intake.retractIntake().withTimeout(1.25));
     }

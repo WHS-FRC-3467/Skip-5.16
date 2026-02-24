@@ -103,7 +103,7 @@ public class DoubleNeutralAuto extends AutoRoutine {
                                     : AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
                             Seconds.of(0.0)),
                     // Run back under the trench and shoot
-                    AutoCommands.makeFullShot(
+                    AutoCommands.shotRoutine(
                             drive,
                             intake,
                             indexer,
@@ -127,7 +127,7 @@ public class DoubleNeutralAuto extends AutoRoutine {
                                     : AutoBuilder.followPath(pathPlannerPaths.get(4).mirrorPath()),
                             Seconds.of(0.0)),
                     // Run back under the trench and shoot
-                    AutoCommands.makeFullShot(
+                    AutoCommands.shotRoutine(
                             drive,
                             intake,
                             indexer,

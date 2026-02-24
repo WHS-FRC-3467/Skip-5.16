@@ -77,7 +77,7 @@ public class OutpostAuto extends AutoRoutine {
                     AutoCommands.driveAndCollectAtOutpost(
                             AutoBuilder.followPath(pathPlannerPaths.get(0))),
                     // Drive to shooting location and shoot all FUEL
-                    AutoCommands.makeFullShot(
+                    AutoCommands.shotRoutine(
                             drive, intake, indexer, tower, shooter, pathPlannerPaths.get(1)),
                     // Re-initialize intake for tele-op
                     intake.retractIntake().withTimeout(1.25));

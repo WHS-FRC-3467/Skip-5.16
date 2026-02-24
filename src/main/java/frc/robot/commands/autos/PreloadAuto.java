@@ -23,9 +23,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import java.util.List;
 
-/**
- * Auto routine that utilizes AutoCommands to shoot a preload.
- */
+/** Auto routine that utilizes AutoCommands to shoot a preload. */
 public class PreloadAuto extends AutoRoutine {
 
     public PreloadAuto(
@@ -58,7 +56,7 @@ public class PreloadAuto extends AutoRoutine {
                     // Initialize intake
                     intake.retractIntake(),
                     // Take preload shot
-                    AutoCommands.makeFullShot(
+                    AutoCommands.shotRoutine(
                             drive, intake, indexer, tower, shooter, pathPlannerPaths.get(0)));
     }
 }

@@ -109,7 +109,7 @@ public class AllianceComboAuto extends AutoRoutine {
                             : AutoCommands.driveAndCollectAtOutpost(
                                     AutoBuilder.followPath(pathPlannerPaths.get(0)))),
                     // Drive to shooting location and shoot all FUEL
-                    AutoCommands.makeFullShot(
+                    AutoCommands.shotRoutine(
                             drive,
                             intake,
                             indexer,
@@ -136,7 +136,7 @@ public class AllianceComboAuto extends AutoRoutine {
                                                     AutoBuilder.followPath(
                                                             pathPlannerPaths.get(3))))),
                             // Drive to shooting location and shoot all FUEL
-                            AutoCommands.makeFullShot(
+                            AutoCommands.shotRoutine(
                                     drive,
                                     intake,
                                     indexer,

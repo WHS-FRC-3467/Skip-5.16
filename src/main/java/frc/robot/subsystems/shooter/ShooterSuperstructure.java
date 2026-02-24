@@ -41,7 +41,6 @@ import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
-import frc.robot.RobotState.FieldRegion;
 import frc.robot.RobotState.Target;
 import org.littletonrobotics.junction.Logger;
 

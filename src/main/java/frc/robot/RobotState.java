@@ -125,9 +125,7 @@ public class RobotState {
                                 && (inLeftTrench || inRightTrench);
                     });
 
-    /** 
-     * Trigger determining whether hood is safe to actuate for a HUB shot in auto. 
-     */ 
+    /** Trigger determining whether hood is safe to actuate for a HUB shot in auto. */
     public final LoggedTrigger hoodSafe =
             new LoggedTrigger(
                     "RobotState/hoodSafe",

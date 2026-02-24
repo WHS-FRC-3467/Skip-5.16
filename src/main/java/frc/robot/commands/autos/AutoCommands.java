@@ -109,8 +109,8 @@ public class AutoCommands {
     /**
      * Drive to shooting location while spinning up shooter but not feeding game pieces. Once at
      * target position, with the shooter still spinning, verify subsystem process variables. Upon
-     * confirmation of shooter-ready PVs, bring up the tower and indexer to begin shooting. Shoot
-     * all FUEL for 5.5s. Bring down shooter, tower, and indexer to finish. If path doesn't complete
+     * confirmation of shooter-ready process variables, bring up the tower and indexer to begin shooting. 
+     * Shoot all FUEL for 5.5s. Bring down shooter, tower, and indexer to finish. If path doesn't complete
      * in 3.5s, attempt a shot anyway.
      *
      * @param drive The Drive subsystem
@@ -122,7 +122,7 @@ public class AutoCommands {
      *     end pose
      * @return a command that drives to the shooting location and attempts to shoot all FUEL
      */
-    public static Command makeFullShot(
+    public static Command shotRoutine(
             Drive drive,
             IntakeSuperstructure intake,
             IndexerSuperstructure indexer,
@@ -137,7 +137,7 @@ public class AutoCommands {
                                 FuelCommands.shootFuel(
                                         indexer, tower, shooter, () -> true, 5.5), // ~ 10 bps
                                 intake.cycle()))
-                .andThen(shooter.coastFlywheel()); 
+                .andThen(shooter.coastFlywheel());
     }
 
     /**
