@@ -178,14 +178,10 @@ public class RobotContainer {
         controller
                 .rightTrigger()
                 .whileTrue(
-                        Commands.parallel(
-                                        // // Aim towards target
-                                        DriveCommands.staticAimTowardsTarget(drive),
-                                        // Prepare shooter superstructure
-                                        shooter.spinUpShooter(),
-                                        Commands.parallel(indexer.shoot(), tower.shoot())
-                                                .onlyWhile((robotState.facingTarget)))
-                                .repeatedly())
+                    Commands.parallel(
+                        DriveCommands.staticAimTowardsTarget(drive),
+                        shooter.spinUpShooter(),
+                        Commands.parallel(indexer.shoot(), tower.shoot()).onlyWhile(shooter.readyToShoot.and(robotState.facingTarget)).repeatedly()))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(), indexer.stopCommand(), tower.stopCommand()));

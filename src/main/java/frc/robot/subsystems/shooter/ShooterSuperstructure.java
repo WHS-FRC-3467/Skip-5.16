@@ -22,12 +22,12 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -98,16 +98,20 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final FlywheelMechanism<?> leftFlywheelIO;
     private final FlywheelMechanism<?> rightFlywheelIO;
 
-    private final Timer spinUpTimer = new Timer();
+    private final Debouncer readyToShootDebounder =
+            new Debouncer(0.25, Debouncer.DebounceType.kBoth);
+
+    public final LoggedTrigger shooterWithinTolerance =
+            new LoggedTrigger(
+                    this.getName() + "/shooterWithinTolerance",
+                    () ->
+                            isFlywheelAt(getDesiredFlywheelVelocity())
+                                    && isHoodAt(getDesiredHoodAngle()));
 
     public final LoggedTrigger readyToShoot =
             new LoggedTrigger(
                     this.getName() + "/readyToShoot",
-                    () -> {
-                        return spinUpTimer.hasElapsed(
-                                        .25) // isFlywheelAt(getDesiredFlywheelVelocity())
-                                && isHoodAt(getDesiredHoodAngle());
-                    });
+                    () -> readyToShootDebounder.calculate(shooterWithinTolerance.getAsBoolean()));
 
     public final LoggedTrigger atHubSetpoints =
             new LoggedTrigger(
@@ -151,14 +155,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         this.hoodIO = hoodIO;
         this.leftFlywheelIO = leftFlywheelIO;
         this.rightFlywheelIO = rightFlywheelIO;
-        spinUpTimer.stop();
-        spinUpTimer.reset();
     }
 
     private void spinFlywheel(AngularVelocity velocity) {
-        if (!velocity.isEquivalent(RotationsPerSecond.zero())) {
-            spinUpTimer.start();
-        }
         leftFlywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
         rightFlywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
@@ -329,8 +328,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public Command stopFlywheels() {
         return this.runOnce(
                 () -> {
-                    spinUpTimer.stop();
-                    spinUpTimer.reset();
                     leftFlywheelIO.runCoast();
                     rightFlywheelIO.runCoast();
                 });
