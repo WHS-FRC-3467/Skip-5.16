@@ -34,6 +34,7 @@ import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
+import frc.robot.RobotState.FieldRegion;
 import frc.robot.subsystems.drive.Drive;
 import java.util.Optional;
 import lombok.AccessLevel;
@@ -126,6 +127,14 @@ public class RobotState {
                         return (inAllianceCorridor || inOpponentCorridor)
                                 && (inLeftTrench || inRightTrench);
                     });
+
+    /** Trigger determining whether hood is safe to actuate for a HUB shot in auto. */
+    public final LoggedTrigger hoodSafe =
+            new LoggedTrigger(
+                    "RobotState/hoodSafe",
+                    () ->
+                            getFieldRegion() == FieldRegion.ALLIANCE_ZONE
+                                    && enteringTrench.negate().getAsBoolean());
 
     // -------- POSE ESTIMATION --------
 

@@ -16,15 +16,12 @@
 package frc.robot.commands.autos;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
-import frc.robot.util.RobotSim;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,7 +33,7 @@ public class OutpostAuto extends AutoRoutine {
     /**
      * Constructs an OutpostAuto routine that shoots preload, collects FUEL from the OUTPOST, and
      * then shoots the collected FUEL. Path selection is based on the starting position (LEFT,
-     * CENTER, or RIGHT).
+     * CENTER, or RIGHT) and should be RIGHT for the OutpostAuto.
      *
      * @param drive the drive subsystem
      * @param intake the intake superstructure controlling both linear and roller intake for
@@ -56,24 +53,9 @@ public class OutpostAuto extends AutoRoutine {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
-            case LEFT ->
-                    expectedPaths =
-                            List.of(
-                                    "PreloadShoot-Left",
-                                    "Left-Preload-To-Outpost",
-                                    "Outpost-Shoot");
-            case CENTER ->
-                    expectedPaths =
-                            List.of(
-                                    "PreloadShoot-Center",
-                                    "Center-Preload-To-Outpost",
-                                    "Outpost-Shoot");
-            case RIGHT ->
-                    expectedPaths =
-                            List.of(
-                                    "PreloadShoot-Right",
-                                    "Right-Preload-To-Outpost",
-                                    "Outpost-Shoot");
+            case LEFT -> expectedPaths = List.of();
+            case CENTER -> expectedPaths = List.of();
+            case RIGHT -> expectedPaths = List.of("StartRight-Outpost", "Outpost-Shoot");
             default -> expectedPaths = List.of();
         }
 
@@ -90,21 +72,13 @@ public class OutpostAuto extends AutoRoutine {
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Initialize intake
                     intake.retractIntake().withTimeout(1.25),
-                    // Take preload shot
-                    AutoCommands.makePreloadShot(
-                            drive, indexer, tower, shooter, pathPlannerPaths.get(0)),
-                    // Go to the OUTPOST and intake FUEL
-                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                    // Wait for FUEL to be dumped
-                    Commands.waitSeconds(3),
-                    Commands.either(
-                            Commands.runOnce(
-                                    () -> RobotSim.getInstance().getFuelSim().setHopperFuel(20)),
-                            Commands.none(),
-                            RobotBase::isSimulation),
+                    // Go to the OUTPOST
+                    // Then, wait for FUEL to be dumped
+                    AutoCommands.driveAndCollectAtOutpost(
+                            AutoBuilder.followPath(pathPlannerPaths.get(0))),
                     // Drive to shooting location and shoot all FUEL
-                    AutoCommands.makeFullShot(
-                            drive, intake, indexer, tower, shooter, pathPlannerPaths.get(2)),
+                    AutoCommands.moveToShot(
+                            drive, intake, indexer, tower, shooter, pathPlannerPaths.get(1)),
                     // Re-initialize intake for tele-op
                     intake.retractIntake().withTimeout(1.25));
         }

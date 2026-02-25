@@ -18,6 +18,7 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.wpilibj.RobotBase;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
@@ -48,8 +49,16 @@ public class FlywheelConstants {
 
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
 
+    private static PID getPID() {
+        if (RobotBase.isReal()) {
+            return new PID(12.0, 0.0, 0.0).withS(4.0);
+        } else {
+            return new PID(27.0, 1.0, 0.0).withS(8.0);
+        }
+    }
+
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(12.0, 0.0, 0.0).withS(4.0);
+    public static final PID SLOT0_PID = getPID();
 
     /**
      * Creates a TalonFX motor controller configuration for the flywheel mechanism. Configures

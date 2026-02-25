@@ -42,7 +42,6 @@ import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
-import frc.robot.RobotState.FieldRegion;
 import frc.robot.RobotState.Target;
 import org.littletonrobotics.junction.Logger;
 
@@ -127,14 +126,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
                     });
 
-    // Trigger determining whether hood is safe to actuate. Primarily for use in autos.
-    public final LoggedTrigger hoodSafe =
-            new LoggedTrigger(
-                    this.getName() + "/hoodSafe",
-                    () ->
-                            robotState.getFieldRegion() == FieldRegion.ALLIANCE_ZONE
-                                    && robotState.enteringTrench.negate().getAsBoolean());
-
     private final LoggedTunableBoolean tuningMode =
             new LoggedTunableBoolean(getName() + "/Tuning/Enable", false);
     private final LoggedTunableNumber tuningFlywheelSpeedRPS =
@@ -176,7 +167,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     // Hood
-
     private void setHoodPosition(Angle angle) {
         hoodIO.runPosition(angle, PIDSlot.SLOT_0);
     }
@@ -259,7 +249,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         () -> {
                             spinFlywheel(
                                     RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))));
-                            if (hoodSafe.getAsBoolean()) {
+                            if (robotState.hoodSafe.getAsBoolean()) {
                                 setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
                             } else {
                                 setHoodPosition(Degrees.zero());
@@ -297,14 +287,14 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      *     confident we will make the shot. Shooter remains spun-up at the end of this command.
      * @return The command sequence
      */
-    public Command prepareShot(Command whileAtPosition) {
+    public Command shootFuel(Command whileAtPosition) {
         return Commands.sequence(
                         Commands.parallel(
                                 spinUpShooter(),
                                 Commands.repeatingSequence(
                                         Commands.waitUntil(readyToShoot),
                                         whileAtPosition.until(readyToShoot.negate()))))
-                .withName("Prepare Shot");
+                .withName("Shoot Fuel");
     }
 
     /**
@@ -327,6 +317,19 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Commands.runOnce(() -> spinFlywheel(velocity)).withName("Set Flywheel Speed");
     }
 
+    /**
+     * Creates a command to coast the flywheel. Use after shooting in auto.
+     *
+     * @return command that coasts the flywheel.
+     */
+    public Command coastFlywheel() {
+        return Commands.runOnce(
+                () -> {
+                    leftFlywheelIO.runCoast();
+                    rightFlywheelIO.runCoast();
+                });
+    }
+
     public Command stopFlywheels() {
         return this.runOnce(
                 () -> {
@@ -337,6 +340,17 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     public Command stopAndStow() {
         return Commands.sequence(stopFlywheels(), setHoodAngle(Rotations.zero()));
+    }
+
+    /**
+     * A blocking command that lowers the hood and waits until it is zeroed. This should be included
+     * with a timeout to compensate for possible sensor error. Primarily for use in autos.
+     */
+    public Command retractHood() {
+        return setHoodAngle(Rotations.zero())
+                .andThen(
+                        Commands.waitUntil(
+                                () -> hoodIO.getPosition().lte(HoodConstants.TOLERANCE)));
     }
 
     @Override
