@@ -78,11 +78,16 @@ public class AutoCommands {
             Tower tower,
             ShooterSuperstructure shooter,
             double duration) {
-        return Commands.deadline(
-                FuelCommands.prepareShot(
-                        indexer, tower, shooter, robotState.facingTarget, duration),
-                DriveCommands.joystickDriveAtAngle(
-                        drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget));
+        return Commands.sequence(
+                DriveCommands.autoAimTowardsTarget(drive),
+                shooter.spinUpShooter().withTimeout(0.1),
+                new ParallelDeadlineGroup(
+                        FuelCommands.prepareShot(
+                                indexer,
+                                tower,
+                                shooter,
+                                () -> true,
+                                duration))); // TODO: hopper agitation);
     }
 
     /**
@@ -132,7 +137,7 @@ public class AutoCommands {
         return Commands.sequence(
                 new ParallelDeadlineGroup(
                         AutoBuilder.followPath(path), AutoCommands.prepareHubShot(path, shooter)),
-                DriveCommands.staticAimTowardsTarget(drive),
+                DriveCommands.autoAimTowardsTarget(drive),
                 shooter.spinUpShooter().withTimeout(0.1),
                 new ParallelDeadlineGroup(
                         FuelCommands.prepareShot(
@@ -140,7 +145,7 @@ public class AutoCommands {
                                 tower,
                                 shooter,
                                 () -> true,
-                                4.5))); // TODO: hopper agitation
+                                4.5))); // TODO: hopper agitation);
     }
 
     /**
