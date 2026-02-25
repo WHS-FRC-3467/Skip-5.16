@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8849122807017546,
-        "y": 7.42952850877193
+        "x": 4.0584450598822706,
+        "y": 7.556831906919125
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.212061403508772,
-        "y": 6.78203947368421
+        "x": 3.385594182689288,
+        "y": 6.909342871831406
       },
       "isLocked": false,
       "linkedName": "UnderTrench-Shoot-Left-End"
@@ -48,7 +48,7 @@
   "folder": "Left",
   "idealStartingState": {
     "velocity": 1.0,
-    "rotation": -65.0
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }
