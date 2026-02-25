@@ -15,7 +15,6 @@
 
 package frc.robot.commands.autos;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -81,8 +80,7 @@ public class BasicNeutralAuto extends AutoRoutine {
                             : AutoCommands.resetSimOdom(
                                     drive, pathPlannerPaths.get(0).mirrorPath()),
                     // Initialize intake & hood to starting positions
-                    intake.retractIntake().withTimeout(1.25),
-                    shooter.setHoodAngle(Degrees.zero()).withTimeout(1.25),
+                    AutoCommands.makeSmall(intake, shooter),
                     // Sweep neutral zone while intaking
                     AutoCommands.driveAndIntake(
                             // Drive to the neutral zone
@@ -94,6 +92,8 @@ public class BasicNeutralAuto extends AutoRoutine {
                                     ? AutoBuilder.followPath(pathPlannerPaths.get(1))
                                     : AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
                             Seconds.of(0.0)),
+                    // Retract intake and hood to fit through trench
+                    AutoCommands.makeSmall(intake, shooter),
                     // Run back under the trench and shoot
                     AutoCommands.moveToShot(
                             drive,

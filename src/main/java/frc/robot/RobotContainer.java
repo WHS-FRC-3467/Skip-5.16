@@ -108,7 +108,7 @@ public class RobotContainer {
         // Default - No Auto
         autoChooser.addDefaultOption("None", new NoneAuto());
 
-        // // Preload Autos
+        // Preload Autos
         autoChooser.addOption(
                 "PreloadAuto-Left",
                 new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
@@ -119,7 +119,7 @@ public class RobotContainer {
                 "PreloadAuto-Right",
                 new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
-        // // Basic Neutral Autos
+        // Basic Neutral Autos
         autoChooser.addOption(
                 "BasicNeutralAuto-Left",
                 new BasicNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
