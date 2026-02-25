@@ -152,14 +152,6 @@ public class RobotContainer {
                 "Outpost-Then-DepotAuto-Right",
                 new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
-        // Double Neutral Zone Autos
-        autoChooser.addOption(
-                "DoubleNeutralAuto-Left",
-                new DoubleNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "DoubleNeutralAuto-Right",
-                new DoubleNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
-
         // Nashoba Neutral Zone Autos
         autoChooser.addOption(
                 "NashobaNeutralAuto-Left",
