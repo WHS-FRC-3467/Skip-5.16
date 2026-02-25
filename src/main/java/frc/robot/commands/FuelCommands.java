@@ -24,7 +24,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Utility class for FUEL manipulation commands anticipated for use in teleop or auto that require
+ * Utility class for FUEL manipulation commands anticipated for use in teleop OR auto that require
  * coordination of multiple subsystems.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -44,12 +44,16 @@ public class FuelCommands {
     }
 
     /**
-     * Creates a command sequence that attempts to shoot fuel from the robot for duration. Spins up
-     * the shooter, only pulls fuel through the feeder when ready (i.e. proper shooter state +
-     * alignment), then stops indexer and tower after duration. Shooter remains spun-up. If shooting
-     * is disrupted during duration because shooting readiness drops, attempt a flywheel/hood
-     * adjustment and, if successful, re-commence shooting within the remaining window. Alignment
-     * correction must be handled by external means. Unconditionally stops shot attempts after
+     * Creates a command sequence that attempts to shoot fuel from the robot for duration.
+     * DYNAMICALLY CORRECTS shooter setpoints to ACTUAL CURRENT POSE (bringing it from rest or
+     * trimming error associated with static spin up) and only pulls fuel through the feeder when
+     * ready (i.e. proper shooter state + robot alignment), then stops indexer and tower after
+     * duration. Shooter remains spun-up.
+     *
+     * <p>If shooting is disrupted during duration because shooting readiness drops or robot
+     * misalignment is detected, attempt a flywheel/hood adjustment and, if successful, re-commence
+     * shooting within the remaining window. See {@code ShooterSuperstructure.shootFuel()}.
+     * Alignment correction is not attempted here. Unconditionally STOPS SHOTS attempts after
      * duration.
      *
      * @param indexer the indexer subsystem
@@ -61,7 +65,7 @@ public class FuelCommands {
      * @return a command that shoots fuel and then stops the indexer / tower after the given
      *     duration
      */
-    public static Command shootFuel(
+    public static Command prepareShot(
             IndexerSuperstructure indexer,
             Tower tower,
             ShooterSuperstructure shooter,
@@ -71,7 +75,6 @@ public class FuelCommands {
                 Commands.parallel(indexer.shoot(), tower.shoot())
                         .until(() -> !canShoot.getAsBoolean());
 
-        return shooter.prepareShot(Commands.waitUntil(canShoot).andThen(feed))
-                .withTimeout(duration);
+        return shooter.shootFuel(Commands.waitUntil(canShoot).andThen(feed)).withTimeout(duration);
     }
 }

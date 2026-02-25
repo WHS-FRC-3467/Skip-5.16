@@ -3,32 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8849122807017546,
-        "y": 7.42952850877193
+        "x": 5.84671052631579,
+        "y": 7.419912280701754
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.212061403508772,
-        "y": 6.78203947368421
+        "x": 4.7696929824561405,
+        "y": 7.535307017543859
       },
       "isLocked": false,
-      "linkedName": "UnderTrench-Shoot-Left-End"
+      "linkedName": "NashobaNeutral-SecondSweep-Left-End"
     },
     {
       "anchor": {
-        "x": 1.2184308131241082,
-        "y": 6.0
+        "x": 2.8849122807017546,
+        "y": 7.42952850877193
       },
       "prevControl": {
-        "x": 2.057916666666667,
-        "y": 6.35251096491228
+        "x": 3.8081793343666637,
+        "y": 7.42952850877193
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "NearDepot-End"
+      "linkedName": "UnderTrench-Shoot-Left-End"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.8286163522012572,
+      "rotationDegrees": 0.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -42,13 +47,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -65.0
   },
   "reversed": false,
   "folder": "Left",
   "idealStartingState": {
-    "velocity": 1.0,
-    "rotation": -65.0
+    "velocity": 2.5,
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }
