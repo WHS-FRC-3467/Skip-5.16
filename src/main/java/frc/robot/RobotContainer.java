@@ -205,7 +205,7 @@ public class RobotContainer {
                         drive,
                         () -> -controller.getLeftY(),
                         () -> -controller.getLeftX(),
-                        () -> -controller.getRightX() * 0.75));
+                        () -> -controller.getRightX()));
 
         // Right Trigger: Shoot/Pass
         controller
@@ -214,7 +214,7 @@ public class RobotContainer {
                         Commands.parallel(
                                 DriveCommands.staticAimTowardsTarget(drive),
                                 shooter.spinUpShooter(),
-                                // intake.slowRetract(),
+                                intake.slowRetract(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(robotState.facingTarget))
@@ -238,8 +238,6 @@ public class RobotContainer {
                                 () -> -controller.getLeftY(),
                                 () -> -controller.getLeftX(),
                                 robotState::getTunnelAssistHeading));
-
-        controller.rightBumper().onTrue(intake.retractIntake()).onFalse(intake.extendIntake());
 
         // D-Pad Up: Force Intake Linear Slide Back
         controller.povUp().onTrue(intake.retractIntake());

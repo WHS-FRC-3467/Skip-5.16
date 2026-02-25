@@ -85,7 +85,7 @@ public class IntakeLinearConstants {
             new LinearMechCharacteristics(
                     MIN_DISTANCE, MAX_DISTANCE, STARTING_DISTANCE, DRUM_RADIUS, ORIENTATION);
 
-    public static final PID SLOT0_PID = new PID(500.0, 0.0, 20.0).withS(14.0);
+    public static final PID SLOT0_PID = new PID(500.0, 0.0, 10.0).withS(14.0);
     public static final PID SLOT1_PID = new PID(50.0, 0.0, 0.0);
 
     /**
