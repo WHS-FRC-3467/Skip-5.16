@@ -132,6 +132,8 @@ public class AutoCommands {
         return Commands.sequence(
                 new ParallelDeadlineGroup(
                         AutoBuilder.followPath(path), AutoCommands.prepareHubShot(path, shooter)),
+                DriveCommands.staticAimTowardsTarget(drive),
+                shooter.spinUpShooter().withTimeout(0.1),
                 new ParallelDeadlineGroup(
                         FuelCommands.prepareShot(
                                 indexer,
