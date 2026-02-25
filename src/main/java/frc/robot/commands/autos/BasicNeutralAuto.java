@@ -18,7 +18,6 @@ package frc.robot.commands.autos;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -80,7 +79,7 @@ public class BasicNeutralAuto extends AutoRoutine {
                             : AutoCommands.resetSimOdom(
                                     drive, pathPlannerPaths.get(0).mirrorPath()),
                     // Initialize intake & hood to starting positions
-                    AutoCommands.makeSmall(intake, shooter),
+                    AutoCommands.stowHood(shooter),
                     // Sweep neutral zone while intaking
                     AutoCommands.driveAndIntake(
                             // Drive to the neutral zone
@@ -92,8 +91,6 @@ public class BasicNeutralAuto extends AutoRoutine {
                                     ? AutoBuilder.followPath(pathPlannerPaths.get(1))
                                     : AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
                             Seconds.of(0.0)),
-                    // Retract intake and hood to fit through trench
-                    AutoCommands.makeSmall(intake, shooter),
                     // Run back under the trench and shoot
                     AutoCommands.moveToShot(
                             drive,
@@ -104,7 +101,6 @@ public class BasicNeutralAuto extends AutoRoutine {
                             start == StartPosition.LEFT
                                     ? pathPlannerPaths.get(2)
                                     : pathPlannerPaths.get(2).mirrorPath()),
-                    Commands.waitSeconds(0.2),
                     // Re-initialize intake for depot / outpost run
                     intake.retractIntake().withTimeout(1.25),
                     // Sweep through DEPOT while intaking OR wait at the OUTPOST for FUEL to be
@@ -127,8 +123,6 @@ public class BasicNeutralAuto extends AutoRoutine {
                                     indexer,
                                     tower,
                                     shooter,
-                                    pathPlannerPaths.get(4)),
-                    // Re-initialize intake for tele-op
-                    intake.retractIntake().withTimeout(1.25));
+                                    pathPlannerPaths.get(4)));
     }
 }

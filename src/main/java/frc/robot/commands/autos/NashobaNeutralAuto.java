@@ -79,7 +79,7 @@ public class NashobaNeutralAuto extends AutoRoutine {
                             : AutoCommands.resetSimOdom(
                                     drive, pathPlannerPaths.get(0).mirrorPath()),
                     // Initialize intake and hood to starting positions for first sweep
-                    AutoCommands.makeSmall(intake, shooter),
+                    AutoCommands.stowHood(shooter),
                     // Sweep neutral zone while intaking
                     AutoCommands.driveAndIntake(
                             // Drive to the neutral zone
@@ -91,9 +91,8 @@ public class NashobaNeutralAuto extends AutoRoutine {
                                     ? AutoBuilder.followPath(pathPlannerPaths.get(1))
                                     : AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
                             Seconds.of(0.0)),
-                    // Initialize intake and hood to fit through trench
-                    AutoCommands.makeSmall(intake, shooter),
                     // Run back under the trench and shoot
+
                     AutoCommands.moveToShot(
                             drive,
                             intake,
@@ -104,7 +103,7 @@ public class NashobaNeutralAuto extends AutoRoutine {
                                     ? pathPlannerPaths.get(2)
                                     : pathPlannerPaths.get(2).mirrorPath()),
                     // Initialize intake and hood to starting positions for second sweep
-                    AutoCommands.makeSmall(intake, shooter),
+                    AutoCommands.stowHood(shooter),
                     // Sweep neutral zone while intaking again
                     AutoCommands.driveAndIntake(
                             // Drive to the neutral zone
@@ -116,20 +115,17 @@ public class NashobaNeutralAuto extends AutoRoutine {
                                     ? AutoBuilder.followPath(pathPlannerPaths.get(4))
                                     : AutoBuilder.followPath(pathPlannerPaths.get(4).mirrorPath()),
                             Seconds.of(0.0)),
-                    // Initialize intake and hood to fit through trench
-                    AutoCommands.makeSmall(intake, shooter),
                     // Reverse back through depot / outpost to shooting location & shoot FUEL
-                    start == StartPosition.LEFT
-                            ? AutoCommands.moveToShot(
-                                    drive, intake, indexer, tower, shooter, pathPlannerPaths.get(5))
-                            : AutoCommands.moveToShot(
-                                    drive,
-                                    intake,
-                                    indexer,
-                                    tower,
-                                    shooter,
-                                    pathPlannerPaths.get(5).mirrorPath()),
+                    AutoCommands.moveToShot(
+                            drive,
+                            intake,
+                            indexer,
+                            tower,
+                            shooter,
+                            start == StartPosition.LEFT
+                                    ? pathPlannerPaths.get(5)
+                                    : pathPlannerPaths.get(5).mirrorPath()),
                     // Initialize intake and hood to starting positions for teleop
-                    AutoCommands.makeSmall(intake, shooter));
+                    AutoCommands.stowHood(shooter));
     }
 }

@@ -78,11 +78,16 @@ public class AutoCommands {
             Tower tower,
             ShooterSuperstructure shooter,
             double duration) {
-        return Commands.deadline(
-                FuelCommands.prepareShot(
-                        indexer, tower, shooter, robotState.facingTarget, duration),
-                DriveCommands.joystickDriveAtAngle(
-                        drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget));
+        return Commands.sequence(
+                DriveCommands.autoAimTowardsTarget(drive),
+                shooter.spinUpShooter().withTimeout(0.1),
+                new ParallelDeadlineGroup(
+                        FuelCommands.prepareShot(
+                                indexer,
+                                tower,
+                                shooter,
+                                () -> true,
+                                duration))); // TODO: hopper agitation);
     }
 
     /**
@@ -132,13 +137,15 @@ public class AutoCommands {
         return Commands.sequence(
                 new ParallelDeadlineGroup(
                         AutoBuilder.followPath(path), AutoCommands.prepareHubShot(path, shooter)),
+                DriveCommands.autoAimTowardsTarget(drive),
+                shooter.spinUpShooter().withTimeout(0.1),
                 new ParallelDeadlineGroup(
                         FuelCommands.prepareShot(
                                 indexer,
                                 tower,
                                 shooter,
                                 () -> true,
-                                4.5))); // TODO: hopper agitation
+                                4.5))); // TODO: hopper agitation);
     }
 
     /**
@@ -162,7 +169,7 @@ public class AutoCommands {
         return Commands.sequence(
                 // Roll out intake (times out at 1.25 seconds)
                 // WHILE following the path that takes the robot near the fuel location.
-                Commands.parallel(intake.extendIntake().withTimeout(1.25), approachPathCommand),
+                Commands.parallel(intake.intake(), approachPathCommand),
                 // Collect FUEL
                 pathCommand,
                 Commands.waitSeconds(afterPathWait.in(Seconds)));
@@ -194,7 +201,7 @@ public class AutoCommands {
      * @param shooter the shooter superstructure subsystem
      * @return returns a timed command that retracts the intake and lowers the hood
      */
-    public static Command makeSmall(IntakeSuperstructure intake, ShooterSuperstructure shooter) {
-        return Commands.parallel(intake.retractIntake(), shooter.retractHood()).withTimeout(1.25);
+    public static Command stowHood(ShooterSuperstructure shooter) {
+        return Commands.parallel(shooter.retractHood()).withTimeout(1.25);
     }
 }
