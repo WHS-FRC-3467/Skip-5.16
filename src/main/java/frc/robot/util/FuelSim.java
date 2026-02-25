@@ -352,31 +352,32 @@ public class FuelSim {
      * on the field.
      *
      * <p>This method accelerates O(n^2) pairwise collision checks by binning fuels into a 2D grid
-     * (cell size = CELL_SIZE) based on their X/Y positions. Procedure: - Clear tracked active
-     * cells. - Place each fuel into the grid cell corresponding to its X/Y position and record the
-     * cell as active when the first fuel is added. - For each fuel, only test other fuels located
-     * in the 3x3 neighborhood of its grid cell (the cell itself and its eight neighbors). This
-     * confines checks to nearby objects and greatly reduces comparisons when fuels are sparse.
-     *
-     * <h4>Collision handling notes:
+     * (cell size = CELL_SIZE) based on X/Y positions. Procedure:
      *
      * <ul>
-     *   - Two fuels are considered colliding when their centers are closer than 2 * FUEL_RADIUS.
-     *   <ul>
-     *     - To avoid resolving the same pair twice, the code uses a deterministic ordering
-     *     (hashCode) and only resolves when fuel.hashCode() < other.hashCode().
-     *     <ul>
-     *       - handleFuelCollision(...) performs positional correction and impulse updates, so this
-     *       method mutates fuel positions and velocities.
-     *       <h4>Assumptions and limitations:
-     *       <ul>
-     *         - Only X/Y positions are used for spatial hashing; collisions are tested using full
-     *         3D distances.
-     *         <ul>
-     *           - Fuels outside the grid bounds are ignored for cell insertion and collision
-     *           checks.
+     *   <li>Clear tracked active cells.
+     *   <li>Place each fuel into the grid cell for its X/Y position and mark the cell active.
+     *   <li>For each fuel, only test other fuels in the 3x3 neighborhood of its grid cell.
+     * </ul>
      *
-     * @param fuels list of fuels to process
+     * <p>Notes:
+     *
+     * <ul>
+     *   <li>Two fuels collide when their centers are closer than 2 * FUEL_RADIUS.
+     *   <li>To avoid resolving the same pair twice, the method only resolves when fuel.hashCode()
+     *       &lt; other.hashCode().
+     *   <li>handleFuelCollision(...) applies positional correction and impulse updates; this method
+     *       mutates fuel positions and velocities.
+     * </ul>
+     *
+     * <p>Assumptions:
+     *
+     * <ul>
+     *   <li>Spatial hashing uses X/Y only; narrow-phase uses full 3D distances.
+     *   <li>Fuels outside grid bounds are ignored for binning and collision checks.
+     * </ul>
+     *
+     * @param fuels list of fuels to process (positions and velocities are updated in-place)
      */
     protected void handleFuelCollisions(List<Fuel> fuels) {
         // Clear grid
