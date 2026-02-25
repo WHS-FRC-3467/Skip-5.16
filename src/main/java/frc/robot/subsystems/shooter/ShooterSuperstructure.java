@@ -54,11 +54,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     static {
         hoodAngleMap.put(1.30, 0.0);
         hoodAngleMap.put(1.72, 5.0);
+        hoodAngleMap.put(2.1, 5.0);
         hoodAngleMap.put(2.38, 10.0);
         hoodAngleMap.put(2.78, 13.0);
         hoodAngleMap.put(3.14, 14.0);
         hoodAngleMap.put(4.45, 16.0);
-        hoodAngleMap.put(5.31, 17.0);
+        hoodAngleMap.put(4.94, 19.0);
     }
 
     /** Distance from hub in meters -> flywheel speed in rotations per second */
@@ -68,11 +69,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     static {
         hubFlywheelMap.put(1.30, 41.0);
         hubFlywheelMap.put(1.72, 42.0);
+        hubFlywheelMap.put(2.1, 45.0);
         hubFlywheelMap.put(2.38, 44.0);
         hubFlywheelMap.put(2.78, 45.0);
         hubFlywheelMap.put(3.14, 46.0);
         hubFlywheelMap.put(4.45, 51.0);
-        hubFlywheelMap.put(5.31, 56.0);
+        hubFlywheelMap.put(4.94, 53.5);
     }
 
     /** Distance from feed pose in meters -> flywheel speed in rotations per second */

@@ -155,6 +155,10 @@ public class RobotContainer {
         autoChooser.addOption(
                 "Feedforward Characterization", new FeedforwardCharacterizationAuto(drive));
 
+        autoChooser.addOption(
+                "Rotational Characterization", new RotationalCharacterizationAuto(drive));
+        autoChooser.addOption("Linear Characterization", new LinearCharacterizationAuto(drive));
+
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
@@ -181,13 +185,17 @@ public class RobotContainer {
                         Commands.parallel(
                                 DriveCommands.staticAimTowardsTarget(drive),
                                 shooter.spinUpShooter(),
+                                // intake.slowRetract(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(robotState.facingTarget))
                                         .repeatedly()))
                 .onFalse(
                         Commands.parallel(
-                                shooter.stopAndStow(), indexer.stopCommand(), tower.stopCommand()));
+                                shooter.stopAndStow(),
+                                indexer.stopCommand(),
+                                tower.stopCommand(),
+                                intake.extendIntake()));
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());

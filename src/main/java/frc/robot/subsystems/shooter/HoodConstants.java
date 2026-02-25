@@ -46,7 +46,7 @@ import lombok.NoArgsConstructor;
 public class HoodConstants {
     public static final String NAME = "Hood";
 
-    public static final Angle TOLERANCE = Degrees.of(1.0);
+    public static final Angle TOLERANCE = Degrees.of(2.0);
 
     public static final AngularVelocity CRUISE_VELOCITY = RadiansPerSecond.of(187.75);
     public static final AngularAcceleration ACCELERATION = RadiansPerSecondPerSecond.of(293.0);

@@ -48,7 +48,9 @@ public class IndexerSuperstructure extends SubsystemBase {
                     IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber FLOOR_EJECT_RPS =
-            new LoggedTunableNumber(IndexerFloorConstants.NAME + "/EjectRPS", -0.5);
+            new LoggedTunableNumber(
+                    IndexerFloorConstants.NAME + "/EjectRPS",
+                    -IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber FLOOR_FEED_RPS =
             new LoggedTunableNumber(
@@ -61,7 +63,9 @@ public class IndexerSuperstructure extends SubsystemBase {
                     IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber CENTER_EJECT_RPS =
-            new LoggedTunableNumber(IndexerCenterConstants.NAME + "/EjectRPS", -0.5);
+            new LoggedTunableNumber(
+                    IndexerCenterConstants.NAME + "/EjectRPS",
+                    -IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber CENTER_FEED_RPS =
             new LoggedTunableNumber(
