@@ -108,7 +108,7 @@ public class RobotContainer {
         // Default - No Auto
         autoChooser.addDefaultOption("None", new NoneAuto());
 
-        // // Preload Autos
+        // Preload Autos
         autoChooser.addOption(
                 "PreloadAuto-Left",
                 new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
@@ -119,7 +119,7 @@ public class RobotContainer {
                 "PreloadAuto-Right",
                 new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
-        // // Basic Neutral Autos
+        // Basic Neutral Autos
         autoChooser.addOption(
                 "BasicNeutralAuto-Left",
                 new BasicNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
@@ -127,15 +127,44 @@ public class RobotContainer {
                 "BasicNeutralAuto-Right",
                 new BasicNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
-        // Depot Auto
+        // Depot Autos
         autoChooser.addOption(
                 "DepotAuto-Left",
                 new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption(
+                "DepotAuto-Center",
+                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
 
-        // Outpost Autos
+        // Outpost Auto
         autoChooser.addOption(
                 "OutpostAuto-Right",
                 new OutpostAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+
+        // Alliance Side Autos
+        autoChooser.addOption(
+                "Depot-Then-OutpostAuto-Left",
+                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption(
+                "Depot-Then-OutpostAuto-Center",
+                new AllianceComboAuto(
+                        drive, intake, indexer, tower, shooter, StartPosition.CENTER));
+        autoChooser.addOption(
+                "Outpost-Then-DepotAuto-Right",
+                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+
+        // Nashoba Neutral Zone Autos
+        autoChooser.addOption(
+                "NashobaNeutralAuto-Left",
+                new NashobaNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption(
+                "NashobaNeutralAuto-Right",
+                new NashobaNeutralAuto(
+                        drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+
+        // Drivebase Characterization Autos
+        autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
+        autoChooser.addOption(
+                "RotationalCharacterization", new RotationalCharacterizationAuto(drive));
 
         autoChooser.onChange(
                 auto -> {

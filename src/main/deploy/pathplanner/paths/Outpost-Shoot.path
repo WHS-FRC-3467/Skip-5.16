@@ -8,7 +8,7 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.0471962119681302,
+        "x": 0.9868509025597412,
         "y": 0.6361016167534717
       },
       "isLocked": false,
@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 1.7,
-        "y": 0.78
+        "x": 2.719315263908701,
+        "y": 2.2171184022824537
       },
       "prevControl": {
-        "x": 1.2407499999999996,
-        "y": 0.9090892857142854
+        "x": 2.4476034236804556,
+        "y": 1.7642653352353772
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "PreloadShoot-Right-End"
+      "linkedName": "Shoot-Right-End"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 46.0
+    "rotation": 44.40525548478151
   },
   "reversed": false,
   "folder": "Right",

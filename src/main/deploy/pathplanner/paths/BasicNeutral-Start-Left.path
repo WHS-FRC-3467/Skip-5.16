@@ -3,32 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.558048245614035,
-        "y": 7.381447368421052
+        "x": 4.453095577746077,
+        "y": 7.42
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.582482168330956,
-        "y": 7.496091298145506
+        "x": 5.721084165477889,
+        "y": 7.497845934379458
       },
       "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 5.242353780313837,
-        "y": 7.47
-      },
-      "prevControl": {
-        "x": 4.9134910000751635,
-        "y": 7.485042305225982
-      },
-      "nextControl": {
-        "x": 5.564665577996345,
-        "y": 7.455257339139575
-      },
-      "isLocked": false,
-      "linkedName": null
+      "linkedName": "Start-LeftTrench"
     },
     {
       "anchor": {
@@ -46,7 +30,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1,
+      "waypointRelativePos": 0.5,
       "rotationDegrees": -10.947194329430955
     }
   ],

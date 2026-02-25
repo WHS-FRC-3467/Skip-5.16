@@ -148,11 +148,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
      * @return A command sequence that retracts the intake
      */
     public Command retractIntake() {
-        return Commands.sequence(
-                        runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-                        retractLinear(),
-                        stopRoller())
-                .withName("Retract Intake");
+        return Commands.sequence(retractLinear(), stopRoller()).withName("Retract Intake");
     }
 
     /**
