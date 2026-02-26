@@ -253,16 +253,10 @@ public class DriveCommands {
                         .onlyWhile(robotState.facingTarget));
     }
 
-    //This will need to get updated. This is not the most optimal set of code - Wilk
+    // This will need to get updated. This is not the most optimal set of code - Wilk
     public static Command autoAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
-        return Commands.sequence(
-                        joystickDriveAtAngle(
-                                        drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget)
-                                .until(robotState.facingTarget),
-                        drive.runOnce(drive::stopWithX)
-                                .andThen(drive.idle())
-                                .onlyWhile(robotState.facingTarget))
+        return joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget)
                 .until(robotState.facingTarget);
     }
 

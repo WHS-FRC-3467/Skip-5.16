@@ -18,6 +18,7 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.configs.SlotConfigs;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -44,12 +45,17 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.lib.io.motor.MotorIO.PIDSlot;
+import frc.lib.mechanisms.Mechanism.TunablePidConfig;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
+import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
+import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.RobotState;
 import frc.robot.util.LocalADStarAK;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -106,6 +112,28 @@ public class Drive extends SubsystemBase {
             new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+
+    private final TunablePidConfig driveTunablePID;
+    private final TunablePidConfig steerTunablePID;
+
+    public TunablePidConfig makeTunablePID(String prefix, PID defaultPid) {
+        LoggedTunableNumber kp =
+                new LoggedTunableNumber("Drive/PID/" + prefix + "/kP", defaultPid.P());
+        LoggedTunableNumber ki =
+                new LoggedTunableNumber("Drive/PID/" + prefix + "/kI", defaultPid.I());
+        LoggedTunableNumber kd =
+                new LoggedTunableNumber("Drive/PID/" + prefix + "/kD", defaultPid.D());
+        LoggedTunableNumber ka =
+                new LoggedTunableNumber("Drive/PID/" + prefix + "/kA", defaultPid.A());
+        LoggedTunableNumber kv =
+                new LoggedTunableNumber("Drive/PID/" + prefix + "/kV", defaultPid.V());
+        LoggedTunableNumber kg =
+                new LoggedTunableNumber("Drive/PID/" + prefix + "/kG", defaultPid.G());
+        LoggedTunableNumber ks =
+                new LoggedTunableNumber("Drive/PID/" + prefix + "/kS", defaultPid.S());
+        int id = Objects.hash(this, prefix);
+        return new TunablePidConfig(PIDSlot.SLOT_0, kp, ki, kd, ka, kv, kg, ks, id);
+    }
 
     /**
      * Constructs a new Drive subsystem.
@@ -171,6 +199,15 @@ public class Drive extends SubsystemBase {
                                         Logger.recordOutput("Drive/SysIdState", state.toString())),
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
+        driveTunablePID =
+                makeTunablePID(
+                        "Drive",
+                        new PID(SlotConfigs.from(DriveConstants.FrontLeft.DriveMotorGains)));
+        steerTunablePID =
+                makeTunablePID(
+                        "Steer",
+                        new PID(SlotConfigs.from(DriveConstants.FrontLeft.SteerMotorGains)));
     }
 
     @Override
@@ -197,6 +234,54 @@ public class Drive extends SubsystemBase {
             Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
             Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
         }
+
+        LoggedTunableNumber.ifChanged(
+                driveTunablePID.id,
+                () -> {
+                    for (Module module : modules) {
+                        module.setDrivePID(
+                                driveTunablePID.slot,
+                                new PID(
+                                        driveTunablePID.kp.get(),
+                                        driveTunablePID.ki.get(),
+                                        driveTunablePID.kd.get(),
+                                        driveTunablePID.ka.get(),
+                                        driveTunablePID.kv.get(),
+                                        driveTunablePID.kg.get(),
+                                        driveTunablePID.ks.get()));
+                    }
+                },
+                driveTunablePID.kp,
+                driveTunablePID.ki,
+                driveTunablePID.kd,
+                driveTunablePID.ka,
+                driveTunablePID.kv,
+                driveTunablePID.kg,
+                driveTunablePID.ks);
+
+        LoggedTunableNumber.ifChanged(
+                steerTunablePID.id,
+                () -> {
+                    for (Module module : modules) {
+                        module.setTurnPID(
+                                steerTunablePID.slot,
+                                new PID(
+                                        steerTunablePID.kp.get(),
+                                        steerTunablePID.ki.get(),
+                                        steerTunablePID.kd.get(),
+                                        steerTunablePID.ka.get(),
+                                        steerTunablePID.kv.get(),
+                                        steerTunablePID.kg.get(),
+                                        steerTunablePID.ks.get()));
+                    }
+                },
+                steerTunablePID.kp,
+                steerTunablePID.ki,
+                steerTunablePID.kd,
+                steerTunablePID.ka,
+                steerTunablePID.kv,
+                steerTunablePID.kg,
+                steerTunablePID.ks);
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);

@@ -16,10 +16,11 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.RobotState;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
-import java.util.function.BooleanSupplier;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -68,13 +69,17 @@ public class FuelCommands {
     public static Command prepareShot(
             IndexerSuperstructure indexer,
             Tower tower,
+            IntakeSuperstructure intake,
             ShooterSuperstructure shooter,
-            BooleanSupplier canShoot,
             double duration) {
-        Command feed =
-                Commands.parallel(indexer.shoot(), tower.shoot())
-                        .until(() -> !canShoot.getAsBoolean());
-
-        return shooter.shootFuel(Commands.waitUntil(canShoot).andThen(feed)).withTimeout(duration);
+        return Commands.parallel(
+                        shooter.spinUpShooter(),
+                        intake.slowRetract(),
+                        Commands.parallel(indexer.shoot(), tower.shoot())
+                                .onlyWhile(
+                                        shooter.readyToShoot.and(
+                                                RobotState.getInstance().facingTarget))
+                                .repeatedly())
+                .withTimeout(duration);
     }
 }

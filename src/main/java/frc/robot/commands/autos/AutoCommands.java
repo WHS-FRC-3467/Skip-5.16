@@ -14,7 +14,6 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
@@ -56,38 +55,6 @@ public class AutoCommands {
         } else {
             return Commands.none();
         }
-    }
-
-    /**
-     * Creates a command that automatically aligns the robot to the target while executing the
-     * shooting sequence. The drive will aim toward the target based on robot state, and shooting
-     * will only occur when the robot is within a configured angular tolerance. The command ends
-     * when the shooting sequence times out or is otherwise interrupted.
-     *
-     * @param drive the drive subsystem used to rotate and align the robot to the target
-     * @param indexer the indexer subsystem used to feed game pieces into the shooter
-     * @param tower the tower subsystem used to move game pieces toward the shooter
-     * @param shooter the shooter superstructure responsible for spinning up and controlling the
-     *     shooter
-     * @param duration the maximum duration in seconds to run the align-and-shoot sequence
-     * @return a command that aligns the robot to the target and shoots for up to the given duration
-     */
-    public static Command alignAndShoot(
-            Drive drive,
-            IndexerSuperstructure indexer,
-            Tower tower,
-            ShooterSuperstructure shooter,
-            double duration) {
-        return Commands.sequence(
-                DriveCommands.autoAimTowardsTarget(drive),
-                shooter.spinUpShooter().withTimeout(0.1),
-                new ParallelDeadlineGroup(
-                        FuelCommands.prepareShot(
-                                indexer,
-                                tower,
-                                shooter,
-                                () -> true,
-                                duration))); // TODO: hopper agitation);
     }
 
     /**
@@ -135,17 +102,9 @@ public class AutoCommands {
             ShooterSuperstructure shooter,
             PathPlannerPath path) {
         return Commands.sequence(
-                new ParallelDeadlineGroup(
-                        AutoBuilder.followPath(path), AutoCommands.prepareHubShot(path, shooter)),
+                AutoBuilder.followPath(path),
                 DriveCommands.autoAimTowardsTarget(drive),
-                shooter.spinUpShooter().withTimeout(0.1),
-                new ParallelDeadlineGroup(
-                        FuelCommands.prepareShot(
-                                indexer,
-                                tower,
-                                shooter,
-                                () -> true,
-                                4.5))); // TODO: hopper agitation);
+                FuelCommands.prepareShot(indexer, tower, intake, shooter, 4.5));
     }
 
     /**

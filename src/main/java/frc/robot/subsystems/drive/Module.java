@@ -24,6 +24,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.lib.io.motor.MotorIO.PIDSlot;
+import frc.lib.util.PID;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
@@ -198,5 +200,25 @@ public class Module {
      */
     public double getFFCharacterizationVelocity() {
         return Units.radiansToRotations(inputs.driveVelocityRadPerSec);
+    }
+
+    /**
+     * Updates one PID slot on the drive motor
+     *
+     * @param slot The slot to update
+     * @param pid The PID to set
+     */
+    public void setDrivePID(PIDSlot slot, PID pid) {
+        io.setDrivePID(slot, pid);
+    }
+
+    /**
+     * Updates one PID slot on the turn motor
+     *
+     * @param slot The slot to update
+     * @param pid The PID to set
+     */
+    public void setTurnPID(PIDSlot slot, PID pid) {
+        io.setTurnPID(slot, pid);
     }
 }

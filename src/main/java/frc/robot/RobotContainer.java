@@ -53,6 +53,7 @@ import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.RobotSim;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Container class for the robot that holds all subsystems, controllers, and command bindings. This
@@ -87,6 +88,8 @@ public class RobotContainer {
     Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
 
     private final Trigger isAutonomous = new Trigger(DriverStation::isAutonomous);
+
+    private boolean intakeCycleToggle = true;
 
     /** The container for the robot. Contains subsystems, IO devices, and commands. */
     public RobotContainer() {
@@ -170,12 +173,14 @@ public class RobotContainer {
 
         autoChooser.onChange(
                 auto -> {
-                    autoPreviewField
-                            .getObject("path")
-                            .setPoses(
-                                    auto.getAllPathPoses().stream()
-                                            .map(p -> FieldUtil.apply(p))
-                                            .toArray(Pose2d[]::new));
+                    var pathPoses =
+                            auto.getAllPathPoses().stream()
+                                    .map(p -> FieldUtil.apply(p))
+                                    .toArray(Pose2d[]::new);
+                    if (pathPoses.length == 0) return;
+                    pathPoses[0] = auto.getStartingPose();
+
+                    autoPreviewField.getObject("path").setPoses();
                 });
 
         autoChooser.addOption(
@@ -216,7 +221,7 @@ public class RobotContainer {
                         Commands.parallel(
                                 DriveCommands.staticAimTowardsTarget(drive),
                                 shooter.spinUpShooter(),
-                                intake.slowRetract(),
+                                // intake.slowRetract(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(robotState.facingTarget))
@@ -227,6 +232,9 @@ public class RobotContainer {
                                 indexer.stopCommand(),
                                 tower.stopCommand(),
                                 intake.extendIntake()));
+
+        // Right Bumper: Manually cycle intake
+        controller.rightBumper().onTrue(intake.manualCycle());
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
@@ -355,7 +363,9 @@ public class RobotContainer {
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
         try {
-            startPose = autoPreviewField.getObject("path").getPoses().get(0);
+            Pose2d startPose = autoPreviewField.getObject("path").getPoses().get(0);
+            Logger.recordOutput("Auto/StartPose", startPose);
+
             autoPreviewField.getObject("startPose").setPose(startPose);
 
             Distance distanceFromStartPose =

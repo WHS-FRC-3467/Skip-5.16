@@ -49,18 +49,18 @@ public abstract class Mechanism<T extends MotorIO> {
         this.io = io;
     }
 
-    private static final class TunablePidConfig {
-        private final PIDSlot slot;
-        private final LoggedTunableNumber kp;
-        private final LoggedTunableNumber ki;
-        private final LoggedTunableNumber kd;
-        private final LoggedTunableNumber ka;
-        private final LoggedTunableNumber kv;
-        private final LoggedTunableNumber kg;
-        private final LoggedTunableNumber ks;
-        private final int id;
+    public static final class TunablePidConfig {
+        public final PIDSlot slot;
+        public final LoggedTunableNumber kp;
+        public final LoggedTunableNumber ki;
+        public final LoggedTunableNumber kd;
+        public final LoggedTunableNumber ka;
+        public final LoggedTunableNumber kv;
+        public final LoggedTunableNumber kg;
+        public final LoggedTunableNumber ks;
+        public final int id;
 
-        private TunablePidConfig(
+        public TunablePidConfig(
                 PIDSlot slot,
                 LoggedTunableNumber kp,
                 LoggedTunableNumber ki,

@@ -40,6 +40,7 @@ import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
@@ -144,7 +145,7 @@ public class TowerConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return new Tower(mechanism);
+        return new Tower(new DistanceControlledMechanism<>(mechanism, MAXIMUM_TRIP_DISTANCE));
     }
 
     // Return an IO implementation of distance sensor IO based on current robot state
