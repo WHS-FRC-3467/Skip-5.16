@@ -59,7 +59,7 @@ public class IntakeLinearConstants {
     public static final double GEARING = (42.0 / 12.0);
 
     public static final Distance MIN_DISTANCE = Inches.of(0.1);
-    public static final Distance MAX_DISTANCE = Inches.of(11.4);
+    public static final Distance MAX_DISTANCE = Inches.of(11.0);
     public static final Distance STARTING_DISTANCE = Inches.of(0.1);
 
     public static final LinearVelocity CRUISE_VELOCITY = MetersPerSecond.of(2.53);

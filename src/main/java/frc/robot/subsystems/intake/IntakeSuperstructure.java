@@ -52,8 +52,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     private final LoggedTrigger isExtended;
     private final LoggedTrigger isRetracted;
-    private boolean intakeCycleToggle;
-    private final LoggedTrigger intakeCycleToggleTrigger;
 
     public IntakeSuperstructure(
             DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO,
@@ -77,8 +75,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         IntakeLinearConstants.MIN_DISTANCE.in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
                                         IntakeLinearConstants.TOLERANCE.in(Meters)));
-        intakeCycleToggle = true;
-        intakeCycleToggleTrigger = new LoggedTrigger("intake cycle", () -> intakeCycleToggle);
     }
 
     /**
@@ -272,16 +268,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         () -> intakeLinearIO.getLinearVelocity().lt(InchesPerSecond.of(0.2))),
                 this.runOnce(() -> intakeLinearIO.setEncoderPosition(Rotations.zero())),
                 this.runOnce(() -> intakeLinearIO.runDutyCycle(0.0, false)));
-    }
-
-    public Command manualCycle() {
-        return Commands.runOnce(
-                        () -> {
-                            intakeCycleToggle = !intakeCycleToggle;
-                        })
-                .andThen(Commands.either(slowRetract(), 
-                // TODO: Fix - extendIntake() is not being called by second tap to rightBumper
-                extendIntake(), intakeCycleToggleTrigger));
     }
 
     @Override

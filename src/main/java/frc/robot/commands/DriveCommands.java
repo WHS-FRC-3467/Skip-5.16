@@ -68,7 +68,7 @@ public class DriveCommands {
     private static final double ANGLE_KP = 5.0;
     private static final double ANGLE_KD = 0.4;
     private static final double FF_START_DELAY = 2.0; // Secs
-    private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
+    private static final double FF_RAMP_RATE = 2.0; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 

@@ -234,7 +234,7 @@ public class RobotContainer {
                                 intake.extendIntake()));
 
         // Right Bumper: Manually cycle intake
-        controller.rightBumper().onTrue(intake.manualCycle());
+        controller.rightBumper().onTrue(intake.slowRetract()).onFalse(intake.extendIntake());
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
