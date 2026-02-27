@@ -18,6 +18,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -36,6 +38,7 @@ import frc.lib.util.LoggedDashboardChooser;
 import frc.robot.Constants.PathConstants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -83,6 +86,7 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
     public final Field2d autoPreviewField = new Field2d();
+    private Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
 
     private final Trigger isAutonomous = new Trigger(DriverStation::isAutonomous);
 
@@ -309,6 +313,20 @@ public class RobotContainer {
                 "Face Target",
                 DriveCommands.joystickDriveFacingTarget(
                         drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+        SmartDashboard.putData(
+                "Drive to Start Pose",
+                new DriveToPose(drive, () -> startPose)
+                        .withDistanceTolerance(Meters.of(0.04))
+                        .withAngularTolerance(Degrees.of(3)));
+        SmartDashboard.putData(
+                "Pathfind to Start",
+                DriveCommands.pathFindToPose(
+                        drive,
+                        () -> robotState.getEstimatedPose(),
+                        () -> startPose,
+                        DriveConstants.PATH_CONSTRAINTS,
+                        MetersPerSecond.of(0),
+                        Inches.of(5)));
     }
 
     /** Creates and/or binds triggers to LED states */
@@ -337,7 +355,7 @@ public class RobotContainer {
 
     /**
      * Checks and displays the robot's starting pose accuracy relative to the selected autonomous
-     * path. This function is called periodically by Robot.java when disabled.
+     * path.
      */
     public void checkStartPose() {
 
@@ -345,7 +363,7 @@ public class RobotContainer {
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
         try {
-            Pose2d startPose = autoPreviewField.getObject("path").getPoses().get(0);
+            startPose = autoPreviewField.getObject("path").getPoses().get(0);
             autoPreviewField.getObject("startPose").setPose(startPose);
 
             Distance distanceFromStartPose =
@@ -383,6 +401,7 @@ public class RobotContainer {
                             < PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees));
 
         } catch (Exception e) {
+            startPose = robotState.getEstimatedPose();
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start", -1);
             SmartDashboard.putBoolean("Auto Pose Check/Robot Position Within Tolerance", false);
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start", -1);
