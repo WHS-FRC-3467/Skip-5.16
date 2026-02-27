@@ -18,6 +18,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -316,6 +317,14 @@ public class RobotContainer {
                 new DriveToPose(drive, () -> startPose)
                         .withDistanceTolerance(Meters.of(0.04))
                         .withAngularTolerance(Degrees.of(3)));
+        SmartDashboard.putData(
+                "Pathfind to Start",
+                DriveCommands.pathFindToPose(
+                        () -> robotState.getEstimatedPose(),
+                        () -> startPose,
+                        DriveConstants.PATH_CONSTRAINTS,
+                        MetersPerSecond.of(0),
+                        Inches.of(5)));
     }
 
     /** Creates and/or binds triggers to LED states */

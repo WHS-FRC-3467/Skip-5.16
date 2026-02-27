@@ -42,6 +42,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import lombok.Getter;
@@ -416,8 +417,8 @@ public class DriveCommands {
                                                     NumberFormat formatter =
                                                             new DecimalFormat("#0.000");
                                                     String results =
-                                                            "Wheel Radius Characterization Results - "
-                                                                    + "Wheel Delta: "
+                                                            "Wheel Radius Characterization Results"
+                                                                    + " - Wheel Delta: "
                                                                     + formatter.format(wheelDelta)
                                                                     + " radians, "
                                                                     + "Gyro Delta: "
@@ -454,27 +455,36 @@ public class DriveCommands {
      */
     public static Command pathFindToPose(
             Supplier<Pose2d> currentPose,
-            Pose2d targetPose,
+            Supplier<Pose2d> targetPose,
             PathConstraints constraints,
             LinearVelocity goalEndVelocity,
             Distance tolerance) {
 
-        // Since AutoBuilder is configured, we can use it to build pathfinding commands
-        return AutoBuilder.pathfindToPose(
-                        targetPose, constraints, goalEndVelocity // Goal end velocity in meters/sec
-                        )
-                .raceWith(
-                        // Interrupt the pathfinding command once the robot gets within the
-                        // tolerance of the
-                        // target pose
-                        Commands.waitUntil(
-                                () ->
-                                        currentPose
-                                                        .get()
-                                                        .minus(targetPose)
-                                                        .getTranslation()
-                                                        .getNorm()
-                                                < tolerance.in(Meters)))
-                .withName("Pathfind to " + targetPose.toString());
+        // Defer command construction so targetPose is evaluated at schedule time, not build time.
+        // This ensures that if startPose (or any other target) is updated after this command is
+        // built, the pathfinder uses the latest value when the command is actually run.
+        return Commands.defer(
+                        () ->
+                                AutoBuilder.pathfindToPose(
+                                                targetPose.get(),
+                                                constraints,
+                                                goalEndVelocity // Goal end velocity in meters/sec
+                                                )
+                                        .raceWith(
+                                                // Interrupt the pathfinding command once the robot
+                                                // gets within the tolerance of the target pose
+                                                Commands.waitUntil(
+                                                        () ->
+                                                                currentPose
+                                                                                .get()
+                                                                                .minus(
+                                                                                        targetPose
+                                                                                                .get())
+                                                                                .getTranslation()
+                                                                                .getNorm()
+                                                                        < tolerance.in(Meters)))
+                                        .withName("Pathfind to " + targetPose.get().toString()),
+                        Set.of())
+                .withName("Pathfind to Pose");
     }
 }
