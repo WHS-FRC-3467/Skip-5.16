@@ -207,13 +207,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private AngularVelocity getDesiredFlywheelVelocity() {
-        InterpolatingDoubleTreeMap flywheelMap =
-                switch (robotState.getTarget()) {
-                    case HUB -> hubFlywheelMap;
-                    case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
-                };
+        // InterpolatingDoubleTreeMap flywheelMap =
+        //         switch (robotState.getTarget()) {
+        //             case HUB -> hubFlywheelMap;
+        //             case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
+        //         };
 
-        return RotationsPerSecond.of(flywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
+        if (robotState.getTarget() != Target.HUB) {
+            return RotationsPerSecond.of(40.0);
+        }
+
+        return RotationsPerSecond.of(
+                hubFlywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
     }
 
     private Angle getDesiredHoodAngle() {
@@ -221,7 +226,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             return Degrees.of(hoodAngleMap.get(robotState.getDistanceToTarget().in(Meters)));
         }
 
-        return Degrees.of(0.0);
+        return Degrees.of(27.0);
     }
 
     // Gets ball trajectory exit angle relative to horizontal, accounting for hood angle and

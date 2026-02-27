@@ -141,25 +141,27 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     public Command slowRetract() {
         return Commands.sequence(
-                        Commands.waitSeconds(SLOW_LINEAR_DELAY_S.get()),
-                        this.runOnce(
-                                () ->
-                                        intakeRollerIO.runVelocity(
-                                                RotationsPerSecond.of(
-                                                        ROLLER_INTAKE_RPS.getAsDouble()),
-                                                IntakeRollerConstants.MAX_ACCELERATION,
-                                                PIDSlot.SLOT_0)),
-                        this.runOnce(
-                                () ->
-                                        intakeLinearIO.runDutyCycle(
-                                                SLOW_LINEAR_SPEED_DUTYCYCLE.get(), false)),
-                        Commands.waitUntil(isRetracted),
-                        stopRoller(),
-                        this.runOnce(
-                                () ->
-                                        intakeLinearIO.runLinearPosition(
-                                                IntakeLinearConstants.MIN_DISTANCE,
-                                                PIDSlot.SLOT_0)))
+                        this.runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
+                        Commands.sequence(
+                                // this.runOnce(
+                                //         () ->
+                                //                 intakeRollerIO.runVelocity(
+                                //                         RotationsPerSecond.of(
+                                //                                 ROLLER_INTAKE_RPS.getAsDouble()),
+                                //                         IntakeRollerConstants.MAX_ACCELERATION,
+                                //                         PIDSlot.SLOT_0)),
+                                // this.runOnce(
+                                //         () ->
+                                //                 intakeLinearIO.runDutyCycle(
+                                //                         SLOW_LINEAR_SPEED_DUTYCYCLE.get(),
+                                // false)),
+                                // Commands.waitUntil(isRetracted),
+                                // stopRoller(),
+                                this.runOnce(
+                                        () ->
+                                                intakeLinearIO.runLinearPosition(
+                                                        IntakeLinearConstants.MAX_DISTANCE.div(4.0),
+                                                        PIDSlot.SLOT_0))))
                 .withName("Retract Linear");
     }
 
@@ -263,10 +265,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     public Command homeLinear() {
         return Commands.sequence(
-                this.runOnce(() -> intakeLinearIO.runDutyCycle(-0.4, true)),
+                this.runOnce(() -> intakeLinearIO.runDutyCycle(0.4, true)),
+                Commands.waitSeconds(0.2),
                 Commands.waitUntil(
-                        () -> intakeLinearIO.getLinearVelocity().lt(InchesPerSecond.of(0.2))),
-                this.runOnce(() -> intakeLinearIO.setEncoderPosition(Rotations.zero())),
+                        () -> intakeLinearIO.getLinearVelocity().lt(InchesPerSecond.of(0.05))),
+                this.runOnce(() -> intakeLinearIO.setEncoderPosition(Rotations.of(3.65))),
                 this.runOnce(() -> intakeLinearIO.runDutyCycle(0.0, false)));
     }
 

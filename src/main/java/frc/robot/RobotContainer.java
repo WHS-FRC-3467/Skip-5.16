@@ -231,7 +231,8 @@ public class RobotContainer {
                                 shooter.stopAndStow(),
                                 indexer.stopCommand(),
                                 tower.stopCommand(),
-                                intake.extendIntake()));
+                                intake.extendIntake(),
+                                shooter.retractHood()));
 
         // Right Bumper: Manually cycle intake
         controller.rightBumper().onTrue(intake.slowRetract()).onFalse(intake.extendIntake());
@@ -327,6 +328,8 @@ public class RobotContainer {
                 new DriveToPose(drive, () -> startPose)
                         .withDistanceTolerance(Meters.of(0.04))
                         .withAngularTolerance(Degrees.of(3)));
+
+        SmartDashboard.putData("Drive/Zero", drive.runOnce(() -> drive.runCharacterization(0.0)));
     }
 
     /** Creates and/or binds triggers to LED states */
