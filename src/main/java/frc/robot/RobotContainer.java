@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -85,7 +86,7 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
     public final Field2d autoPreviewField = new Field2d();
-    Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
+    private Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
 
     private final Trigger isAutonomous = new Trigger(DriverStation::isAutonomous);
 
@@ -320,6 +321,7 @@ public class RobotContainer {
         SmartDashboard.putData(
                 "Pathfind to Start",
                 DriveCommands.pathFindToPose(
+                        drive,
                         () -> robotState.getEstimatedPose(),
                         () -> startPose,
                         DriveConstants.PATH_CONSTRAINTS,
@@ -353,7 +355,7 @@ public class RobotContainer {
 
     /**
      * Checks and displays the robot's starting pose accuracy relative to the selected autonomous
-     * path. This function is called periodically by Robot.java when disabled.
+     * path.
      */
     public void checkStartPose() {
 

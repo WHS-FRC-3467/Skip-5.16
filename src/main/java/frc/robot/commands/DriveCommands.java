@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.Meters;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -36,8 +37,12 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
+
+import lombok.Getter;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -45,7 +50,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import lombok.Getter;
 
 /**
  * Factory class for creating drive-related commands.
@@ -454,6 +458,7 @@ public class DriveCommands {
      * @return the pathfinding command
      */
     public static Command pathFindToPose(
+            Drive drive,
             Supplier<Pose2d> currentPose,
             Supplier<Pose2d> targetPose,
             PathConstraints constraints,
@@ -484,7 +489,7 @@ public class DriveCommands {
                                                                                 .getNorm()
                                                                         < tolerance.in(Meters)))
                                         .withName("Pathfind to " + targetPose.get().toString()),
-                        Set.of())
+                        Set.of(drive))
                 .withName("Pathfind to Pose");
     }
 }
