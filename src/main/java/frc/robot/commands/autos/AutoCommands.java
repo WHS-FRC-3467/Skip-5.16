@@ -103,8 +103,9 @@ public class AutoCommands {
             PathPlannerPath path) {
         return Commands.sequence(
                 AutoBuilder.followPath(path),
-                DriveCommands.autoAimTowardsTarget(drive),
-                FuelCommands.prepareShot(indexer, tower, intake, shooter, 4.5));
+                Commands.parallel(
+                        DriveCommands.autoAimTowardsTarget(drive),
+                        FuelCommands.prepareShot(indexer, tower, intake, shooter, 4.5)));
     }
 
     /**
