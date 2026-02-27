@@ -1,5 +1,6 @@
 package frc.robot.util;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 
@@ -16,6 +17,7 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.RobotState;
 import java.util.ArrayList;
@@ -156,13 +158,13 @@ public class FuelSim {
                     Translation3d accel = Fg.div(FUEL_MASS);
                     vel = vel.plus(accel.times(PERIOD / subticks));
                 }
-                if (Math.abs(vel.getZ()) < 0.05 && pos.getZ() <= FUEL_RADIUS + 0.03) {
-                    vel = new Translation3d(vel.getX(), vel.getY(), 0);
-                    vel = vel.times(1 - FRICTION * PERIOD / subticks);
-                    // pos = new Translation3d(pos.getX(), pos.getY(), FUEL_RADIUS);
-                }
-                handleFieldCollisions(subticks);
             }
+            if (Math.abs(vel.getZ()) < 0.05 && pos.getZ() <= FUEL_RADIUS + 0.03) {
+                vel = new Translation3d(vel.getX(), vel.getY(), 0);
+                vel = vel.times(1 - FRICTION * PERIOD / subticks);
+                // pos = new Translation3d(pos.getX(), pos.getY(), FUEL_RADIUS);
+            }
+            handleFieldCollisions(subticks);
         }
 
         /**
@@ -343,20 +345,46 @@ public class FuelSim {
     @SuppressWarnings("unchecked")
     protected final ArrayList<Fuel>[][] grid = new ArrayList[GRID_COLS][GRID_ROWS];
 
+    private final ArrayList<ArrayList<Fuel>> activeCells = new ArrayList<>();
+
     /**
-     * Broad-phase + narrow-phase collision detection for fuels using a uniform grid. Packs fuels
-     * into grid cells (CELL_SIZE) and tests neighboring cells for pairwise collisions to limit
-     * complexity.
+     * Broad-phase spatial-hash based collision detection and narrow-phase resolution for all fuels
+     * on the field.
      *
-     * @param fuels list of fuels to process
+     * <p>This method accelerates O(n^2) pairwise collision checks by binning fuels into a 2D grid
+     * (cell size = CELL_SIZE) based on X/Y positions. Procedure:
+     *
+     * <ul>
+     *   <li>Clear tracked active cells.
+     *   <li>Place each fuel into the grid cell for its X/Y position and mark the cell active.
+     *   <li>For each fuel, only test other fuels in the 3x3 neighborhood of its grid cell.
+     * </ul>
+     *
+     * <p>Notes:
+     *
+     * <ul>
+     *   <li>Two fuels collide when their centers are closer than 2 * FUEL_RADIUS.
+     *   <li>To avoid resolving the same pair twice, the method only resolves when fuel.hashCode()
+     *       &lt; other.hashCode().
+     *   <li>handleFuelCollision(...) applies positional correction and impulse updates; this method
+     *       mutates fuel positions and velocities.
+     * </ul>
+     *
+     * <p>Assumptions:
+     *
+     * <ul>
+     *   <li>Spatial hashing uses X/Y only; narrow-phase uses full 3D distances.
+     *   <li>Fuels outside grid bounds are ignored for binning and collision checks.
+     * </ul>
+     *
+     * @param fuels list of fuels to process (positions and velocities are updated in-place)
      */
     protected void handleFuelCollisions(List<Fuel> fuels) {
         // Clear grid
-        for (int i = 0; i < GRID_COLS; i++) {
-            for (int j = 0; j < GRID_ROWS; j++) {
-                grid[i][j].clear();
-            }
+        for (ArrayList<Fuel> cell : activeCells) {
+            cell.clear();
         }
+        activeCells.clear();
 
         // Populate grid
         for (Fuel fuel : fuels) {
@@ -365,6 +393,9 @@ public class FuelSim {
 
             if (col >= 0 && col < GRID_COLS && row >= 0 && row < GRID_ROWS) {
                 grid[col][row].add(fuel);
+                if (grid[col][row].size() == 1) {
+                    activeCells.add(grid[col][row]);
+                }
             }
         }
 
@@ -546,8 +577,7 @@ public class FuelSim {
                         .rotateBy(robotPose.getRotation());
         double fieldX = robotPose.getX() + fuelRotated.getX();
         double fieldY = robotPose.getY() + fuelRotated.getY();
-        double fieldZ = position.getZ();
-        return new Translation3d(fieldX, fieldY, fieldZ);
+        return new Translation3d(fieldX, fieldY, position.getZ());
     }
 
     /** Start the simulation. `updateSim` must still be called every loop */
@@ -579,7 +609,7 @@ public class FuelSim {
      *
      * @param width from left to right (y-axis)
      * @param length from front to back (x-axis)
-     * @param bumperHeight the height of the bumper
+     * @param bumperHeight from the ground
      * @param poseSupplier supplier for the robot pose
      * @param fieldSpeedsSupplier field-relative `ChassisSpeeds` supplier
      */
@@ -594,6 +624,28 @@ public class FuelSim {
         this.robotWidth = width;
         this.robotLength = length;
         this.bumperHeight = bumperHeight;
+    }
+
+    /**
+     * Registers a robot with the fuel simulator
+     *
+     * @param width from left to right (y-axis)
+     * @param length from front to back (x-axis)
+     * @param bumperHeight from the ground
+     * @param poseSupplier supplier for the robot pose
+     * @param fieldSpeedsSupplier field-relative `ChassisSpeeds` supplier
+     */
+    public void registerRobot(
+            Distance width,
+            Distance length,
+            Distance bumperHeight,
+            Supplier<Pose2d> poseSupplier,
+            Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+        this.robotPoseSupplier = poseSupplier;
+        this.robotFieldSpeedsSupplier = fieldSpeedsSupplier;
+        this.robotWidth = width.in(Meters);
+        this.robotLength = length.in(Meters);
+        this.bumperHeight = bumperHeight.in(Meters);
     }
 
     /** To be called periodically Will do nothing if sim is not running */
@@ -866,6 +918,82 @@ public class FuelSim {
      */
     public void registerIntake(double xMin, double xMax, double yMin, double yMax) {
         registerIntake(xMin, xMax, yMin, yMax, () -> true, () -> {});
+    }
+
+    /**
+     * Registers an intake with the fuel simulator. This intake will remove fuel from the field
+     * based on the `ableToIntake` parameter.
+     *
+     * @param xMin Minimum x position for the bounding box
+     * @param xMax Maximum x position for the bounding box
+     * @param yMin Minimum y position for the bounding box
+     * @param yMax Maximum y position for the bounding box
+     * @param ableToIntake Should a return a boolean whether the intake is active
+     * @param intakeCallback Function to call when a fuel is intaked
+     */
+    public void registerIntake(
+            Distance xMin,
+            Distance xMax,
+            Distance yMin,
+            Distance yMax,
+            BooleanSupplier ableToIntake,
+            Runnable intakeCallback) {
+        registerIntake(
+                xMin.in(Meters),
+                xMax.in(Meters),
+                yMin.in(Meters),
+                yMax.in(Meters),
+                ableToIntake,
+                intakeCallback);
+    }
+
+    /**
+     * Registers an intake with the fuel simulator. This intake will remove fuel from the field
+     * based on the `ableToIntake` parameter.
+     *
+     * @param xMin Minimum x position for the bounding box
+     * @param xMax Maximum x position for the bounding box
+     * @param yMin Minimum y position for the bounding box
+     * @param yMax Maximum y position for the bounding box
+     * @param ableToIntake Should a return a boolean whether the intake is active
+     */
+    public void registerIntake(
+            Distance xMin,
+            Distance xMax,
+            Distance yMin,
+            Distance yMax,
+            BooleanSupplier ableToIntake) {
+        registerIntake(
+                xMin.in(Meters), xMax.in(Meters), yMin.in(Meters), yMax.in(Meters), ableToIntake);
+    }
+
+    /**
+     * Registers an intake with the fuel simulator. This intake will always remove fuel from the
+     * field.
+     *
+     * @param xMin Minimum x position for the bounding box
+     * @param xMax Maximum x position for the bounding box
+     * @param yMin Minimum y position for the bounding box
+     * @param yMax Maximum y position for the bounding box
+     * @param intakeCallback Function to call when a fuel is intaked
+     */
+    public void registerIntake(
+            Distance xMin, Distance xMax, Distance yMin, Distance yMax, Runnable intakeCallback) {
+        registerIntake(
+                xMin.in(Meters), xMax.in(Meters), yMin.in(Meters), yMax.in(Meters), intakeCallback);
+    }
+
+    /**
+     * Registers an intake with the fuel simulator. This intake will always remove fuel from the
+     * field.
+     *
+     * @param xMin Minimum x position for the bounding box
+     * @param xMax Maximum x position for the bounding box
+     * @param yMin Minimum y position for the bounding box
+     * @param yMax Maximum y position for the bounding box
+     */
+    public void registerIntake(Distance xMin, Distance xMax, Distance yMin, Distance yMax) {
+        registerIntake(xMin.in(Meters), xMax.in(Meters), yMin.in(Meters), yMax.in(Meters));
     }
 
     public static class Hub {
