@@ -140,7 +140,9 @@ public class RobotState {
 
     private final PoseEstimator poseEstimator =
             new PoseEstimator(
-                    new SwerveDriveKinematics(Drive.getModuleTranslations()),
+                    new SwerveDriveKinematics(
+                            Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new)),
+                    Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new),
                     Seconds.of(2),
                     LINEAR_ODOMETRY_STD_DEV,
                     ANGULAR_ODOMETRY_STD_DEV);

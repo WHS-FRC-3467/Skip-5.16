@@ -59,7 +59,7 @@ public class VisionSubsystem extends SubsystemBase {
     /** Baseline angular standard deviation used for vision observations. */
     public static final double ANGULAR_STDDEV_BASELINE = 0.2;
 
-    /** Maximum allowable height (Z-axis) of a detected pose to be considered valid. */
+    /** Maximum allowable height (Z-axis) of a detected pose to be considqered valid. */
     public static final double MAX_Z_METERS = 0.75;
 
     /** Maximum allowable distance from a target to be considered valid. */

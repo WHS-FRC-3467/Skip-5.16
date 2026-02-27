@@ -48,6 +48,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.Mechanism.TunablePidConfig;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
+import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
 import frc.lib.util.PID;
@@ -55,6 +56,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.RobotState;
 import frc.robot.util.LocalADStarAK;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
@@ -68,6 +70,7 @@ public class Drive extends SubsystemBase {
     // TunerConstants doesn't include these constants, so they are declared locally
     static final double ODOMETRY_FREQUENCY =
             new CANBus(DriveConstants.drivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
+
     public static final double DRIVE_BASE_RADIUS =
             Math.max(
                     Math.max(
@@ -85,10 +88,24 @@ public class Drive extends SubsystemBase {
                                     DriveConstants.BackRight.LocationX,
                                     DriveConstants.BackRight.LocationY)));
 
+    public static final List<Translation2d> MODULE_TRANSLATIONS =
+            List.of(
+                    new Translation2d(
+                            DriveConstants.FrontLeft.LocationX, DriveConstants.FrontLeft.LocationY),
+                    new Translation2d(
+                            DriveConstants.FrontRight.LocationX,
+                            DriveConstants.FrontRight.LocationY),
+                    new Translation2d(
+                            DriveConstants.BackLeft.LocationX, DriveConstants.BackLeft.LocationY),
+                    new Translation2d(
+                            DriveConstants.BackRight.LocationX,
+                            DriveConstants.BackRight.LocationY));
+
     // PathPlanner config constants
     private static final double ROBOT_MASS_KG = 63.5;
     private static final double ROBOT_MOI = 8.57;
     private static final double WHEEL_COF = 1.2;
+
     private static final RobotConfig PP_CONFIG =
             new RobotConfig(
                     ROBOT_MASS_KG,
@@ -101,17 +118,60 @@ public class Drive extends SubsystemBase {
                                     .withReduction(DriveConstants.FrontLeft.DriveMotorGearRatio),
                             DriveConstants.FrontLeft.SlipCurrent,
                             1),
-                    getModuleTranslations());
+                    MODULE_TRANSLATIONS.toArray(Translation2d[]::new));
 
     static final Lock odometryLock = new ReentrantLock();
+
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+
     private final SysIdRoutine sysId;
+
     private final Alert gyroDisconnectedAlert =
             new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
-    private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+    private final LoggedTunableBoolean enableSkidDetection =
+            new LoggedTunableBoolean("Drive/Enable Skid Detection", true);
+
+    private SwerveDriveKinematics kinematics =
+            new SwerveDriveKinematics(MODULE_TRANSLATIONS.toArray(Translation2d[]::new));
+
+    /*
+     * Wheel skid detection for odometry: We compute a per-sample badWheels array and attach it to
+     * the odometry observation. The odometry integrator can then ignore those wheels for that
+     * integration step.
+     *
+     * The detection checks how consistent each wheel's translational velocity is compared to the
+     * others. A wheel that is slipping is often an outlier.
+     */
+    private static final LoggedTunableNumber SKID_OUTLIER_SCALE =
+            new LoggedTunableNumber("Drive/SkidOutlierScale", 1.35);
+
+    /*
+     * At very low translation speeds, encoder quantization and noise can cause false positives. We
+     * skip skid detection if the median translational speed is below this threshold.
+     */
+    private static final LoggedTunableNumber SKID_MIN_TRANSLATION_MPS =
+            new LoggedTunableNumber("Drive/SkidMinTranslationMPS", 0.15);
+
+    @AutoLogOutput(key = "Drive/Skid/BadWheelsLatest")
+    private boolean[] skidBadWheelsLatest = new boolean[] {false, false, false, false};
+
+    @AutoLogOutput(key = "Drive/Skid/TransMagLatest")
+    private double[] skidTranslationalSpeedMagnitudesLatest = new double[] {0.0, 0.0, 0.0, 0.0};
+
+    // Reused buffers for skid detection to avoid per-sample allocations at high odometry rates.
+    private final SwerveModuleState[] skidMeasuredStatesScratch =
+            new SwerveModuleState[] {
+                new SwerveModuleState(),
+                new SwerveModuleState(),
+                new SwerveModuleState(),
+                new SwerveModuleState()
+            };
+    private final double[] skidTranslationalSpeedScratch = new double[] {0.0, 0.0, 0.0, 0.0};
+    private final boolean[] skidBadWheelsScratch = new boolean[] {false, false, false, false};
 
     private final TunablePidConfig driveTunablePID;
     private final TunablePidConfig steerTunablePID;
@@ -151,6 +211,7 @@ public class Drive extends SubsystemBase {
             ModuleIO blModuleIO,
             ModuleIO brModuleIO) {
         this.gyroIO = gyroIO;
+
         modules[0] = new Module(flModuleIO, 0, DriveConstants.FrontLeft);
         modules[1] = new Module(frModuleIO, 1, DriveConstants.FrontRight);
         modules[2] = new Module(blModuleIO, 2, DriveConstants.BackLeft);
@@ -175,13 +236,16 @@ public class Drive extends SubsystemBase {
                     PP_CONFIG,
                     () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                     this);
+
             Pathfinding.setPathfinder(new LocalADStarAK());
+
             PathPlannerLogging.setLogActivePathCallback(
                     (activePath) -> {
                         Logger.recordOutput(
                                 "Odometry/Trajectory",
                                 activePath.toArray(new Pose2d[activePath.size()]));
                     });
+
             PathPlannerLogging.setLogTargetPoseCallback(
                     (targetPose) -> {
                         Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
@@ -214,6 +278,7 @@ public class Drive extends SubsystemBase {
     @SuppressWarnings("LockNotBeforeTry")
     public void periodic() {
         LoggerHelper.recordCurrentCommand("Drive", this);
+
         odometryLock.lock(); // Prevents odometry updates while reading data
         gyroIO.updateInputs(gyroInputs);
         Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -288,10 +353,11 @@ public class Drive extends SubsystemBase {
 
         double[] sampleTimestamps = modules[0].getOdometryTimestamps();
         int sampleCount = sampleTimestamps.length;
-        for (int i = 0; i < sampleCount; i++) {
+
+        for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
             SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
-            for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-                modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
+            for (int i = 0; i < 4; i++) {
+                modulePositions[i] = modules[i].getOdometryPositions()[sampleIndex];
             }
 
             Optional<Rotation2d> gyroAngle = Optional.empty();
@@ -299,9 +365,23 @@ public class Drive extends SubsystemBase {
                 gyroAngle = Optional.of(gyroInputs.yawPosition);
             }
 
+            boolean[] badWheels =
+                    enableSkidDetection.get()
+                            ? computeSkidMaskForSample(
+                                    sampleIndex, sampleTimestamps, modulePositions)
+                            : clearAndReturnFalseSkidMask();
+
+            // Keep the latest sample easy to view in AdvantageScope.
+            if (sampleIndex == sampleCount - 1) {
+                System.arraycopy(badWheels, 0, skidBadWheelsLatest, 0, skidBadWheelsLatest.length);
+            }
+
             robotState.addOdometryObservation(
                     new OdometryObservation(
-                            Seconds.of(sampleTimestamps[i]), modulePositions, gyroAngle));
+                            Seconds.of(sampleTimestamps[sampleIndex]),
+                            modulePositions,
+                            gyroAngle,
+                            badWheels));
         }
 
         // Update RobotState velocity
@@ -364,7 +444,7 @@ public class Drive extends SubsystemBase {
     public void stopWithX() {
         Rotation2d[] headings = new Rotation2d[4];
         for (int i = 0; i < 4; i++) {
-            headings[i] = getModuleTranslations()[i].getAngle();
+            headings[i] = MODULE_TRANSLATIONS.get(i).getAngle();
         }
         kinematics.resetHeadings(headings);
         stop();
@@ -474,23 +554,6 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Returns an array of module translations.
-     *
-     * @return Array of Translation2d objects representing module positions relative to robot center
-     */
-    public static Translation2d[] getModuleTranslations() {
-        return new Translation2d[] {
-            new Translation2d(
-                    DriveConstants.FrontLeft.LocationX, DriveConstants.FrontLeft.LocationY),
-            new Translation2d(
-                    DriveConstants.FrontRight.LocationX, DriveConstants.FrontRight.LocationY),
-            new Translation2d(DriveConstants.BackLeft.LocationX, DriveConstants.BackLeft.LocationY),
-            new Translation2d(
-                    DriveConstants.BackRight.LocationX, DriveConstants.BackRight.LocationY)
-        };
-    }
-
-    /**
      * Returns the acceleration of the gyro in the X direction.
      *
      * @return Acceleration in the X direction in G's
@@ -528,5 +591,174 @@ public class Drive extends SubsystemBase {
         double absRollFrom180 = Math.abs(roll) - 180.0;
 
         return absPitch > tolerance || Math.abs(absRollFrom180) > tolerance;
+    }
+
+    /**
+     * Computes a per-odometry-sample skid mask.
+     *
+     * <p>The returned array is aligned to the odometry sample at {@code sampleIndex}. This matters
+     * because {@link frc.lib.posestimator.SwerveOdometry} integrates pose using those exact sampled
+     * positions.
+     *
+     * <p>Approach:
+     *
+     * <ul>
+     *   <li>Estimate each wheel's velocity at this sample from position delta divided by dt.
+     *   <li>Use kinematics to estimate the robot's angular velocity (omega) for that sample.
+     *   <li>For each wheel, subtract the rotational velocity component caused by omega.
+     *   <li>Compare the remaining translational speed magnitudes across wheels.
+     * </ul>
+     *
+     * <p>Skid rule: A wheel is flagged as skidding if its translational speed magnitude is an
+     * outlier compared to the median wheel translational speed. This catches common cases like one
+     * wheel spinning freely or one wheel being dragged.
+     *
+     * <p>When translation is very small, encoder noise and quantization dominate. In that case we
+     * skip skid detection and return all-false to avoid false positives.
+     *
+     * @param sampleIndex index into the odometry sample arrays for this cycle
+     * @param sampleTimestamps timestamps for the odometry samples, in seconds
+     * @param positionsNow module positions at {@code sampleIndex}
+     * @return boolean[4] where true means "ignore this wheel for this odometry update"
+     */
+    private boolean[] computeSkidMaskForSample(
+            int sampleIndex, double[] sampleTimestamps, SwerveModulePosition[] positionsNow) {
+        boolean[] badWheels = clearAndReturnFalseSkidMask();
+        SwerveModuleState[] measuredStates = skidMeasuredStatesScratch;
+
+        if (sampleIndex <= 0) {
+            /*
+             * In sim we often only have one odometry sample per cycle. In that case we cannot
+             * compute velocity from position delta, so we use the instantaneous measured module
+             * states for this cycle. It is quite rare to not have multiple samples on a real robot,
+             * but if that happens, this isn't a bad metric.
+             */
+            for (int i = 0; i < 4; i++) {
+                measuredStates[i].speedMetersPerSecond = modules[i].getVelocityMetersPerSec();
+                measuredStates[i].angle = modules[i].getAngle();
+            }
+        } else {
+            double secondsBetweenSamples =
+                    sampleTimestamps[sampleIndex] - sampleTimestamps[sampleIndex - 1];
+
+            if (secondsBetweenSamples <= 1e-6) {
+                setAllZeros(skidTranslationalSpeedMagnitudesLatest);
+                return badWheels;
+            }
+
+            for (int i = 0; i < 4; i++) {
+                SwerveModulePosition previousPosition =
+                        modules[i].getOdometryPositions()[sampleIndex - 1];
+                double deltaDistanceMeters =
+                        positionsNow[i].distanceMeters - previousPosition.distanceMeters;
+
+                double speedMetersPerSecond = deltaDistanceMeters / secondsBetweenSamples;
+
+                measuredStates[i].speedMetersPerSecond = speedMetersPerSecond;
+                measuredStates[i].angle = positionsNow[i].angle;
+            }
+        }
+
+        final double angularVelocityRadiansPerSecond =
+                kinematics.toChassisSpeeds(measuredStates).omegaRadiansPerSecond;
+
+        double[] translationalSpeedMagnitudesMetersPerSecond = skidTranslationalSpeedScratch;
+
+        for (int i = 0; i < 4; i++) {
+            Translation2d moduleLocation = MODULE_TRANSLATIONS.get(i);
+
+            double measuredVx =
+                    measuredStates[i].speedMetersPerSecond * measuredStates[i].angle.getCos();
+            double measuredVy =
+                    measuredStates[i].speedMetersPerSecond * measuredStates[i].angle.getSin();
+
+            double rotationalVx = -angularVelocityRadiansPerSecond * moduleLocation.getY();
+            double rotationalVy = angularVelocityRadiansPerSecond * moduleLocation.getX();
+
+            double translationalVx = measuredVx - rotationalVx;
+            double translationalVy = measuredVy - rotationalVy;
+            translationalSpeedMagnitudesMetersPerSecond[i] =
+                    Math.hypot(translationalVx, translationalVy);
+        }
+
+        System.arraycopy(
+                translationalSpeedMagnitudesMetersPerSecond,
+                0,
+                skidTranslationalSpeedMagnitudesLatest,
+                0,
+                skidTranslationalSpeedMagnitudesLatest.length);
+
+        double medianTranslationalSpeedMetersPerSecond =
+                medianOfFour(translationalSpeedMagnitudesMetersPerSecond);
+
+        if (medianTranslationalSpeedMetersPerSecond < SKID_MIN_TRANSLATION_MPS.get()) {
+            return badWheels;
+        }
+
+        double minimumAcceptableSpeedMetersPerSecond =
+                medianTranslationalSpeedMetersPerSecond / SKID_OUTLIER_SCALE.get();
+        double maximumAcceptableSpeedMetersPerSecond =
+                medianTranslationalSpeedMetersPerSecond * SKID_OUTLIER_SCALE.get();
+
+        for (int i = 0; i < 4; i++) {
+            double translationalSpeedMetersPerSecond =
+                    translationalSpeedMagnitudesMetersPerSecond[i];
+
+            badWheels[i] =
+                    (translationalSpeedMetersPerSecond < minimumAcceptableSpeedMetersPerSecond)
+                            || (translationalSpeedMetersPerSecond
+                                    > maximumAcceptableSpeedMetersPerSecond);
+        }
+
+        return badWheels;
+    }
+
+    private boolean[] clearAndReturnFalseSkidMask() {
+        for (int i = 0; i < skidBadWheelsScratch.length; i++) {
+            skidBadWheelsScratch[i] = false;
+        }
+        return skidBadWheelsScratch;
+    }
+
+    private static void setAllZeros(double[] values) {
+        for (int i = 0; i < values.length; i++) {
+            values[i] = 0.0;
+        }
+    }
+
+    private static double medianOfFour(double[] values) {
+        // 4-element sorting network; returns average of middle two with zero allocations.
+        double a = values[0];
+        double b = values[1];
+        double c = values[2];
+        double d = values[3];
+
+        if (a > b) {
+            double t = a;
+            a = b;
+            b = t;
+        }
+        if (c > d) {
+            double t = c;
+            c = d;
+            d = t;
+        }
+        if (a > c) {
+            double t = a;
+            a = c;
+            c = t;
+        }
+        if (b > d) {
+            double t = b;
+            b = d;
+            d = t;
+        }
+        if (b > c) {
+            double t = b;
+            b = c;
+            c = t;
+        }
+
+        return 0.5 * (b + c);
     }
 }
