@@ -47,7 +47,6 @@ import frc.lib.mechanisms.linear.LinearMechanismSim;
 import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
-import frc.robot.Robot;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -62,7 +61,7 @@ public class IntakeLinearConstants {
     public static final Distance MAX_DISTANCE = Inches.of(11.0);
     public static final Distance STARTING_DISTANCE = Inches.of(0.1);
 
-    public static final LinearVelocity CRUISE_VELOCITY = MetersPerSecond.of(0.05);
+    public static final LinearVelocity CRUISE_VELOCITY = MetersPerSecond.of(1.0);
 
     public static final LinearAcceleration MAX_ACCELERATION = MetersPerSecondPerSecond.of(999.0);
 
@@ -97,16 +96,14 @@ public class IntakeLinearConstants {
     public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
-        config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
-        config.CurrentLimits.SupplyCurrentLimit = 40.0;
-        config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
-        config.CurrentLimits.SupplyCurrentLowerTime = 0.1;
-
-        config.CurrentLimits.StatorCurrentLimitEnable = Robot.isReal();
-        config.CurrentLimits.StatorCurrentLimit = 80.0;
+        config.CurrentLimits.SupplyCurrentLimitEnable = false;
+        config.CurrentLimits.StatorCurrentLimitEnable = false;
 
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
+
+        config.TorqueCurrent.PeakForwardTorqueCurrent = 10.0;
+        config.TorqueCurrent.PeakReverseTorqueCurrent = -40.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.MotorOutput.Inverted =

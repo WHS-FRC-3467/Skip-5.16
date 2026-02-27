@@ -71,6 +71,17 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
     }
 
     /**
+     * Runs the mechanism to a target linear position without a motion profile.
+     *
+     * @param position Desired linear position
+     * @param slot PID slot to use
+     */
+    public void runUnprofiledLinearPosition(Distance position, PIDSlot slot) {
+        Angle angle = Radians.of(position.in(Meters) / radiusMeters);
+        mechanism.runUnprofiledPosition(angle, slot);
+    }
+
+    /**
      * Runs the mechanism at a target linear velocity with acceleration limiting.
      *
      * @param velocity Desired linear velocity
@@ -185,6 +196,16 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
      */
     public void runPosition(Angle position, PIDSlot slot) {
         mechanism.runPosition(position, slot);
+    }
+
+    /**
+     * Runs the mechanism to a specific position without a motion profile.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     */
+    public void runUnprofiledPosition(Angle position, PIDSlot slot) {
+        mechanism.runUnprofiledPosition(position, slot);
     }
 
     /**

@@ -154,6 +154,14 @@ public interface MotorIO extends AutoCloseable {
     public default void runPosition(Angle position, PIDSlot slot) {}
 
     /**
+     * Runs the motor to a specific position without a motion profile.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     */
+    public default void runUnprofiledPosition(Angle position, PIDSlot slot) {}
+
+    /**
      * Runs the motor at a target velocity.
      *
      * @param velocity Desired velocity.

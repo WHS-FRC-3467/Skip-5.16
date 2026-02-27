@@ -21,6 +21,9 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -37,21 +40,21 @@ import java.util.function.Supplier;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 30.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0);
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -30.0);
-
-    private static final LoggedTunableNumber SLOW_LINEAR_SPEED_DUTYCYCLE =
-            new LoggedTunableNumber(
-                    IntakeLinearConstants.NAME + "/SlowLinearSpeedDutycycle", -0.25);
-    private static final LoggedTunableNumber SLOW_LINEAR_DELAY_S =
-            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowLinearDelay", 1.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
 
     private final DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO;
     private final FlywheelMechanism<?> intakeRollerIO;
 
     private final LoggedTrigger isExtended;
     private final LoggedTrigger isRetracted;
+
+    private final TrapezoidProfile extensionMotionProfiler =
+            new TrapezoidProfile(new Constraints(0.05, 999.0));
+    private final State extensionGoalState =
+            new State(IntakeLinearConstants.MAX_DISTANCE.in(Meters), 0.0);
+    private State setpointState = new State();
 
     public IntakeSuperstructure(
             DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO,
@@ -142,26 +145,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     public Command slowRetract() {
         return Commands.sequence(
                         this.runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-                        Commands.sequence(
-                                // this.runOnce(
-                                //         () ->
-                                //                 intakeRollerIO.runVelocity(
-                                //                         RotationsPerSecond.of(
-                                //                                 ROLLER_INTAKE_RPS.getAsDouble()),
-                                //                         IntakeRollerConstants.MAX_ACCELERATION,
-                                //                         PIDSlot.SLOT_0)),
-                                // this.runOnce(
-                                //         () ->
-                                //                 intakeLinearIO.runDutyCycle(
-                                //                         SLOW_LINEAR_SPEED_DUTYCYCLE.get(),
-                                // false)),
-                                // Commands.waitUntil(isRetracted),
-                                // stopRoller(),
-                                this.runOnce(
-                                        () ->
-                                                intakeLinearIO.runLinearPosition(
-                                                        IntakeLinearConstants.MAX_DISTANCE.div(4.0),
-                                                        PIDSlot.SLOT_0))))
+                        this.runOnce(
+                                () ->
+                                        intakeLinearIO.runLinearPosition(
+                                                IntakeLinearConstants.MAX_DISTANCE.div(4.0),
+                                                PIDSlot.SLOT_0)))
                 .withName("Retract Linear");
     }
 

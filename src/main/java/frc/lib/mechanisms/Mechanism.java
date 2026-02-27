@@ -183,6 +183,16 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
+     * Runs the mechanism to a specific position without a motion profile.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     */
+    public void runUnprofiledPosition(Angle position, PIDSlot slot) {
+        io.runUnprofiledPosition(position, slot);
+    }
+
+    /**
      * Runs the mechanism at a target velocity.
      *
      * @param velocity Desired velocity.

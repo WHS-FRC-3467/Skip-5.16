@@ -23,6 +23,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
@@ -93,7 +94,7 @@ public class IndexerFloorConstants {
      *
      * @return A fully configured IndexerSuperstructure subsystem
      */
-    public static FlywheelMechanism<?> get() {
+    public static DistanceControlledMechanism<FlywheelMechanism<?>> get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -122,6 +123,6 @@ public class IndexerFloorConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return mechanism;
+        return new DistanceControlledMechanism<>(mechanism, Inches.of(0.5));
     }
 }

@@ -72,6 +72,8 @@ public class MotorIOTalonFX implements MotorIO {
     protected final DutyCycleOut dutyCycleControl = new DutyCycleOut(0).withEnableFOC(true);
     protected final MotionMagicTorqueCurrentFOC positionControl =
             new MotionMagicTorqueCurrentFOC(0);
+    protected final PositionTorqueCurrentFOC unprofiledPositionControl =
+            new PositionTorqueCurrentFOC(0);
     protected final VelocityTorqueCurrentFOC velocityControl = new VelocityTorqueCurrentFOC(0);
 
     private final CANUpdateThread updateThread = new CANUpdateThread();
@@ -381,6 +383,18 @@ public class MotorIOTalonFX implements MotorIO {
      */
     @Override
     public void runPosition(Angle position, PIDSlot slot) {
+        this.goalPosition = position;
+        motor.setControl(positionControl.withPosition(position).withSlot(slot.getNum()));
+    }
+
+    /**
+     * Runs the motor to a specific position without a motion profile.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     */
+    @Override
+    public void runUnprofiledPosition(Angle position, PIDSlot slot) {
         this.goalPosition = position;
         motor.setControl(positionControl.withPosition(position).withSlot(slot.getNum()));
     }
