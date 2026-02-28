@@ -108,6 +108,17 @@ public class AutoCommands {
                         FuelCommands.prepareShot(indexer, tower, intake, shooter, 4.5)));
     }
 
+    public static Command shootCommand(
+            Drive drive,
+            IntakeSuperstructure intake,
+            IndexerSuperstructure indexer,
+            Tower tower,
+            ShooterSuperstructure shooter) {
+        return Commands.parallel(
+                DriveCommands.autoAimTowardsTarget(drive),
+                FuelCommands.prepareShot(indexer, tower, intake, shooter, 4.5));
+    }
+
     /**
      * Drive to the end of the drive path, extend the intake, and drive into the FUEL with rollers
      * running. Once the intaking path is complete, stop the intake. This AutoSegment only linearly
@@ -129,7 +140,7 @@ public class AutoCommands {
         return Commands.sequence(
                 // Roll out intake (times out at 1.25 seconds)
                 // WHILE following the path that takes the robot near the fuel location.
-                Commands.parallel(intake.intake(), approachPathCommand),
+                Commands.deadline(approachPathCommand, intake.intake()),
                 // Collect FUEL
                 pathCommand,
                 Commands.waitSeconds(afterPathWait.in(Seconds)));

@@ -3,70 +3,70 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.558655555555555,
-        "y": 4.064233333333333
+        "x": 8.127674750356633,
+        "y": 6.836219686162625
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.6842455916127825,
-        "y": 4.3555260489263645
+        "x": 8.166490727532096,
+        "y": 5.4517831669044226
       },
       "isLocked": false,
-      "linkedName": "NashobaNeutral-FirstSweep-Left-End"
+      "linkedName": "NewStartWilkTest"
     },
     {
       "anchor": {
-        "x": 6.447788888888889,
-        "y": 7.263195435092724
+        "x": 7.817146932952923,
+        "y": 4.675463623395149
       },
       "prevControl": {
-        "x": 7.953794100682131,
-        "y": 6.983692896544916
+        "x": 8.347631954350925,
+        "y": 5.231825962910129
       },
       "nextControl": {
-        "x": 5.307688888888889,
-        "y": 7.474788888888888
+        "x": 7.014666307007094,
+        "y": 3.833837601061716
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.167588888888889,
-        "y": 7.445555555555555
+        "x": 5.7340228245363765,
+        "y": 7.327888730385164
       },
       "prevControl": {
-        "x": 4.713277777777778,
-        "y": 7.494277777777777
+        "x": 6.512430790834522,
+        "y": 7.000919724054921
       },
       "nextControl": {
-        "x": 3.3856784723377276,
-        "y": 7.375742125506345
+        "x": 4.955614858238231,
+        "y": 7.654857736715407
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.693437945791726,
-        "y": 7.263195435092724
+        "x": 3.418002853067047,
+        "y": 7.431398002853067
       },
       "prevControl": {
-        "x": 2.9156041965411963,
-        "y": 7.443416642477245
+        "x": 3.8579172610556345,
+        "y": 7.521968616262482
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "UnderTrench-Shoot-Left-End"
+      "linkedName": "EndWilkTest"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.0331950207468867,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 0.7,
+      "rotationDegrees": -90.0
     },
     {
-      "waypointRelativePos": 2.5120331950207038,
+      "waypointRelativePos": 2.2324093816631216,
       "rotationDegrees": 0.0
     }
   ],
@@ -83,13 +83,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -60.78075330951541
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "NeutralZone Auto",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": -100.0
+    "velocity": 2.0,
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.55,
-        "y": 7.38
+        "x": 4.362524964336661,
+        "y": 7.444336661911555
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.6623120837090077,
-        "y": 6.8825608598838395
+        "x": 5.255292439372324,
+        "y": 7.53490727532097
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.2184308131241082,
-        "y": 6.0
+        "x": 8.127674750356633,
+        "y": 6.836219686162625
       },
       "prevControl": {
-        "x": 2.188830242510699,
-        "y": 5.956390870185448
+        "x": 7.5066191155492135,
+        "y": 7.819557774607704
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "NearDepot-End"
+      "linkedName": "NewStartWilkTest"
     }
   ],
   "rotationTargets": [],
@@ -41,14 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.5,
-    "rotation": 180.0
+    "velocity": 2.0,
+    "rotation": -90.0
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "NeutralZone Auto",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": 180.0
+    "velocity": 0,
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

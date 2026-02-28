@@ -4,13 +4,14 @@
   "holonomicMode": true,
   "pathFolders": [
     "Center",
-    "Left",
     "Characterization",
+    "Left",
+    "NeutralZone Auto",
     "Right"
   ],
   "autoFolders": [],
-  "defaultMaxVel": 3.5,
-  "defaultMaxAccel": 5.0,
+  "defaultMaxVel": 4.0,
+  "defaultMaxAccel": 3.0,
   "defaultMaxAngVel": 480.0,
   "defaultMaxAngAccel": 600.0,
   "defaultNominalVoltage": 12.0,

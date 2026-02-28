@@ -15,7 +15,10 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -43,7 +46,6 @@ public class NashobaNeutralAuto extends AutoRoutine {
                                     "NashobaNeutral-Sweep-Left-1",
                                     "NashobaNeutral-UnderTrench-Shoot-Left-1",
                                     "NashobaNeutral-Start-Left-2",
-                                    "NashobaNeutral-Sweep-Left-2",
                                     "NashobaNeutral-UnderTrench-Shoot-Left-2");
             case CENTER ->
                     expectedPaths =
@@ -55,7 +57,6 @@ public class NashobaNeutralAuto extends AutoRoutine {
                                     "NashobaNeutral-Sweep-Left-1",
                                     "NashobaNeutral-UnderTrench-Shoot-Left-1",
                                     "NashobaNeutral-Start-Left-2",
-                                    "NashobaNeutral-Sweep-Left-2",
                                     "NashobaNeutral-UnderTrench-Shoot-Left-2");
             default -> expectedPaths = List.of();
         }
@@ -77,63 +78,50 @@ public class NashobaNeutralAuto extends AutoRoutine {
                             : AutoCommands.resetSimOdom(
                                     drive, pathPlannerPaths.get(0).mirrorPath()),
                     // Initialize intake and hood to starting positions for first sweep
-                    // AutoCommands.stowHood(shooter),
+                    AutoCommands.stowHood(shooter),
                     // Sweep neutral zone while intaking
-                    // AutoCommands.driveAndIntake(
-                    //         // Drive to the neutral zone
-                    //         start == StartPosition.LEFT
-                    //                 ? AutoBuilder.followPath(pathPlannerPaths.get(0))
-                    //                 :
-                    // AutoBuilder.followPath(pathPlannerPaths.get(0).mirrorPath()),
-                    //         intake,
-                    //         start == StartPosition.LEFT
-                    //                 ? AutoBuilder.followPath(pathPlannerPaths.get(1))
-                    //                 :
-                    // AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
-                    //         Seconds.of(0.0)),
-                    AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                    AutoCommands.driveAndIntake(
+                            // Drive to the neutral zone
+                            start == StartPosition.LEFT
+                                    ? AutoBuilder.followPath(pathPlannerPaths.get(0))
+                                    : AutoBuilder.followPath(pathPlannerPaths.get(0).mirrorPath()),
+                            intake,
+                            start == StartPosition.LEFT
+                                    ? AutoBuilder.followPath(pathPlannerPaths.get(1))
+                                    : AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
+                            Seconds.of(0.0)),
                     // Run back under the trench and shoot
-
-                    // AutoCommands.moveToShot(
-                    //         drive,
-                    //         intake,
-                    //         indexer,
-                    //         tower,
-                    //         shooter,
-                    //         start == StartPosition.LEFT
-                    //                 ? pathPlannerPaths.get(2)
-                    //                 : pathPlannerPaths.get(2).mirrorPath()),
-                    AutoBuilder.followPath(pathPlannerPaths.get(2)),
+                    AutoCommands.moveToShot(
+                            drive,
+                            intake,
+                            indexer,
+                            tower,
+                            shooter,
+                            start == StartPosition.LEFT
+                                    ? pathPlannerPaths.get(2)
+                                    : pathPlannerPaths.get(2).mirrorPath()),
                     // Initialize intake and hood to starting positions for second sweep
-                    // AutoCommands.stowHood(shooter),
+                    AutoCommands.stowHood(shooter),
                     // Sweep neutral zone while intaking again
-                    // AutoCommands.driveAndIntake(
-                    //         // Drive to the neutral zone
-                    //         start == StartPosition.LEFT
-                    //                 ? AutoBuilder.followPath(pathPlannerPaths.get(3))
-                    //                 :
-                    // AutoBuilder.followPath(pathPlannerPaths.get(3).mirrorPath()),
-                    //         intake,
-                    //         start == StartPosition.LEFT
-                    //                 ? AutoBuilder.followPath(pathPlannerPaths.get(4))
-                    //                 :
-                    // AutoBuilder.followPath(pathPlannerPaths.get(4).mirrorPath()),
-                    //         Seconds.of(0.0)),
+                    AutoCommands.driveAndIntake(
+                            // Drive to the neutral zone
+                            start == StartPosition.LEFT
+                                    ? AutoBuilder.followPath(pathPlannerPaths.get(3))
+                                    : AutoBuilder.followPath(pathPlannerPaths.get(3).mirrorPath()),
+                            intake,
+                            Commands.none(),
+                            Seconds.of(0.0)),
                     // Reverse back through depot / outpost to shooting location & shoot FUEL
-                    AutoBuilder.followPath(pathPlannerPaths.get(3)),
-                    AutoBuilder.followPath(pathPlannerPaths.get(4)),
-                    // AutoCommands.moveToShot(
-                    //         drive,
-                    //         intake,
-                    //         indexer,
-                    //         tower,
-                    //         shooter,
-                    //         start == StartPosition.LEFT
-                    //                 ? pathPlannerPaths.get(5)
-                    //                 : pathPlannerPaths.get(5).mirrorPath()),
-                    AutoBuilder.followPath(pathPlannerPaths.get(5)));
-        // Initialize intake and hood to starting positions for teleop
-        // AutoCommands.stowHood(shooter));
+                    AutoCommands.moveToShot(
+                            drive,
+                            intake,
+                            indexer,
+                            tower,
+                            shooter,
+                            start == StartPosition.LEFT
+                                    ? pathPlannerPaths.get(4)
+                                    : pathPlannerPaths.get(4).mirrorPath()),
+                    // Initialize intake and hood to starting positions for teleop
+                    AutoCommands.stowHood(shooter));
     }
 }

@@ -192,6 +192,7 @@ public class RobotState {
             resetPose(observation.robotPose());
             return;
         }
+
         poseEstimator.addVisionObservation(observation);
     }
 

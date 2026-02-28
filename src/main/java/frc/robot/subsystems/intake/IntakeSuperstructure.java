@@ -14,9 +14,10 @@
  */
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -44,16 +45,29 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
 
+    private static final LoggedTunableNumber SLOW_MPS =
+            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowMPS", 0.05);
+
     private final DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO;
     private final FlywheelMechanism<?> intakeRollerIO;
 
     private final LoggedTrigger isExtended;
     private final LoggedTrigger isRetracted;
 
-    private final TrapezoidProfile extensionMotionProfiler =
-            new TrapezoidProfile(new Constraints(0.05, 999.0));
+    private final State retractionGoalState =
+            new State(IntakeLinearConstants.MIN_DISTANCE.in(Meters), 0.0);
     private final State extensionGoalState =
             new State(IntakeLinearConstants.MAX_DISTANCE.in(Meters), 0.0);
+    private TrapezoidProfile fastMotionProfiler =
+            new TrapezoidProfile(
+                    new Constraints(
+                            IntakeLinearConstants.CRUISE_VELOCITY.in(MetersPerSecond),
+                            IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
+    private TrapezoidProfile slowMotionProfiler =
+            new TrapezoidProfile(
+                    new Constraints(
+                            0.3,
+                            IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
     private State setpointState = new State();
 
     public IntakeSuperstructure(
@@ -61,6 +75,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
             FlywheelMechanism<?> intakeRollerIO) {
         this.intakeLinearIO = intakeLinearIO;
         this.intakeRollerIO = intakeRollerIO;
+
+        this.intakeLinearIO.runLinearPosition(IntakeLinearConstants.MIN_DISTANCE, PIDSlot.SLOT_0);
 
         isExtended =
                 new LoggedTrigger(
@@ -110,19 +126,30 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 .withName("Run Roller");
     }
 
+    private Command profileLinearToPositionCommand(
+            Supplier<TrapezoidProfile> profiler, State goal) {
+        return Commands.sequence(
+                Commands.runOnce(
+                        () -> {
+                            setpointState.position = intakeLinearIO.getLinearPosition().in(Meters);
+                            setpointState.velocity = 0.0;
+                        }),
+                this.run(
+                        () -> {
+                            setpointState = profiler.get().calculate(0.02, setpointState, goal);
+                            intakeLinearIO.runUnprofiledLinearPosition(
+                                    Meters.of(setpointState.position), PIDSlot.SLOT_0);
+                        }));
+    }
+
     /**
      * Creates a command to extend the intake linear mechanism by applying positive current.
      *
      * @return A command that extends the linear mechanism
      */
     private Command extendLinear() {
-        return Commands.sequence(
-                        this.runOnce(
-                                () ->
-                                        intakeLinearIO.runLinearPosition(
-                                                IntakeLinearConstants.MAX_DISTANCE,
-                                                PIDSlot.SLOT_0)),
-                        Commands.waitUntil(isExtended))
+        return profileLinearToPositionCommand(() -> fastMotionProfiler, extensionGoalState)
+                .until(isExtended)
                 .withName("Extend Linear");
     }
 
@@ -134,22 +161,18 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private Command retractLinear() {
         return Commands.sequence(
                         runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-                        this.runOnce(
-                                () ->
-                                        intakeLinearIO.runLinearPosition(
-                                                Meters.zero(), PIDSlot.SLOT_0)),
-                        Commands.waitUntil(isRetracted).withTimeout(2.0))
+                        profileLinearToPositionCommand(
+                                        () -> fastMotionProfiler, retractionGoalState)
+                                .until(isRetracted))
                 .withName("Retract Linear");
     }
 
     public Command slowRetract() {
         return Commands.sequence(
                         this.runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-                        this.runOnce(
-                                () ->
-                                        intakeLinearIO.runLinearPosition(
-                                                IntakeLinearConstants.MAX_DISTANCE.div(4.0),
-                                                PIDSlot.SLOT_0)))
+                        profileLinearToPositionCommand(
+                                        () -> slowMotionProfiler, retractionGoalState)
+                                .until(isRetracted))
                 .withName("Retract Linear");
     }
 
@@ -184,41 +207,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     public Command extendIntake() {
         return Commands.sequence(runRoller(() -> RotationsPerSecond.zero()), extendLinear())
                 .withName("Extend Intake");
-    }
-
-    /**
-     * Creates a command that repeatedly cycles the intake linear mechanism. Alternates between
-     * extending and retracting with 3 second timeouts for each operation.
-     *
-     * @return A repeating command that cycles the linear mechanism
-     */
-    public Command cycle() {
-        return Commands.sequence(
-                runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-                Commands.repeatingSequence(
-                        Commands.deadline(
-                                Commands.waitSeconds(0.2)
-                                        .andThen(
-                                                Commands.waitUntil(
-                                                        () ->
-                                                                intakeLinearIO
-                                                                        .getLinearVelocity()
-                                                                        .lt(
-                                                                                InchesPerSecond.of(
-                                                                                        1.0)))),
-                                this.runOnce(
-                                        () ->
-                                                intakeLinearIO.runLinearPosition(
-                                                        IntakeLinearConstants.MIN_DISTANCE.plus(
-                                                                Inches.of(1.0)),
-                                                        PIDSlot.SLOT_0))),
-                        Commands.sequence(
-                                extendLinear(),
-                                Commands.waitUntil(
-                                        () ->
-                                                intakeLinearIO
-                                                        .getLinearPositionError()
-                                                        .lte(IntakeLinearConstants.TOLERANCE)))));
     }
 
     /**
@@ -263,6 +251,15 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     @Override
     public void periodic() {
+        if (SLOW_MPS.hasChanged(hashCode())) {
+            slowMotionProfiler =
+                    new TrapezoidProfile(
+                            new Constraints(
+                                    SLOW_MPS.getAsDouble(),
+                                    IntakeLinearConstants.MAX_ACCELERATION.in(
+                                            MetersPerSecondPerSecond)));
+        }
+
         LoggerHelper.recordCurrentCommand(this.getName(), this);
         intakeLinearIO.periodic();
         intakeRollerIO.periodic();

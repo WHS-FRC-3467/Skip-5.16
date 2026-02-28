@@ -54,16 +54,16 @@ public class VisionSubsystem extends SubsystemBase {
     public static final String LOG_PREFIX = "VisionProcessor/";
 
     /** Baseline linear standard deviation used for vision observations. */
-    public static final double LINEAR_STDDEV_BASELINE = 0.1;
+    public static final double LINEAR_STDDEV_BASELINE = 0.082;
 
     /** Baseline angular standard deviation used for vision observations. */
-    public static final double ANGULAR_STDDEV_BASELINE = 0.2;
+    public static final double ANGULAR_STDDEV_BASELINE = 0.16;
 
     /** Maximum allowable height (Z-axis) of a detected pose to be considqered valid. */
     public static final double MAX_Z_METERS = 0.75;
 
     /** Maximum allowable distance from a target to be considered valid. */
-    public static final double MAX_DISTANCE_METERS = 10;
+    public static final double MAX_DISTANCE_METERS = 4.0;
 
     /** Maximum ambiguity ratio allowed in a result */
     public static final double MAX_AMBIGUITY = 0.2;
@@ -93,6 +93,14 @@ public class VisionSubsystem extends SubsystemBase {
         }
 
         if (result.getMultiTagResult().isPresent()) {
+            if (result.getTargets().stream()
+                            .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
+                            .average()
+                            .getAsDouble()
+                    > MAX_DISTANCE_METERS) {
+                return false;
+            }
+
             return true;
         }
 
@@ -214,6 +222,7 @@ public class VisionSubsystem extends SubsystemBase {
                         (Math.pow(poseRecord.averageDistanceMeters(), 2.0)
                                         / result.getTargets().size())
                                 * cameras[c].getProperties().stdDevFactor();
+
                 double linearStdDev = LINEAR_STDDEV_BASELINE * stdDevFactor;
                 double angularStdDev = ANGULAR_STDDEV_BASELINE * stdDevFactor;
 

@@ -3,73 +3,52 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.6360057061340925,
-        "y": 6.693894436519258
+        "x": 8.416166666666667,
+        "y": 6.481
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.663852039682035,
-        "y": 5.482747346148922
+        "x": 8.018209827919133,
+        "y": 5.447195932138213
       },
       "isLocked": false,
       "linkedName": "NashobaNeutral-Staged-Left"
     },
     {
       "anchor": {
-        "x": 7.6360057061340925,
-        "y": 5.322396576319543
+        "x": 7.558655555555555,
+        "y": 4.064233333333333
       },
       "prevControl": {
-        "x": 7.7653922967189715,
-        "y": 5.904636233951498
-      },
-      "nextControl": {
-        "x": 7.520619696581151,
-        "y": 4.803159533331304
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 7.2219686162624805,
-        "y": 4.507261055634808
-      },
-      "prevControl": {
-        "x": 7.480741797432238,
-        "y": 4.766034236804566
+        "x": 7.723844047678877,
+        "y": 4.489168518527622
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "NashobaNeutral-FirstSweep-Left-End"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 1.05,
-      "rotationDegrees": -119.99999999999999
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.5,
-    "maxAcceleration": 5.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 480.0,
     "maxAngularAcceleration": 600.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 180.0
+    "velocity": 0.0,
+    "rotation": -100.0
   },
   "reversed": false,
   "folder": "Left",
   "idealStartingState": {
-    "velocity": 2.5,
-    "rotation": -90.0
+    "velocity": 1.0,
+    "rotation": -100.0
   },
   "useDefaultConstraints": true
 }

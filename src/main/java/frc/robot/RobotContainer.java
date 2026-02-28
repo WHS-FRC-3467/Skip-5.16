@@ -89,8 +89,6 @@ public class RobotContainer {
 
     private final Trigger isAutonomous = new Trigger(DriverStation::isAutonomous);
 
-    private boolean intakeCycleToggle = true;
-
     /** The container for the robot. Contains subsystems, IO devices, and commands. */
     public RobotContainer() {
 
@@ -112,6 +110,10 @@ public class RobotContainer {
 
         // Default - No Auto
         autoChooser.addDefaultOption("None", new NoneAuto());
+
+        autoChooser.addOption(
+                "WilkTest",
+                new WilksAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
 
         // Preload Autos
         autoChooser.addOption(
@@ -178,9 +180,9 @@ public class RobotContainer {
                                     .map(p -> FieldUtil.apply(p))
                                     .toArray(Pose2d[]::new);
                     if (pathPoses.length == 0) return;
-                    pathPoses[0] = auto.getStartingPose();
+                    pathPoses[0] = FieldUtil.apply(auto.getStartingPose());
 
-                    autoPreviewField.getObject("path").setPoses();
+                    autoPreviewField.getObject("path").setPoses(pathPoses);
                 });
 
         autoChooser.addOption(

@@ -14,7 +14,11 @@
  */
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.RobotState;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -80,6 +84,13 @@ public class FuelCommands {
                                         shooter.readyToShoot.and(
                                                 RobotState.getInstance().facingTarget))
                                 .repeatedly())
-                .withTimeout(duration);
+                .withTimeout(duration)
+                .finallyDo(
+                        () -> {
+                            CommandScheduler.getInstance()
+                                    .schedule(shooter.setFlywheelSpeed(RotationsPerSecond.zero()));
+                            CommandScheduler.getInstance()
+                                    .schedule(shooter.setHoodAngle(Rotations.zero()));
+                        });
     }
 }
