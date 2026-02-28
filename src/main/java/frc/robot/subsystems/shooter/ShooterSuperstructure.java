@@ -149,8 +149,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private void spinFlywheel(AngularVelocity velocity) {
-        leftFlywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
-        rightFlywheelIO.runVelocity(velocity, FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        leftFlywheelIO.runVelocity(velocity, robotState.LOW_POWER_MODE.getAsBoolean() ? FlywheelConstants.MAX_ACCELERATION.div(2) : FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        rightFlywheelIO.runVelocity(velocity, robotState.LOW_POWER_MODE.getAsBoolean() ? FlywheelConstants.MAX_ACCELERATION.div(2) : FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
     private boolean isFlywheelAt(AngularVelocity velocity) {
