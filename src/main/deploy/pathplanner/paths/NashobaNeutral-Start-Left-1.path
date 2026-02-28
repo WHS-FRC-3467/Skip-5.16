@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8849122807017546,
-        "y": 7.42952850877193
+        "x": 4.453095577746077,
+        "y": 7.42
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.212061403508772,
-        "y": 6.78203947368421
+        "x": 5.453095577746077,
+        "y": 7.42
       },
       "isLocked": false,
-      "linkedName": "UnderTrench-Shoot-Left-End"
+      "linkedName": "Start-LeftTrench"
     },
     {
       "anchor": {
-        "x": 1.2184308131241082,
-        "y": 6.0
+        "x": 8.433475877192983,
+        "y": 6.804473684210526
       },
       "prevControl": {
-        "x": 2.057916666666667,
-        "y": 6.35251096491228
+        "x": 7.529550438596492,
+        "y": 7.314133771929823
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "NearDepot-End"
+      "linkedName": "NashobaNeutral-Staged-Left"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": "Left",
   "idealStartingState": {
-    "velocity": 1.0,
-    "rotation": -65.0
+    "velocity": 3.0,
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.4550499286733257,
-        "y": 5.9952068473609135
+        "x": 0.9048863293845373,
+        "y": 5.949888876632632
       },
       "isLocked": false,
       "linkedName": "NearDepot-End"
     },
     {
       "anchor": {
-        "x": 0.4809272467861838,
-        "y": 5.969329529237618
+        "x": 0.8,
+        "y": 5.969
       },
       "prevControl": {
-        "x": 1.2313694721784803,
-        "y": 5.930513552062155
+        "x": 0.5501621185655695,
+        "y": 5.978001833166387
       },
       "nextControl": null,
       "isLocked": false,
@@ -47,7 +47,7 @@
   "reversed": false,
   "folder": "Left",
   "idealStartingState": {
-    "velocity": 3.0,
+    "velocity": 0.5,
     "rotation": 180.0
   },
   "useDefaultConstraints": true

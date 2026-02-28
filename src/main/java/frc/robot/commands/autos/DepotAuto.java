@@ -28,13 +28,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Auto routine that utilizes AutoSegment command sequences to shoot a preload, collect FUEL from
+ * Auto routine that utilizes AutoSegment command sequences to drive to the DEPOT, collect FUEL from
  * the DEPOT, and then shoot them. Strategy layer.
  */
 public class DepotAuto extends AutoRoutine {
     /**
-     * Constructs a DepotAuto routine that shoots preload, collects from depot, and shoots collected
-     * fuel. Path selection is based on the starting position (LEFT, CENTER, or RIGHT).
+     * Constructs a DepotAuto routine that drive to depot, collects from depot, and shoots collected
+     * fuel. Path selection is based on the starting position (LEFT, or CENTER).
      *
      * @param drive the drive subsystem
      * @param intake the intake subsystem
@@ -54,33 +54,18 @@ public class DepotAuto extends AutoRoutine {
         List<String> expectedPaths;
         switch (start) {
             case LEFT ->
-                    expectedPaths =
-                            List.of(
-                                    "PreloadShoot-Left",
-                                    "Left-Near-Depot",
-                                    "Through-Depot",
-                                    "Depot-Shoot");
+                    expectedPaths = List.of("StartLeft-NearDepot", "Through-Depot", "Depot-Shoot");
             case CENTER ->
                     expectedPaths =
-                            List.of(
-                                    "PreloadShoot-Center",
-                                    "Center-Near-Depot",
-                                    "Through-Depot",
-                                    "Depot-Shoot");
-            case RIGHT ->
-                    expectedPaths =
-                            List.of(
-                                    "PreloadShoot-Right",
-                                    "Right-Near-Depot",
-                                    "Through-Depot",
-                                    "Depot-Shoot");
+                            List.of("StartCenter-NearDepot", "Through-Depot", "Depot-Shoot");
+            case RIGHT -> expectedPaths = List.of(); // No right side Depot Only Auto
             default -> expectedPaths = List.of();
         }
 
         // Load the named paths
         this.loadAllPaths(expectedPaths);
 
-        // Mirror necessary paths when starting on RIGHT side so the dashboard shows correct poses
+        // Do not mirror for right saide as DEPOT is on the left side
         this.setMirrorFlags(Collections.nCopies(expectedPaths.size(), false), start);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
@@ -90,19 +75,15 @@ public class DepotAuto extends AutoRoutine {
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Initialize intake
                     intake.retractIntake().withTimeout(1.25),
-                    // Take preload shot
-                    AutoCommands.makePreloadShot(
-                            drive, indexer, tower, shooter, pathPlannerPaths.get(0)),
-                    // Drive to depot
-                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                    // Run through depot while intaking FUEL
+                    // Drive to depot and start intake, then run through depot while intaking FUEL
                     AutoCommands.driveAndIntake(
+                            AutoBuilder.followPath(pathPlannerPaths.get(0)),
                             intake,
-                            AutoBuilder.followPath(pathPlannerPaths.get(2)),
+                            AutoBuilder.followPath(pathPlannerPaths.get(1)),
                             Seconds.of(0.5)),
                     // Drive to shooting location and shoot all FUEL
-                    AutoCommands.makeFullShot(
-                            drive, intake, indexer, tower, shooter, pathPlannerPaths.get(3)),
+                    AutoCommands.moveToShot(
+                            drive, intake, indexer, tower, shooter, pathPlannerPaths.get(2)),
                     // Re-initialize intake for tele-op
                     intake.retractIntake().withTimeout(1.25));
         }

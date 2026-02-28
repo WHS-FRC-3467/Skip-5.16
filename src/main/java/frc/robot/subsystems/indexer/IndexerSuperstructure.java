@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableBoolean;

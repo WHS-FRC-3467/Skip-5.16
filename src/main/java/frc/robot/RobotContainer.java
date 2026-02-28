@@ -18,6 +18,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -36,6 +38,7 @@ import frc.lib.util.LoggedDashboardChooser;
 import frc.robot.Constants.PathConstants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -83,6 +86,7 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
     public final Field2d autoPreviewField = new Field2d();
+    private Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
 
     private final Trigger isAutonomous = new Trigger(DriverStation::isAutonomous);
 
@@ -108,7 +112,7 @@ public class RobotContainer {
         // Default - No Auto
         autoChooser.addDefaultOption("None", new NoneAuto());
 
-        // // Preload Autos
+        // Preload Autos
         autoChooser.addOption(
                 "PreloadAuto-Left",
                 new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
@@ -119,7 +123,7 @@ public class RobotContainer {
                 "PreloadAuto-Right",
                 new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
-        // // Basic Neutral Autos
+        // Basic Neutral Autos
         autoChooser.addOption(
                 "BasicNeutralAuto-Left",
                 new BasicNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
@@ -127,15 +131,44 @@ public class RobotContainer {
                 "BasicNeutralAuto-Right",
                 new BasicNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
-        // Depot Auto
+        // Depot Autos
         autoChooser.addOption(
                 "DepotAuto-Left",
                 new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption(
+                "DepotAuto-Center",
+                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
 
-        // Outpost Autos
+        // Outpost Auto
         autoChooser.addOption(
                 "OutpostAuto-Right",
                 new OutpostAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+
+        // Alliance Side Autos
+        autoChooser.addOption(
+                "Depot-Then-OutpostAuto-Left",
+                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption(
+                "Depot-Then-OutpostAuto-Center",
+                new AllianceComboAuto(
+                        drive, intake, indexer, tower, shooter, StartPosition.CENTER));
+        autoChooser.addOption(
+                "Outpost-Then-DepotAuto-Right",
+                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+
+        // Nashoba Neutral Zone Autos
+        autoChooser.addOption(
+                "NashobaNeutralAuto-Left",
+                new NashobaNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption(
+                "NashobaNeutralAuto-Right",
+                new NashobaNeutralAuto(
+                        drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+
+        // Drivebase Characterization Autos
+        autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
+        autoChooser.addOption(
+                "RotationalCharacterization", new RotationalCharacterizationAuto(drive));
 
         autoChooser.onChange(
                 auto -> {
@@ -280,6 +313,20 @@ public class RobotContainer {
                 "Face Target",
                 DriveCommands.joystickDriveFacingTarget(
                         drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+        SmartDashboard.putData(
+                "Drive to Start Pose",
+                new DriveToPose(drive, () -> startPose)
+                        .withDistanceTolerance(Meters.of(0.04))
+                        .withAngularTolerance(Degrees.of(3)));
+        SmartDashboard.putData(
+                "Pathfind to Start",
+                DriveCommands.pathFindToPose(
+                        drive,
+                        () -> robotState.getEstimatedPose(),
+                        () -> startPose,
+                        DriveConstants.PATH_CONSTRAINTS,
+                        MetersPerSecond.of(0),
+                        Inches.of(5)));
     }
 
     /** Creates and/or binds triggers to LED states */
@@ -308,7 +355,7 @@ public class RobotContainer {
 
     /**
      * Checks and displays the robot's starting pose accuracy relative to the selected autonomous
-     * path. This function is called periodically by Robot.java when disabled.
+     * path.
      */
     public void checkStartPose() {
 
@@ -316,7 +363,7 @@ public class RobotContainer {
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
         try {
-            Pose2d startPose = autoPreviewField.getObject("path").getPoses().get(0);
+            startPose = autoPreviewField.getObject("path").getPoses().get(0);
             autoPreviewField.getObject("startPose").setPose(startPose);
 
             Distance distanceFromStartPose =
@@ -354,6 +401,7 @@ public class RobotContainer {
                             < PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees));
 
         } catch (Exception e) {
+            startPose = robotState.getEstimatedPose();
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start", -1);
             SmartDashboard.putBoolean("Auto Pose Check/Robot Position Within Tolerance", false);
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start", -1);
