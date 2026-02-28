@@ -31,6 +31,7 @@ import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTrigger;
+import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState.FieldRegion;
 import frc.robot.subsystems.drive.Drive;
@@ -49,6 +50,9 @@ public class RobotState {
             new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 1.0);
     private static final LoggedTunableNumber MAX_HOOD_RETRACT_TIME =
             new LoggedTunableNumber("RobotState/MaxHoodRetractTime", 0.2);
+
+    public final LoggedTunableBoolean LOW_POWER_MODE =
+            new LoggedTunableBoolean("RobotState/LowPowerMode", false);
 
     private static final double LINEAR_ODOMETRY_STD_DEV = 0.01;
     private static final double ANGULAR_ODOMETRY_STD_DEV = 0.01;
