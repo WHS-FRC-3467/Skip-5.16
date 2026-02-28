@@ -21,7 +21,6 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -200,18 +199,13 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
-        SlewRateLimiter filter;
-        if (robotState.LOW_POWER_MODE.getAsBoolean()) {
-            filter = new SlewRateLimiter(0.5);
-        } else {
-            filter = new SlewRateLimiter(Double.POSITIVE_INFINITY);
-        }
+
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> filter.calculate(-controller.getLeftY()),
-                        () -> filter.calculate(-controller.getLeftX()),
-                        () -> filter.calculate(-controller.getRightX() * 0.75)));
+                        () -> -controller.slewLeftY(),
+                        () -> -controller.slewLeftX(),
+                        () -> -controller.slewRightX() * 0.75));
 
         // Right Trigger: Shoot/Pass
         controller

@@ -18,12 +18,15 @@ package frc.lib.util;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.RobotState;
+import java.util.List;
 
 /**
  * Extended Xbox controller with additional functionality for FRC use.
@@ -114,6 +117,24 @@ public class CommandXboxControllerExtended extends CommandXboxController {
         return MathUtil.applyDeadband(joystickInput, deadband);
     }
 
+    double rateLimit = 1.0;
+    private final List<SlewRateLimiter> filter =
+            List.of(
+                    new SlewRateLimiter(rateLimit),
+                    new SlewRateLimiter(rateLimit),
+                    new SlewRateLimiter(rateLimit),
+                    new SlewRateLimiter(rateLimit));
+
+    double slewModifier(double joystickInput, int index) {
+
+        if (RobotState.getInstance().LOW_POWER_MODE.getAsBoolean()) {
+            return filter.get(index).calculate(joystickInput);
+
+        } else {
+            return joystickInput;
+        }
+    }
+
     @Override
     public double getLeftX() {
         return applyModifiers(super.getLeftX());
@@ -132,5 +153,21 @@ public class CommandXboxControllerExtended extends CommandXboxController {
     @Override
     public double getRightY() {
         return applyModifiers(super.getRightY());
+    }
+
+    public double slewLeftX() {
+        return slewModifier(getLeftX(), 0);
+    }
+
+    public double slewLeftY() {
+        return slewModifier(getLeftY(), 1);
+    }
+
+    public double slewRightX() {
+        return slewModifier(getRightX(), 2);
+    }
+
+    public double slewRightY() {
+        return slewModifier(getRightY(), 3);
     }
 }
