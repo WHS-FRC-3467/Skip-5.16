@@ -238,14 +238,14 @@ public class Drive extends SubsystemBase {
      */
     public void runVelocity(ChassisSpeeds speeds) {
         // Calculate module setpoints
-     /*   if (robotState.LOW_POWER_MODE.getAsBoolean()) {
-        if (getAccelerationX() > 1.0) {
-            speeds.vxMetersPerSecond /= 2;
-        }
-        if (getAccelerationY() > 1.0) {
-            speeds.vyMetersPerSecond /= 2;
-        }
-       }*/
+        /*   if (robotState.LOW_POWER_MODE.getAsBoolean()) {
+         if (getAccelerationX() > 1.0) {
+             speeds.vxMetersPerSecond /= 2;
+         }
+         if (getAccelerationY() > 1.0) {
+             speeds.vyMetersPerSecond /= 2;
+         }
+        }*/
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, DriveConstants.kSpeedAt12Volts);

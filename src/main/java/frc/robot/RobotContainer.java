@@ -31,7 +31,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -201,12 +200,12 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
-       SlewRateLimiter filter;
-       if (robotState.LOW_POWER_MODE.getAsBoolean()) {
-        filter = new SlewRateLimiter(0.5);
-       } else {
-        filter = new SlewRateLimiter(Double.POSITIVE_INFINITY);
-       }
+        SlewRateLimiter filter;
+        if (robotState.LOW_POWER_MODE.getAsBoolean()) {
+            filter = new SlewRateLimiter(0.5);
+        } else {
+            filter = new SlewRateLimiter(Double.POSITIVE_INFINITY);
+        }
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
