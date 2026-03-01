@@ -21,6 +21,7 @@ import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
@@ -29,7 +30,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.Units;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -78,13 +79,13 @@ public class IntakeLinearConstants {
     // Pitch of 0 degrees would be horizontal extending forward.
     // Roll and yaw can be used for mechanisms that extend in other directions.
     public static final Rotation3d ORIENTATION =
-            new Rotation3d(0.0, Degrees.of(0.0).in(Units.Radians), 0.0);
+            new Rotation3d(0.0, Degrees.of(0.0).in(Radians), 0.0);
 
     public static final LinearMechCharacteristics CHARACTERISTICS =
             new LinearMechCharacteristics(
                     MIN_DISTANCE, MAX_DISTANCE, STARTING_DISTANCE, DRUM_RADIUS, ORIENTATION);
 
-    public static final PID SLOT0_PID = new PID(500.0, 0.0, 10.0).withS(14.0);
+    public static final PID SLOT0_PID = new PID(50.0, 0.0, 0.0).withS(14.0);
     public static final PID SLOT1_PID = new PID(50.0, 0.0, 0.0);
 
     /**
@@ -113,16 +114,18 @@ public class IntakeLinearConstants {
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-                MAX_DISTANCE.in(Meters) / DRUM_RADIUS.in(Meters);
+                Units.radiansToRotations(MAX_DISTANCE.in(Meters) / DRUM_RADIUS.in(Meters));
 
         config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
-                MIN_DISTANCE.in(Meters) / DRUM_RADIUS.in(Meters);
+                Units.radiansToRotations(MIN_DISTANCE.in(Meters) / DRUM_RADIUS.in(Meters));
 
         config.MotionMagic.MotionMagicCruiseVelocity =
-                CRUISE_VELOCITY.in(MetersPerSecond) / DRUM_RADIUS.in(Meters);
+                Units.radiansToRotations(
+                        CRUISE_VELOCITY.in(MetersPerSecond) / DRUM_RADIUS.in(Meters));
         config.MotionMagic.MotionMagicAcceleration =
-                MAX_ACCELERATION.in(MetersPerSecondPerSecond) / DRUM_RADIUS.in(Meters);
+                Units.radiansToRotations(
+                        MAX_ACCELERATION.in(MetersPerSecondPerSecond) / DRUM_RADIUS.in(Meters));
 
         config.Feedback.RotorToSensorRatio = 1.0;
 

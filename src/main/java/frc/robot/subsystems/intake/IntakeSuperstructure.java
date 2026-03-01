@@ -28,6 +28,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -69,8 +70,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                     new Constraints(
                             0.3,
                             IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
-    private State setpointState = new State();
 
+    private double lastTimestamp = Timer.getTimestamp();
+    private State setpointState = new State();
     private State activeGoalState = retractionGoalState;
     private TrapezoidProfile activeProfiler = fastMotionProfiler;
 
@@ -274,7 +276,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                             MetersPerSecondPerSecond)));
         }
 
-        setpointState = activeProfiler.calculate(0.02, setpointState, activeGoalState);
+        double newTimestamp = Timer.getTimestamp();
+        double delta = newTimestamp - lastTimestamp;
+        setpointState = activeProfiler.calculate(delta, setpointState, activeGoalState);
+        lastTimestamp = newTimestamp;
+
         intakeLinearIO.runUnprofiledLinearPosition(
                 Meters.of(setpointState.position), PIDSlot.SLOT_0);
 
