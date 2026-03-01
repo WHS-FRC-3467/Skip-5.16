@@ -32,7 +32,6 @@ import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
-import frc.robot.RobotState.FieldRegion;
 import frc.robot.subsystems.drive.Drive;
 import java.util.Optional;
 import lombok.AccessLevel;
