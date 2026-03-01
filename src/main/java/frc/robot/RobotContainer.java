@@ -22,6 +22,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -46,8 +47,6 @@ import frc.robot.subsystems.indexer.IndexerSuperstructureConstants;
 import frc.robot.subsystems.intake.IntakeLinearConstants;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
-import frc.robot.subsystems.leds.LEDs;
-import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
@@ -76,7 +75,7 @@ public class RobotContainer {
     private final IntakeSuperstructure intake;
     private final IndexerSuperstructure indexer;
     private final Tower tower;
-    private final LEDs leds;
+    // private final LEDs leds;
     // private final ObjectDetector objectDetector;
 
     // Controller
@@ -99,7 +98,7 @@ public class RobotContainer {
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
-        leds = LEDsConstants.get();
+        // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
         if (RobotBase.isSimulation()) {
@@ -321,21 +320,29 @@ public class RobotContainer {
                         .withAngularTolerance(Degrees.of(3)));
 
         SmartDashboard.putData("Drive/Zero", drive.runOnce(() -> drive.runCharacterization(0.0)));
+        SmartDashboard.putData(
+                "Drive/Face Zero",
+                DriveCommands.joystickDriveAtAngle(
+                        drive, () -> 0.0, () -> 0.0, () -> Rotation2d.kZero));
+        SmartDashboard.putData(
+                "Drive/Face 180",
+                DriveCommands.joystickDriveAtAngle(
+                        drive, () -> 0.0, () -> 0.0, () -> Rotation2d.k180deg));
     }
 
     /** Creates and/or binds triggers to LED states */
     private void configureLEDTriggers() {
-        isAutonomous
-                .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_AUTO))
-                .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_AUTO));
+        // isAutonomous
+        //         .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_AUTO))
+        //         .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_AUTO));
 
-        shooter.readyToShoot
-                .onTrue(leds.scheduleStateCommand(LEDs.State.READY_TO_SHOOT))
-                .onFalse(leds.unscheduleStateCommand(LEDs.State.READY_TO_SHOOT));
+        // shooter.readyToShoot
+        //         .onTrue(leds.scheduleStateCommand(LEDs.State.READY_TO_SHOOT))
+        //         .onFalse(leds.unscheduleStateCommand(LEDs.State.READY_TO_SHOOT));
 
-        new Trigger(() -> intake.isIntaking())
-                .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_INTAKE))
-                .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_INTAKE));
+        // new Trigger(() -> intake.isIntaking())
+        //         .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_INTAKE))
+        //         .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_INTAKE));
     }
 
     /**

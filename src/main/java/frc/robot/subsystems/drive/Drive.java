@@ -24,7 +24,6 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -55,7 +54,6 @@ import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.RobotState;
-import frc.robot.util.LocalADStarAK;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -236,8 +234,6 @@ public class Drive extends SubsystemBase {
                     PP_CONFIG,
                     () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                     this);
-
-            Pathfinding.setPathfinder(new LocalADStarAK());
 
             PathPlannerLogging.setLogActivePathCallback(
                     (activePath) -> {

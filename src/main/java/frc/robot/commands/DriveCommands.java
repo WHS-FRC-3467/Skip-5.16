@@ -15,10 +15,6 @@
 
 package frc.robot.commands;
 
-import static edu.wpi.first.units.Units.Meters;
-
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -29,13 +25,12 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import java.text.DecimalFormat;
@@ -65,8 +60,12 @@ public class DriveCommands {
     @Getter private static final double DEADBAND = 0.1;
     @Getter private static final double ANGLE_MAX_VELOCITY = 8.0;
     @Getter private static final double ANGLE_MAX_ACCELERATION = 20.0;
-    private static final double ANGLE_KP = 5.0;
-    private static final double ANGLE_KD = 0.4;
+    private static final LoggedTunableNumber ANGLE_KP =
+            new LoggedTunableNumber("Drive/AngleP", 5.0);
+    private static final LoggedTunableNumber ANGLE_KD =
+            new LoggedTunableNumber("Drive/AngleD", 0.4);
+    private static final LoggedTunableNumber ANGLE_TOLERANCE_ROTATIONS =
+            new LoggedTunableNumber("Drive/AngleToleranceRotations", 0.01);
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 2.0; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.2; // Rad/Sec
@@ -166,58 +165,77 @@ public class DriveCommands {
         // Create PID controller
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
-                        ANGLE_KP,
+                        ANGLE_KP.get(),
                         0.0,
-                        ANGLE_KD,
+                        ANGLE_KD.get(),
                         new TrapezoidProfile.Constraints(
                                 ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+        angleController.setTolerance(Units.rotationsToRadians(ANGLE_TOLERANCE_ROTATIONS.get()));
         angleController.enableContinuousInput(-Math.PI, Math.PI);
 
         // Construct command
-        return Commands.run(
-                        () -> {
-                            // Get linear velocity
-                            Translation2d linearVelocity =
-                                    getLinearVelocityFromJoysticks(
-                                            xSupplier.getAsDouble(), ySupplier.getAsDouble());
+        return Commands.repeatingSequence(
+                        Commands.run(
+                                        () -> {
+                                            // Get linear velocity
+                                            Translation2d linearVelocity =
+                                                    getLinearVelocityFromJoysticks(
+                                                            xSupplier.getAsDouble(),
+                                                            ySupplier.getAsDouble());
 
-                            // Calculate angular speed
-                            double omega =
-                                    angleController.calculate(
-                                            robotState
-                                                    .getEstimatedPose()
-                                                    .getRotation()
-                                                    .getRadians(),
-                                            rotationSupplier.get().getRadians());
+                                            // Calculate angular speed
+                                            double omega =
+                                                    angleController.calculate(
+                                                            robotState
+                                                                    .getEstimatedPose()
+                                                                    .getRotation()
+                                                                    .getRadians(),
+                                                            rotationSupplier.get().getRadians());
 
-                            // Convert to field relative speeds & send command
-                            ChassisSpeeds speeds =
-                                    new ChassisSpeeds(
-                                            linearVelocity.getX()
-                                                    * drive.getMaxLinearSpeedMetersPerSec(),
-                                            linearVelocity.getY()
-                                                    * drive.getMaxLinearSpeedMetersPerSec(),
-                                            omega);
-                            boolean isFlipped =
-                                    DriverStation.getAlliance().isPresent()
-                                            && DriverStation.getAlliance().get() == Alliance.Red;
-                            drive.runVelocity(
-                                    ChassisSpeeds.fromFieldRelativeSpeeds(
-                                            speeds,
-                                            isFlipped
-                                                    ? robotState
-                                                            .getEstimatedPose()
-                                                            .getRotation()
-                                                            .plus(new Rotation2d(Math.PI))
-                                                    : robotState.getEstimatedPose().getRotation()));
-                        },
-                        drive)
+                                            // Convert to field relative speeds & send command
+                                            ChassisSpeeds speeds =
+                                                    new ChassisSpeeds(
+                                                            linearVelocity.getX()
+                                                                    * drive
+                                                                            .getMaxLinearSpeedMetersPerSec(),
+                                                            linearVelocity.getY()
+                                                                    * drive
+                                                                            .getMaxLinearSpeedMetersPerSec(),
+                                                            omega);
+                                            boolean isFlipped =
+                                                    DriverStation.getAlliance().isPresent()
+                                                            && DriverStation.getAlliance().get()
+                                                                    == Alliance.Red;
+                                            drive.runVelocity(
+                                                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                                                            speeds,
+                                                            isFlipped
+                                                                    ? robotState
+                                                                            .getEstimatedPose()
+                                                                            .getRotation()
+                                                                            .plus(
+                                                                                    new Rotation2d(
+                                                                                            Math
+                                                                                                    .PI))
+                                                                    : robotState
+                                                                            .getEstimatedPose()
+                                                                            .getRotation()));
+                                        },
+                                        drive)
+                                .until(angleController::atGoal),
+                        drive.runOnce(drive::stop),
+                        drive.idle().until(() -> !angleController.atGoal()))
 
                 // Reset PID controller when command starts
                 .beforeStarting(
-                        () ->
-                                angleController.reset(
-                                        robotState.getEstimatedPose().getRotation().getRadians()))
+                        () -> {
+                            angleController.reset(
+                                    robotState.getEstimatedPose().getRotation().getRadians());
+                            angleController.setP(ANGLE_KP.get());
+                            angleController.setD(ANGLE_KD.get());
+                            angleController.setTolerance(
+                                    Units.rotationsToRadians(ANGLE_TOLERANCE_ROTATIONS.get()));
+                        })
                 .withName("Joystick Drive At Angle");
     }
 
@@ -451,41 +469,5 @@ public class DriveCommands {
         double[] positions = new double[4];
         Rotation2d lastAngle = new Rotation2d();
         double gyroDelta = 0.0;
-    }
-
-    /**
-     * Pathfinding command that uses the AutoBuilder to generate a path to a target position.
-     *
-     * @param currentPose supplier for the robot's current pose
-     * @param targetPose the target pose to pathfind to
-     * @param constraints the path constraints to apply
-     * @param goalEndVelocity the goal final velocity
-     * @param tolerance the allowed position tolerance from the target pose
-     * @return the pathfinding command
-     */
-    public static Command pathFindToPose(
-            Supplier<Pose2d> currentPose,
-            Pose2d targetPose,
-            PathConstraints constraints,
-            LinearVelocity goalEndVelocity,
-            Distance tolerance) {
-
-        // Since AutoBuilder is configured, we can use it to build pathfinding commands
-        return AutoBuilder.pathfindToPose(
-                        targetPose, constraints, goalEndVelocity // Goal end velocity in meters/sec
-                        )
-                .raceWith(
-                        // Interrupt the pathfinding command once the robot gets within the
-                        // tolerance of the
-                        // target pose
-                        Commands.waitUntil(
-                                () ->
-                                        currentPose
-                                                        .get()
-                                                        .minus(targetPose)
-                                                        .getTranslation()
-                                                        .getNorm()
-                                                < tolerance.in(Meters)))
-                .withName("Pathfind to " + targetPose.toString());
     }
 }

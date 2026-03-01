@@ -165,7 +165,7 @@ public class MotorIOTalonFX implements MotorIO {
                 .CTRECheckErrorAndRetry(
                         () ->
                                 BaseStatusSignal.setUpdateFrequencyForAll(
-                                        100,
+                                        100.0,
                                         position,
                                         velocity,
                                         supplyVoltage,
