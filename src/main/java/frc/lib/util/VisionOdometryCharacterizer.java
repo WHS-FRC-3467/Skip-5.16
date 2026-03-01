@@ -33,12 +33,10 @@ public class VisionOdometryCharacterizer {
     /** Whether to collect observations */
     private static boolean enabled = false;
 
-    /** Sample size */
+    /** Vision statistics tracking */
     private static int nVis = 0;
 
-    /** Vision statistics tracking */
     private static double meanX = 0.0;
-
     private static double meanY = 0.0;
     private static double meanTheta = 0.0;
     private static double m2X = 0.0;
