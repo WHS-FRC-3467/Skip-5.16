@@ -69,8 +69,8 @@ public class DriveCommands {
     private static final double ANGLE_KD = 0.4;
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 2.0; // Volts/Sec
-    private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.4; // Rad/Sec
-    private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
+    private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.2; // Rad/Sec
+    private static final double WHEEL_RADIUS_RAMP_RATE = 0.01; // Rad/Sec^2
 
     private DriveCommands() {}
 
@@ -256,8 +256,12 @@ public class DriveCommands {
     // This will need to get updated. This is not the most optimal set of code - Wilk
     public static Command autoAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
-        return joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget)
-                .until(robotState.facingTarget);
+        return Commands.repeatingSequence(
+                joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget)
+                        .until(robotState.facingTarget),
+                drive.runOnce(drive::stopWithX)
+                        .andThen(drive.idle())
+                        .onlyWhile(robotState.facingTarget));
     }
 
     /**
@@ -423,8 +427,8 @@ public class DriveCommands {
                                                     NumberFormat formatter =
                                                             new DecimalFormat("#0.000");
                                                     String results =
-                                                            "Wheel Radius Characterization Results - "
-                                                                    + "Wheel Delta: "
+                                                            "Wheel Radius Characterization Results"
+                                                                    + " - Wheel Delta: "
                                                                     + formatter.format(wheelDelta)
                                                                     + " radians, "
                                                                     + "Gyro Delta: "

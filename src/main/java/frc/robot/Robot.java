@@ -49,7 +49,6 @@ public class Robot extends LoggedRobot {
 
     private Command autonomousCommand;
     private RobotContainer robotContainer;
-    private boolean checkedHubGameData = false; // whether we've checked for hub game data at the
     // start of the first alliance phase
     private Field2d fieldMap = new Field2d();
 
@@ -178,8 +177,6 @@ public class Robot extends LoggedRobot {
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(1);
         }
-        // Reset hub game data check before starting the next match
-        checkedHubGameData = false;
     }
 
     /** This function is called periodically when disabled. */
@@ -221,8 +218,6 @@ public class Robot extends LoggedRobot {
             autonomousCommand.cancel();
         }
 
-        HubState.getInstance().setFirstActiveAlliance();
-
         // Switch to Teleop tab in Elastic Dashboard
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(0);
@@ -236,14 +231,6 @@ public class Robot extends LoggedRobot {
     @Override
     public void teleopPeriodic() {
         // Hub State management
-        double firstHubChangeTime = HubState.getHubChangeTimes()[0];
-        if (!checkedHubGameData
-                && DriverStation.getMatchTime() <= firstHubChangeTime
-                && DriverStation.getMatchTime() > firstHubChangeTime - 1.0) {
-            // At the beginning of the first alliance phase, check for hub game data
-            HubState.getInstance().setFirstActiveAlliance();
-            checkedHubGameData = true;
-        }
         HubState.getInstance().periodic();
     }
 

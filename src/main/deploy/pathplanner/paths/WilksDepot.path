@@ -3,71 +3,71 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.127674750356633,
-        "y": 6.836219686162625
+        "x": 3.52151212553495,
+        "y": 7.35376604850214
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.166490727532096,
-        "y": 5.4517831669044226
-      },
-      "isLocked": false,
-      "linkedName": "NewStartWilkTest"
-    },
-    {
-      "anchor": {
-        "x": 7.817146932952923,
-        "y": 4.675463623395149
-      },
-      "prevControl": {
-        "x": 8.347631954350925,
-        "y": 5.231825962910129
-      },
-      "nextControl": {
-        "x": 7.014666307007094,
-        "y": 3.833837601061716
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 5.7340228245363765,
+        "x": 2.706376604850214,
         "y": 7.327888730385164
       },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.4938659058487873,
+        "y": 6.978544935805992
+      },
       "prevControl": {
-        "x": 6.512430790834522,
-        "y": 7.000919724054921
+        "x": 0.5062804198098785,
+        "y": 7.487540008210723
       },
       "nextControl": {
-        "x": 4.955614858238231,
-        "y": 7.654857736715407
+        "x": 0.48092724679029925,
+        "y": 6.448059914407988
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.418002853067047,
-        "y": 7.431398002853067
+        "x": 1.0372895863052778,
+        "y": 5.128316690442225
       },
       "prevControl": {
-        "x": 3.8579172610556345,
-        "y": 7.521968616262482
+        "x": 0.6969957356709198,
+        "y": 4.988195693122195
+      },
+      "nextControl": {
+        "x": 1.69716119828816,
+        "y": 5.400028530670471
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.706376604850214,
+        "y": 5.477660485021398
+      },
+      "prevControl": {
+        "x": 1.6583452211126959,
+        "y": 5.400028530670471
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "EndWilkTest"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.7,
+      "waypointRelativePos": 0.9722814498933765,
       "rotationDegrees": -90.0
     },
     {
-      "waypointRelativePos": 2.2324093816631216,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 1.5543710021321864,
+      "rotationDegrees": -90.0
     }
   ],
   "constraintZones": [],
@@ -75,7 +75,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 3.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 480.0,
     "maxAngularAcceleration": 600.0,
     "nominalVoltage": 12.0,
@@ -83,13 +83,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -37.24478289265946
   },
   "reversed": false,
-  "folder": "NeutralZone Auto",
+  "folder": "Depot Auto",
   "idealStartingState": {
-    "velocity": 2.0,
-    "rotation": -90.0
+    "velocity": 0,
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

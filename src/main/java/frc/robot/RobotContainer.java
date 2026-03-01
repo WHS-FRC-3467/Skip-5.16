@@ -20,6 +20,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -111,10 +112,6 @@ public class RobotContainer {
         // Default - No Auto
         autoChooser.addDefaultOption("None", new NoneAuto());
 
-        autoChooser.addOption(
-                "WilkTest",
-                new WilksAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-
         // Preload Autos
         autoChooser.addOption(
                 "PreloadAuto-Left",
@@ -126,13 +123,13 @@ public class RobotContainer {
                 "PreloadAuto-Right",
                 new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
-        // Basic Neutral Autos
+        // Neutral Autos
         autoChooser.addOption(
-                "BasicNeutralAuto-Left",
-                new BasicNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+                "NeutralAuto-Left",
+                new NeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
         autoChooser.addOption(
-                "BasicNeutralAuto-Right",
-                new BasicNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+                "NeutralAuto-Right",
+                new NeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
         // Depot Autos
         autoChooser.addOption(
@@ -140,7 +137,7 @@ public class RobotContainer {
                 new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
         autoChooser.addOption(
                 "DepotAuto-Center",
-                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
 
         // Outpost Auto
         autoChooser.addOption(
@@ -158,15 +155,6 @@ public class RobotContainer {
         autoChooser.addOption(
                 "Outpost-Then-DepotAuto-Right",
                 new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
-
-        // Nashoba Neutral Zone Autos
-        autoChooser.addOption(
-                "NashobaNeutralAuto-Left",
-                new NashobaNeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "NashobaNeutralAuto-Right",
-                new NashobaNeutralAuto(
-                        drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
 
         // Drivebase Characterization Autos
         autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
@@ -223,7 +211,6 @@ public class RobotContainer {
                         Commands.parallel(
                                 DriveCommands.staticAimTowardsTarget(drive),
                                 shooter.spinUpShooter(),
-                                // intake.slowRetract(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(robotState.facingTarget))
@@ -262,17 +249,12 @@ public class RobotContainer {
 
         // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
         controller
-                .povRight()
+                .a()
                 .onTrue(
                         shooter.spinUpShooterToHubDistance(
                                 Meters.of(
                                         (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters))
-                                                / 2.0)));
-
-        // D-Pad Left: Take the Hub Shot, wind down flywheel, indexer, and tower on release
-        // No vision fallback - do not trust the robot's pose (no automatic shoot when ready)
-        controller
-                .povLeft()
+                                                / 2.0)))
                 .whileTrue(
                         // Shoot while superstructure is at the flywheel and hood setpoints
                         Commands.parallel(
@@ -286,6 +268,13 @@ public class RobotContainer {
                                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                                 indexer.stopCommand(),
                                 tower.stopCommand()));
+
+        // robotState.enteringTrench.whileTrue(
+        //         shooter.forceHoodAngle(Rotations.zero())
+        //                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
+        //                 .onlyIf(isAutonomous.negate()));
+
+        new EventTrigger("RetractIntake").onTrue(intake.retractIntake());
     }
 
     /**

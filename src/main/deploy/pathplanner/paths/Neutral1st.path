@@ -3,70 +3,74 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.558655555555555,
-        "y": 4.064233333333333
+        "x": 7.830085592011411,
+        "y": 6.590385164051355
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.6842455916127825,
-        "y": 4.3555260489263645
+        "x": 7.66188302425107,
+        "y": 5.115378031383738
       },
       "isLocked": false,
-      "linkedName": "NashobaNeutral-FirstSweep-Left-End"
+      "linkedName": "NewStartWilkTest"
     },
     {
       "anchor": {
-        "x": 6.447788888888889,
-        "y": 7.263195435092724
+        "x": 7.105520684736093,
+        "y": 4.1191012838801715
       },
       "prevControl": {
-        "x": 7.953794100682131,
-        "y": 6.983692896544916
+        "x": 7.903091369344172,
+        "y": 4.521076908922644
       },
       "nextControl": {
-        "x": 5.307688888888889,
-        "y": 7.474788888888888
+        "x": 5.488188302425108,
+        "y": 3.3039657631954356
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.167588888888889,
-        "y": 7.445555555555555
+        "x": 5.7340228245363765,
+        "y": 7.327888730385164
       },
       "prevControl": {
-        "x": 4.713277777777778,
-        "y": 7.494277777777777
+        "x": 7.532496433666189,
+        "y": 7.340827389443652
       },
       "nextControl": {
-        "x": 3.3856784723377276,
-        "y": 7.375742125506345
+        "x": 4.845695912068484,
+        "y": 7.321497889288271
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "FirstShotEnd"
     },
     {
       "anchor": {
-        "x": 2.693437945791726,
-        "y": 7.263195435092724
+        "x": 3.1721683309557767,
+        "y": 7.237318116975749
       },
       "prevControl": {
-        "x": 2.9156041965411963,
-        "y": 7.443416642477245
+        "x": 3.5085734664764607,
+        "y": 7.340827389443652
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "UnderTrench-Shoot-Left-End"
+      "linkedName": "Nuetral1End"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.0331950207468867,
+      "waypointRelativePos": 0.7675906183368868,
+      "rotationDegrees": -90.0
+    },
+    {
+      "waypointRelativePos": 1.9957356076759019,
       "rotationDegrees": 0.0
     },
     {
-      "waypointRelativePos": 2.5120331950207038,
+      "waypointRelativePos": 2.7057569296375297,
       "rotationDegrees": 0.0
     }
   ],
@@ -83,13 +87,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -60.78075330951541
+    "rotation": -86.2686030008395
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "NeutralZone",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": -100.0
+    "velocity": 2.0,
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

@@ -46,7 +46,7 @@ import lombok.NoArgsConstructor;
 public class HoodConstants {
     public static final String NAME = "Hood";
 
-    public static final Angle TOLERANCE = Degrees.of(2.0);
+    public static final Angle TOLERANCE = Degrees.of(1.0);
 
     public static final AngularVelocity CRUISE_VELOCITY = RadiansPerSecond.of(187.75);
     public static final AngularAcceleration ACCELERATION = RadiansPerSecondPerSecond.of(293.0);
@@ -70,7 +70,7 @@ public class HoodConstants {
 
     private static PID getPID() {
         if (RobotBase.isReal()) {
-            return new PID(800.0, 0.0, 20.0).withS(8.0);
+            return new PID(3000.0, 0.0, 160.0).withS(8.0);
         } else {
             return new PID(5.0, 0.0, 0.0).withS(8.0);
         }

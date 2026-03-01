@@ -15,6 +15,7 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -26,10 +27,11 @@ import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import java.util.List;
+import org.apache.commons.lang3.NotImplementedException;
 
-public class NashobaNeutralAuto extends AutoRoutine {
+public class NeutralAuto extends AutoRoutine {
 
-    public NashobaNeutralAuto(
+    public NeutralAuto(
             Drive drive,
             IntakeSuperstructure intake,
             IndexerSuperstructure indexer,
@@ -39,33 +41,21 @@ public class NashobaNeutralAuto extends AutoRoutine {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
-            case LEFT ->
-                    expectedPaths =
-                            List.of(
-                                    "NashobaNeutral-Start-Left-1",
-                                    "NashobaNeutral-Sweep-Left-1",
-                                    "NashobaNeutral-UnderTrench-Shoot-Left-1",
-                                    "NashobaNeutral-Start-Left-2",
-                                    "NashobaNeutral-UnderTrench-Shoot-Left-2");
-            case CENTER ->
-                    expectedPaths =
-                            List.of(); // Currently no Neutral Zone auto strategy for the center
-            case RIGHT ->
-                    expectedPaths =
-                            List.of(
-                                    "NashobaNeutral-Start-Left-1",
-                                    "NashobaNeutral-Sweep-Left-1",
-                                    "NashobaNeutral-UnderTrench-Shoot-Left-1",
-                                    "NashobaNeutral-Start-Left-2",
-                                    "NashobaNeutral-UnderTrench-Shoot-Left-2");
-            default -> expectedPaths = List.of();
+            case LEFT -> expectedPaths = List.of("NeutralStart", "Neutral1st", "Neutral2nd");
+            case CENTER -> {
+                throw new NotImplementedException("No Neutral Auto for Center Start");
+            }
+            case RIGHT -> expectedPaths = List.of("NeutralStart", "Neutral1st", "Neutral2nd");
+            default -> {
+                throw new IllegalArgumentException("Invalid Start Position");
+            }
         }
 
         // Load the named paths
         this.loadAllPaths(expectedPaths);
 
         // Keep track of which paths must be mirrored for RIGHT side autos
-        this.setMirrorFlags(List.of(true, true, true, true, true, true), start);
+        this.setMirrorFlags(List.of(true), start);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (!pathPlannerPaths.isEmpty()
@@ -90,37 +80,24 @@ public class NashobaNeutralAuto extends AutoRoutine {
                                     ? AutoBuilder.followPath(pathPlannerPaths.get(1))
                                     : AutoBuilder.followPath(pathPlannerPaths.get(1).mirrorPath()),
                             Seconds.of(0.0)),
+                    AutoCommands.shootCommand(
+                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1)),
                     // Run back under the trench and shoot
-                    AutoCommands.moveToShot(
-                            drive,
-                            intake,
-                            indexer,
-                            tower,
-                            shooter,
-                            start == StartPosition.LEFT
-                                    ? pathPlannerPaths.get(2)
-                                    : pathPlannerPaths.get(2).mirrorPath()),
-                    // Initialize intake and hood to starting positions for second sweep
+                    // Initialize intake and hood to starting positions for teleop
                     AutoCommands.stowHood(shooter),
-                    // Sweep neutral zone while intaking again
+                    // Sweep neutral zone while intaking
                     AutoCommands.driveAndIntake(
                             // Drive to the neutral zone
                             start == StartPosition.LEFT
-                                    ? AutoBuilder.followPath(pathPlannerPaths.get(3))
-                                    : AutoBuilder.followPath(pathPlannerPaths.get(3).mirrorPath()),
+                                    ? AutoBuilder.followPath(pathPlannerPaths.get(2))
+                                    : AutoBuilder.followPath(pathPlannerPaths.get(2).mirrorPath()),
                             intake,
                             Commands.none(),
                             Seconds.of(0.0)),
-                    // Reverse back through depot / outpost to shooting location & shoot FUEL
-                    AutoCommands.moveToShot(
-                            drive,
-                            intake,
-                            indexer,
-                            tower,
-                            shooter,
-                            start == StartPosition.LEFT
-                                    ? pathPlannerPaths.get(4)
-                                    : pathPlannerPaths.get(4).mirrorPath()),
+                    AutoCommands.stowHood(shooter),
+                    AutoCommands.shootCommand(
+                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.15)),
+                    // Run back under the trench and shoot
                     // Initialize intake and hood to starting positions for teleop
                     AutoCommands.stowHood(shooter));
     }

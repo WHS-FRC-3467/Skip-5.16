@@ -57,7 +57,7 @@ public class IntakeLinearConstants {
 
     public static final double GEARING = (42.0 / 12.0);
 
-    public static final Distance MIN_DISTANCE = Inches.of(0.1);
+    public static final Distance MIN_DISTANCE = Inches.of(0.0);
     public static final Distance MAX_DISTANCE = Inches.of(11.0);
     public static final Distance STARTING_DISTANCE = Inches.of(0.1);
 
@@ -103,7 +103,7 @@ public class IntakeLinearConstants {
         config.Voltage.PeakReverseVoltage = -12.0;
 
         config.TorqueCurrent.PeakForwardTorqueCurrent = 15.0;
-        config.TorqueCurrent.PeakReverseTorqueCurrent = -40.0;
+        config.TorqueCurrent.PeakReverseTorqueCurrent = -50.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.MotorOutput.Inverted =

@@ -5,11 +5,13 @@
 package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -105,7 +107,8 @@ public class AutoCommands {
                 AutoBuilder.followPath(path),
                 Commands.parallel(
                         DriveCommands.autoAimTowardsTarget(drive),
-                        FuelCommands.prepareShot(indexer, tower, intake, shooter, 4.5)));
+                        FuelCommands.prepareShot(
+                                indexer, tower, intake, shooter, MetersPerSecond.of(0.1), 4.5)));
     }
 
     public static Command shootCommand(
@@ -113,10 +116,25 @@ public class AutoCommands {
             IntakeSuperstructure intake,
             IndexerSuperstructure indexer,
             Tower tower,
-            ShooterSuperstructure shooter) {
+            ShooterSuperstructure shooter,
+            LinearVelocity retractSpeed,
+            double timeoutSeconds) {
         return Commands.parallel(
                 DriveCommands.autoAimTowardsTarget(drive),
-                FuelCommands.prepareShot(indexer, tower, intake, shooter, 4.5));
+                FuelCommands.prepareShot(
+                        indexer, tower, intake, shooter, retractSpeed, timeoutSeconds));
+    }
+
+    public static Command shootCommand(
+            Drive drive,
+            IntakeSuperstructure intake,
+            IndexerSuperstructure indexer,
+            Tower tower,
+            ShooterSuperstructure shooter,
+            LinearVelocity retractSpeed) {
+        return Commands.deadline(
+                FuelCommands.prepareShot(indexer, tower, intake, shooter, retractSpeed, 3.5),
+                DriveCommands.autoAimTowardsTarget(drive));
     }
 
     /**
@@ -140,7 +158,7 @@ public class AutoCommands {
         return Commands.sequence(
                 // Roll out intake (times out at 1.25 seconds)
                 // WHILE following the path that takes the robot near the fuel location.
-                Commands.deadline(approachPathCommand, intake.intake()),
+                Commands.deadline(approachPathCommand, intake.intake().asProxy()),
                 // Collect FUEL
                 pathCommand,
                 Commands.waitSeconds(afterPathWait.in(Seconds)));

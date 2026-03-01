@@ -34,7 +34,6 @@ import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
-import frc.robot.RobotState.FieldRegion;
 import frc.robot.subsystems.drive.Drive;
 import java.util.Optional;
 import lombok.AccessLevel;
@@ -83,6 +82,17 @@ public class RobotState {
             new LoggedTrigger(
                     "RobotState/EnteringTrench",
                     () -> {
+                        // Test if the robot is in motion
+                        ChassisSpeeds chassisVelocity = getFieldRelativeVelocity();
+                        double linearVelocityMPS =
+                                Math.hypot(
+                                        chassisVelocity.vxMetersPerSecond,
+                                        chassisVelocity.vyMetersPerSecond);
+                        double angularVelocityRadsPS = chassisVelocity.omegaRadiansPerSecond;
+
+                        // Arbitrary
+                        boolean inMotion = linearVelocityMPS > 0.02 || angularVelocityRadsPS > 0.03;
+
                         // Predict future pose
                         Pose2d futurePose =
                                 getEstimatedPose()
@@ -125,7 +135,9 @@ public class RobotState {
                                                         .LEFT_TRENCH_OPEN_START;
 
                         return (inAllianceCorridor || inOpponentCorridor)
-                                && (inLeftTrench || inRightTrench);
+                                && (inLeftTrench || inRightTrench)
+                                // Allow hood actuation while stationary
+                                && inMotion;
                     });
 
     /** Trigger determining whether hood is safe to actuate for a HUB shot in auto. */

@@ -224,7 +224,7 @@ public class VisionConstants {
     public static final double FRONT_STDDEV_FACTOR = 0.1;
     public static final double LEFT_STDDEV_FACTOR = 1.0;
     public static final double RIGHT_STDDEV_FACTOR = 1.0;
-    public static final double BACK_STDDEV_FACTOR = 1.0;
+    public static final double BACK_STDDEV_FACTOR = 0.1;
 
     // Exposure 5 ms, USB 5 ms, detection 15 ms, scheduling 5 ms
     public static final Time FRONT_LATENCY = Milliseconds.of(30);
