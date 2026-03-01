@@ -113,7 +113,7 @@ public class Robot extends LoggedRobot {
             }
         }
 
-        // Instantiate our RobotContainer. This will perform all our button bindings,
+        // Instantiate our RobotContainer.
         // Checks and displays the robot's starting pose for autonomous mode.
         robotContainer = new RobotContainer();
 
@@ -149,7 +149,6 @@ public class Robot extends LoggedRobot {
         fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
         // Update auto tab
         robotContainer.checkStartPose();
-        robotContainer.autoPreviewField.setRobotPose(robotState.getEstimatedPose());
     }
 
     /** This function is called once when the robot is disabled. */

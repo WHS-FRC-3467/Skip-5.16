@@ -40,7 +40,7 @@
             "x": 1200.0,
             "y": 0.0,
             "width": 300.0,
-            "height": 800.0,
+            "height": 650.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/SmartDashboard/Can Shoot!",
@@ -50,6 +50,20 @@
               "false_color": 4294198070,
               "true_icon": "None",
               "false_icon": "None"
+            }
+          },
+          {
+            "title": "Drive to Start Pose",
+            "x": 1200.0,
+            "y": 650.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Drive to Start Pose",
+              "period": 0.06,
+              "show_type": true,
+              "maximize_button_space": false
             }
           }
         ]
@@ -152,20 +166,6 @@
               "false_color": 4294198070,
               "true_icon": "Checkmark",
               "false_icon": "Exclamation Point"
-            }
-          },
-          {
-            "title": "Drive to Start Pose",
-            "x": 900.0,
-            "y": 550.0,
-            "width": 600.0,
-            "height": 150.0,
-            "type": "Command",
-            "properties": {
-              "topic": "/SmartDashboard/Drive to Start Pose",
-              "period": 0.06,
-              "show_type": true,
-              "maximize_button_space": false
             }
           }
         ]
