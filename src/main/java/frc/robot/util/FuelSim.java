@@ -19,7 +19,10 @@ import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.Timer;
+
 import frc.robot.RobotState;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -432,6 +435,8 @@ public class FuelSim {
     protected double bumperHeight;
     protected ArrayList<SimIntake> intakes = new ArrayList<>();
     protected int subticks = 5;
+    protected double loggingFreqHz = 50;
+    protected Timer loggingTimer = new Timer();
     // Array of 3d positions of the fuel hopper
     // Gets larger as balls are intaked (translations appended)
     // Gets smaller as balls are ejected or shot (final indices popped)
@@ -583,11 +588,13 @@ public class FuelSim {
     /** Start the simulation. `updateSim` must still be called every loop */
     public void start() {
         running = true;
+        loggingTimer.restart();
     }
 
     /** Pause the simulation. */
     public void stop() {
         running = false;
+        loggingTimer.stop();
     }
 
     /** Enables accounting for drag force in physics step * */
@@ -598,10 +605,20 @@ public class FuelSim {
     /**
      * Sets the number of physics iterations per loop (0.02s)
      *
-     * @param subticks the number of physics iterations per loop
+     * @param subticks the number of physics iterations per loop (default: 5)
      */
     public void setSubticks(int subticks) {
         this.subticks = subticks;
+    }
+
+    /**
+     * Sets the frequency to publish fuel translations to NetworkTables Used to improve performance
+     * in AdvantageScope
+     *
+     * @param loggingFreqHz update frequency in hertz
+     */
+    public void setLoggingFrequency(double loggingFreqHz) {
+        this.loggingFreqHz = loggingFreqHz;
     }
 
     /**
@@ -671,7 +688,9 @@ public class FuelSim {
             }
         }
 
-        logFuels();
+        if (loggingTimer.advanceIfElapsed(1.0 / loggingFreqHz)) {
+            logFuels();
+        }
     }
 
     /**
