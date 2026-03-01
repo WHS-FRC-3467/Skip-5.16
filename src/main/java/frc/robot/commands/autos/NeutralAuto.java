@@ -84,7 +84,7 @@ public class NeutralAuto extends AutoRoutine {
                     // Run back under the trench and shoot
                     // Initialize intake and hood to starting positions for teleop
                     AutoCommands.stowHood(shooter),
-                    intake.retractIntake().asProxy(),
+                    intake.retractIntake().asProxy().withTimeout(0.5),
                     // Drive to the neutral zone
                     start == StartPosition.LEFT
                             ? AutoBuilder.followPath(pathPlannerPaths.get(2))

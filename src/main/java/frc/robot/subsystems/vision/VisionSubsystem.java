@@ -55,10 +55,10 @@ public class VisionSubsystem extends SubsystemBase {
     public static final String LOG_PREFIX = "VisionProcessor/";
 
     /** Baseline linear standard deviation used for vision observations. */
-    public static final double LINEAR_STDDEV_BASELINE = 0.4;
+    public static final double LINEAR_STDDEV_BASELINE = 0.01;
 
     /** Baseline angular standard deviation used for vision observations. */
-    public static final double ANGULAR_STDDEV_BASELINE = 0.4;
+    public static final double ANGULAR_STDDEV_BASELINE = 0.01;
 
     /** Maximum allowable height (Z-axis) of a detected pose to be considqered valid. */
     public static final double MAX_Z_METERS = 0.75;

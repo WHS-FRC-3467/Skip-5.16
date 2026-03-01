@@ -103,7 +103,7 @@ public class IntakeLinearConstants {
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
 
-        config.TorqueCurrent.PeakForwardTorqueCurrent = 15.0;
+        config.TorqueCurrent.PeakForwardTorqueCurrent = 50.0;
         config.TorqueCurrent.PeakReverseTorqueCurrent = -50.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
