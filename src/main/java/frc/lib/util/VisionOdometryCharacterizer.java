@@ -19,7 +19,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -199,30 +198,12 @@ public class VisionOdometryCharacterizer {
     public static void printResults() {
         if (odoTimestep < 0.0) return;
 
-        DriverStation.reportWarning(
-                "Vision R Estimates: "
-                        + "Sufficient Samples: "
-                        + hasSufficientSamples()
-                        + "\nVision sigmaX: "
-                        + getVisionStdDevX()
-                        + "\nVision sigmaY: "
-                        + getVisionStdDevY()
-                        + "\nVision sigmaTheta: "
-                        + getVisionStdDevTheta()
-                        + "\nOdometry sigmaX: "
-                        + getOdoStdDevX(odoTimestep)
-                        + "\nOdometry sigmaY: "
-                        + getOdoStdDevY(odoTimestep)
-                        + "\nOdometry sigmaTheta: "
-                        + getOdoStdDevTheta(odoTimestep),
-                false);
-
-        String prefix = "VISION CHARACTERIZER/";
-        Logger.recordOutput(prefix + "VISION_SIGMA_X", getVisionStdDevX());
-        Logger.recordOutput(prefix + "VISION_SIGMA_Y", getVisionStdDevY());
-        Logger.recordOutput(prefix + "VISION_SIGMA_THETA", getVisionStdDevTheta());
-        Logger.recordOutput(prefix + "ODOMETRY_SIGMA_X", getOdoStdDevX(odoTimestep));
-        Logger.recordOutput(prefix + "ODOMETRY_SIGMA_Y", getOdoStdDevY(odoTimestep));
-        Logger.recordOutput(prefix + "ODOMETRY_SIGMA_THETA", getOdoStdDevTheta(odoTimestep));
+        String prefix = "Pose Stats/";
+        Logger.recordOutput(prefix + "VisionSigmaX", getVisionStdDevX());
+        Logger.recordOutput(prefix + "VisionSigmaY", getVisionStdDevY());
+        Logger.recordOutput(prefix + "VisionSigmaTheta", getVisionStdDevTheta());
+        Logger.recordOutput(prefix + "OdometrySigmaX", getOdoStdDevX(odoTimestep));
+        Logger.recordOutput(prefix + "OdometrySigmaY", getOdoStdDevY(odoTimestep));
+        Logger.recordOutput(prefix + "OdometrySigmaTheta", getOdoStdDevTheta(odoTimestep));
     }
 }
