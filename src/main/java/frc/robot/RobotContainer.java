@@ -21,6 +21,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.events.EventTrigger;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
@@ -31,10 +32,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
+import frc.lib.util.VisionOdometryCharacterizer;
 import frc.robot.Constants.PathConstants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
@@ -53,6 +56,7 @@ import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.RobotSim;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -98,6 +102,7 @@ public class RobotContainer {
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
+        VisionOdometryCharacterizer.enable();
         // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
