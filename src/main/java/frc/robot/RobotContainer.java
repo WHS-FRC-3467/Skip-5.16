@@ -274,6 +274,7 @@ public class RobotContainer {
         //                 .onlyIf(isAutonomous.negate()));
 
         new EventTrigger("RetractIntake").onTrue(intake.retractIntake());
+        new EventTrigger("ExtendIntake").onTrue(intake.intake());
     }
 
     /**
@@ -293,7 +294,7 @@ public class RobotContainer {
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Intake", intake.intake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Coast", intake.linearCoast());
-        SmartDashboard.putData(IntakeLinearConstants.NAME + "/Home", intake.homeLinear());
+        SmartDashboard.putData("Home", Commands.parallel(intake.homeLinear(), shooter.homeHood()));
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/SlowRetract", intake.slowRetract());
 
         // Tower Commands

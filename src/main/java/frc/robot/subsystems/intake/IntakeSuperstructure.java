@@ -14,7 +14,6 @@
  */
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
@@ -75,6 +74,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private State setpointState = new State();
     private State activeGoalState = retractionGoalState;
     private TrapezoidProfile activeProfiler = fastMotionProfiler;
+
+    private boolean runProfile = true;
 
     public IntakeSuperstructure(
             DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO,
@@ -257,12 +258,14 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     public Command homeLinear() {
         return Commands.sequence(
-                this.runOnce(() -> intakeLinearIO.runDutyCycle(0.3, true)),
-                Commands.waitSeconds(0.5),
-                Commands.waitUntil(
-                        () -> intakeLinearIO.getLinearVelocity().lt(InchesPerSecond.of(0.01))),
-                this.runOnce(() -> intakeLinearIO.setEncoderPosition(Rotations.of(3.56))),
-                this.runOnce(() -> intakeLinearIO.runBrake()));
+                        Commands.runOnce(() -> runProfile = false),
+                        this.runOnce(() -> intakeLinearIO.runDutyCycle(0.25, true)),
+                        this.idle())
+                .finallyDo(
+                        () -> {
+                            intakeLinearIO.setEncoderPosition(Rotations.of(3.56));
+                            runProfile = true;
+                        });
     }
 
     @Override
@@ -281,8 +284,10 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         setpointState = activeProfiler.calculate(delta, setpointState, activeGoalState);
         lastTimestamp = newTimestamp;
 
-        intakeLinearIO.runUnprofiledLinearPosition(
-                Meters.of(setpointState.position), PIDSlot.SLOT_0);
+        if (runProfile) {
+            intakeLinearIO.runUnprofiledLinearPosition(
+                    Meters.of(setpointState.position), PIDSlot.SLOT_0);
+        }
 
         LoggerHelper.recordCurrentCommand(this.getName(), this);
         intakeLinearIO.periodic();

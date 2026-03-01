@@ -65,12 +65,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new InterpolatingDoubleTreeMap();
 
     static {
-        hubFlywheelMap.put(1.30, 38.2);
-        hubFlywheelMap.put(1.72, 40.2);
-        hubFlywheelMap.put(2.1, 42.2);
-        hubFlywheelMap.put(3.05, 46.2);
-        hubFlywheelMap.put(3.54, 48.2);
-        hubFlywheelMap.put(4.6, 49.7);
+        hubFlywheelMap.put(1.30, 40.6);
+        hubFlywheelMap.put(1.72, 42.6);
+        hubFlywheelMap.put(2.1, 44.6);
+        hubFlywheelMap.put(3.05, 48.6);
+        hubFlywheelMap.put(3.54, 50.6);
+        hubFlywheelMap.put(4.6, 52.1);
     }
 
     /** Distance from feed pose in meters -> flywheel speed in rotations per second */
@@ -361,6 +361,15 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     public Command stopAndStow() {
         return Commands.sequence(stopFlywheels(), setHoodAngle(Rotations.zero()));
+    }
+
+    public Command homeHood() {
+        return Commands.sequence(this.runOnce(() -> hoodIO.runDutyCycle(-0.1, true)), this.idle())
+                .finallyDo(
+                        () -> {
+                            hoodIO.setEncoderPosition(Rotations.zero());
+                            hoodIO.runBrake();
+                        });
     }
 
     /**

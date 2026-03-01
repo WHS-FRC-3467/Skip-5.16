@@ -58,7 +58,7 @@ import lombok.Getter;
  */
 public class DriveCommands {
     @Getter private static final double DEADBAND = 0.1;
-    @Getter private static final double ANGLE_MAX_VELOCITY = 8.0;
+    @Getter private static final double ANGLE_MAX_VELOCITY = 8.3;
     @Getter private static final double ANGLE_MAX_ACCELERATION = 20.0;
     private static final LoggedTunableNumber ANGLE_KP =
             new LoggedTunableNumber("Drive/AngleP", 5.0);

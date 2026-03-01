@@ -54,10 +54,10 @@ public class VisionSubsystem extends SubsystemBase {
     public static final String LOG_PREFIX = "VisionProcessor/";
 
     /** Baseline linear standard deviation used for vision observations. */
-    public static final double LINEAR_STDDEV_BASELINE = 0.082;
+    public static final double LINEAR_STDDEV_BASELINE = 0.4;
 
     /** Baseline angular standard deviation used for vision observations. */
-    public static final double ANGULAR_STDDEV_BASELINE = 0.16;
+    public static final double ANGULAR_STDDEV_BASELINE = 0.4;
 
     /** Maximum allowable height (Z-axis) of a detected pose to be considqered valid. */
     public static final double MAX_Z_METERS = 0.75;
@@ -89,6 +89,10 @@ public class VisionSubsystem extends SubsystemBase {
      */
     public static boolean preFilter(PhotonPipelineResult result) {
         if (!result.hasTargets()) {
+            return false;
+        }
+
+        if (RobotState.getInstance().getFieldRelativeVelocity().omegaRadiansPerSecond > 2.0) {
             return false;
         }
 

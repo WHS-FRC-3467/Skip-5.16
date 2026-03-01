@@ -43,7 +43,7 @@ public class FlywheelConstants {
 
     private static final double GEARING = (20.0 / 18.0);
 
-    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(10.0);
+    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(2);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.001);

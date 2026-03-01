@@ -19,7 +19,6 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -85,15 +84,11 @@ public class NeutralAuto extends AutoRoutine {
                     // Run back under the trench and shoot
                     // Initialize intake and hood to starting positions for teleop
                     AutoCommands.stowHood(shooter),
-                    // Sweep neutral zone while intaking
-                    AutoCommands.driveAndIntake(
-                            // Drive to the neutral zone
-                            start == StartPosition.LEFT
-                                    ? AutoBuilder.followPath(pathPlannerPaths.get(2))
-                                    : AutoBuilder.followPath(pathPlannerPaths.get(2).mirrorPath()),
-                            intake,
-                            Commands.none(),
-                            Seconds.of(0.0)),
+                    intake.retractIntake().asProxy(),
+                    // Drive to the neutral zone
+                    start == StartPosition.LEFT
+                            ? AutoBuilder.followPath(pathPlannerPaths.get(2))
+                            : AutoBuilder.followPath(pathPlannerPaths.get(2).mirrorPath()),
                     AutoCommands.stowHood(shooter),
                     AutoCommands.shootCommand(
                             drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.15)),
