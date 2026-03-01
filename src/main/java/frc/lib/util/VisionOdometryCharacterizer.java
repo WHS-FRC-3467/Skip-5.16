@@ -210,11 +210,11 @@ public class VisionOdometryCharacterizer {
                         + "\nVision sigmaTheta: "
                         + getVisionStdDevTheta()
                         + "\nOdometry sigmaX: "
-                        + getOdoStdDevX(0.02)
+                        + getOdoStdDevX(odoTimestep)
                         + "\nOdometry sigmaY: "
-                        + getOdoStdDevY(0.02)
+                        + getOdoStdDevY(odoTimestep)
                         + "\nOdometry sigmaTheta: "
-                        + getOdoStdDevTheta(0.02),
+                        + getOdoStdDevTheta(odoTimestep),
                 false);
 
         String prefix = "VISION CHARACTERIZER/";
