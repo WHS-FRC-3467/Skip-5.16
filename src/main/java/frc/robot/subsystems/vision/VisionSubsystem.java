@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
+import frc.lib.util.VisionOdometryCharacterizer;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
@@ -266,6 +267,8 @@ public class VisionSubsystem extends SubsystemBase {
                     cameraLogPrefix + "/TagPoses/Rejected",
                     tagPosesRejected.toArray(Pose3d[]::new));
         }
+
+        VisionOdometryCharacterizer.printResults();
     }
 
     private double getAvgDistanceMeters(List<PhotonTrackedTarget> targets) {

@@ -33,6 +33,7 @@ import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
+import frc.lib.util.VisionOdometryCharacterizer;
 import frc.robot.Constants.PathConstants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
@@ -95,6 +96,7 @@ public class RobotContainer {
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
+        VisionOdometryCharacterizer.enable();
         leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
