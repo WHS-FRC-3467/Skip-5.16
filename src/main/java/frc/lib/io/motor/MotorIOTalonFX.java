@@ -396,7 +396,7 @@ public class MotorIOTalonFX implements MotorIO {
     @Override
     public void runUnprofiledPosition(Angle position, PIDSlot slot) {
         this.goalPosition = position;
-        motor.setControl(positionControl.withPosition(position).withSlot(slot.getNum()));
+        motor.setControl(unprofiledPositionControl.withPosition(position).withSlot(slot.getNum()));
     }
 
     /**
