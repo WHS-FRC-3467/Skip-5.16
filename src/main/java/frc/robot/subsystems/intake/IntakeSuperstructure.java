@@ -14,6 +14,7 @@
  */
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
@@ -56,7 +57,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private final LoggedTrigger isRetracted;
 
     private final State retractionGoalState =
-            new State(IntakeLinearConstants.MIN_DISTANCE.in(Meters), 0.0);
+            new State(
+                    IntakeLinearConstants.MIN_DISTANCE.in(Meters) + Inches.of(2.0).in(Meters), 0.0);
     private final State extensionGoalState =
             new State(IntakeLinearConstants.MAX_DISTANCE.in(Meters), 0.0);
     private TrapezoidProfile fastMotionProfiler =
@@ -67,7 +69,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private TrapezoidProfile slowMotionProfiler =
             new TrapezoidProfile(
                     new Constraints(
-                            0.3,
+                            0.15,
                             IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
 
     private double lastTimestamp = Timer.getTimestamp();
@@ -98,7 +100,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         "IntakeSuperstructure/IsRetracted",
                         () ->
                                 MathUtil.isNear(
-                                        IntakeLinearConstants.MIN_DISTANCE.in(Meters),
+                                        IntakeLinearConstants.MIN_DISTANCE.in(Meters)
+                                                + Inches.of(2.0).in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
                                         IntakeLinearConstants.TOLERANCE.in(Meters)));
     }
@@ -169,9 +172,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     public Command slowRetract() {
         return Commands.sequence(
-                        this.runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
+                        this.runRoller(
+                                () -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get()).times(0.6)),
                         profileLinearToPositionCommand(slowMotionProfiler, retractionGoalState),
-                        Commands.waitUntil(isRetracted))
+                        Commands.waitUntil(isRetracted),
+                        this.stopRoller())
                 .withName("Retract Linear");
     }
 
