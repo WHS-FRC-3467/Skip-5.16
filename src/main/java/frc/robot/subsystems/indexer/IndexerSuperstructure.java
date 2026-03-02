@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.io.motor.MotorIO.PIDSlot;
+import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
@@ -39,7 +40,7 @@ import frc.lib.util.LoggerHelper;
  * mechanism for velocity control.
  */
 public class IndexerSuperstructure extends SubsystemBase {
-    private final FlywheelMechanism<?> floorIO;
+    private final DistanceControlledMechanism<FlywheelMechanism<?>> floorIO;
     private final FlywheelMechanism<?> centerIO;
 
     private static final LoggedTunableNumber FLOOR_SHOOT_RPS =
@@ -48,7 +49,9 @@ public class IndexerSuperstructure extends SubsystemBase {
                     IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber FLOOR_EJECT_RPS =
-            new LoggedTunableNumber(IndexerFloorConstants.NAME + "/EjectRPS", -0.5);
+            new LoggedTunableNumber(
+                    IndexerFloorConstants.NAME + "/EjectRPS",
+                    -IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber FLOOR_FEED_RPS =
             new LoggedTunableNumber(
@@ -61,7 +64,9 @@ public class IndexerSuperstructure extends SubsystemBase {
                     IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber CENTER_EJECT_RPS =
-            new LoggedTunableNumber(IndexerCenterConstants.NAME + "/EjectRPS", -0.5);
+            new LoggedTunableNumber(
+                    IndexerCenterConstants.NAME + "/EjectRPS",
+                    -IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber CENTER_FEED_RPS =
             new LoggedTunableNumber(
@@ -106,7 +111,9 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @param floorIO The flywheel mechanism for controlling the indexer floor motors
      * @param centerIO The flywheel mechanism for controlling the indexer centering motors
      */
-    public IndexerSuperstructure(FlywheelMechanism<?> floorIO, FlywheelMechanism<?> centerIO) {
+    public IndexerSuperstructure(
+            DistanceControlledMechanism<FlywheelMechanism<?>> floorIO,
+            FlywheelMechanism<?> centerIO) {
         this.floorIO = floorIO;
         this.centerIO = centerIO;
         tuningModeEnabled.whileTrue(tuningModeCommand);

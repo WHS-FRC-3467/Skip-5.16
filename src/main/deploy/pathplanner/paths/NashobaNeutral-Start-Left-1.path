@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.453095577746077,
-        "y": 7.42
+        "x": 4.138355555555556,
+        "y": 7.494277777777777
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.453095577746077,
-        "y": 7.42
+        "x": 5.434366666666668,
+        "y": 7.416322222222222
       },
       "isLocked": false,
       "linkedName": "Start-LeftTrench"
     },
     {
       "anchor": {
-        "x": 8.433475877192983,
-        "y": 6.804473684210526
+        "x": 8.416166666666667,
+        "y": 6.480855555555555
       },
       "prevControl": {
-        "x": 7.529550438596492,
-        "y": 7.314133771929823
+        "x": 8.416166666666667,
+        "y": 7.361855555555556
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,22 +33,22 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.5,
-    "maxAcceleration": 3.6,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 862.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 480.0,
+    "maxAngularAcceleration": 600.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": -90.0
+    "velocity": 1.0,
+    "rotation": -100.0
   },
   "reversed": false,
   "folder": "Left",
   "idealStartingState": {
-    "velocity": 3.0,
-    "rotation": 0.0
+    "velocity": 0.0,
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

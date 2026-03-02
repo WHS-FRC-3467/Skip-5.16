@@ -95,9 +95,7 @@ public class VisionConstants {
                     Units.inchesToMeters(-9.50),
                     Units.inchesToMeters(17.00),
                     new Rotation3d(
-                            0.0,
-                            Units.degreesToRadians(-18.173),
-                            Units.degreesToRadians(-166.577)));
+                            0.0, Units.degreesToRadians(-18.173), Units.degreesToRadians(166.577)));
 
     // Intrinsics
     // ThriftyCam Default Calibrations
@@ -223,7 +221,7 @@ public class VisionConstants {
     public static final double RIGHT_FPS = 22;
     public static final double BACK_FPS = 22;
 
-    public static final double FRONT_STDDEV_FACTOR = .1;
+    public static final double FRONT_STDDEV_FACTOR = 1.0;
     public static final double LEFT_STDDEV_FACTOR = 1.0;
     public static final double RIGHT_STDDEV_FACTOR = 1.0;
     public static final double BACK_STDDEV_FACTOR = 1.0;
@@ -375,22 +373,22 @@ public class VisionConstants {
                 var camera1 = new AprilTagCamera(FRONT, getFrontIOReal());
                 // var camera2 = new AprilTagCamera(LEFT, getLeftIOReal());
                 // var camera3 = new AprilTagCamera(RIGHT, getRightIOReal());
-                // var camera4 = new AprilTagCamera(BACK, getBackIOReal());
-                new VisionSubsystem(camera1);
+                var camera4 = new AprilTagCamera(BACK, getBackIOReal());
+                new VisionSubsystem(camera1, camera4);
             }
             case SIM -> {
                 var camera1 = new AprilTagCamera(FRONT, getFrontIOSim());
                 // var camera2 = new AprilTagCamera(LEFT, getLeftIOSim());
                 // var camera3 = new AprilTagCamera(RIGHT, getRightIOSim());
-                // var camera4 = new AprilTagCamera(BACK, getBackIOSim());
-                new VisionSubsystem(camera1);
+                var camera4 = new AprilTagCamera(BACK, getBackIOSim());
+                new VisionSubsystem(camera1, camera4);
             }
             case REPLAY -> {
                 var camera1 = new AprilTagCamera(FRONT, new VisionIO() {});
                 // var camera2 = new AprilTagCamera(LEFT, new VisionIO() {});
                 // var camera3 = new AprilTagCamera(RIGHT, new VisionIO() {});
-                // var camera4 = new AprilTagCamera(BACK, new VisionIO() {});
-                new VisionSubsystem(camera1);
+                var camera4 = new AprilTagCamera(BACK, new VisionIO() {});
+                new VisionSubsystem(camera1, camera4);
             }
         }
     }
