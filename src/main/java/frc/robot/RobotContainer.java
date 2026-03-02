@@ -222,7 +222,8 @@ public class RobotContainer {
                                 indexer.stopCommand(),
                                 tower.stopCommand(),
                                 intake.extendIntake(),
-                                shooter.retractHood()));
+                                shooter.retractHood(),
+                                shooter.zeroFlywheelSpeedTrim()));
 
         // Right Bumper: Manually cycle intake
         controller.rightBumper().onTrue(intake.slowRetract()).onFalse(intake.extendIntake());
@@ -230,15 +231,15 @@ public class RobotContainer {
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
 
-        // A: Trench Align
-        controller
-                .a()
-                .whileTrue(
-                        DriveCommands.joystickDriveAtAngle(
-                                drive,
-                                () -> -controller.getLeftY(),
-                                () -> -controller.getLeftX(),
-                                robotState::getTunnelAssistHeading));
+        // // A: Trench Align
+        // controller
+        //         .a()
+        //         .whileTrue(
+        //                 DriveCommands.joystickDriveAtAngle(
+        //                         drive,
+        //                         () -> -controller.getLeftY(),
+        //                         () -> -controller.getLeftX(),
+        //                         robotState::getTunnelAssistHeading));
 
         // D-Pad Up: Force Intake Linear Slide Back
         controller.povUp().onTrue(intake.retractIntake());
@@ -250,7 +251,7 @@ public class RobotContainer {
 
         // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
         controller
-                .a()
+                .x()
                 .onTrue(
                         shooter.spinUpShooterToHubDistance(
                                 Meters.of(
@@ -269,6 +270,11 @@ public class RobotContainer {
                                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                                 indexer.stopCommand(),
                                 tower.stopCommand()));
+
+        // Hold to trim flywheel speed up/down by 7.5% / second while shooting. Resets on shooter
+        // spin-down.
+        controller.y().and(controller.rightTrigger()).whileTrue(shooter.trimFlywheelSpeedUp());
+        controller.a().and(controller.rightTrigger()).whileTrue(shooter.trimFlywheelSpeedDown());
 
         // robotState.enteringTrench.whileTrue(
         //         shooter.forceHoodAngle(Rotations.zero())
