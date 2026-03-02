@@ -135,6 +135,9 @@ public class RobotContainer {
         autoChooser.addOption(
                 "DepotAuto-Left",
                 new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+        autoChooser.addOption(
+                "DepotAuto-Center",
+                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
 
         autoChooser.onChange(
                 auto -> {

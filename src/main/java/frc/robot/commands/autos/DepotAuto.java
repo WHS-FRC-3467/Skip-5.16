@@ -16,16 +16,16 @@
 package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -72,19 +72,17 @@ public class DepotAuto extends AutoRoutine {
             loadCommands(
                     // Reset odometry
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
-                    // Initialize intake
-                    intake.retractIntake().withTimeout(1.25),
                     // Drive to depot and start intake, then run through depot while intaking FUEL
-                    AutoCommands.driveAndIntake(
-                            AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                            intake,
-                            Commands.none(),
-                            Seconds.of(0.5)),
-                    // Drive to shooting location and shoot all FUEL
+                    AutoBuilder.followPath(pathPlannerPaths.get(0)),
+                    // // Drive to shooting location and shoot all FUEL
                     AutoCommands.shootCommand(
-                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.15), 10.0),
-                    // Re-initialize intake for tele-op
-                    intake.retractIntake().withTimeout(1.25));
+                            drive,
+                            intake,
+                            indexer,
+                            tower,
+                            shooter,
+                            MetersPerSecond.of(0.15),
+                            10.0));
         }
     }
 }
