@@ -12,17 +12,21 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
-package frc.robot.commands.autos;
+package frc.robot.commands.autos.tuning;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+
 import frc.lib.util.AutoRoutine;
+import frc.robot.commands.autos.AutoCommands;
+import frc.robot.commands.autos.StartPosition;
 import frc.robot.subsystems.drive.Drive;
+
 import java.util.List;
 
-public class LinearCharacterizationAuto extends AutoRoutine {
+public class RotationalCharacterizationAuto extends AutoRoutine {
 
-    public LinearCharacterizationAuto(Drive drive) {
-        List<String> expectedPaths = List.of("LinearCharacterization");
+    public RotationalCharacterizationAuto(Drive drive) {
+        List<String> expectedPaths = List.of("RotationalCharacterization");
 
         // Load the named paths
         this.loadAllPaths(expectedPaths);
@@ -35,7 +39,7 @@ public class LinearCharacterizationAuto extends AutoRoutine {
             loadCommands(
                     // Reset odometry
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
-                    // Follow straight path
+                    // Follow rotational path
                     AutoBuilder.followPath(pathPlannerPaths.get(0)));
     }
 }

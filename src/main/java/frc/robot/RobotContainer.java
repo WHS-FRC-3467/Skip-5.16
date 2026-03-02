@@ -21,6 +21,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.events.EventTrigger;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
@@ -31,6 +32,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -41,6 +43,9 @@ import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
+import frc.robot.commands.autos.tuning.FeedforwardCharacterizationAuto;
+import frc.robot.commands.autos.tuning.WheelCharacterizationAuto;
+import frc.robot.commands.autos.tuning.WheelSlipAuto;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -54,6 +59,7 @@ import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.RobotSim;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -115,14 +121,7 @@ public class RobotContainer {
 
         // Preload Autos
         autoChooser.addOption(
-                "PreloadAuto-Left",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "PreloadAuto-Center",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-        autoChooser.addOption(
-                "PreloadAuto-Right",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+                "PreloadAuto", new PreloadAuto(drive, intake, indexer, tower, shooter));
 
         // Neutral Autos
         autoChooser.addOption(
@@ -136,31 +135,6 @@ public class RobotContainer {
         autoChooser.addOption(
                 "DepotAuto-Left",
                 new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "DepotAuto-Center",
-                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-
-        // Outpost Auto
-        autoChooser.addOption(
-                "OutpostAuto-Right",
-                new OutpostAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
-
-        // Alliance Side Autos
-        autoChooser.addOption(
-                "Depot-Then-OutpostAuto-Left",
-                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "Depot-Then-OutpostAuto-Center",
-                new AllianceComboAuto(
-                        drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-        autoChooser.addOption(
-                "Outpost-Then-DepotAuto-Right",
-                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
-
-        // Drivebase Characterization Autos
-        autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
-        autoChooser.addOption(
-                "RotationalCharacterization", new RotationalCharacterizationAuto(drive));
 
         autoChooser.onChange(
                 auto -> {
@@ -181,10 +155,6 @@ public class RobotContainer {
 
         autoChooser.addOption(
                 "Feedforward Characterization", new FeedforwardCharacterizationAuto(drive));
-
-        autoChooser.addOption(
-                "Rotational Characterization", new RotationalCharacterizationAuto(drive));
-        autoChooser.addOption("Linear Characterization", new LinearCharacterizationAuto(drive));
 
         // Configure the button bindings
         configureButtonBindings();
