@@ -55,10 +55,10 @@ class DriveTest {
         drive =
                 new Drive(
                         new GyroIO() {},
-                        new ModuleIOSim("FrontLeft", DriveConstants.FrontLeft),
-                        new ModuleIOSim("FrontRight", DriveConstants.FrontRight),
-                        new ModuleIOSim("BackLeft", DriveConstants.BackLeft),
-                        new ModuleIOSim("BackRight", DriveConstants.BackRight));
+                        new ModuleIOSim(DriveConstants.FrontLeft),
+                        new ModuleIOSim(DriveConstants.FrontRight),
+                        new ModuleIOSim(DriveConstants.BackLeft),
+                        new ModuleIOSim(DriveConstants.BackRight));
 
         /* enable the robot */
         DriverStationSim.setEnabled(true);
@@ -99,7 +99,8 @@ class DriveTest {
             assertEquals(1.5, drive.getChassisSpeeds().vyMetersPerSecond, DELTA);
         } catch (Exception e) {
             fail(
-                    "Failed to run drive linear velocity of 1.5 m/s in the x direction and 3 m/s in the y direction: "
+                    "Failed to run drive linear velocity of 1.5 m/s in the x direction and 3 m/s in"
+                            + " the y direction: "
                             + e.getMessage());
         }
     }
