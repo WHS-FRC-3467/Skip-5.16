@@ -352,10 +352,10 @@ public class DriveConstants {
             case SIM:
                 return new Drive(
                         new GyroIO() {},
-                        new ModuleIOSim("FrontLeft", DriveConstants.FrontLeft),
-                        new ModuleIOSim("FrontRight", DriveConstants.FrontRight),
-                        new ModuleIOSim("BackLeft", DriveConstants.BackLeft),
-                        new ModuleIOSim("BackRight", DriveConstants.BackRight));
+                        new ModuleIOSim(DriveConstants.FrontLeft),
+                        new ModuleIOSim(DriveConstants.FrontRight),
+                        new ModuleIOSim(DriveConstants.BackLeft),
+                        new ModuleIOSim(DriveConstants.BackRight));
             case REPLAY:
                 return new Drive(
                         new GyroIO() {},

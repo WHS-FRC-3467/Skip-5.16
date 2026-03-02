@@ -63,7 +63,6 @@ public class ModuleIOSim implements ModuleIO {
      * @param constants Module-specific constants for configuring the simulation
      */
     public ModuleIOSim(
-            String name,
             SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
                     constants) {
         // Create drive and turn sim models
