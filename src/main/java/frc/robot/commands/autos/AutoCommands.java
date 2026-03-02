@@ -186,7 +186,6 @@ public class AutoCommands {
     /**
      * Makes the robot smaller by retracting the intake and lowering the hood.
      *
-     * @param intake the intake superstructure subsystem
      * @param shooter the shooter superstructure subsystem
      * @return returns a timed command that retracts the intake and lowers the hood
      */

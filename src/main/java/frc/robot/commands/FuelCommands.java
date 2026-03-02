@@ -66,8 +66,6 @@ public class FuelCommands {
      * @param indexer the indexer subsystem
      * @param tower the tower subsystem
      * @param shooter the shooter superstructure
-     * @param canShoot secondary check on whether the robot is properly aligned to the target,
-     *     independent of whether the shooter is at the proper state
      * @param duration the approximate duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer / tower after the given
      *     duration

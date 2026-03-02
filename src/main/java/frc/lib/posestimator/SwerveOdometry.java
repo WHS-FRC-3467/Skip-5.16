@@ -26,13 +26,11 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.units.measure.Time;
-
-import lombok.Getter;
-import lombok.experimental.Accessors;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
  * Integrates swerve-drive odometry observations to maintain a continuous estimate of the robot's
