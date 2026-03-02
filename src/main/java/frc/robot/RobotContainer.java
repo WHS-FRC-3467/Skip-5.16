@@ -122,19 +122,15 @@ public class RobotContainer {
 
         // Neutral Autos
         autoChooser.addOption(
-                "NeutralAuto-Left",
-                new NeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+                "NeutralAuto-Left", new NeutralAuto(drive, intake, indexer, tower, shooter, false));
         autoChooser.addOption(
-                "NeutralAuto-Right",
-                new NeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+                "NeutralAuto-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true));
 
         // Depot Autos
         autoChooser.addOption(
-                "DepotAuto-Left",
-                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+                "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
         autoChooser.addOption(
-                "DepotAuto-Center",
-                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
+                "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
 
         autoChooser.onChange(
                 auto -> {

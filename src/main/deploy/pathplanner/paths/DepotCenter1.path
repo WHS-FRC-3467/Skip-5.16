@@ -40,8 +40,8 @@
         "y": 5.371166377876163
       },
       "nextControl": {
-        "x": 0.633401402479836,
-        "y": 4.903001789091641
+        "x": 0.6334014024798362,
+        "y": 4.90300178909164
       },
       "isLocked": false,
       "linkedName": null
@@ -107,7 +107,7 @@
     "rotation": -34.019349989826544
   },
   "reversed": false,
-  "folder": "Depot Auto",
+  "folder": "Depot",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

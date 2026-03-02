@@ -18,12 +18,10 @@
 package frc.lib.util;
 
 import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,24 +42,22 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
     public void loadAllPaths(List<String> pathNames, boolean shouldMirror) {
         // Load paths into a temporary list so we can initialize mirror flags to the
         // same size and keep things consistent even if loading fails.
-        List<PathPlannerPath> loaded = pathNames.stream().map(name -> loadPath(name)).toList();
-        if (shouldMirror) {
-            for (var path : loaded) {
-                path = path.mirrorPath();
-            }
-        }
-
+        List<PathPlannerPath> loaded =
+                pathNames.stream().map(name -> loadPath(name, shouldMirror)).toList();
         pathPlannerPaths.addAll(loaded);
     }
 
-    private PathPlannerPath loadPath(String pathName) {
+    private PathPlannerPath loadPath(String pathName, boolean shouldMirror) {
         PathPlannerPath path;
         try {
             path = PathPlannerPath.fromPathFile(pathName);
         } catch (Exception e) {
             DriverStation.reportError(
                     "Failed to load PathPlanner path: " + pathName, e.getStackTrace());
-            path = null;
+            return null;
+        }
+        if (shouldMirror) {
+            return path.mirrorPath();
         }
 
         return path;

@@ -24,14 +24,13 @@ import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Auto routine that utilizes AutoSegment command sequences to drive to the DEPOT, collect FUEL from
  * the DEPOT, and then shoot them. Strategy layer.
  */
-public class DepotAuto extends AutoRoutine {
+public class DepotSideAuto extends AutoRoutine {
     /**
      * Constructs a DepotAuto routine that drive to depot, collects from depot, and shoots collected
      * fuel. Path selection is based on the starting position (LEFT, or CENTER).
@@ -43,27 +42,17 @@ public class DepotAuto extends AutoRoutine {
      * @param shooter the shooter superstructure for launching fuel
      * @param start the starting position on the field
      */
-    public DepotAuto(
+    public DepotSideAuto(
             Drive drive,
             IntakeSuperstructure intake,
             IndexerSuperstructure indexer,
             Tower tower,
-            ShooterSuperstructure shooter,
-            StartPosition start) {
+            ShooterSuperstructure shooter) {
         // Choose path names based on start position
-        List<String> expectedPaths;
-        switch (start) {
-            case LEFT -> expectedPaths = List.of("WilksDepot");
-            case CENTER -> expectedPaths = List.of("WilksDepot-Center");
-            case RIGHT -> expectedPaths = List.of(); // No right side Depot Only Auto
-            default -> expectedPaths = List.of();
-        }
+        List<String> expectedPaths = List.of("DepotSide1");
 
         // Load the named paths
-        this.loadAllPaths(expectedPaths);
-
-        // Do not mirror for right saide as DEPOT is on the left side
-        this.setMirrorFlags(Collections.nCopies(expectedPaths.size(), false), start);
+        this.loadAllPaths(expectedPaths, false);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null)) {

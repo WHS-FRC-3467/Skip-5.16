@@ -93,7 +93,7 @@
     "rotation": -37.24478289265946
   },
   "reversed": false,
-  "folder": "Depot Auto",
+  "folder": "Depot",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

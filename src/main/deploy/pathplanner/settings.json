@@ -3,12 +3,9 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "Center",
     "Characterization",
-    "Depot Auto",
-    "Left",
-    "NeutralZone",
-    "Right"
+    "Depot",
+    "NeutralZone"
   ],
   "autoFolders": [],
   "defaultMaxVel": 4.0,
