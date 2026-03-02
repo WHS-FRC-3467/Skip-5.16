@@ -3,71 +3,71 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.558655555555555,
-        "y": 4.064233333333333
+        "x": 3.52151212553495,
+        "y": 7.35376604850214
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.6842455916127825,
-        "y": 4.3555260489263645
-      },
-      "isLocked": false,
-      "linkedName": "NashobaNeutral-FirstSweep-Left-End"
-    },
-    {
-      "anchor": {
-        "x": 6.447788888888889,
-        "y": 7.263195435092724
-      },
-      "prevControl": {
-        "x": 7.953794100682131,
-        "y": 6.983692896544916
-      },
-      "nextControl": {
-        "x": 5.307688888888889,
-        "y": 7.474788888888888
+        "x": 2.706376604850214,
+        "y": 7.327888730385164
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.167588888888889,
-        "y": 7.445555555555555
+        "x": 0.4938659058487873,
+        "y": 6.978544935805992
       },
       "prevControl": {
-        "x": 4.713277777777778,
-        "y": 7.494277777777777
+        "x": 0.5062804198098785,
+        "y": 7.487540008210723
       },
       "nextControl": {
-        "x": 3.3856784723377276,
-        "y": 7.375742125506345
+        "x": 0.48092724679029925,
+        "y": 6.448059914407988
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.693437945791726,
-        "y": 7.263195435092724
+        "x": 1.0372895863052778,
+        "y": 5.128316690442225
       },
       "prevControl": {
-        "x": 2.9156041965411963,
-        "y": 7.443416642477245
+        "x": 0.6969957356709198,
+        "y": 4.988195693122195
+      },
+      "nextControl": {
+        "x": 1.69716119828816,
+        "y": 5.400028530670471
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.706376604850214,
+        "y": 5.477660485021398
+      },
+      "prevControl": {
+        "x": 1.6583452211126959,
+        "y": 5.400028530670471
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "UnderTrench-Shoot-Left-End"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.0331950207468867,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 0.9722814498933765,
+      "rotationDegrees": -90.0
     },
     {
-      "waypointRelativePos": 2.5120331950207038,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 1.5543710021321864,
+      "rotationDegrees": -90.0
     }
   ],
   "constraintZones": [],
@@ -83,13 +83,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -60.78075330951541
+    "rotation": -37.24478289265946
   },
   "reversed": false,
-  "folder": "Left",
+  "folder": "Depot Auto",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": -100.0
+    "velocity": 0,
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

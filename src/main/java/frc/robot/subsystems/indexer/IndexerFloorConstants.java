@@ -23,6 +23,7 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
@@ -36,11 +37,11 @@ public class IndexerFloorConstants {
 
     public static String NAME = "Indexer Floor";
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(100.0);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(30.0);
     public static final AngularAcceleration MAX_ACCELERATION =
-            RotationsPerSecondPerSecond.of(153.5);
+            RotationsPerSecondPerSecond.of(193.0);
 
-    private static final double GEARING = (48.0 / 22.0) * (24.0 / 36.0) * (17.0 / 18.0);
+    private static final double GEARING = (48.0 / 22.0);
 
     public static final Distance RADIUS = Inches.of(0.5);
 
@@ -50,7 +51,7 @@ public class IndexerFloorConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(10.0, 0.0, 0.0);
+    public static final PID SLOT0_PID = new PID(28.0, 0.0, 0.0).withS(22.0);
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the indexer.
@@ -93,7 +94,7 @@ public class IndexerFloorConstants {
      *
      * @return A fully configured IndexerSuperstructure subsystem
      */
-    public static FlywheelMechanism<?> get() {
+    public static DistanceControlledMechanism<FlywheelMechanism<?>> get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -122,6 +123,6 @@ public class IndexerFloorConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return mechanism;
+        return new DistanceControlledMechanism<>(mechanism, Inches.of(0.5));
     }
 }

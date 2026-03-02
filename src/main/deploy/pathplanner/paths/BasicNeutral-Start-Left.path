@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.453095577746077,
-        "y": 7.42
+        "x": 4.138355555555556,
+        "y": 7.494277777777777
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.721084165477889,
-        "y": 7.497845934379458
+        "x": 6.184688888888891,
+        "y": 7.338366666666666
       },
       "isLocked": false,
       "linkedName": "Start-LeftTrench"
@@ -20,28 +20,23 @@
         "y": 6.913851640513553
       },
       "prevControl": {
-        "x": 6.774918926591822,
-        "y": 7.593797193236995
+        "x": 6.795351104961746,
+        "y": 7.08110788985284
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "UnderTrench-Run-Left-End"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": -10.947194329430955
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.5,
-    "maxAcceleration": 3.6,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 862.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 480.0,
+    "maxAngularAcceleration": 600.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
@@ -53,7 +48,7 @@
   "folder": "Left",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

@@ -23,11 +23,13 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Time;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
+import frc.lib.util.VisionOdometryCharacterizer;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -39,14 +41,42 @@ public class PoseEstimator {
 
     private static final double DEFAULT_ODOMETRY_BUFFER_SIZE_SECONDS = 2;
 
+    /*
+     * When wheels are skidding, wheel odometry is less reliable. We inflate the odometry standard
+     * deviation used during vision fusion so vision has more authority during skid.
+     *
+     * These are multipliers on standard deviation. Variance is scaled by multiplier^2.
+     */
+    private static final double ODOMETRY_STDDEV_MULTIPLIER_PER_BAD_WHEEL_LINEAR = 0.75;
+    private static final double ODOMETRY_STDDEV_MULTIPLIER_PER_BAD_WHEEL_ANGULAR = 0.50;
+    private static final double ODOMETRY_STDDEV_MULTIPLIER_MAX_LINEAR = 4.0;
+    private static final double ODOMETRY_STDDEV_MULTIPLIER_MAX_ANGULAR = 3.0;
+
     private final SwerveOdometry odometry;
 
+    /** Base odometry variances */
     private final double[] odometryVariances;
+
+    private double odometryStdDevMultiplierLinear = 1.0;
+    private double odometryStdDevMultiplierAngular = 1.0;
 
     @Getter private Pose2d estimatedPose = Pose2d.kZero;
 
     public PoseEstimator(
             SwerveDriveKinematics kinematics,
+            Time odometryBufferSize,
+            double linearOdometryStdDev,
+            double angularOdometryStdDev) {
+        this(kinematics, null, odometryBufferSize, linearOdometryStdDev, angularOdometryStdDev);
+    }
+
+    /**
+     * If module translations are provided, odometry can ignore skidding wheels using the {@code
+     * badWheels} array in {@link OdometryObservation}.
+     */
+    public PoseEstimator(
+            SwerveDriveKinematics kinematics,
+            Translation2d[] moduleTranslations,
             Time odometryBufferSize,
             double linearOdometryStdDev,
             double angularOdometryStdDev) {
@@ -60,7 +90,7 @@ public class PoseEstimator {
                     angularOdometryVariance // Rotation
                 };
 
-        odometry = new SwerveOdometry(kinematics, odometryBufferSize);
+        odometry = new SwerveOdometry(kinematics, moduleTranslations, odometryBufferSize);
     }
 
     public PoseEstimator(
@@ -89,13 +119,38 @@ public class PoseEstimator {
      *     contains information about the robot's movement such as displacement and rotation.
      */
     public void addOdometryObservation(OdometryObservation observation) {
+        updateOdometryStdDevMultipliersFromSkid(observation.badWheels());
+
         Pose2d lastOdometryPose = odometry.odometryPose();
         odometry.addOdometryObservation(observation);
         Pose2d newOdometryPose = odometry.odometryPose();
 
         Twist2d twist = lastOdometryPose.log(newOdometryPose);
+        // Utility listener characterizing odometry measurement variance for Kalman gain tuning
+        VisionOdometryCharacterizer.recordOdometryTwist(observation.timestamp().in(Seconds), twist);
 
         estimatedPose = estimatedPose.exp(twist);
+    }
+
+    private void updateOdometryStdDevMultipliersFromSkid(boolean[] badWheels) {
+        if (badWheels == null) {
+            odometryStdDevMultiplierLinear = 1.0;
+            odometryStdDevMultiplierAngular = 1.0;
+            return;
+        }
+
+        int badCount = 0;
+        for (boolean bad : badWheels) {
+            if (bad) {
+                badCount++;
+            }
+        }
+
+        double linear = 1.0 + (badCount * ODOMETRY_STDDEV_MULTIPLIER_PER_BAD_WHEEL_LINEAR);
+        double angular = 1.0 + (badCount * ODOMETRY_STDDEV_MULTIPLIER_PER_BAD_WHEEL_ANGULAR);
+
+        odometryStdDevMultiplierLinear = Math.min(linear, ODOMETRY_STDDEV_MULTIPLIER_MAX_LINEAR);
+        odometryStdDevMultiplierAngular = Math.min(angular, ODOMETRY_STDDEV_MULTIPLIER_MAX_ANGULAR);
     }
 
     /**
@@ -151,6 +206,10 @@ public class PoseEstimator {
 
         Pose2d oldPose = estimatedPose.plus(poseDeltaThenToNow.inverse());
         Pose2d newVisionPose = observation.robotPose;
+        // Utility listener characterizing vision measurement deviation from state prediction for
+        // Kalman gain tuning
+        VisionOdometryCharacterizer.recordVisionCorrection(
+                observation.timestampSeconds, oldPose, newVisionPose);
 
         double visionLinearVariance = observation.linearStdDev * observation.linearStdDev;
         double visionAngularVariance = observation.angularStdDev * observation.angularStdDev;
@@ -164,9 +223,20 @@ public class PoseEstimator {
             visionAngularVariance
         }; // Rotation
 
+        double linearVarianceMultiplier =
+                odometryStdDevMultiplierLinear * odometryStdDevMultiplierLinear;
+        double angularVarianceMultiplier =
+                odometryStdDevMultiplierAngular * odometryStdDevMultiplierAngular;
+
+        double[] effectiveOdometryVariances = {
+            odometryVariances[0] * linearVarianceMultiplier, // X axis
+            odometryVariances[1] * linearVarianceMultiplier, // Y axis
+            odometryVariances[2] * angularVarianceMultiplier // Rotation
+        };
+
         Matrix<N3, N3> visionKalmanGain = new Matrix<>(Nat.N3(), Nat.N3());
         for (int row = 0; row < 3; ++row) {
-            double odometryVariance = odometryVariances[row];
+            double odometryVariance = effectiveOdometryVariances[row];
             if (odometryVariance == 0.0) {
                 visionKalmanGain.set(row, row, 0.0);
             } else {
@@ -219,5 +289,8 @@ public class PoseEstimator {
     public void resetPose(Pose2d pose) {
         odometry.resetPose(pose);
         estimatedPose = pose;
+
+        odometryStdDevMultiplierLinear = 1.0;
+        odometryStdDevMultiplierAngular = 1.0;
     }
 }

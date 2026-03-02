@@ -5,16 +5,17 @@
 package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
@@ -56,33 +57,6 @@ public class AutoCommands {
         } else {
             return Commands.none();
         }
-    }
-
-    /**
-     * Creates a command that automatically aligns the robot to the target while executing the
-     * shooting sequence. The drive will aim toward the target based on robot state, and shooting
-     * will only occur when the robot is within a configured angular tolerance. The command ends
-     * when the shooting sequence times out or is otherwise interrupted.
-     *
-     * @param drive the drive subsystem used to rotate and align the robot to the target
-     * @param indexer the indexer subsystem used to feed game pieces into the shooter
-     * @param tower the tower subsystem used to move game pieces toward the shooter
-     * @param shooter the shooter superstructure responsible for spinning up and controlling the
-     *     shooter
-     * @param duration the maximum duration in seconds to run the align-and-shoot sequence
-     * @return a command that aligns the robot to the target and shoots for up to the given duration
-     */
-    public static Command alignAndShoot(
-            Drive drive,
-            IndexerSuperstructure indexer,
-            Tower tower,
-            ShooterSuperstructure shooter,
-            double duration) {
-        return Commands.deadline(
-                FuelCommands.prepareShot(
-                        indexer, tower, shooter, robotState.facingTarget, duration),
-                DriveCommands.joystickDriveAtAngle(
-                        drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget));
     }
 
     /**
@@ -130,15 +104,37 @@ public class AutoCommands {
             ShooterSuperstructure shooter,
             PathPlannerPath path) {
         return Commands.sequence(
-                new ParallelDeadlineGroup(
-                        AutoBuilder.followPath(path), AutoCommands.prepareHubShot(path, shooter)),
-                new ParallelDeadlineGroup(
+                AutoBuilder.followPath(path),
+                Commands.parallel(
+                        DriveCommands.autoAimTowardsTarget(drive),
                         FuelCommands.prepareShot(
-                                indexer,
-                                tower,
-                                shooter,
-                                () -> true,
-                                4.5))); // TODO: hopper agitation
+                                indexer, tower, intake, shooter, MetersPerSecond.of(0.1), 4.5)));
+    }
+
+    public static Command shootCommand(
+            Drive drive,
+            IntakeSuperstructure intake,
+            IndexerSuperstructure indexer,
+            Tower tower,
+            ShooterSuperstructure shooter,
+            LinearVelocity retractSpeed,
+            double timeoutSeconds) {
+        return Commands.parallel(
+                DriveCommands.autoAimTowardsTarget(drive),
+                FuelCommands.prepareShot(
+                        indexer, tower, intake, shooter, retractSpeed, timeoutSeconds));
+    }
+
+    public static Command shootCommand(
+            Drive drive,
+            IntakeSuperstructure intake,
+            IndexerSuperstructure indexer,
+            Tower tower,
+            ShooterSuperstructure shooter,
+            LinearVelocity retractSpeed) {
+        return Commands.deadline(
+                FuelCommands.prepareShot(indexer, tower, intake, shooter, retractSpeed, 3.5),
+                DriveCommands.autoAimTowardsTarget(drive));
     }
 
     /**
@@ -162,7 +158,7 @@ public class AutoCommands {
         return Commands.sequence(
                 // Roll out intake (times out at 1.25 seconds)
                 // WHILE following the path that takes the robot near the fuel location.
-                Commands.parallel(intake.extendIntake().withTimeout(1.25), approachPathCommand),
+                Commands.deadline(approachPathCommand, intake.intake().asProxy()),
                 // Collect FUEL
                 pathCommand,
                 Commands.waitSeconds(afterPathWait.in(Seconds)));
@@ -190,11 +186,10 @@ public class AutoCommands {
     /**
      * Makes the robot smaller by retracting the intake and lowering the hood.
      *
-     * @param intake the intake superstructure subsystem
      * @param shooter the shooter superstructure subsystem
      * @return returns a timed command that retracts the intake and lowers the hood
      */
-    public static Command makeSmall(IntakeSuperstructure intake, ShooterSuperstructure shooter) {
-        return Commands.parallel(intake.retractIntake(), shooter.retractHood()).withTimeout(1.25);
+    public static Command stowHood(ShooterSuperstructure shooter) {
+        return Commands.parallel(shooter.retractHood()).withTimeout(1.25);
     }
 }

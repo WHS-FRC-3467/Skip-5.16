@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8849122807017546,
-        "y": 7.42952850877193
+        "x": 2.693437945791726,
+        "y": 7.263195435092724
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.2083787571639513,
-        "y": 7.477374443151388
+        "x": 3.0169044222539227,
+        "y": 7.311041369472182
       },
       "isLocked": false,
       "linkedName": "UnderTrench-Shoot-Left-End"
@@ -58,10 +58,10 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.5,
-    "maxAcceleration": 3.6,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 862.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 480.0,
+    "maxAngularAcceleration": 600.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
@@ -73,7 +73,7 @@
   "folder": "Left",
   "idealStartingState": {
     "velocity": 1.5,
-    "rotation": -65.0
+    "rotation": -60.78075330951541
   },
   "useDefaultConstraints": true
 }

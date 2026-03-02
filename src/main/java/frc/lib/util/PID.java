@@ -48,6 +48,11 @@ public record PID(double P, double I, double D, double A, double V, double G, do
         this(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     }
 
+    /** Constructs a PID record from a CTRE SlotConfigs */
+    public PID(SlotConfigs pid) {
+        this(pid.kP, pid.kI, pid.kD, pid.kA, pid.kV, pid.kG, pid.kS);
+    }
+
     /**
      * Converts this PID record to a CTRE Phoenix 6 SlotConfigs object.
      *

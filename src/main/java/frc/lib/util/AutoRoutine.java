@@ -180,7 +180,10 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
         if (pathPlannerPaths.contains(null)) {
             return new Pose2d();
         } else {
-            return pathPlannerPaths.get(0).getPathPoses().get(0);
+            var firstPath = pathPlannerPaths.get(0);
+            return new Pose2d(
+                    firstPath.getPathPoses().get(0).getTranslation(),
+                    firstPath.getIdealStartingState().rotation());
         }
     }
 }

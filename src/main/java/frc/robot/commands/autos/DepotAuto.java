@@ -15,9 +15,11 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -53,11 +55,8 @@ public class DepotAuto extends AutoRoutine {
         // Choose path names based on start position
         List<String> expectedPaths;
         switch (start) {
-            case LEFT ->
-                    expectedPaths = List.of("StartLeft-NearDepot", "Through-Depot", "Depot-Shoot");
-            case CENTER ->
-                    expectedPaths =
-                            List.of("StartCenter-NearDepot", "Through-Depot", "Depot-Shoot");
+            case LEFT -> expectedPaths = List.of("WilksDepot");
+            case CENTER -> expectedPaths = List.of("WilksDepot-Center");
             case RIGHT -> expectedPaths = List.of(); // No right side Depot Only Auto
             default -> expectedPaths = List.of();
         }
@@ -79,11 +78,11 @@ public class DepotAuto extends AutoRoutine {
                     AutoCommands.driveAndIntake(
                             AutoBuilder.followPath(pathPlannerPaths.get(0)),
                             intake,
-                            AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                            Commands.none(),
                             Seconds.of(0.5)),
                     // Drive to shooting location and shoot all FUEL
-                    AutoCommands.moveToShot(
-                            drive, intake, indexer, tower, shooter, pathPlannerPaths.get(2)),
+                    AutoCommands.shootCommand(
+                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.15), 10.0),
                     // Re-initialize intake for tele-op
                     intake.retractIntake().withTimeout(1.25));
         }

@@ -95,111 +95,111 @@ public class VisionConstants {
                     Units.inchesToMeters(-9.50),
                     Units.inchesToMeters(17.00),
                     new Rotation3d(
-                            0.0,
-                            Units.degreesToRadians(-18.173),
-                            Units.degreesToRadians(-166.577)));
+                            0.0, Units.degreesToRadians(-18.173), Units.degreesToRadians(166.577)));
 
     // Intrinsics
     // ThriftyCam Default Calibrations
+    // FRONT = 001
     public static final Matrix<N3, N3> FRONT_MATRIX =
             MatBuilder.fill(
                     Nat.N3(),
                     Nat.N3(),
-                    2002.948392331919,
+                    1374.5810440343344,
                     0.0,
                     783.9099067246102,
                     0.0,
-                    1999.0390684862123,
-                    662.7694019679813,
+                    1372.812552612185,
+                    625.0235468329686,
                     0.0,
                     0.0,
                     1.0);
 
     public static final Vector<N8> FRONT_DIST_COEFFS =
             VecBuilder.fill(
-                    0.09905119793103302,
-                    -0.06388083628565337,
-                    3.87402720846368E-5,
-                    1.4421218015997156E-4,
-                    -0.16329892957216433,
-                    -0.004599206903333014,
-                    0.0029050841273878885,
-                    0.0067195798658376375);
+                    -0.026196325286696756,
+                    -0.009723442862755697,
+                    0.0001952367978811718,
+                    -0.001050160836428745,
+                    0.03824036092520992,
+                    0.0032447843005095098,
+                    0.0017417137036774418,
+                    -0.002565342489665877);
 
+    // LEFT = 002
     public static final Matrix<N3, N3> LEFT_MATRIX =
             MatBuilder.fill(
                     Nat.N3(),
                     Nat.N3(),
-                    2002.948392331919,
+                    1995.2484229872582,
                     0.0,
-                    783.9099067246102,
+                    820.5452249210405,
                     0.0,
-                    1999.0390684862123,
-                    662.7694019679813,
+                    1993.734094969064,
+                    717.1654439309089,
                     0.0,
                     0.0,
                     1.0);
 
     public static final Vector<N8> LEFT_DIST_COEFFS =
             VecBuilder.fill(
-                    0.09905119793103302,
-                    -0.06388083628565337,
-                    3.87402720846368E-5,
-                    1.4421218015997156E-4,
-                    -0.16329892957216433,
-                    -0.004599206903333014,
-                    0.0029050841273878885,
-                    0.0067195798658376375);
-
+                    0.09788202940674152,
+                    -0.03778160881084149,
+                    0.0033532549779081806,
+                    0.0010098036146337858,
+                    -0.3188005228157364,
+                    -0.00525866903841564,
+                    0.002561849386376845,
+                    0.013027862314502899);
+    // RIGHT = 003
     public static final Matrix<N3, N3> RIGHT_MATRIX =
             MatBuilder.fill(
                     Nat.N3(),
                     Nat.N3(),
-                    2013.7145941329916,
+                    2012.7735767901368,
                     0.0,
-                    813.5600211516376,
+                    776.3768431117094,
                     0.0,
-                    2010.9021854554633,
-                    705.7489358922749,
+                    2011.170967981649,
+                    583.6808978629973,
                     0.0,
                     0.0,
                     1.0);
 
     public static final Vector<N8> RIGHT_DIST_COEFFS =
             VecBuilder.fill(
-                    0.10838581263006249,
-                    -0.11418498861043114,
-                    1.2747353334518889E-4,
-                    -5.523828072189691E-4,
-                    -0.08722021094520614,
-                    -0.004272598848412149,
-                    0.0049167243044280235,
-                    0.0035452581738189713);
+                    0.11192719552332171,
+                    -0.10264949305638288,
+                    0.000546565895787277,
+                    0.0018675148814366622,
+                    -0.13776634552030326,
+                    -0.004799090638690775,
+                    0.004547908506778645,
+                    0.005642772996258986);
 
     public static final Matrix<N3, N3> BACK_MATRIX =
             MatBuilder.fill(
                     Nat.N3(),
                     Nat.N3(),
-                    2013.7145941329916,
+                    2002.9333757690724,
                     0.0,
-                    813.5600211516376,
+                    810.6264160375265,
                     0.0,
-                    2010.9021854554633,
-                    705.7489358922749,
+                    2001.2751556163778,
+                    710.9812499434366,
                     0.0,
                     0.0,
                     1.0);
 
     public static final Vector<N8> BACK_DIST_COEFFS =
             VecBuilder.fill(
-                    0.10838581263006249,
-                    -0.11418498861043114,
-                    1.2747353334518889E-4,
-                    -5.523828072189691E-4,
-                    -0.08722021094520614,
-                    -0.004272598848412149,
-                    0.0049167243044280235,
-                    0.0035452581738189713);
+                    0.09008361263157208,
+                    0.049972333559191624,
+                    0.0021637338566237356,
+                    -0.000489202305197824,
+                    -0.5285081729062204,
+                    -0.0063724415157857045,
+                    -0.0004150392390379766,
+                    0.021703216977005953);
 
     public static final int FRONT_RESOLUTION_WIDTH = 1600;
     public static final int FRONT_RESOLUTION_HEIGHT = 1304;
@@ -221,7 +221,7 @@ public class VisionConstants {
     public static final double RIGHT_FPS = 22;
     public static final double BACK_FPS = 22;
 
-    public static final double FRONT_STDDEV_FACTOR = .1;
+    public static final double FRONT_STDDEV_FACTOR = 1.0;
     public static final double LEFT_STDDEV_FACTOR = 1.0;
     public static final double RIGHT_STDDEV_FACTOR = 1.0;
     public static final double BACK_STDDEV_FACTOR = 1.0;
@@ -373,22 +373,22 @@ public class VisionConstants {
                 var camera1 = new AprilTagCamera(FRONT, getFrontIOReal());
                 // var camera2 = new AprilTagCamera(LEFT, getLeftIOReal());
                 // var camera3 = new AprilTagCamera(RIGHT, getRightIOReal());
-                // var camera4 = new AprilTagCamera(BACK, getBackIOReal());
-                new VisionSubsystem(camera1);
+                var camera4 = new AprilTagCamera(BACK, getBackIOReal());
+                new VisionSubsystem(camera1, camera4);
             }
             case SIM -> {
                 var camera1 = new AprilTagCamera(FRONT, getFrontIOSim());
                 // var camera2 = new AprilTagCamera(LEFT, getLeftIOSim());
                 // var camera3 = new AprilTagCamera(RIGHT, getRightIOSim());
-                // var camera4 = new AprilTagCamera(BACK, getBackIOSim());
-                new VisionSubsystem(camera1);
+                var camera4 = new AprilTagCamera(BACK, getBackIOSim());
+                new VisionSubsystem(camera1, camera4);
             }
             case REPLAY -> {
                 var camera1 = new AprilTagCamera(FRONT, new VisionIO() {});
                 // var camera2 = new AprilTagCamera(LEFT, new VisionIO() {});
                 // var camera3 = new AprilTagCamera(RIGHT, new VisionIO() {});
-                // var camera4 = new AprilTagCamera(BACK, new VisionIO() {});
-                new VisionSubsystem(camera1);
+                var camera4 = new AprilTagCamera(BACK, new VisionIO() {});
+                new VisionSubsystem(camera1, camera4);
             }
         }
     }

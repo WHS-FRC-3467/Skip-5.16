@@ -1,0 +1,109 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.52151212553495,
+        "y": 4.067346647646221
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.5307652925611794,
+        "y": 4.985513568184683
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.5456205420827387,
+        "y": 7.10793152639087
+      },
+      "prevControl": {
+        "x": 1.2223688002525928,
+        "y": 8.461428042730578
+      },
+      "nextControl": {
+        "x": 0.2609700427960055,
+        "y": 6.538630527817404
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.9596576319543504,
+        "y": 4.947175463623396
+      },
+      "prevControl": {
+        "x": 0.6491298145506419,
+        "y": 4.998930099857347
+      },
+      "nextControl": {
+        "x": 1.4372994620760067,
+        "y": 4.867568491936455
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.8487018544935796,
+        "y": 4.947175463623396
+      },
+      "prevControl": {
+        "x": 2.3724670924817093,
+        "y": 5.05315067659027
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.9722814498933765,
+      "rotationDegrees": -90.0
+    },
+    {
+      "waypointRelativePos": 1.5543710021321864,
+      "rotationDegrees": -90.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.7292370020256582,
+      "maxWaypointRelativePos": 1.2559081701553114,
+      "constraints": {
+        "maxVelocity": 1.0,
+        "maxAcceleration": 2.0,
+        "maxAngularVelocity": 480.0,
+        "maxAngularAcceleration": 600.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 480.0,
+    "maxAngularAcceleration": 600.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -34.019349989826544
+  },
+  "reversed": false,
+  "folder": "Depot Auto",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": true
+}
