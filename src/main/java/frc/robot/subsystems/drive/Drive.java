@@ -306,7 +306,6 @@ public class Drive extends SubsystemBase {
                 () -> {
                     for (Module module : modules) {
                         module.setDrivePID(
-                                driveTunablePID.slot,
                                 new PID(
                                         driveTunablePID.kp.get(),
                                         driveTunablePID.ki.get(),
@@ -330,7 +329,6 @@ public class Drive extends SubsystemBase {
                 () -> {
                     for (Module module : modules) {
                         module.setTurnPID(
-                                steerTunablePID.slot,
                                 new PID(
                                         steerTunablePID.kp.get(),
                                         steerTunablePID.ki.get(),

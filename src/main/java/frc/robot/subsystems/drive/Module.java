@@ -18,14 +18,16 @@ package frc.robot.subsystems.drive;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import frc.lib.io.motor.MotorIO.PIDSlot;
+
 import frc.lib.util.PID;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
@@ -203,22 +205,22 @@ public class Module {
     }
 
     /**
-     * Updates one PID slot on the drive motor
+     * Updates the main PID slot on the drive motor
      *
      * @param slot The slot to update
      * @param pid The PID to set
      */
-    public void setDrivePID(PIDSlot slot, PID pid) {
-        io.setDrivePID(slot, pid);
+    public void setDrivePID(PID pid) {
+        io.setDrivePID(pid);
     }
 
     /**
-     * Updates one PID slot on the turn motor
+     * Updates the main PID slot on the turn motor
      *
      * @param slot The slot to update
      * @param pid The PID to set
      */
-    public void setTurnPID(PIDSlot slot, PID pid) {
-        io.setTurnPID(slot, pid);
+    public void setTurnPID(PID pid) {
+        io.setTurnPID(pid);
     }
 }

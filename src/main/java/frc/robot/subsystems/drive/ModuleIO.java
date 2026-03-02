@@ -16,8 +16,9 @@
 package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.lib.io.motor.MotorIO.PIDSlot;
+
 import frc.lib.util.PID;
+
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ModuleIO {
@@ -74,18 +75,18 @@ public interface ModuleIO {
     public default void setTurnPosition(Rotation2d rotation) {}
 
     /**
-     * Updates one PID slot on the drive motor
+     * Updates the main PID slot on the drive motor
      *
      * @param slot The slot to update
      * @param pid The PID to set
      */
-    public default void setDrivePID(PIDSlot slot, PID pid) {}
+    public default void setDrivePID(PID pid) {}
 
     /**
-     * Updates one PID slot on the turn motor
+     * Updates the main PID slot on the turn motor
      *
      * @param slot The slot to update
      * @param pid The PID to set
      */
-    public default void setTurnPID(PIDSlot slot, PID pid) {}
+    public default void setTurnPID(PID pid) {}
 }
