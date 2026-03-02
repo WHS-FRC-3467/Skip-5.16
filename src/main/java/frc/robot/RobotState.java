@@ -193,9 +193,15 @@ public class RobotState {
     public void addOdometryObservation(OdometryObservation observation) {
         if (DriverStation.isDisabled()) return;
 
-        if (drivetrainAngledTrigger.getAsBoolean() && observation.gyroAngle().isPresent()) {
-            resetPose(
-                    new Pose2d(getEstimatedPose().getTranslation(), observation.gyroAngle().get()));
+        if (drivetrainAngledTrigger.getAsBoolean()) {
+            observation
+                    .gyroAngle()
+                    .ifPresent(
+                            angle ->
+                                    resetPose(
+                                            new Pose2d(
+                                                    getEstimatedPose().getTranslation(), angle)));
+            return;
         }
 
         poseEstimator.addOdometryObservation(observation);
