@@ -19,6 +19,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Twist2d;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -76,7 +77,7 @@ public class VisionOdometryCharacterizer {
     // Vision Noise (R) Tracking
     // ----------------------
 
-    /** Record a state estiamtor prediction and measurement delta to calculate innovation */
+    /** Record a state estimator prediction and measurement delta to calculate innovation */
     public static void recordVisionCorrection(
             double timestamp, Pose2d predictedPose, Pose2d visionPose) {
         if (!enabled || predictedPose == null || visionPose == null) return;
