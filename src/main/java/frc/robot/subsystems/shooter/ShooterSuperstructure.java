@@ -130,11 +130,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final LoggedTunableNumber tuningHoodAngleDegrees =
             new LoggedTunableNumber(getName() + "/Tuning/HoodAngleDegrees", 0.0);
 
-    private final LoggedTunableNumber flywheelSpeedTrimRPS =
-            new LoggedTunableNumber(getName() + "/FlywheelTrimRPS", 0.0);
+    private final LoggedTunableNumber flywheelTrimDefaultRPS =
+            new LoggedTunableNumber(getName() + "/FlywheelTrimDefaultRPS", 0.0);
 
-    private static final double MAX_TRIM_PERCENT = 0.15;
-    private AngularVelocity flywheelDynamicCorrectionRPS = RotationsPerSecond.zero();
+    private AngularVelocity flywheelTrimRPS = RotationsPerSecond.of(flywheelTrimDefaultRPS.get());
+    private static final double MAX_TRIM_RPS = 6.0;
+    private static final double MAX_TRIM_RPS_PER_SEC = 2;
 
     /**
      * Constructs a new ShooterSuperstructure subsystem with the specified hood and flywheel
@@ -155,15 +156,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private void spinFlywheel(AngularVelocity velocity) {
         leftFlywheelIO.runVelocity(
-                velocity.plus(RotationsPerSecond.of(flywheelSpeedTrimRPS.get()))
-                        .plus(flywheelDynamicCorrectionRPS),
-                FlywheelConstants.MAX_ACCELERATION,
-                PIDSlot.SLOT_0);
+                velocity.plus(flywheelTrimRPS), FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
         rightFlywheelIO.runVelocity(
-                velocity.plus(RotationsPerSecond.of(flywheelSpeedTrimRPS.get()))
-                        .plus(flywheelDynamicCorrectionRPS),
-                FlywheelConstants.MAX_ACCELERATION,
-                PIDSlot.SLOT_0);
+                velocity.plus(flywheelTrimRPS), FlywheelConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
     }
 
     private boolean isFlywheelAt(AngularVelocity velocity) {
@@ -389,48 +384,39 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     public Command trimFlywheelSpeedUp() {
-        return Commands.runOnce(
+        return Commands.run(
                         () -> {
-                            AngularVelocity delta = getDesiredFlywheelVelocity().times(0.0015);
-                            AngularVelocity maxTrim =
-                                    getDesiredFlywheelVelocity().times(MAX_TRIM_PERCENT);
-                            AngularVelocity updated = flywheelDynamicCorrectionRPS.plus(delta);
-
-                            flywheelDynamicCorrectionRPS =
+                            double dt = 0.02;
+                            double deltaRPS = MAX_TRIM_RPS_PER_SEC * dt;
+                            double updated = flywheelTrimRPS.in(RotationsPerSecond) + deltaRPS;
+                            flywheelTrimRPS =
                                     RotationsPerSecond.of(
-                                            MathUtil.clamp(
-                                                    updated.in(RotationsPerSecond),
-                                                    -maxTrim.in(RotationsPerSecond),
-                                                    maxTrim.in(RotationsPerSecond)));
+                                            MathUtil.clamp(updated, -MAX_TRIM_RPS, MAX_TRIM_RPS));
                         })
                 .withName("Trim Flywheel Speed Up");
     }
 
     public Command trimFlywheelSpeedDown() {
-        return Commands.runOnce(
+        return Commands.run(
                         () -> {
-                            AngularVelocity delta = getDesiredFlywheelVelocity().times(-0.0015);
-                            AngularVelocity maxTrim =
-                                    getDesiredFlywheelVelocity().times(MAX_TRIM_PERCENT);
-                            AngularVelocity updated = flywheelDynamicCorrectionRPS.plus(delta);
-
-                            flywheelDynamicCorrectionRPS =
+                            double dt = 0.02;
+                            double deltaRPS = -MAX_TRIM_RPS_PER_SEC * dt;
+                            double updated = flywheelTrimRPS.in(RotationsPerSecond) + deltaRPS;
+                            flywheelTrimRPS =
                                     RotationsPerSecond.of(
-                                            MathUtil.clamp(
-                                                    updated.in(RotationsPerSecond),
-                                                    -maxTrim.in(RotationsPerSecond),
-                                                    maxTrim.in(RotationsPerSecond)));
+                                            MathUtil.clamp(updated, -MAX_TRIM_RPS, MAX_TRIM_RPS));
                         })
                 .withName("Trim Flywheel Speed Down");
     }
 
-    public Command zeroFlywheelSpeedTrim() {
-        return Commands.runOnce(() -> flywheelDynamicCorrectionRPS = RotationsPerSecond.zero())
-                .withName("Zero Flywheel Speed Trim");
-    }
-
     @Override
     public void periodic() {
+        // Dashboard change overwrites driver trim adjustments but trims will persist across
+        // disable/enable cycles
+        if (flywheelTrimDefaultRPS.hasChanged(hashCode())) {
+            flywheelTrimRPS = RotationsPerSecond.of(flywheelTrimDefaultRPS.get());
+        }
+
         if (tuningMode.get()) {
             if (tuningMode.hasChanged(hashCode())
                     || tuningFlywheelSpeedRPS.hasChanged(hashCode())
@@ -456,6 +442,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         Logger.recordOutput(
                 getName() + "/TotalDrawWatts",
                 leftFlywheelIO.getAppliedVoltage().times(leftFlywheelIO.getSupplyCurrent()));
+
+        Logger.recordOutput(getName() + "/FlywheelTrimRPS", flywheelTrimRPS.in(RotationsPerSecond));
     }
 
     /** Closes all underlying mechanisms and releases resources. */
