@@ -20,6 +20,7 @@ import static edu.wpi.first.units.Units.Radians;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.util.VisionOdometryCharacterizer;
@@ -28,16 +29,18 @@ import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.DriveConstants;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * The {@code VisionSubsystem} manages all vision-related processing for the robot.
@@ -60,7 +63,7 @@ public class VisionSubsystem extends SubsystemBase {
     /** Baseline angular standard deviation used for vision observations. */
     public static final double ANGULAR_STDDEV_BASELINE = 0.01;
 
-    /** Maximum allowable height (Z-axis) of a detected pose to be considqered valid. */
+    /** Maximum allowable height (Z-axis) of a detected pose to be considered valid. */
     public static final double MAX_Z_METERS = 0.75;
 
     /** Maximum allowable distance from a target to be considered valid. */
