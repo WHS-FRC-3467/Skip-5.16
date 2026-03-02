@@ -30,16 +30,19 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
+
+import lombok.Getter;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import lombok.Getter;
 
 /**
  * Factory class for creating drive-related commands.
@@ -274,12 +277,7 @@ public class DriveCommands {
     // This will need to get updated. This is not the most optimal set of code - Wilk
     public static Command autoAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
-        return Commands.repeatingSequence(
-                joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget)
-                        .until(robotState.facingTarget),
-                drive.runOnce(drive::stopWithX)
-                        .andThen(drive.idle())
-                        .onlyWhile(robotState.facingTarget));
+        return joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget);
     }
 
     /**

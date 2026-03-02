@@ -36,6 +36,6 @@ public class PreloadAuto extends AutoRoutine {
 
         loadCommands(
                 AutoCommands.shootCommand(
-                        drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.15)));
+                        drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.15), 10.0));
     }
 }

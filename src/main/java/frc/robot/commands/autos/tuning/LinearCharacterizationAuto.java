@@ -18,7 +18,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import frc.lib.util.AutoRoutine;
 import frc.robot.commands.autos.AutoCommands;
-import frc.robot.commands.autos.StartPosition;
 import frc.robot.subsystems.drive.Drive;
 
 import java.util.List;
@@ -29,10 +28,7 @@ public class LinearCharacterizationAuto extends AutoRoutine {
         List<String> expectedPaths = List.of("LinearCharacterization");
 
         // Load the named paths
-        this.loadAllPaths(expectedPaths);
-
-        // No mirroring necessary - placeholder
-        this.setMirrorFlags(List.of(false), StartPosition.CENTER);
+        this.loadAllPaths(expectedPaths, false);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null))
