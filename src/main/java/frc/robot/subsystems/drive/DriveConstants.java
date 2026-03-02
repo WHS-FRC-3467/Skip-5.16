@@ -7,10 +7,12 @@ import com.ctre.phoenix6.hardware.*;
 import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.*;
+
 import frc.robot.Constants;
 import frc.robot.Ports;
 
@@ -246,6 +248,11 @@ public class DriveConstants {
                             kInvertRightSide,
                             kBackRightSteerMotorInverted,
                             kBackRightEncoderInverted);
+
+    // Gyro
+    public static final Pigeon2Configuration PIGEON_CONFIGURATION =
+            new Pigeon2Configuration()
+                    .withMountPose(new MountPoseConfigs().withMountPoseRoll(Degrees.of(180.0)));
 
     /**
      * Creates a CommandSwerveDrivetrain instance. This should only be called once in your robot

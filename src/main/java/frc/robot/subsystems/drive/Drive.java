@@ -25,6 +25,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.PathPlannerLogging;
+
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -45,6 +46,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.Mechanism.TunablePidConfig;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
@@ -55,13 +57,15 @@ import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.RobotState;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
     public final RobotState robotState = RobotState.getInstance();
@@ -583,14 +587,12 @@ public class Drive extends SubsystemBase {
         if (RobotBase.isSimulation()) {
             return false;
         }
+
         double pitch = MathUtil.inputModulus(gyroIO.getPitch(), -180.0, 180.0);
         double roll = MathUtil.inputModulus(gyroIO.getRoll(), -180.0, 180.0);
         double tolerance = DriveConstants.ANGLED_TOLERANCE.in(Degrees);
 
-        double absPitch = Math.abs(pitch);
-        double absRollFrom180 = Math.abs(roll) - 180.0;
-
-        return absPitch > tolerance || Math.abs(absRollFrom180) > tolerance;
+        return Math.abs(pitch) > tolerance || Math.abs(roll) > tolerance;
     }
 
     /**
