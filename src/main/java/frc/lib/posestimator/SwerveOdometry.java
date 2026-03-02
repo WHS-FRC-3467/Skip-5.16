@@ -26,11 +26,14 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.units.measure.Time;
+
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import lombok.Getter;
-import lombok.experimental.Accessors;
 
 /**
  * Integrates swerve-drive odometry observations to maintain a continuous estimate of the robot's
@@ -230,7 +233,8 @@ public class SwerveOdometry {
 
         SwerveDriveKinematics subsetKinematics = getOrCreateSubsetKinematics(mask, goodCount);
 
-        return subsetKinematics.toTwist2d(scratchLast, scratchCurrent);
+        return subsetKinematics.toTwist2d(
+                Arrays.copyOf(scratchLast, goodCount), Arrays.copyOf(scratchCurrent, goodCount));
     }
 
     private boolean canUseBadWheelMask(boolean[] badWheels) {
