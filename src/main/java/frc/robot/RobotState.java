@@ -214,7 +214,7 @@ public class RobotState {
      * @param observation the vision observation to add
      */
     public void addVisionObservation(VisionPoseObservation observation) {
-        // // Only add vision observation if robot is not angled (i.e. when going over a bump)
+        // Only add vision observation if robot is not angled (i.e. when going over a bump)
 
         if (DriverStation.isDisabled() || drivetrainAngledTrigger.getAsBoolean()) {
             resetPose(observation.robotPose());
