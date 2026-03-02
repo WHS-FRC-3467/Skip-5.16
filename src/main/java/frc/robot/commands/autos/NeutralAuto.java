@@ -54,7 +54,7 @@ public class NeutralAuto extends AutoRoutine {
         this.loadAllPaths(expectedPaths);
 
         // Keep track of which paths must be mirrored for RIGHT side autos
-        this.setMirrorFlags(List.of(true), start);
+        this.setMirrorFlags(List.of(true, true, true), start);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (!pathPlannerPaths.isEmpty()
