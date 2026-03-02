@@ -26,12 +26,13 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.units.measure.Time;
-import java.util.Arrays;
+
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import lombok.Getter;
-import lombok.experimental.Accessors;
 
 /**
  * Integrates swerve-drive odometry observations to maintain a continuous estimate of the robot's
@@ -95,7 +96,12 @@ public class SwerveOdometry {
      * <p>The key is based on the contents of the badWheels array. We do not use the boolean[]
      * directly because arrays are mutable and use reference identity for hash/equality.
      */
-    private final Map<BadWheelsKey, SwerveDriveKinematics> subsetKinematicsCache = new HashMap<>();
+    private final Map<Integer, SwerveDriveKinematics> subsetKinematicsCache = new HashMap<>();
+
+    // Max module count assumed 4 (FL, FR, BL, BR)
+    private final Translation2d[] scratchTranslations;
+    private final SwerveModulePosition[] scratchLast;
+    private final SwerveModulePosition[] scratchCurrent;
 
     /** Stores recent odometry poses for interpolation purposes. */
     @Getter private final TimeInterpolatableBuffer<Pose2d> odometryBuffer;
@@ -139,6 +145,17 @@ public class SwerveOdometry {
         this.kinematics = kinematics;
         this.moduleTranslationsOrNull = moduleTranslations;
         odometryBuffer = TimeInterpolatableBuffer.createBuffer(odometryBufferSize.in(Seconds));
+
+        if (moduleTranslationsOrNull != null) {
+            int moduleCount = moduleTranslationsOrNull.length;
+            scratchTranslations = new Translation2d[moduleCount];
+            scratchLast = new SwerveModulePosition[moduleCount];
+            scratchCurrent = new SwerveModulePosition[moduleCount];
+        } else {
+            scratchTranslations = null;
+            scratchLast = null;
+            scratchCurrent = null;
+        }
     }
 
     /**
@@ -176,44 +193,46 @@ public class SwerveOdometry {
 
     private Twist2d computeTwist(
             SwerveModulePosition[] last, SwerveModulePosition[] current, boolean[] badWheels) {
+
         if (!canUseBadWheelMask(badWheels)) {
             return kinematics.toTwist2d(last, current);
         }
 
         int moduleCount = current.length;
+
+        // Build bitmask and count good modules
+        int mask = 0;
         int goodCount = 0;
+
         for (int i = 0; i < moduleCount; i++) {
-            if (!badWheels[i]) {
+            if (badWheels[i]) {
+                mask |= (1 << i);
+            } else {
                 goodCount++;
             }
         }
 
-        // With fewer than 3 good modules, the solve can get unstable (especially omega).
-        // Falling back to all wheels is usually less noisy than trying to integrate from 1-2
-        // modules.
+        // If too few good wheels, fall back
         if (goodCount < 3) {
             return kinematics.toTwist2d(last, current);
         }
 
-        Translation2d[] subsetTranslations = new Translation2d[goodCount];
-        SwerveModulePosition[] subsetLast = new SwerveModulePosition[goodCount];
-        SwerveModulePosition[] subsetCurrent = new SwerveModulePosition[goodCount];
-
+        // Fill scratch arrays
         int j = 0;
         for (int i = 0; i < moduleCount; i++) {
-            if (badWheels[i]) {
+            if ((mask & (1 << i)) != 0) {
                 continue;
             }
-            subsetTranslations[j] = moduleTranslationsOrNull[i];
-            subsetLast[j] = last[i];
-            subsetCurrent[j] = current[i];
+
+            scratchTranslations[j] = moduleTranslationsOrNull[i];
+            scratchLast[j] = last[i];
+            scratchCurrent[j] = current[i];
             j++;
         }
 
-        SwerveDriveKinematics subsetKinematics =
-                getOrCreateSubsetKinematics(badWheels, subsetTranslations);
+        SwerveDriveKinematics subsetKinematics = getOrCreateSubsetKinematics(mask, goodCount);
 
-        return subsetKinematics.toTwist2d(subsetLast, subsetCurrent);
+        return subsetKinematics.toTwist2d(scratchLast, scratchCurrent);
     }
 
     private boolean canUseBadWheelMask(boolean[] badWheels) {
@@ -226,47 +245,22 @@ public class SwerveOdometry {
         return badWheels.length == moduleTranslationsOrNull.length;
     }
 
-    private SwerveDriveKinematics getOrCreateSubsetKinematics(
-            boolean[] badWheels, Translation2d[] subsetTranslations) {
-        BadWheelsKey key = new BadWheelsKey(badWheels);
+    private SwerveDriveKinematics getOrCreateSubsetKinematics(int mask, int goodCount) {
+
         return subsetKinematicsCache.computeIfAbsent(
-                key, k -> new SwerveDriveKinematics(subsetTranslations));
-    }
+                mask,
+                m -> {
+                    Translation2d[] translations = new Translation2d[goodCount];
 
-    /**
-     * Immutable key used by {@link #subsetKinematicsCache}.
-     *
-     * <p>The cache needs "same mask means same entry" behavior. A boolean[] cannot be used directly
-     * as a Map key because its equals/hashCode are based on object identity, and the array can be
-     * mutated after the call.
-     *
-     * <p>This class snapshots the mask and uses content-based equality so the cache behaves
-     * predictably even if the caller reuses or mutates the original boolean[].
-     */
-    private static final class BadWheelsKey {
-        private final boolean[] badWheels;
-        private final int hash;
+                    int j = 0;
+                    for (int i = 0; i < moduleTranslationsOrNull.length; i++) {
+                        if ((m & (1 << i)) == 0) {
+                            translations[j++] = moduleTranslationsOrNull[i];
+                        }
+                    }
 
-        private BadWheelsKey(boolean[] badWheels) {
-            this.badWheels = badWheels.clone();
-            this.hash = Arrays.hashCode(this.badWheels);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (!(obj instanceof BadWheelsKey other)) {
-                return false;
-            }
-            return Arrays.equals(this.badWheels, other.badWheels);
-        }
-
-        @Override
-        public int hashCode() {
-            return hash;
-        }
+                    return new SwerveDriveKinematics(translations);
+                });
     }
 
     private static SwerveModulePosition[] copyPositions(SwerveModulePosition[] positions) {
