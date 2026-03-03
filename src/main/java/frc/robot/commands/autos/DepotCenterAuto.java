@@ -40,7 +40,6 @@ public class DepotCenterAuto extends AutoRoutine {
      * @param indexer the indexer subsystem for managing fuel flow
      * @param tower the tower subsystem for moving fuel to shooter
      * @param shooter the shooter superstructure for launching fuel
-     * @param start the starting position on the field
      */
     public DepotCenterAuto(
             Drive drive,
