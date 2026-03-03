@@ -205,16 +205,6 @@ public class RobotContainer {
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
 
-        // A: Trench Align
-        controller
-                .a()
-                .whileTrue(
-                        DriveCommands.joystickDriveAtAngle(
-                                drive,
-                                () -> -controller.getLeftY(),
-                                () -> -controller.getLeftX(),
-                                robotState::getTunnelAssistHeading));
-
         // D-Pad Up: Force Intake Linear Slide Back
         controller.povUp().onTrue(intake.retractIntake());
 
@@ -225,7 +215,7 @@ public class RobotContainer {
 
         // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
         controller
-                .a()
+                .x()
                 .onTrue(
                         shooter.spinUpShooterToHubDistance(
                                 Meters.of(
@@ -244,6 +234,11 @@ public class RobotContainer {
                                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                                 indexer.stopCommand(),
                                 tower.stopCommand()));
+
+        // Hold to trim flywheel speed up/down by ~ 2 RPS/sec while shooting. Driver trim
+        // adjustments persist until dashboard value changes or robot power cycle.
+        controller.y().and(controller.rightTrigger()).onTrue(shooter.trimFlywheelSpeedUp());
+        controller.a().and(controller.rightTrigger()).onFalse(shooter.trimFlywheelSpeedDown());
 
         // robotState.enteringTrench.whileTrue(
         //         shooter.forceHoodAngle(Rotations.zero())
