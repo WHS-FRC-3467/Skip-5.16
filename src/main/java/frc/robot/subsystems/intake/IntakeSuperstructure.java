@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -39,6 +40,7 @@ import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
+
 import java.util.function.Supplier;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
@@ -193,7 +195,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                                                                 MetersPerSecondPerSecond)))),
                         this.runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
                         profileLinearToPositionCommand(slowMotionProfiler, retractionGoalState),
-                        Commands.waitUntil(isRetracted))
+                        Commands.waitUntil(isRetracted),
+                        this.stopRoller())
                 .withName("Retract Linear");
     }
 
