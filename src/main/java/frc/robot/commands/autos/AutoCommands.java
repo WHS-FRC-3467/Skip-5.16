@@ -4,23 +4,20 @@
 
 package frc.robot.commands.autos;
 
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
-import frc.robot.RobotState.Target;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.FuelCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
@@ -59,58 +56,6 @@ public class AutoCommands {
         }
     }
 
-    /**
-     * Statically prepares the shooter for shooting at THE HUB at the end of the provided path. Only
-     * valid to prepare shots for THE HUB. Perpetual command -- never spins down. Therefore, to end,
-     * this should be interrupted by a parent command group or timed-out. Primarily for use in
-     * autos.
-     *
-     * @param path the path to drive, the shooter will prepare to shoot at the end of this path.
-     * @param shooter the shooter subsystem
-     * @return a command that prepares the shooter to shoot THE HUB from the end of the provided
-     *     path
-     */
-    public static Command prepareHubShot(PathPlannerPath path, ShooterSuperstructure shooter) {
-        // All paths blue canonical, so flip end translation if red alliance
-        return shooter.spinUpShooterToHubDistance(
-                Meters.of(
-                        FieldUtil.apply(
-                                        path.getAllPathPoints()
-                                                .get(path.getAllPathPoints().size() - 1)
-                                                .position)
-                                .getDistance(
-                                        Target.HUB.getAllianceTranslation().toTranslation2d())));
-    }
-
-    /**
-     * Drive to shooting location while STATICALLY spinning up shooter to setpoints associated with
-     * ANTICIPATED POSE at end of path but NOT feeding game pieces. Once at ANTICIPATED POSE, with
-     * the shooter still spinning at ANTICIPATED SETPOINTS, call {@code FuelCommands.prepareShot()}.
-     *
-     * @param drive The Drive subsystem
-     * @param intake The IntakeSuperStructure subsystem
-     * @param indexer The IndexerSuperstructure subsystem
-     * @param tower The Tower subsystem
-     * @param shooter The ShooterSuperstructure subsystem
-     * @param path The path to drive to the shooting location, the robot will shoot from the path's
-     *     end pose
-     * @return a command that drives to the shooting location and attempts to shoot all FUEL
-     */
-    public static Command moveToShot(
-            Drive drive,
-            IntakeSuperstructure intake,
-            IndexerSuperstructure indexer,
-            Tower tower,
-            ShooterSuperstructure shooter,
-            PathPlannerPath path) {
-        return Commands.sequence(
-                AutoBuilder.followPath(path),
-                Commands.parallel(
-                        DriveCommands.autoAimTowardsTarget(drive),
-                        FuelCommands.prepareShot(
-                                indexer, tower, intake, shooter, MetersPerSecond.of(0.1), 4.5)));
-    }
-
     public static Command shootCommand(
             Drive drive,
             IntakeSuperstructure intake,
@@ -118,50 +63,32 @@ public class AutoCommands {
             Tower tower,
             ShooterSuperstructure shooter,
             LinearVelocity retractSpeed,
-            double timeoutSeconds) {
-        return Commands.parallel(
-                DriveCommands.autoAimTowardsTarget(drive),
-                FuelCommands.prepareShot(
-                        indexer, tower, intake, shooter, retractSpeed, timeoutSeconds));
-    }
-
-    public static Command shootCommand(
-            Drive drive,
-            IntakeSuperstructure intake,
-            IndexerSuperstructure indexer,
-            Tower tower,
-            ShooterSuperstructure shooter,
-            LinearVelocity retractSpeed) {
+            double timeoutDuration) {
         return Commands.deadline(
-                FuelCommands.prepareShot(indexer, tower, intake, shooter, retractSpeed, 3.5),
+                Commands.parallel(
+                                shooter.spinUpShooter(),
+                                intake.slowRetract(retractSpeed).asProxy(),
+                                Commands.parallel(
+                                                indexer.shoot()
+                                                        .withInterruptBehavior(
+                                                                InterruptionBehavior
+                                                                        .kCancelIncoming),
+                                                tower.shoot())
+                                        .onlyWhile(
+                                                shooter.readyToShoot.and(
+                                                        RobotState.getInstance().facingTarget))
+                                        .repeatedly())
+                        .withTimeout(timeoutDuration)
+                        .finallyDo(
+                                () -> {
+                                    CommandScheduler.getInstance()
+                                            .schedule(
+                                                    shooter.setFlywheelSpeed(
+                                                            RotationsPerSecond.zero()));
+                                    CommandScheduler.getInstance()
+                                            .schedule(shooter.setHoodAngle(Rotations.zero()));
+                                }),
                 DriveCommands.autoAimTowardsTarget(drive));
-    }
-
-    /**
-     * Drive to the end of the drive path, extend the intake, and drive into the FUEL with rollers
-     * running. Once the intaking path is complete, stop the intake. This AutoSegment only linearly
-     * actuates the intake during approachPath. Non-blocking command.
-     *
-     * @param approachPathCommand Staging path to follow while simultaneously extending intake
-     * @param intake Intake subsystem
-     * @param pathCommand The feeding path with intake already extended
-     * @param afterPathWait The time to wait after the intaking path is complete before stopping the
-     *     intake
-     */
-    public static Command driveAndIntake(
-            Command approachPathCommand,
-            IntakeSuperstructure intake,
-            Command pathCommand,
-            Time afterPathWait) {
-        // Drive to near the intaking location and start up intake, and drive into the FUEL. Once
-        // the intaking path is complete, stop the intake.
-        return Commands.sequence(
-                // Roll out intake (times out at 1.25 seconds)
-                // WHILE following the path that takes the robot near the fuel location.
-                Commands.deadline(approachPathCommand, intake.intake().asProxy()),
-                // Collect FUEL
-                pathCommand,
-                Commands.waitSeconds(afterPathWait.in(Seconds)));
     }
 
     /**

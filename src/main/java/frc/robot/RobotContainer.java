@@ -24,13 +24,11 @@ import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -41,6 +39,9 @@ import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
+import frc.robot.commands.autos.tuning.FeedforwardCharacterizationAuto;
+import frc.robot.commands.autos.tuning.WheelCharacterizationAuto;
+import frc.robot.commands.autos.tuning.WheelSlipAuto;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -72,7 +73,7 @@ public class RobotContainer {
 
     // Subsystems
     public final Drive drive;
-    private final ShooterSuperstructure shooter;
+    final ShooterSuperstructure shooter;
     private final IntakeSuperstructure intake;
     private final IndexerSuperstructure indexer;
     private final Tower tower;
@@ -87,8 +88,6 @@ public class RobotContainer {
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
     public final Field2d autoPreviewField = new Field2d();
     private Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
-
-    private final Trigger isAutonomous = new Trigger(DriverStation::isAutonomous);
 
     /** The container for the robot. Contains subsystems, IO devices, and commands. */
     public RobotContainer() {
@@ -115,52 +114,32 @@ public class RobotContainer {
 
         // Preload Autos
         autoChooser.addOption(
-                "PreloadAuto-Left",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "PreloadAuto-Center",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-        autoChooser.addOption(
-                "PreloadAuto-Right",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+                "PreloadAuto", new PreloadAuto(drive, intake, indexer, tower, shooter));
 
         // Neutral Autos
         autoChooser.addOption(
-                "NeutralAuto-Left",
-                new NeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+                "NeutralAuto-Left", new NeutralAuto(drive, intake, indexer, tower, shooter, false));
         autoChooser.addOption(
-                "NeutralAuto-Right",
-                new NeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+                "NeutralAuto-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true));
+
+        autoChooser.addOption(
+                "ChoreoNeutralAuto-Left",
+                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, false, false));
+        autoChooser.addOption(
+                "ChoreoNeutralAuto-Right",
+                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, true, false));
+        autoChooser.addOption(
+                "ChoreoNeutralSafeAuto-Left",
+                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, false, true));
+        autoChooser.addOption(
+                "ChoreoNeutralSafeAuto-Right",
+                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, true, true));
 
         // Depot Autos
         autoChooser.addOption(
-                "DepotAuto-Left",
-                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+                "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
         autoChooser.addOption(
-                "DepotAuto-Center",
-                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-
-        // Outpost Auto
-        autoChooser.addOption(
-                "OutpostAuto-Right",
-                new OutpostAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
-
-        // Alliance Side Autos
-        autoChooser.addOption(
-                "Depot-Then-OutpostAuto-Left",
-                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "Depot-Then-OutpostAuto-Center",
-                new AllianceComboAuto(
-                        drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-        autoChooser.addOption(
-                "Outpost-Then-DepotAuto-Right",
-                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
-
-        // Drivebase Characterization Autos
-        autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
-        autoChooser.addOption(
-                "RotationalCharacterization", new RotationalCharacterizationAuto(drive));
+                "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
 
         autoChooser.onChange(
                 auto -> {
@@ -181,10 +160,6 @@ public class RobotContainer {
 
         autoChooser.addOption(
                 "Feedforward Characterization", new FeedforwardCharacterizationAuto(drive));
-
-        autoChooser.addOption(
-                "Rotational Characterization", new RotationalCharacterizationAuto(drive));
-        autoChooser.addOption("Linear Characterization", new LinearCharacterizationAuto(drive));
 
         // Configure the button bindings
         configureButtonBindings();
