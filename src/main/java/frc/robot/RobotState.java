@@ -187,7 +187,19 @@ public class RobotState {
      * @param observation the odometry observation to add
      */
     public void addOdometryObservation(OdometryObservation observation) {
-        if (DriverStation.isDisabled() || drivetrainAngledTrigger.getAsBoolean()) return;
+        if (DriverStation.isDisabled()) return;
+
+        if (drivetrainAngledTrigger.getAsBoolean()) {
+            observation
+                    .gyroAngle()
+                    .ifPresent(
+                            angle ->
+                                    resetPose(
+                                            new Pose2d(
+                                                    getEstimatedPose().getTranslation(), angle)));
+            return;
+        }
+
         poseEstimator.addOdometryObservation(observation);
     }
 
@@ -198,7 +210,7 @@ public class RobotState {
      * @param observation the vision observation to add
      */
     public void addVisionObservation(VisionPoseObservation observation) {
-        // // Only add vision observation if robot is not angled (i.e. when going over a bump)
+        // Only add vision observation if robot is not angled (i.e. when going over a bump)
 
         if (DriverStation.isDisabled() || drivetrainAngledTrigger.getAsBoolean()) {
             resetPose(observation.robotPose());
