@@ -14,25 +14,15 @@
  */
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -43,8 +33,10 @@ import frc.lib.util.LoggerHelper;
 import java.util.function.Supplier;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
+
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0);
+
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
 
@@ -57,36 +49,34 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private final LoggedTrigger isExtended;
     private final LoggedTrigger isRetracted;
 
-    private final State retractionGoalState =
-            new State(
-                    IntakeLinearConstants.MIN_DISTANCE.in(Meters) + Inches.of(2.0).in(Meters), 0.0);
-    private final State extensionGoalState =
-            new State(IntakeLinearConstants.MAX_DISTANCE.in(Meters), 0.0);
-    private TrapezoidProfile fastMotionProfiler =
+    private final TrapezoidProfile fastMotionProfiler =
             new TrapezoidProfile(
                     new Constraints(
                             IntakeLinearConstants.CRUISE_VELOCITY.in(MetersPerSecond),
                             IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
+
     private TrapezoidProfile slowMotionProfiler =
             new TrapezoidProfile(
                     new Constraints(
-                            0.15,
+                            SLOW_MPS.get(),
                             IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
 
-    private double lastTimestamp = Timer.getTimestamp();
     private State setpointState = new State();
-    private State activeGoalState = retractionGoalState;
+    private State goalState = new State();
+
     private TrapezoidProfile activeProfiler = fastMotionProfiler;
 
+    private double lastTimestamp = Timer.getTimestamp();
     private boolean runProfile = true;
 
     public IntakeSuperstructure(
             DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO,
             FlywheelMechanism<?> intakeRollerIO) {
+
         this.intakeLinearIO = intakeLinearIO;
         this.intakeRollerIO = intakeRollerIO;
 
-        this.intakeLinearIO.runLinearPosition(IntakeLinearConstants.MIN_DISTANCE, PIDSlot.SLOT_0);
+        intakeLinearIO.runLinearPosition(IntakeLinearConstants.MIN_DISTANCE, PIDSlot.SLOT_0);
 
         isExtended =
                 new LoggedTrigger(
@@ -96,6 +86,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         IntakeLinearConstants.MAX_DISTANCE.in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
                                         IntakeLinearConstants.TOLERANCE.in(Meters)));
+
         isRetracted =
                 new LoggedTrigger(
                         "IntakeSuperstructure/IsRetracted",
@@ -107,26 +98,73 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         IntakeLinearConstants.TOLERANCE.in(Meters)));
     }
 
-    /**
-     * Gets the linear extension of the subsystem by converting the motor's rotation.
-     *
-     * @return The estimated linear extension of the subsystem
-     */
-    public Distance getExtension() {
-        return intakeLinearIO.getLinearPosition();
+    private void resetSetpoint() {
+        double current = intakeLinearIO.getLinearPosition().in(Meters);
+        setpointState = new State(current, 0.0);
     }
 
+    private TrapezoidProfile createProfiler(double maxVelocityMetersPerSecond) {
+        return new TrapezoidProfile(
+                new Constraints(
+                        maxVelocityMetersPerSecond,
+                        IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
+    }
+
+    private void startProfile(TrapezoidProfile profiler, double goalMeters) {
+        resetSetpoint();
+
+        goalState.position = goalMeters;
+        goalState.velocity = 0.0;
+
+        activeProfiler = profiler;
+    }
+
+    /** Returns true if the intake roller is running and the intake is extended. */
     public boolean isIntaking() {
         return intakeRollerIO.getVelocity().in(RotationsPerSecond) > 1.0
                 && isExtended.getAsBoolean();
     }
 
-    /**
-     * Creates a command to run the intake roller at a specified angular velocity.
-     *
-     * @param angularVelocity A supplier that provides the desired angular velocity for the roller
-     * @return A command that sets the roller to the specified velocity
-     */
+    private Command moveToPosition(TrapezoidProfile profiler, double goalMeters, String name) {
+        return Commands.runOnce(() -> startProfile(profiler, goalMeters)).withName(name);
+    }
+
+    private Command moveByInches(
+            double inches,
+            TrapezoidProfile profiler,
+            boolean runRoller,
+            double rollerScale,
+            String name) {
+
+        return Commands.sequence(
+                        Commands.runOnce(
+                                () -> {
+                                    double current = intakeLinearIO.getLinearPosition().in(Meters);
+                                    double delta = Inches.of(inches).in(Meters);
+
+                                    double goal =
+                                            MathUtil.clamp(
+                                                    current + delta,
+                                                    IntakeLinearConstants.MIN_DISTANCE.in(Meters),
+                                                    IntakeLinearConstants.MAX_DISTANCE.in(Meters));
+
+                                    startProfile(profiler, goal);
+                                }),
+                        runRoller
+                                ? runRoller(
+                                        () ->
+                                                RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())
+                                                        .times(rollerScale))
+                                : Commands.none(),
+                        Commands.waitUntil(
+                                () ->
+                                        MathUtil.isNear(
+                                                goalState.position,
+                                                intakeLinearIO.getLinearPosition().in(Meters),
+                                                IntakeLinearConstants.TOLERANCE.in(Meters))))
+                .withName(name);
+    }
+
     private Command runRoller(Supplier<AngularVelocity> angularVelocity) {
         return this.runOnce(
                         () ->
@@ -137,128 +175,81 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 .withName("Run Roller");
     }
 
-    private Command profileLinearToPositionCommand(TrapezoidProfile profiler, State goal) {
-        return Commands.runOnce(
-                () -> {
-                    setpointState.position = intakeLinearIO.getLinearPosition().in(Meters);
-                    setpointState.velocity = 0.0;
-                    activeProfiler = profiler;
-                    activeGoalState = goal;
-                });
+    public Command stopRoller() {
+        return this.runOnce(intakeRollerIO::runBrake).withName("Stop Roller");
     }
 
-    /**
-     * Creates a command to extend the intake linear mechanism by applying positive current.
-     *
-     * @return A command that extends the linear mechanism
-     */
-    private Command extendLinear() {
-        return profileLinearToPositionCommand(fastMotionProfiler, extensionGoalState)
-                .withName("Extend Linear");
+    public Command ejectRoller() {
+        return Commands.startEnd(
+                        () ->
+                                intakeRollerIO.runVelocity(
+                                        RotationsPerSecond.of(ROLLER_EJECT_RPS.get()),
+                                        IntakeRollerConstants.MAX_ACCELERATION,
+                                        PIDSlot.SLOT_0),
+                        intakeRollerIO::runBrake)
+                .withName("Eject Roller");
     }
 
-    /**
-     * Creates a command to retract the intake linear mechanism by applying negative current.
-     *
-     * @return A command that retracts the linear mechanism
-     */
-    private Command retractLinear() {
+    public Command intake() {
+        return Commands.sequence(
+                runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
+                moveToPosition(
+                        fastMotionProfiler,
+                        IntakeLinearConstants.MAX_DISTANCE.in(Meters),
+                        "Extend Linear"));
+    }
+
+    public Command extendIntake() {
+        return Commands.sequence(
+                runRoller(RotationsPerSecond::zero),
+                moveToPosition(
+                        fastMotionProfiler,
+                        IntakeLinearConstants.MAX_DISTANCE.in(Meters),
+                        "Extend Linear"));
+    }
+
+    public Command retractIntake() {
         return Commands.sequence(
                         runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-                        profileLinearToPositionCommand(fastMotionProfiler, retractionGoalState),
-                        Commands.waitUntil(isRetracted))
-                .withName("Retract Linear");
-    }
-
-    public Command slowRetract() {
-        return Commands.sequence(
-                        this.runRoller(
-                                () -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get()).times(0.6)),
-                        profileLinearToPositionCommand(slowMotionProfiler, retractionGoalState),
+                        moveToPosition(
+                                fastMotionProfiler,
+                                IntakeLinearConstants.MIN_DISTANCE.in(Meters)
+                                        + Inches.of(2.0).in(Meters),
+                                "Retract Linear"),
                         Commands.waitUntil(isRetracted),
-                        this.stopRoller())
-                .withName("Retract Linear");
+                        stopRoller())
+                .withName("Retract Intake");
     }
 
     public Command slowRetract(LinearVelocity retractSpeed) {
         return Commands.sequence(
-                        Commands.runOnce(
-                                () ->
-                                        slowMotionProfiler =
-                                                new TrapezoidProfile(
-                                                        new Constraints(
-                                                                retractSpeed.in(MetersPerSecond),
-                                                                IntakeLinearConstants
-                                                                        .MAX_ACCELERATION
-                                                                        .in(
-                                                                                MetersPerSecondPerSecond)))),
-                        this.runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-                        profileLinearToPositionCommand(slowMotionProfiler, retractionGoalState),
-                        Commands.waitUntil(isRetracted))
-                .withName("Retract Linear");
+                Commands.runOnce(
+                        () ->
+                                slowMotionProfiler =
+                                        createProfiler(retractSpeed.in(MetersPerSecond))),
+                runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get()).times(0.6)),
+                moveToPosition(
+                        slowMotionProfiler,
+                        IntakeLinearConstants.MIN_DISTANCE.in(Meters) + Inches.of(2.0).in(Meters),
+                        "Slow Retract"),
+                Commands.waitUntil(isRetracted),
+                stopRoller());
     }
 
-    /**
-     * Creates a command sequence to retract the intake. Starts the roller, applies negative current
-     * to retract, waits until fully retracted, then stops the roller.
-     *
-     * @return A command sequence that retracts the intake
-     */
-    public Command retractIntake() {
-        return Commands.sequence(retractLinear(), stopRoller()).withName("Retract Intake");
+    public Command slowRetract() {
+        return slowRetract(MetersPerSecond.of(SLOW_MPS.get()));
     }
 
-    /**
-     * Creates a command sequence to extend the intake. Starts the roller, applies positive current
-     * to extend, then waits until extended.
-     *
-     * @return A command sequence that extends the intake
-     */
-    public Command intake() {
+    public Command shuffleStep() {
         return Commands.sequence(
-                        runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-                        extendLinear())
-                .withName("Intake");
+                        Commands.either(extendIntake(), Commands.none(), isRetracted),
+                        moveByInches(-6, slowMotionProfiler, true, 0.6, "Shuffle Retract"),
+                        moveByInches(3, slowMotionProfiler, false, 0.0, "Shuffle Extend"))
+                .withName("The Brendan Shuffle");
     }
 
-    /**
-     * Creates a command sequence to extend the intake without the roller moving.
-     *
-     * @return A command sequence that extends the intake
-     */
-    public Command extendIntake() {
-        return Commands.sequence(runRoller(() -> RotationsPerSecond.zero()), extendLinear())
-                .withName("Extend Intake");
-    }
-
-    /**
-     * Creates a command to stop the intake roller flywheel by applying brake.
-     *
-     * @return A command that stops the roller motion
-     */
-    public Command stopRoller() {
-        return this.runOnce(() -> intakeRollerIO.runBrake()).withName("Stop Roller");
-    }
-
-    /**
-     * Creates a command to coast the intake linear mechanism for pit testing.
-     *
-     * @return A command that sets the intake linear mechanism to coast mode
-     */
     public Command linearCoast() {
-        return this.runOnce(() -> intakeLinearIO.runCoast()).withName("Linear Coast");
-    }
-
-    /**
-     * Creates a command to run the roller in reverse to eject game pieces.
-     *
-     * @return A command that runs the roller at negative velocity for ejection
-     */
-    public Command ejectRoller() {
-        return Commands.startEnd(
-                        () -> runRoller(() -> RotationsPerSecond.of(-ROLLER_EJECT_RPS.get())),
-                        this::stopRoller)
-                .withName("Eject Roller");
+        return this.runOnce(intakeLinearIO::runCoast).withName("Linear Coast");
     }
 
     public Command homeLinear() {
@@ -273,68 +264,23 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         });
     }
 
-    /** 
-     * Creates an experimental command to shuffle the intake.
-     * If the intake is already retracted, extend it.
-     * Then, retract 6 inches, and then extend 3 inches
-     * @return a Command that is a "step" in the intake shuffle.
-    */
-    public Command shuffleStep() {
-        return Commands.sequence(
-            // Extend intake if there is no more space to retract
-            Commands.either(extendIntake(), Commands.none(), isRetracted),
-            shuffleRetract(6),
-            shuffleExtend(3)
-        ).withName("The Brendan Shuffle");
-    }
-
-    /** 
-     * Retract the intake linear by 6 inches, or to the MIN_DISTANCE. Intended to be used in the shuffle
-     * @param inches the distance to retract the intake
-     * @return a commmand that retracts the intake linear by 6 inches, or to the MIN_DISTANCE
-     */
-    public Command shuffleRetract(double inches) {
-            return Commands.sequence(
-                        Commands.runOnce(() -> {
-                            setpointState.position = Math.max(intakeLinearIO.getLinearPosition().minus(Inches.of(inches)).in(Meters), IntakeLinearConstants.MIN_DISTANCE.in(Meters));
-                        }),
-                        this.runRoller(
-                                () -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get()).times(0.6)),
-                        profileLinearToPositionCommand(slowMotionProfiler, retractionGoalState),
-                        Commands.waitUntil(() -> MathUtil.isNear(setpointState.position, intakeLinearIO.getLinearPosition().in(Meters), IntakeLinearConstants.TOLERANCE.in(Meters))));
-    }
-    
-    /** 
-     * Extend the intake linear by a set number of inches
-     * @param inches the distance to extend the intake.
-     * @return a commmand that extends the intake linear by 3 inches.
-     */
-    public Command shuffleExtend(double inches) {
-            return Commands.sequence(
-                Commands.runOnce(() -> {
-                    setpointState.position = intakeLinearIO.getLinearPosition().plus(Inches.of(inches)).in(Meters);
-                }),
-                this.runRoller(
-                        () -> RotationsPerSecond.of(0)),
-                profileLinearToPositionCommand(slowMotionProfiler, retractionGoalState),
-                Commands.waitUntil(() -> MathUtil.isNear(setpointState.position, intakeLinearIO.getLinearPosition().in(Meters), IntakeLinearConstants.TOLERANCE.in(Meters))));
-    }
-
     @Override
     public void periodic() {
+
         if (SLOW_MPS.hasChanged(hashCode())) {
             slowMotionProfiler =
                     new TrapezoidProfile(
                             new Constraints(
-                                    SLOW_MPS.getAsDouble(),
+                                    SLOW_MPS.get(),
                                     IntakeLinearConstants.MAX_ACCELERATION.in(
                                             MetersPerSecondPerSecond)));
         }
 
-        double newTimestamp = Timer.getTimestamp();
-        double delta = newTimestamp - lastTimestamp;
-        setpointState = activeProfiler.calculate(delta, setpointState, activeGoalState);
-        lastTimestamp = newTimestamp;
+        double now = Timer.getTimestamp();
+        double delta = now - lastTimestamp;
+        lastTimestamp = now;
+
+        setpointState = activeProfiler.calculate(delta, setpointState, goalState);
 
         if (runProfile) {
             intakeLinearIO.runUnprofiledLinearPosition(
@@ -344,6 +290,15 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         LoggerHelper.recordCurrentCommand(this.getName(), this);
         intakeLinearIO.periodic();
         intakeRollerIO.periodic();
+    }
+
+    /**
+     * Gets the linear extension of the subsystem by converting the motor's rotation.
+     *
+     * @return The estimated linear extension of the subsystem
+     */
+    public Distance getExtension() {
+        return intakeLinearIO.getLinearPosition();
     }
 
     @Override
