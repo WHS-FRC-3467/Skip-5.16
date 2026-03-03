@@ -37,7 +37,12 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 public class PoseEstimator {
     public static record VisionPoseObservation(
-            double timestampSeconds, Pose2d robotPose, double linearStdDev, double angularStdDev) {}
+            double timestampSeconds,
+            Pose2d robotPose,
+            double avgTagDistance,
+            int numTagsUsed,
+            double linearStdDev,
+            double angularStdDev) {}
 
     private static final double DEFAULT_ODOMETRY_BUFFER_SIZE_SECONDS = 2;
 
@@ -253,7 +258,6 @@ public class PoseEstimator {
         Transform2d unscaledVisionCorrection = new Transform2d(oldPose, newVisionPose);
 
         // Scale the vision correction by the Kalman gain
-
         var scaledVisionCorrectionVector =
                 visionKalmanGain.times(
                         VecBuilder.fill(

@@ -342,12 +342,6 @@ public class RobotContainer {
         SmartDashboard.putData(
                 "Reset Vision Odometry Characterization",
                 Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
-        SmartDashboard.putNumber(
-                "Vision Odometry Characterization Vision Sample Count",
-                VisionOdometryCharacterizer.getVisionSampleSize());
-        SmartDashboard.putBoolean(
-                "Vision Odometry Characterization Sufficient Samples - Vision",
-                VisionOdometryCharacterizer.hasSufficientVisionSamples());
     }
 
     /** Creates and/or binds triggers to LED states */

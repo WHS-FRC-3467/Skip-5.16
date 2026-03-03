@@ -18,7 +18,6 @@ package frc.lib.util;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.robot.RobotState;
@@ -50,7 +49,8 @@ public class VisionOdometryCharacterizer {
     private static double m2Y = 0.0;
     private static double m2Theta = 0.0;
 
-    /** Odometry process noise tracking */ // TODO
+    /** Odometry process noise tracking */
+    // TODO
 
     public static void enable() {
         enabled = true;
@@ -75,11 +75,24 @@ public class VisionOdometryCharacterizer {
     // ----------------------
 
     /**
-     * Record a state estimator prediction and vision measurement delta to calculate innovation and
-     * track variance.
+     * Record a state estimator (model) pose prediction (x_k|k-1) and vision measurement (z_k) delta to
+     * calculate innovation (y_k) and track variance such that y_​k ​= z_k ​− x_k|k-1​ (innovation ~
+     * measurement - model prediction at time of measurement).
      *
-     * @param predictedPose pose predicted by state estimator (model) at time t.
-     * @param observation vision observation containing pure vision pose at time t.
+     * <p>This method computes the covariance of the innovation S_k = P_k|k-1 + R where P_k|k-1 is
+     * the prediction covariance and R is the measurement covariance. S_k represents the total
+     * uncertainty in the measurement update step of the Kalman filter, combining both the
+     * uncertainty from the state prediction and the measurement noise.
+     *
+     * <p>Under specific conditions, tracking the variance (diagonals) of S_k allows us to
+     * empirically estimate the measurement noise covariance R, which is crucial for tuning the
+     * Kalman filter's performance. Specifically, this approximation is only valid when the robot is
+     * approximately stationary, such that the prediction covariance P_k|k-1 is minimal and
+     * innovation variance is dominated by measurement noise -- in other words, as the prediction
+     * covariance P_k|k-1 is minimized, S_k becomes more reflective of R.
+     *
+     * @param predictedPose pose predicted by state estimator (model) at time t (x_k|k-1).
+     * @param observation vision observation containing pure vision pose at time t (z_k).
      */
     public static void recordVisionCorrection(
             Pose2d predictedPose, VisionPoseObservation observation) {
@@ -108,6 +121,8 @@ public class VisionOdometryCharacterizer {
         double dtheta = errTheta - meanTheta;
         meanTheta += dtheta / nVis;
         m2Theta += dtheta * (errTheta - meanTheta);
+
+        if (hasSufficientVisionSamples()) disable();
     }
 
     private static double getVisionStdDevX() {
@@ -122,18 +137,32 @@ public class VisionOdometryCharacterizer {
         return nVis > 1 ? Math.sqrt(m2Theta / (nVis - 1)) : 0.0;
     }
 
+    /**
+     * Ensure the vision measurement is valid. This check should ensure the vision measurement is
+     * being taken at standard conditions as defined by the assumptions of our measurement
+     * covariance scaling equation. The result is an estimate of R (baseline) such that this
+     * characterizer produces LINEAR_STDDEV_BASELINE & ANGULAR_STDDEV_BASELINE.
+     */
     private static boolean validVisionMeasurement(
             Pose2d predictedPose, VisionPoseObservation observation) {
+        // Verify enabled & valid poses
         if (!enabled || predictedPose == null || observation.robotPose() == null) {
             return false;
         }
-
+        // Verify robot is approximately stationary to ensure innovation covariance approximates
+        // measurement covariance
         ChassisSpeeds vel = robotState.getFieldRelativeVelocity();
         if (Math.hypot(vel.vxMetersPerSecond, vel.vyMetersPerSecond) > 0.1
                 || Math.abs(vel.omegaRadiansPerSecond) > 0.1) {
             return false;
         }
-
+        // Restrict samples to geometry where (d^2 / N) ~ 1 so that measured innovation variance
+        // approximates the baseline standard deviation constant.
+        // Equation from AK template project
+        // https://github.com/Mechanical-Advantage/AdvantageKit/blob/5dbc08a680e8b105c75c18be7c3442029b08e32b/template_projects/sources/vision/src/main/java/frc/robot/subsystems/vision/Vision.java#L123
+        if (observation.avgTagDistance() > 3|| observation.numTagsUsed() < 3) {
+            return false;
+        }
         return true;
     }
 
@@ -157,11 +186,12 @@ public class VisionOdometryCharacterizer {
     // ----------------------
 
     public static void printResults() {
-        if (odoTimestep < 0.0) return;
-
         String prefix = "Pose Stats/";
         Logger.recordOutput(prefix + "VisionSigmaX", getVisionStdDevX());
         Logger.recordOutput(prefix + "VisionSigmaY", getVisionStdDevY());
         Logger.recordOutput(prefix + "VisionSigmaTheta", getVisionStdDevTheta());
+        Logger.recordOutput(prefix + "BiasX", meanX);
+        Logger.recordOutput(prefix + "BiasY", meanY);
+        Logger.recordOutput(prefix + "BiasTheta", meanTheta);
     }
 }
