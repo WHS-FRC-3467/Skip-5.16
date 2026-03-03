@@ -208,7 +208,7 @@ public class Robot extends LoggedRobot {
         }
 
         // Safety Hood retract
-        CommandScheduler.getInstance().schedule(robotContainer.shooter.setHoodAngle(Rotations.zero()));
+        CommandScheduler.getInstance().schedule(robotContainer.shooter.stopAndStow());
     }
 
     /**
