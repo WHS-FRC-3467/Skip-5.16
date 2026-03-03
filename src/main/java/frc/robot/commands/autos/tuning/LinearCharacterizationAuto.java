@@ -26,7 +26,7 @@ public class LinearCharacterizationAuto extends AutoRoutine {
         List<String> expectedPaths = List.of("LinearCharacterization");
 
         // Load the named paths
-        this.loadAllPaths(expectedPaths, false);
+        this.loadAllPaths(expectedPaths, false, false);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null))
