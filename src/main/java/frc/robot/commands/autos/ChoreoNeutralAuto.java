@@ -34,9 +34,15 @@ public class ChoreoNeutralAuto extends AutoRoutine {
             IndexerSuperstructure indexer,
             Tower tower,
             ShooterSuperstructure shooter,
-            boolean shouldMirror) {
+            boolean shouldMirror,
+            boolean isSafe) {
         // Choose path names based on start position
-        List<String> expectedPaths = List.of("Neutral1", "Neutral2");
+        List<String> expectedPaths;
+        if (isSafe) {
+            expectedPaths = List.of("NeutralSafe1", "Neutral2");
+        } else {
+            expectedPaths = List.of("Neutral1", "Neutral2");
+        }
 
         // Load the named paths
         this.loadAllPaths(expectedPaths, shouldMirror, true);

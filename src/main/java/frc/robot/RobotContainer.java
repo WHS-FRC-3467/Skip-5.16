@@ -123,9 +123,17 @@ public class RobotContainer {
                 "NeutralAuto-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true));
 
         autoChooser.addOption(
-                "ChoreoNeutralAuto-Left", new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, false));
+                "ChoreoNeutralAuto-Left",
+                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, false, false));
         autoChooser.addOption(
-                "ChoreoNeutralAuto-Right", new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, true));
+                "ChoreoNeutralAuto-Right",
+                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, true, false));
+        autoChooser.addOption(
+                "ChoreoNeutralSafeAuto-Left",
+                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, false, true));
+        autoChooser.addOption(
+                "ChoreoNeutralSafeAuto-Right",
+                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, true, true));
 
         // Depot Autos
         autoChooser.addOption(
