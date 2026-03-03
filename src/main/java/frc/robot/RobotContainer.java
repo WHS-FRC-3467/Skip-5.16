@@ -268,8 +268,8 @@ public class RobotContainer {
 
         // Hold to trim flywheel speed up/down by ~ 2 RPS/sec while shooting. Driver trim
         // adjustments persist until dashboard value changes or robot power cycle.
-        controller.y().and(controller.rightTrigger()).whileTrue(shooter.trimFlywheelSpeedUp());
-        controller.a().and(controller.rightTrigger()).whileTrue(shooter.trimFlywheelSpeedDown());
+        controller.y().and(controller.rightTrigger()).onTrue(shooter.trimFlywheelSpeedUp());
+        controller.a().and(controller.rightTrigger()).onFalse(shooter.trimFlywheelSpeedDown());
 
         // robotState.enteringTrench.whileTrue(
         //         shooter.forceHoodAngle(Rotations.zero())
