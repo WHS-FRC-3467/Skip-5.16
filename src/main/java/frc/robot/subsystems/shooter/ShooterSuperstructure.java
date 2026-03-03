@@ -405,8 +405,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     @Override
     public void periodic() {
-        // Dashboard change overwrites driver trim adjustments but trims will persist across
-        // disable/enable cycles
+        // Dashboard change overwrites driver trim adjustments. Current trim will persist across
+        // disable/enable cycles but revert to dashboard default on power cycle or dashboard change.
         if (flywheelTrimDefaultRPS.hasChanged(hashCode())) {
             flywheelTrimRPS = RotationsPerSecond.of(flywheelTrimDefaultRPS.get());
         }
