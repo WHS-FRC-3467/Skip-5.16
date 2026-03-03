@@ -31,6 +31,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
@@ -270,6 +271,53 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                             intakeLinearIO.setEncoderPosition(Rotations.of(3.56));
                             runProfile = true;
                         });
+    }
+
+    /** 
+     * Creates an experimental command to shuffle the intake.
+     * If the intake is already retracted, extend it.
+     * Then, retract 6 inches, and then extend 3 inches
+     * @return a Command that is a "step" in the intake shuffle.
+    */
+    public Command shuffleStep() {
+        return Commands.sequence(
+            // Extend intake if there is no more space to retract
+            Commands.either(extendIntake(), Commands.none(), isRetracted),
+            shuffleRetract(6),
+            shuffleExtend(3)
+        ).withName("The Brendan Shuffle");
+    }
+
+    /** 
+     * Retract the intake linear by 6 inches, or to the MIN_DISTANCE. Intended to be used in the shuffle
+     * @param inches the distance to retract the intake
+     * @return a commmand that retracts the intake linear by 6 inches, or to the MIN_DISTANCE
+     */
+    public Command shuffleRetract(double inches) {
+            return Commands.sequence(
+                        Commands.runOnce(() -> {
+                            setpointState.position = Math.max(intakeLinearIO.getLinearPosition().minus(Inches.of(inches)).in(Meters), IntakeLinearConstants.MIN_DISTANCE.in(Meters));
+                        }),
+                        this.runRoller(
+                                () -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get()).times(0.6)),
+                        profileLinearToPositionCommand(slowMotionProfiler, retractionGoalState),
+                        Commands.waitUntil(() -> MathUtil.isNear(setpointState.position, intakeLinearIO.getLinearPosition().in(Meters), IntakeLinearConstants.TOLERANCE.in(Meters))));
+    }
+    
+    /** 
+     * Extend the intake linear by a set number of inches
+     * @param inches the distance to extend the intake.
+     * @return a commmand that extends the intake linear by 3 inches.
+     */
+    public Command shuffleExtend(double inches) {
+            return Commands.sequence(
+                Commands.runOnce(() -> {
+                    setpointState.position = intakeLinearIO.getLinearPosition().plus(Inches.of(inches)).in(Meters);
+                }),
+                this.runRoller(
+                        () -> RotationsPerSecond.of(0)),
+                profileLinearToPositionCommand(slowMotionProfiler, retractionGoalState),
+                Commands.waitUntil(() -> MathUtil.isNear(setpointState.position, intakeLinearIO.getLinearPosition().in(Meters), IntakeLinearConstants.TOLERANCE.in(Meters))));
     }
 
     @Override
