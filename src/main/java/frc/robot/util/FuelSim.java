@@ -20,9 +20,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Timer;
-
 import frc.robot.RobotState;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
