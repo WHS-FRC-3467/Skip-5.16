@@ -29,9 +29,6 @@ import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.Elastic;
 import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
-
-import static edu.wpi.first.units.Units.Rotations;
-
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.LoggedRobot;
