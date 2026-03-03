@@ -24,13 +24,11 @@ import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -75,7 +73,7 @@ public class RobotContainer {
 
     // Subsystems
     public final Drive drive;
-    private final ShooterSuperstructure shooter;
+    final ShooterSuperstructure shooter;
     private final IntakeSuperstructure intake;
     private final IndexerSuperstructure indexer;
     private final Tower tower;
@@ -90,8 +88,6 @@ public class RobotContainer {
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
     public final Field2d autoPreviewField = new Field2d();
     private Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
-
-    private final Trigger isAutonomous = new Trigger(DriverStation::isAutonomous);
 
     /** The container for the robot. Contains subsystems, IO devices, and commands. */
     public RobotContainer() {
