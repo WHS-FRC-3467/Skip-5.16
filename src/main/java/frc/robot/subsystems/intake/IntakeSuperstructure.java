@@ -193,7 +193,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                                                                 MetersPerSecondPerSecond)))),
                         this.runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
                         profileLinearToPositionCommand(slowMotionProfiler, retractionGoalState),
-                        Commands.waitUntil(isRetracted))
+                        Commands.waitUntil(isRetracted),
+                        this.stopRoller())
                 .withName("Retract Linear");
     }
 

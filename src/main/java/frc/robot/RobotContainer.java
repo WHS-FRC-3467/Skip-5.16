@@ -39,6 +39,9 @@ import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
+import frc.robot.commands.autos.tuning.FeedforwardCharacterizationAuto;
+import frc.robot.commands.autos.tuning.WheelCharacterizationAuto;
+import frc.robot.commands.autos.tuning.WheelSlipAuto;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -111,52 +114,19 @@ public class RobotContainer {
 
         // Preload Autos
         autoChooser.addOption(
-                "PreloadAuto-Left",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "PreloadAuto-Center",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-        autoChooser.addOption(
-                "PreloadAuto-Right",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+                "PreloadAuto", new PreloadAuto(drive, intake, indexer, tower, shooter));
 
         // Neutral Autos
         autoChooser.addOption(
-                "NeutralAuto-Left",
-                new NeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+                "NeutralAuto-Left", new NeutralAuto(drive, intake, indexer, tower, shooter, false));
         autoChooser.addOption(
-                "NeutralAuto-Right",
-                new NeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+                "NeutralAuto-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true));
 
         // Depot Autos
         autoChooser.addOption(
-                "DepotAuto-Left",
-                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+                "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
         autoChooser.addOption(
-                "DepotAuto-Center",
-                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-
-        // Outpost Auto
-        autoChooser.addOption(
-                "OutpostAuto-Right",
-                new OutpostAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
-
-        // Alliance Side Autos
-        autoChooser.addOption(
-                "Depot-Then-OutpostAuto-Left",
-                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "Depot-Then-OutpostAuto-Center",
-                new AllianceComboAuto(
-                        drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-        autoChooser.addOption(
-                "Outpost-Then-DepotAuto-Right",
-                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
-
-        // Drivebase Characterization Autos
-        autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
-        autoChooser.addOption(
-                "RotationalCharacterization", new RotationalCharacterizationAuto(drive));
+                "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
 
         autoChooser.onChange(
                 auto -> {
@@ -177,10 +147,6 @@ public class RobotContainer {
 
         autoChooser.addOption(
                 "Feedforward Characterization", new FeedforwardCharacterizationAuto(drive));
-
-        autoChooser.addOption(
-                "Rotational Characterization", new RotationalCharacterizationAuto(drive));
-        autoChooser.addOption("Linear Characterization", new LinearCharacterizationAuto(drive));
 
         // Configure the button bindings
         configureButtonBindings();
