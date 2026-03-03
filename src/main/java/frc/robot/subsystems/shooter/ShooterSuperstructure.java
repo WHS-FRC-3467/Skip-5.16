@@ -130,8 +130,28 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final LoggedTunableNumber tuningHoodAngleDegrees =
             new LoggedTunableNumber(getName() + "/Tuning/HoodAngleDegrees", 0.0);
 
-    private final LoggedTunableNumber flywheelSpeedTrimRPS =
-            new LoggedTunableNumber(getName() + "/FlywheelTrimRPS", 0.0);
+    // Default trim to apply
+    private final LoggedTunableNumber flywheelTrimDefaultRPS =
+            new LoggedTunableNumber(getName() + "/FlywheelTrimDefaultRPS", 0.0);
+    // How much to add or subtract on each button press
+    private final LoggedTunableNumber flywheelTrimStepRPS =
+            new LoggedTunableNumber(getName() + "/FlywheelTrimStepRPS", 0.5);
+
+    // User-defined trim at runtime, not including default trim
+    private AngularVelocity flywheelTrim = RotationsPerSecond.zero();
+
+    private AngularVelocity getFlywheelTimStep() {
+        return RotationsPerSecond.of(flywheelTrimStepRPS.get());
+    }
+
+    /**
+     * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
+     *
+     * @return The total flywheel trim to apply
+     */
+    private AngularVelocity getFlywheelTrim() {
+        return RotationsPerSecond.of(flywheelTrimDefaultRPS.get()).plus(flywheelTrim);
+    }
 
     /**
      * Constructs a new ShooterSuperstructure subsystem with the specified hood and flywheel
@@ -152,11 +172,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private void spinFlywheel(AngularVelocity velocity) {
         leftFlywheelIO.runVelocity(
-                velocity.plus(RotationsPerSecond.of(flywheelSpeedTrimRPS.get())),
+                velocity.plus(getFlywheelTrim()),
                 FlywheelConstants.MAX_ACCELERATION,
                 PIDSlot.SLOT_0);
         rightFlywheelIO.runVelocity(
-                velocity.plus(RotationsPerSecond.of(flywheelSpeedTrimRPS.get())),
+                velocity.plus(getFlywheelTrim()),
                 FlywheelConstants.MAX_ACCELERATION,
                 PIDSlot.SLOT_0);
     }
@@ -383,6 +403,16 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                                 () -> hoodIO.getPosition().lte(HoodConstants.TOLERANCE)));
     }
 
+    public Command trimFlywheelSpeedUp() {
+        // Doesn't require subsystem to allow for trimming while shooting
+        return Commands.runOnce(() -> flywheelTrim.plus(getFlywheelTimStep()));
+    }
+
+    public Command trimFlywheelSpeedDown() {
+        // Doesn't require subsystem to allow for trimming while shooting
+        return Commands.runOnce(() -> flywheelTrim.minus(getFlywheelTimStep()));
+    }
+
     @Override
     public void periodic() {
         if (tuningMode.get()) {
@@ -410,6 +440,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         Logger.recordOutput(
                 getName() + "/TotalDrawWatts",
                 leftFlywheelIO.getAppliedVoltage().times(leftFlywheelIO.getSupplyCurrent()));
+
+        Logger.recordOutput(
+                getName() + "/FlywheelTrimRPS", getFlywheelTrim().in(RotationsPerSecond));
     }
 
     /** Closes all underlying mechanisms and releases resources. */
