@@ -181,6 +181,9 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
             return new Pose2d();
         } else {
             var firstPath = pathPlannerPaths.get(0);
+            if (pathMirrorFlags.get(0)) {
+                firstPath = firstPath.mirrorPath();
+            }
             return new Pose2d(
                     firstPath.getPathPoses().get(0).getTranslation(),
                     firstPath.getIdealStartingState().rotation());
