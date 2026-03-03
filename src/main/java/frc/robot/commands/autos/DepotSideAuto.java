@@ -62,7 +62,7 @@ public class DepotSideAuto extends AutoRoutine {
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Drive to depot and start intake, then run through depot while intaking FUEL
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    // // Drive to shooting location and shoot all FUEL
+                    // Drive to shooting location and shoot all FUEL
                     AutoCommands.shootCommand(
                             drive,
                             intake,

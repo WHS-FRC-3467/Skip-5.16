@@ -5,7 +5,7 @@
  "variables":{
   "expressions":{},
   "poses":{
-   "NeurtralShoot":{
+   "NeutralShoot":{
     "x":{
      "exp":"3.5 m",
      "val":3.5

@@ -18,10 +18,12 @@
 package frc.lib.util;
 
 import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,10 +40,10 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      *
      * @param pathNames List of path file names to load
      * @param shouldMirror Whether to mirror the paths
+     * @param isChoreo Whether the paths are choreographed (loaded from Choreo JSON instead of
+     *     PathPlanner path file)
      */
     public void loadAllPaths(List<String> pathNames, boolean shouldMirror, boolean isChoreo) {
-        // Load paths into a temporary list so we can initialize mirror flags to the
-        // same size and keep things consistent even if loading fails.
         List<PathPlannerPath> loaded =
                 pathNames.stream().map(name -> loadPath(name, shouldMirror, isChoreo)).toList();
         pathPlannerPaths.addAll(loaded);
@@ -91,7 +93,6 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
         }
 
         List<Pose2d> poses = new ArrayList<>();
-        // Loop through each path and check for whether the mirror should be applied.
         for (int i = 0; i < pathPlannerPaths.size(); ++i) {
             PathPlannerPath path = pathPlannerPaths.get(i);
 

@@ -24,14 +24,14 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"NeurtralShoot.x", "val":3.5}, "y":{"exp":"NeurtralShoot.y", "val":7.4}, "heading":{"exp":"NeurtralShoot.heading", "val":-1.25}, "intervals":15, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"NeutralShoot.x", "val":3.5}, "y":{"exp":"NeutralShoot.y", "val":7.4}, "heading":{"exp":"NeutralShoot.heading", "val":-1.25}, "intervals":15, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"TunnelEntrance.x", "val":4.0}, "y":{"exp":"TunnelEntrance.y", "val":7.5}, "heading":{"exp":"TunnelEntrance.heading", "val":-1.5707963267948966}, "intervals":18, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"TunnelExit.x", "val":5.65}, "y":{"exp":"TunnelExit.y", "val":7.5}, "heading":{"exp":"TunnelExit.heading", "val":-1.5707963267948966}, "intervals":18, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"6 m", "val":6.0}, "y":{"exp":"5.712192535400391 m", "val":5.712192535400391}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"6 m", "val":6.0}, "y":{"exp":"3.744825839996338 m", "val":3.744825839996338}, "heading":{"exp":"-90 deg", "val":-1.5707963267948966}, "intervals":27, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"TunnelExit.x", "val":5.65}, "y":{"exp":"TunnelExit.y", "val":7.5}, "heading":{"exp":"TunnelExit.heading", "val":-1.5707963267948966}, "intervals":18, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"TunnelEntrance.x", "val":4.0}, "y":{"exp":"TunnelEntrance.y", "val":7.5}, "heading":{"exp":"TunnelEntrance.heading", "val":-1.5707963267948966}, "intervals":15, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"NeurtralShoot.x", "val":3.5}, "y":{"exp":"NeurtralShoot.y", "val":7.4}, "heading":{"exp":"NeurtralShoot.heading", "val":-1.25}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"NeutralShoot.x", "val":3.5}, "y":{"exp":"NeutralShoot.y", "val":7.4}, "heading":{"exp":"NeutralShoot.heading", "val":-1.25}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
