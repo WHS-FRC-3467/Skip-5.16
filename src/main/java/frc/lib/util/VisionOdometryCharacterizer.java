@@ -20,7 +20,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
+import frc.robot.Robot;
 import frc.robot.RobotState;
+import java.util.Random;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -49,6 +51,9 @@ public class VisionOdometryCharacterizer {
     private static double m2Y = 0.0;
     private static double m2Theta = 0.0;
 
+    // For simulation testing with configurable noise
+    private static final Random NOISE_DISTRIBUTION = new Random();
+
     /** Odometry process noise tracking */
     // TODO
 
@@ -70,14 +75,23 @@ public class VisionOdometryCharacterizer {
         return enabled;
     }
 
+    /** Generate noise in sim to verify functionality before deployment. */
+    private static double generateSimNoise() {
+        if (Robot.isSimulation()) {
+            return NOISE_DISTRIBUTION.nextGaussian(0.0, 0.02);
+        } else {
+            return 0.0;
+        }
+    }
+
     // ----------------------
     // Vision Noise (R) Tracking
     // ----------------------
 
     /**
-     * Record a state estimator (model) pose prediction (x_k|k-1) and vision measurement (z_k) delta to
-     * calculate innovation (y_k) and track variance such that y_​k ​= z_k ​− x_k|k-1​ (innovation ~
-     * measurement - model prediction at time of measurement).
+     * Record a state estimator (model) pose prediction (x_k|k-1) and vision measurement (z_k) delta
+     * to calculate innovation (y_k) and track variance such that y_​k ​= z_k ​− x_k|k-1​
+     * (innovation ~ measurement - model prediction at time of measurement).
      *
      * <p>This method computes the covariance of the innovation S_k = P_k|k-1 + R where P_k|k-1 is
      * the prediction covariance and R is the measurement covariance. S_k represents the total
@@ -99,11 +113,11 @@ public class VisionOdometryCharacterizer {
         if (!validVisionMeasurement(predictedPose, observation)) return;
 
         Transform2d innovation = observation.robotPose().minus(predictedPose);
-        double errX = innovation.getX();
-        double errY = innovation.getY();
+        double errX = innovation.getX() + generateSimNoise();
+        double errY = innovation.getY() + generateSimNoise();
         double errTheta =
-                MathUtil.angleModulus(
-                        innovation.getRotation().getRadians()); // Prevent wrapping issues
+                MathUtil.angleModulus(innovation.getRotation().getRadians())
+                        + generateSimNoise(); // Prevent wrapping issues
 
         // Welford update
         nVis++;
@@ -160,7 +174,7 @@ public class VisionOdometryCharacterizer {
         // approximates the baseline standard deviation constant.
         // Equation from AK template project
         // https://github.com/Mechanical-Advantage/AdvantageKit/blob/5dbc08a680e8b105c75c18be7c3442029b08e32b/template_projects/sources/vision/src/main/java/frc/robot/subsystems/vision/Vision.java#L123
-        if (observation.avgTagDistance() > 3|| observation.numTagsUsed() < 3) {
+        if (observation.avgTagDistance() > 3 || observation.numTagsUsed() < 3) {
             return false;
         }
         return true;
