@@ -126,8 +126,6 @@ public class PoseEstimator {
         Pose2d newOdometryPose = odometry.odometryPose();
 
         Twist2d twist = lastOdometryPose.log(newOdometryPose);
-        // Utility listener characterizing odometry measurement variance for Kalman gain tuning
-        VisionOdometryCharacterizer.recordOdometryTwist(observation.timestamp().in(Seconds), twist);
 
         estimatedPose = estimatedPose.exp(twist);
     }
@@ -208,8 +206,7 @@ public class PoseEstimator {
         Pose2d newVisionPose = observation.robotPose;
         // Utility listener characterizing vision measurement deviation from state prediction for
         // Kalman gain tuning
-        VisionOdometryCharacterizer.recordVisionCorrection(
-                observation.timestampSeconds, oldPose, newVisionPose);
+        VisionOdometryCharacterizer.recordVisionCorrection(oldPose, observation);
 
         double visionLinearVariance = observation.linearStdDev * observation.linearStdDev;
         double visionAngularVariance = observation.angularStdDev * observation.angularStdDev;

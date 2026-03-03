@@ -19,7 +19,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Twist2d;
-
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
+import frc.robot.RobotState;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -27,8 +29,13 @@ import org.littletonrobotics.junction.Logger;
  * filter. Recommended for use with controlled motion sequences.
  */
 public class VisionOdometryCharacterizer {
+    private static final RobotState robotState = RobotState.getInstance();
+
     /** Static threshold for tuning */
-    private static final int MINIMUM_SAMPLE_SIZE = 1000;
+    private static final int MINIMUM_VISION_SAMPLE_SIZE = 2000;
+
+    /** Vision standard error threshold for sampling */
+    private static final double VISION_STANDARD_ERROR_THRESHOLD = 0.03;
 
     /** Whether to collect observations */
     private static boolean enabled = false;
@@ -43,30 +50,20 @@ public class VisionOdometryCharacterizer {
     private static double m2Y = 0.0;
     private static double m2Theta = 0.0;
 
-    /** Odometry process noise tracking */
-    private static int nOdo = 0;
-
-    private static double meanVx = 0.0;
-    private static double meanVy = 0.0;
-    private static double meanOmega = 0.0;
-    private static double m2Vx = 0.0;
-    private static double m2Vy = 0.0;
-    private static double m2Omega = 0.0;
-
-    private static double lastOdoTimestamp = -1.0;
-    private static double odoTimestep = -1.0;
+    /** Odometry process noise tracking */ // TODO
 
     public static void enable() {
         enabled = true;
     }
 
+    public static void disable() {
+        enabled = false;
+    }
+
     public static void reset() {
-        nVis = nOdo = 0;
+        nVis = 0;
         meanX = meanY = meanTheta = 0.0;
-        meanVx = meanVy = meanOmega = 0.0;
         m2X = m2Y = m2Theta = 0.0;
-        m2Vx = m2Vy = m2Omega = 0.0;
-        lastOdoTimestamp = odoTimestep = -1.0;
     }
 
     public static boolean isEnabled() {
@@ -77,12 +74,18 @@ public class VisionOdometryCharacterizer {
     // Vision Noise (R) Tracking
     // ----------------------
 
-    /** Record a state estimator prediction and measurement delta to calculate innovation */
+    /**
+     * Record a state estimator prediction and vision measurement delta to calculate innovation and
+     * track variance.
+     *
+     * @param predictedPose pose predicted by state estimator (model) at time t.
+     * @param observation vision observation containing pure vision pose at time t.
+     */
     public static void recordVisionCorrection(
-            double timestamp, Pose2d predictedPose, Pose2d visionPose) {
-        if (!enabled || predictedPose == null || visionPose == null) return;
+            Pose2d predictedPose, VisionPoseObservation observation) {
+        if (!validVisionMeasurement(predictedPose, observation)) return;
 
-        Transform2d innovation = visionPose.minus(predictedPose);
+        Transform2d innovation = observation.robotPose().minus(predictedPose);
         double errX = innovation.getX();
         double errY = innovation.getY();
         double errTheta =
@@ -119,82 +122,39 @@ public class VisionOdometryCharacterizer {
         return nVis > 1 ? Math.sqrt(m2Theta / (nVis - 1)) : 0.0;
     }
 
-    // ----------------------
-    // Process Noise (Q) Tracking
-    // ----------------------
-
-    /** Records latest odometry twist required for process noise estimate */
-    public static void recordOdometryTwist(double timestamp, Twist2d odomTwist) {
-        if (!enabled || odomTwist == null) return;
-        calculateTwistVariance(timestamp, odomTwist.dx, odomTwist.dy, odomTwist.dtheta);
-    }
-
-    /** Update running variance of odometry twists (velocities) */
-    private static void calculateTwistVariance(
-            double timestamp, double dx, double dy, double dtheta) {
-        if (lastOdoTimestamp < 0.0) {
-            lastOdoTimestamp = timestamp;
-            return;
+    private static boolean validVisionMeasurement(
+            Pose2d predictedPose, VisionPoseObservation observation) {
+        if (!enabled || predictedPose == null || observation.robotPose() == null) {
+            return false;
         }
 
-        odoTimestep = timestamp - lastOdoTimestamp;
-        lastOdoTimestamp = timestamp;
+        ChassisSpeeds vel = robotState.getFieldRelativeVelocity();
+        if (Math.hypot(vel.vxMetersPerSecond, vel.vyMetersPerSecond) > 0.1
+                || Math.abs(vel.omegaRadiansPerSecond) > 0.1) {
+            return false;
+        }
 
-        if (odoTimestep <= 1e-6) return;
-
-        double vx = dx / odoTimestep;
-        double vy = dy / odoTimestep;
-        double omega = dtheta / odoTimestep;
-
-        // Welford update
-        nOdo++;
-        // Vx
-        double dvx = vx - meanVx;
-        meanVx += dvx / nOdo;
-        m2Vx += dvx * (vx - meanVx);
-
-        // Vy
-        double dvy = vy - meanVy;
-        meanVy += dvy / nOdo;
-        m2Vy += dvy * (vy - meanVy);
-
-        // omega
-        double domega = omega - meanOmega;
-        meanOmega += domega / nOdo;
-        m2Omega += domega * (omega - meanOmega);
+        return true;
     }
-
-    public static double getOdoStdDevX(double dt) {
-        return nOdo > 1 ? Math.sqrt(m2Vx / (nOdo - 1)) * dt : 0.0;
-    }
-
-    public static double getOdoStdDevY(double dt) {
-        return nOdo > 1 ? Math.sqrt(m2Vy / (nOdo - 1)) * dt : 0.0;
-    }
-
-    public static double getOdoStdDevTheta(double dt) {
-        return nOdo > 1 ? Math.sqrt(m2Omega / (nOdo - 1)) * dt : 0.0;
-    }
-
-    // ----------------------
-    // Utility / Reporting
-    // ----------------------
 
     public static int getVisionSampleSize() {
         return nVis;
     }
 
-    public static int getOdometrySampleSize() {
-        return nOdo;
-    }
-
-    public static boolean hasSufficientSamples() {
-        if (nVis < MINIMUM_SAMPLE_SIZE || nOdo < MINIMUM_SAMPLE_SIZE) return false;
+    public static boolean hasSufficientVisionSamples() {
+        if (nVis < MINIMUM_VISION_SAMPLE_SIZE) return false;
 
         double visStdError = 1.0 / Math.sqrt(2.0 * nVis);
-        double odoStdError = 1.0 / Math.sqrt(2.0 * nOdo);
-        return visStdError < 0.03 && odoStdError < 0.03;
+        return visStdError < VISION_STANDARD_ERROR_THRESHOLD;
     }
+
+    // ----------------------
+    // Process Noise (Q) Tracking // TODO
+    // ----------------------
+
+    // ----------------------
+    // Utility / Reporting
+    // ----------------------
 
     public static void printResults() {
         if (odoTimestep < 0.0) return;
@@ -203,8 +163,5 @@ public class VisionOdometryCharacterizer {
         Logger.recordOutput(prefix + "VisionSigmaX", getVisionStdDevX());
         Logger.recordOutput(prefix + "VisionSigmaY", getVisionStdDevY());
         Logger.recordOutput(prefix + "VisionSigmaTheta", getVisionStdDevTheta());
-        Logger.recordOutput(prefix + "OdometrySigmaX", getOdoStdDevX(odoTimestep));
-        Logger.recordOutput(prefix + "OdometrySigmaY", getOdoStdDevY(odoTimestep));
-        Logger.recordOutput(prefix + "OdometrySigmaTheta", getOdoStdDevTheta(odoTimestep));
     }
 }

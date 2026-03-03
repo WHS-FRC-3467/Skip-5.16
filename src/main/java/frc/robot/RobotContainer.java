@@ -331,6 +331,23 @@ public class RobotContainer {
                 "Drive/Face 180",
                 DriveCommands.joystickDriveAtAngle(
                         drive, () -> 0.0, () -> 0.0, () -> Rotation2d.k180deg));
+
+        // Diagnostics
+        SmartDashboard.putData(
+                "Enable Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.enable()));
+        SmartDashboard.putData(
+                "Disable Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.disable()));
+        SmartDashboard.putData(
+                "Reset Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
+        SmartDashboard.putNumber(
+                "Vision Odometry Characterization Vision Sample Count",
+                VisionOdometryCharacterizer.getVisionSampleSize());
+        SmartDashboard.putBoolean(
+                "Vision Odometry Characterization Sufficient Samples - Vision",
+                VisionOdometryCharacterizer.hasSufficientVisionSamples());
     }
 
     /** Creates and/or binds triggers to LED states */
