@@ -383,30 +383,24 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                                 () -> hoodIO.getPosition().lte(HoodConstants.TOLERANCE)));
     }
 
-    public Command trimFlywheelSpeedUp() {
+    private Command trimFlywheelSpeed(double directionSign) {
         return Commands.run(
-                        () -> {
-                            double dt = 0.02;
-                            double deltaRPS = MAX_TRIM_RPS_PER_SEC * dt;
-                            double updated = flywheelTrimRPS.in(RotationsPerSecond) + deltaRPS;
-                            flywheelTrimRPS =
-                                    RotationsPerSecond.of(
-                                            MathUtil.clamp(updated, -MAX_TRIM_RPS, MAX_TRIM_RPS));
-                        })
-                .withName("Trim Flywheel Speed Up");
+                () -> {
+                    double dt = 0.02;
+                    double deltaRPS = directionSign * MAX_TRIM_RPS_PER_SEC * dt;
+                    double updated = flywheelTrimRPS.in(RotationsPerSecond) + deltaRPS;
+                    flywheelTrimRPS =
+                            RotationsPerSecond.of(
+                                    MathUtil.clamp(updated, -MAX_TRIM_RPS, MAX_TRIM_RPS));
+                });
+    }
+
+    public Command trimFlywheelSpeedUp() {
+        return trimFlywheelSpeed(1.0).withName("Trim Flywheel Speed Up");
     }
 
     public Command trimFlywheelSpeedDown() {
-        return Commands.run(
-                        () -> {
-                            double dt = 0.02;
-                            double deltaRPS = -MAX_TRIM_RPS_PER_SEC * dt;
-                            double updated = flywheelTrimRPS.in(RotationsPerSecond) + deltaRPS;
-                            flywheelTrimRPS =
-                                    RotationsPerSecond.of(
-                                            MathUtil.clamp(updated, -MAX_TRIM_RPS, MAX_TRIM_RPS));
-                        })
-                .withName("Trim Flywheel Speed Down");
+        return trimFlywheelSpeed(-1.0).withName("Trim Flywheel Speed Down");
     }
 
     @Override
