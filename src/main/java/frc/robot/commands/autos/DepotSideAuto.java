@@ -51,7 +51,7 @@ public class DepotSideAuto extends AutoRoutine {
         List<String> expectedPaths = List.of("DepotSide1");
 
         // Load the named paths
-        this.loadAllPaths(expectedPaths, false);
+        this.loadAllPaths(expectedPaths, false, false);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null)) {

@@ -39,18 +39,20 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
      * @param pathNames List of path file names to load
      * @param shouldMirror Whether to mirror the paths
      */
-    public void loadAllPaths(List<String> pathNames, boolean shouldMirror) {
+    public void loadAllPaths(List<String> pathNames, boolean shouldMirror, boolean isChoreo) {
         // Load paths into a temporary list so we can initialize mirror flags to the
         // same size and keep things consistent even if loading fails.
         List<PathPlannerPath> loaded =
-                pathNames.stream().map(name -> loadPath(name, shouldMirror)).toList();
+                pathNames.stream().map(name -> loadPath(name, shouldMirror, isChoreo)).toList();
         pathPlannerPaths.addAll(loaded);
     }
 
-    private PathPlannerPath loadPath(String pathName, boolean shouldMirror) {
+    private PathPlannerPath loadPath(String pathName, boolean shouldMirror, boolean isChoreo) {
         PathPlannerPath path;
         try {
-            path = PathPlannerPath.fromPathFile(pathName);
+            if (isChoreo) {
+                path = PathPlannerPath.fromChoreoTrajectory(pathName);
+            } else path = PathPlannerPath.fromPathFile(pathName);
         } catch (Exception e) {
             DriverStation.reportError(
                     "Failed to load PathPlanner path: " + pathName, e.getStackTrace());

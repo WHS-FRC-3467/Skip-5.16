@@ -1,0 +1,127 @@
+{
+ "name":"NeutralZoneAuto",
+ "version":2,
+ "type":"Swerve",
+ "variables":{
+  "expressions":{},
+  "poses":{
+   "NeurtralShoot":{
+    "x":{
+     "exp":"3.5 m",
+     "val":3.5
+    },
+    "y":{
+     "exp":"7.4 m",
+     "val":7.4
+    },
+    "heading":{
+     "exp":"-1.25 rad",
+     "val":-1.25
+    }
+   },
+   "TunnelEntrance":{
+    "x":{
+     "exp":"4 m",
+     "val":4.0
+    },
+    "y":{
+     "exp":"7.5 m",
+     "val":7.5
+    },
+    "heading":{
+     "exp":"-90 deg",
+     "val":-1.5707963267948966
+    }
+   },
+   "TunnelExit":{
+    "x":{
+     "exp":"5.65 m",
+     "val":5.65
+    },
+    "y":{
+     "exp":"7.5 m",
+     "val":7.5
+    },
+    "heading":{
+     "exp":"-90 deg",
+     "val":-1.5707963267948966
+    }
+   }
+  }
+ },
+ "config":{
+  "frontLeft":{
+   "x":{
+    "exp":"11 in",
+    "val":0.2794
+   },
+   "y":{
+    "exp":"11 in",
+    "val":0.2794
+   }
+  },
+  "backLeft":{
+   "x":{
+    "exp":"-11 in",
+    "val":-0.2794
+   },
+   "y":{
+    "exp":"11 in",
+    "val":0.2794
+   }
+  },
+  "mass":{
+   "exp":"140 lbs",
+   "val":63.502931800000006
+  },
+  "inertia":{
+   "exp":"6.88 kg m ^ 2",
+   "val":6.88
+  },
+  "gearing":{
+   "exp":"6",
+   "val":6.0
+  },
+  "radius":{
+   "exp":"1.971 in",
+   "val":0.0500634
+  },
+  "vmax":{
+   "exp":"5800 RPM",
+   "val":607.3745796940267
+  },
+  "tmax":{
+   "exp":"1.2 N * m",
+   "val":1.2
+  },
+  "cof":{
+   "exp":"1.2",
+   "val":1.2
+  },
+  "bumper":{
+   "front":{
+    "exp":"17.625 in",
+    "val":0.447675
+   },
+   "side":{
+    "exp":"17.625 in",
+    "val":0.447675
+   },
+   "back":{
+    "exp":"17.625 in",
+    "val":0.447675
+   }
+  },
+  "differentialTrackWidth":{
+   "exp":"22 in",
+   "val":0.5588
+  }
+ },
+ "generationFeatures":[],
+ "codegen":{
+  "root":null,
+  "genVars":true,
+  "genTrajData":true,
+  "useChoreoLib":true
+ }
+}

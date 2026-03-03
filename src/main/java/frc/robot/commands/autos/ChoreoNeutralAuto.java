@@ -26,9 +26,9 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import java.util.List;
 
-public class NeutralAuto extends AutoRoutine {
+public class ChoreoNeutralAuto extends AutoRoutine {
 
-    public NeutralAuto(
+    public ChoreoNeutralAuto(
             Drive drive,
             IntakeSuperstructure intake,
             IndexerSuperstructure indexer,
@@ -36,10 +36,10 @@ public class NeutralAuto extends AutoRoutine {
             ShooterSuperstructure shooter,
             boolean shouldMirror) {
         // Choose path names based on start position
-        List<String> expectedPaths = List.of("Neutral1", "Neutral2", "Neutral3");
+        List<String> expectedPaths = List.of("Neutral1", "Neutral2");
 
         // Load the named paths
-        this.loadAllPaths(expectedPaths, shouldMirror, false);
+        this.loadAllPaths(expectedPaths, shouldMirror, true);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (!pathPlannerPaths.isEmpty()
@@ -49,7 +49,6 @@ public class NeutralAuto extends AutoRoutine {
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
                     AutoCommands.shootCommand(
                             drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 3.5),
                     // Run back under the trench and shoot
@@ -57,7 +56,7 @@ public class NeutralAuto extends AutoRoutine {
                     AutoCommands.stowHood(shooter),
                     intake.retractIntake().asProxy().withTimeout(0.5),
                     // Drive to the neutral zone
-                    AutoBuilder.followPath(pathPlannerPaths.get(2)),
+                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
                     AutoCommands.shootCommand(
                             drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 10));
     }
