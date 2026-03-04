@@ -38,7 +38,7 @@ public class VisionOdometryCharacterizer {
     /** Static limits for tuning */
     private static final int MINIMUM_VISION_SAMPLE_SIZE = 2000;
 
-    private static final int MINIMUM_ODOMETRY_SAMPLE_SIZE = 3500;
+    private static final int MINIMUM_ODOMETRY_SAMPLE_SIZE = 550;
 
     // Vision standard error for sampling
     private static final double VISION_STANDARD_ERROR_THRESHOLD = 0.03;
@@ -155,7 +155,7 @@ public class VisionOdometryCharacterizer {
         // measurement covariance
         ChassisSpeeds vel = robotState.getFieldRelativeVelocity();
         if (Math.hypot(vel.vxMetersPerSecond, vel.vyMetersPerSecond) > 0.1
-                || Math.abs(vel.omegaRadiansPerSecond) > 0.2) {
+                || Math.abs(vel.omegaRadiansPerSecond) > 0.35) {
             return false;
         }
         // Verify measurement is within typical bounds to ensure we are characterizing expected
