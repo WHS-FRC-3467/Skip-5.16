@@ -27,15 +27,16 @@ import org.littletonrobotics.junction.Logger;
 
 /**
  * Attempts to characterize vision and odometry covariance diagonals for use in WPILib Kalman
- * filter. Recommended for use with controlled motion sequences.
+ * filter. 
  */
 public class VisionOdometryCharacterizer {
     private static final RobotState robotState = RobotState.getInstance();
 
-    /** Static threshold for tuning */
+    /** Thresholds */
+    // Static limit for tuning 
     private static final int MINIMUM_VISION_SAMPLE_SIZE = 2000;
 
-    /** Vision standard error threshold for sampling */
+    // Vision standard error for sampling 
     private static final double VISION_STANDARD_ERROR_THRESHOLD = 0.03;
 
     /** Whether to collect observations */
@@ -51,10 +52,14 @@ public class VisionOdometryCharacterizer {
     private static double m2Y = 0.0;
     private static double m2Theta = 0.0;
 
-    // For simulation testing with configurable noise
+    // Used to filter results and generate/verify variance scaling equation
+    private static double meanDistance = 0.0;
+    private static double meanNumTags = 0.0;
+
+    /** For simulation testing with configurable noise */
     private static final Random NOISE_DISTRIBUTION = new Random();
 
-    /** Odometry process noise tracking */
+    /** Odometry statistics tracking */
     // TODO
 
     public static void enable() {
@@ -68,6 +73,7 @@ public class VisionOdometryCharacterizer {
     public static void reset() {
         nVis = 0;
         meanX = meanY = meanTheta = 0.0;
+        meanDistance = meanNumTags = 0.0;
         m2X = m2Y = m2Theta = 0.0;
     }
 
@@ -136,6 +142,10 @@ public class VisionOdometryCharacterizer {
         meanTheta += dtheta / nVis;
         m2Theta += dtheta * (errTheta - meanTheta);
 
+        // Distance & tags
+        meanDistance += meanDistance / nVis;
+        meanNumTags += meanNumTags / nVis;
+
         if (hasSufficientVisionSamples()) disable();
     }
 
@@ -170,11 +180,12 @@ public class VisionOdometryCharacterizer {
                 || Math.abs(vel.omegaRadiansPerSecond) > 0.1) {
             return false;
         }
-        // Restrict samples to geometry where (d^2 / N) ~ 1 so that measured innovation variance
-        // approximates the baseline standard deviation constant.
-        // Equation from AK template project
-        // https://github.com/Mechanical-Advantage/AdvantageKit/blob/5dbc08a680e8b105c75c18be7c3442029b08e32b/template_projects/sources/vision/src/main/java/frc/robot/subsystems/vision/Vision.java#L123
-        if (observation.avgTagDistance() > 3 || observation.numTagsUsed() < 3) {
+        /** avgTagDistance is used as a proxy for measurement variance since variance scales with distance, 
+         * and numTagsUsed is used as a proxy for number of independent measurements contributing to the 
+         * correction since variance scales with 1/N such that sigma^2 ~ d^2 / N.
+         */
+        if (observation.avgTagDistance() > 4 || observation.avgTagDistance() < 1.5 || 
+        observation.numTagsUsed() < 2 || observation.numTagsUsed() > 4) {
             return false;
         }
         return true;
@@ -204,6 +215,8 @@ public class VisionOdometryCharacterizer {
         Logger.recordOutput(prefix + "VisionSigmaX", getVisionStdDevX());
         Logger.recordOutput(prefix + "VisionSigmaY", getVisionStdDevY());
         Logger.recordOutput(prefix + "VisionSigmaTheta", getVisionStdDevTheta());
+        Logger.recordOutput(prefix + "VisionSigmaDistance", meanDistance);
+        Logger.recordOutput(prefix + "VisionSigmaNumTags", meanNumTags);
         Logger.recordOutput(prefix + "BiasX", meanX);
         Logger.recordOutput(prefix + "BiasY", meanY);
         Logger.recordOutput(prefix + "BiasTheta", meanTheta);
