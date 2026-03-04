@@ -37,7 +37,12 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 public class PoseEstimator {
     public static record VisionPoseObservation(
-            double timestampSeconds, Pose2d robotPose, double linearStdDev, double angularStdDev) {}
+            double timestampSeconds,
+            Pose2d robotPose,
+            double avgTagDistance,
+            int numTagsUsed,
+            double linearStdDev,
+            double angularStdDev) {}
 
     private static final double DEFAULT_ODOMETRY_BUFFER_SIZE_SECONDS = 2;
 
@@ -126,8 +131,6 @@ public class PoseEstimator {
         Pose2d newOdometryPose = odometry.odometryPose();
 
         Twist2d twist = lastOdometryPose.log(newOdometryPose);
-        // Utility listener characterizing odometry measurement variance for Kalman gain tuning
-        VisionOdometryCharacterizer.recordOdometryTwist(observation.timestamp().in(Seconds), twist);
 
         estimatedPose = estimatedPose.exp(twist);
     }
@@ -206,10 +209,13 @@ public class PoseEstimator {
 
         Pose2d oldPose = estimatedPose.plus(poseDeltaThenToNow.inverse());
         Pose2d newVisionPose = observation.robotPose;
-        // Utility listener characterizing vision measurement deviation from state prediction for
-        // Kalman gain tuning
-        VisionOdometryCharacterizer.recordVisionCorrection(
-                observation.timestampSeconds, oldPose, newVisionPose);
+        // Utility listener characterizing vision measurement deviation from state
+        // prediction for Kalman gain tuning
+        VisionOdometryCharacterizer.recordVisionCorrection(oldPose, observation);
+        // Utility listener characterizing odometry prediction deviation from high
+        // confidence "vision ground truth" measurement for Kalman gain tuning
+        VisionOdometryCharacterizer.recordOdometryCorrection(
+                odometryPose().plus(poseDeltaThenToNow.inverse()), observation);
 
         double visionLinearVariance = observation.linearStdDev * observation.linearStdDev;
         double visionAngularVariance = observation.angularStdDev * observation.angularStdDev;
@@ -256,7 +262,6 @@ public class PoseEstimator {
         Transform2d unscaledVisionCorrection = new Transform2d(oldPose, newVisionPose);
 
         // Scale the vision correction by the Kalman gain
-
         var scaledVisionCorrectionVector =
                 visionKalmanGain.times(
                         VecBuilder.fill(
