@@ -239,12 +239,6 @@ public class RobotContainer {
                                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                                 indexer.stopCommand(),
                                 tower.stopCommand()));
-
-        // Hold to trim flywheel speed up/down by ~ 2 RPS/sec while shooting. Driver trim
-        // adjustments persist until dashboard value changes or robot power cycle.
-        controller.y().and(controller.rightTrigger()).onTrue(shooter.trimFlywheelSpeedUp());
-        controller.a().and(controller.rightTrigger()).onTrue(shooter.trimFlywheelSpeedDown());
-
         operatorController
                 .a()
                 .whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));
