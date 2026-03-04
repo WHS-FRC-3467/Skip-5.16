@@ -23,7 +23,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
-
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -31,7 +30,6 @@ import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
-
 import java.util.function.Supplier;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
@@ -50,6 +48,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     private final LoggedTrigger isExtended;
     private final LoggedTrigger isRetracted;
+    private final LoggedTrigger isCycleComplete;
+    private int shuffleCount;
+    private double initialShuffleLinearVelocity = 0.25;
+    private double shuffleLinearVelocityMultiplier =
+            0.1; // Multiplies shuffle count to add to the new linear velocity
 
     private final TrapezoidProfile fastMotionProfiler =
             new TrapezoidProfile(
@@ -61,6 +64,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
             new TrapezoidProfile(
                     new Constraints(
                             SLOW_MPS.get(),
+                            IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
+    private TrapezoidProfile shuffleMotionProfiler =
+            new TrapezoidProfile(
+                    new Constraints(
+                            initialShuffleLinearVelocity,
                             IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
 
     private State setpointState = new State();
@@ -96,6 +104,15 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                 MathUtil.isNear(
                                         IntakeLinearConstants.MIN_DISTANCE.in(Meters)
                                                 + Inches.of(2.0).in(Meters),
+                                        intakeLinearIO.getLinearPosition().in(Meters),
+                                        IntakeLinearConstants.TOLERANCE.in(Meters)));
+        isCycleComplete =
+                new LoggedTrigger(
+                        "IntakeSuperstructure/IsCycleComplete",
+                        () ->
+                                MathUtil.isNear(
+                                        IntakeLinearConstants.MIN_DISTANCE.in(Meters)
+                                                + Inches.of(3.0).in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
                                         IntakeLinearConstants.TOLERANCE.in(Meters)));
     }
@@ -242,28 +259,46 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return slowRetract(MetersPerSecond.of(SLOW_MPS.get()));
     }
 
+    /**
+     * Creates an experimental command to shuffle the intake. If the intake is already retracted,
+     * extend it. Then, retract 6 inches, and then extend 3 inches. If the intake is at the end of
+     * the shuffle cycle when this command is called, extend intake before shuffling. Each cycle
+     * increases the speed.
+     *
+     * @return a Command that is a "step" in the intake shuffle.
+     */
     public Command shuffleStep() {
         return Commands.sequence(
-                        Commands.either(extendIntake(), Commands.none(), isRetracted),
-                        moveByInches(-6, slowMotionProfiler, true, 0.6, "Shuffle Retract"),
-                        moveByInches(3, slowMotionProfiler, false, 0.0, "Shuffle Extend"))
+                        // Extend intake if there is no more space to retract
+                        Commands.either(
+                                Commands.sequence(
+                                        extendIntake(),
+                                        Commands.runOnce(
+                                                () -> {
+                                                    // After each cycle, up the max
+                                                    // linear velocity
+                                                    shuffleCount++;
+                                                    shuffleMotionProfiler =
+                                                            createProfiler(
+                                                                    initialShuffleLinearVelocity
+                                                                            + shuffleLinearVelocityMultiplier
+                                                                                    * shuffleCount);
+                                                }),
+                                        Commands.waitSeconds(1.2)),
+                                Commands.none(),
+                                isCycleComplete),
+                        moveByInches(-6, shuffleMotionProfiler, true, 0.6, "Shuffle Retract"),
+                        moveByInches(3, shuffleMotionProfiler, false, 0.0, "Shuffle Extend"))
                 .withName("The Brendan Shuffle");
     }
 
-    public Command linearCoast() {
-        return this.runOnce(intakeLinearIO::runCoast).withName("Linear Coast");
-    }
-
-    public Command homeLinear() {
-        return Commands.sequence(
-                        Commands.runOnce(() -> runProfile = false),
-                        this.runOnce(() -> intakeLinearIO.runDutyCycle(0.25, true)),
-                        this.idle())
-                .finallyDo(
-                        () -> {
-                            intakeLinearIO.setEncoderPosition(Rotations.of(3.56));
-                            runProfile = true;
-                        });
+    /**
+     * Resets the shuffle counter, which is used to speed up the intake cycling.
+     *
+     * @return A runOnce() Command that resets the shuffle cycle count to zero
+     */
+    public Command resetShuffleCounter() {
+        return Commands.runOnce(() -> shuffleCount = 0);
     }
 
     @Override
