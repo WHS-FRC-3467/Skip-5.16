@@ -243,7 +243,7 @@ public class RobotContainer {
         // Hold to trim flywheel speed up/down by ~ 2 RPS/sec while shooting. Driver trim
         // adjustments persist until dashboard value changes or robot power cycle.
         controller.y().and(controller.rightTrigger()).onTrue(shooter.trimFlywheelSpeedUp());
-        controller.a().and(controller.rightTrigger()).onFalse(shooter.trimFlywheelSpeedDown());
+        controller.a().and(controller.rightTrigger()).onTrue(shooter.trimFlywheelSpeedDown());
 
         operatorController
                 .a()
@@ -253,7 +253,7 @@ public class RobotContainer {
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
         operatorController.x().onTrue(intake.retractIntake());
         operatorController.povUp().onTrue(shooter.trimFlywheelSpeedUp());
-        operatorController.povDown().onFalse(shooter.trimFlywheelSpeedDown());
+        operatorController.povDown().onTrue(shooter.trimFlywheelSpeedDown());
 
         // robotState.enteringTrench.whileTrue(
         //         shooter.forceHoodAngle(Rotations.zero())
