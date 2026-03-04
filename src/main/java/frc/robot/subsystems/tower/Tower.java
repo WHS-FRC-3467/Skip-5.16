@@ -24,11 +24,9 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.devices.DistanceSensor;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
-import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
@@ -61,9 +59,6 @@ public class Tower extends SubsystemBase {
 
     private final DistanceControlledMechanism<FlywheelMechanism<?>> io;
 
-    private final DistanceSensor laserCAN1 = TowerConstants.getLaserCAN1();
-    private final DistanceSensor laserCAN2 = TowerConstants.getLaserCAN2();
-
     private final Command tuningModeCommand =
             Commands.sequence(
                             Commands.runOnce(this::cancelCurrentCommandIfAny),
@@ -88,25 +83,6 @@ public class Tower extends SubsystemBase {
                 .asProxy();
     }
 
-    public final LoggedTrigger laserCAN1Tripped =
-            new LoggedTrigger(
-                    TowerConstants.LASERCAN1_NAME,
-                    () ->
-                            laserCAN1.betweenDistance(
-                                    TowerConstants.MINIMUM_TRIP_DISTANCE,
-                                    TowerConstants.MAXIMUM_TRIP_DISTANCE));
-    public final LoggedTrigger laserCAN2Tripped =
-            new LoggedTrigger(
-                    TowerConstants.LASERCAN2_NAME,
-                    () ->
-                            laserCAN2.betweenDistance(
-                                    TowerConstants.MINIMUM_TRIP_DISTANCE,
-                                    TowerConstants.MAXIMUM_TRIP_DISTANCE));
-
-    public final LoggedTrigger isStaged =
-            new LoggedTrigger(
-                    TowerConstants.NAME + "/IsStaged", laserCAN1Tripped.or(laserCAN2Tripped));
-
     /**
      * Constructs a new Tower subsystem with the specified flywheel mechanism.
      *
@@ -121,8 +97,6 @@ public class Tower extends SubsystemBase {
     public void periodic() {
         LoggerHelper.recordCurrentCommand(this.getName(), this);
         io.periodic();
-        laserCAN1.periodic();
-        laserCAN2.periodic();
     }
 
     /**
