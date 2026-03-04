@@ -302,6 +302,12 @@ public class VisionSubsystem extends SubsystemBase {
         SmartDashboard.putBoolean(
                 "Vision Characterization Sufficient Samples",
                 VisionOdometryCharacterizer.hasSufficientVisionSamples());
+        SmartDashboard.putNumber(
+                "Odometry Characterization Sample Count",
+                VisionOdometryCharacterizer.getOdoSampleSize());
+        SmartDashboard.putBoolean(
+                "Odometry Characterization Sufficient Samples",
+                VisionOdometryCharacterizer.hasSufficientOdoSamples());
     }
 
     private double getAvgDistanceMeters(List<PhotonTrackedTarget> targets) {
