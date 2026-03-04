@@ -11,13 +11,15 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.lib.util.AutoRoutine;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Autonomous routine for testing wheel slip characteristics by ramping motor voltage until a target
+ * Autonomous routine for testing wheel slip characteristics by ramping motor current until a target
  * velocity is reached. Useful for understanding traction limits.
  */
 public class WheelSlipAuto extends AutoRoutine {
@@ -46,13 +48,13 @@ public class WheelSlipAuto extends AutoRoutine {
     }
 
     /**
-     * Creates a command that ramps motor voltage linearly until the drivetrain reaches a target
-     * velocity. Logs the applied voltage to help analyze wheel slip characteristics.
+     * Creates a command that ramps motor current linearly until the drivetrain reaches a target
+     * velocity. Logs the applied current to help analyze wheel slip characteristics.
      *
      * @param drive the drive subsystem to ramp
-     * @param rampRate the rate of voltage increase per second (volts/second)
+     * @param rampRate the rate of current increase per second (volts/second)
      * @param speedLimit the target angular velocity to reach before stopping
-     * @return a command that ramps voltage until the speed limit is reached
+     * @return a command that ramps current until the speed limit is reached
      */
     private static Command rampUntilVelocity(
             Drive drive, double rampRate, AngularVelocity speedLimit) {
@@ -70,6 +72,7 @@ public class WheelSlipAuto extends AutoRoutine {
                                     double current = timer.get() * rampRate;
                                     drive.runCharacterization(current);
                                     Logger.recordOutput("Wheel Slip Current: ", current);
-                                })));
+                                })),
+                Commands.runOnce(() -> drive.stop()));
     }
 }
