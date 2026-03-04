@@ -29,8 +29,6 @@ import org.littletonrobotics.junction.Logger;
  * Attempts to semi-autonomously characterize both vision and odometry covariance diagonals for use
  * in WPILib Kalman filter gain calculation. This utility produces baseline estimates that can be
  * further tuned empirically as necessary.
- *
- * <p>TODO: complete docstring. move multiple values and thresholds into constants. test on robot.
  */
 public class VisionOdometryCharacterizer {
     private static final RobotState robotState = RobotState.getInstance();
@@ -254,7 +252,8 @@ public class VisionOdometryCharacterizer {
      * such that the delta between the odometry pose and vision pose is representative of odometry
      * noise.
      *
-     * <p>TODO: complete docstring. udpate model to include camera FPS normalization. verify math.
+     * <p>TODO: Complete docstring. Explore udpating model to include camera FPS normalization.
+     * Verify math.
      */
     private static boolean validOdometryMeasurement(
             Pose2d odometryPoseAtTimestamp, VisionPoseObservation observation) {
@@ -319,6 +318,7 @@ public class VisionOdometryCharacterizer {
         m2VisX = m2VisY = m2VisTheta = 0.0;
         meanOdoX = meanOdoY = meanOdoTheta = 0.0;
         m2OdoX = m2OdoY = m2OdoTheta = 0.0;
+        lastOdoPoseForP = lastVisPoseForP = null;
     }
 
     public static boolean isEnabled() {
@@ -328,7 +328,7 @@ public class VisionOdometryCharacterizer {
     /** Generate noise in sim to verify functionality before deployment. */
     private static double generateSimNoise() {
         if (Robot.isSimulation()) {
-            return NOISE_DISTRIBUTION.nextGaussian(0.0, 0.02);
+            return NOISE_DISTRIBUTION.nextGaussian() * 0.02;
         } else {
             return 0.0;
         }
