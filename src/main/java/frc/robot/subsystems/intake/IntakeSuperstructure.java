@@ -292,6 +292,22 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 .withName("The Brendan Shuffle");
     }
 
+    public Command linearCoast() {
+        return this.runOnce(intakeLinearIO::runCoast).withName("Linear Coast");
+    }
+
+    public Command homeLinear() {
+        return Commands.sequence(
+                        Commands.runOnce(() -> runProfile = false),
+                        this.runOnce(() -> intakeLinearIO.runDutyCycle(0.25, true)),
+                        this.idle())
+                .finallyDo(
+                        () -> {
+                            intakeLinearIO.setEncoderPosition(Rotations.of(3.56));
+                            runProfile = true;
+                        });
+    }
+
     /**
      * Resets the shuffle counter, which is used to speed up the intake cycling.
      *
