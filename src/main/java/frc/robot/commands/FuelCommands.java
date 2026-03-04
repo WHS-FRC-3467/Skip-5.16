@@ -38,19 +38,6 @@ import lombok.NoArgsConstructor;
 public class FuelCommands {
 
     /**
-     * Returns a command that feeds the tower until one of the laserCANs is tripped to increase
-     * hopper capacity. Does nothing if a laserCAN is already tripped.
-     *
-     * @param indexer the indexer subsystem
-     * @return a command that feeds the tower until a laserCAN is tripped
-     */
-    public static Command stageFuel(IndexerSuperstructure indexer, Tower tower) {
-        return Commands.parallel(indexer.feed(), tower.feed())
-                .until(tower.isStaged)
-                .withName("StageFuel");
-    }
-
-    /**
      * Creates a command sequence that attempts to shoot fuel from the robot for duration.
      * DYNAMICALLY CORRECTS shooter setpoints to ACTUAL CURRENT POSE (bringing it from rest or
      * trimming error associated with static spin up) and only pulls fuel through the feeder when
