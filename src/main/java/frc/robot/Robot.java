@@ -203,6 +203,9 @@ public class Robot extends LoggedRobot {
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(0);
         }
+
+        // Safety Hood retract
+        CommandScheduler.getInstance().schedule(robotContainer.shooter.stopAndStow());
     }
 
     /**
