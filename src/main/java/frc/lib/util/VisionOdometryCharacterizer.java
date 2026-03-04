@@ -130,8 +130,8 @@ public class VisionOdometryCharacterizer {
         m2VisTheta += dtheta * (errTheta - meanVisTheta);
 
         // Distance & tags
-        meanVisDistance += meanVisDistance / nVis;
-        meanNumVisTags += meanNumVisTags / nVis;
+        meanVisDistance += (observation.avgTagDistance() - meanVisDistance) / nVis;
+        meanNumVisTags += (observation.numTagsUsed() - meanNumVisTags) / nVis;
 
         if (hasSufficientVisionSamples() && hasSufficientOdoSamples()) disable();
     }
