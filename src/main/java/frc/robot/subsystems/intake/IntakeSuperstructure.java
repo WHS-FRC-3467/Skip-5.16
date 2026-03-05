@@ -37,7 +37,7 @@ import java.util.function.Supplier;
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0); // 70 for auto
 
     private static final LoggedTunableNumber ROLLER_AUTO_INTAKE_RPS =
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/AutoIntakeRPS", 70.0);
@@ -54,10 +54,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private final LoggedTrigger isExtended;
     private final LoggedTrigger isRetracted;
     private final LoggedTrigger isCycleComplete;
-    private int shuffleCount;
-    private double initialShuffleLinearVelocity = 0.25;
-    private double shuffleLinearVelocityMultiplier =
-            0.1; // Multiplies shuffle count to add to the new linear velocity
+
+    private final LinearVelocity shuffleVelocity = MetersPerSecond.of(0.8);
 
     private final TrapezoidProfile fastMotionProfiler =
             new TrapezoidProfile(
@@ -73,7 +71,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private TrapezoidProfile shuffleMotionProfiler =
             new TrapezoidProfile(
                     new Constraints(
-                            initialShuffleLinearVelocity,
+                            shuffleVelocity.in(MetersPerSecond),
                             IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
 
     private State setpointState = new State(IntakeLinearConstants.MIN_DISTANCE.in(Meters), 0.0);
@@ -291,20 +289,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.sequence(
                         // Extend intake if there is no more space to retract
                         Commands.either(
-                                Commands.sequence(
-                                        extendIntake(),
-                                        Commands.waitUntil(isExtended),
-                                        Commands.runOnce(
-                                                () -> {
-                                                    // After each cycle, up the max
-                                                    // linear velocity
-                                                    shuffleCount++;
-                                                    shuffleMotionProfiler =
-                                                            createProfiler(
-                                                                    initialShuffleLinearVelocity
-                                                                            + shuffleLinearVelocityMultiplier
-                                                                                    * shuffleCount);
-                                                })),
+                                Commands.sequence(extendIntake(), Commands.waitUntil(isExtended)),
                                 Commands.none(),
                                 isCycleComplete),
                         moveByInches(
@@ -339,15 +324,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                             intakeLinearIO.setEncoderPosition(Rotations.of(3.56));
                             runProfile = true;
                         });
-    }
-
-    /**
-     * Resets the shuffle counter, which is used to speed up the intake cycling.
-     *
-     * @return A runOnce() Command that resets the shuffle cycle count to zero
-     */
-    public Command resetShuffleCounter() {
-        return Commands.runOnce(() -> shuffleCount = 0);
     }
 
     @Override

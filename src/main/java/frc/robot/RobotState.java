@@ -190,13 +190,7 @@ public class RobotState {
         if (DriverStation.isDisabled()) return;
 
         if (drivetrainAngledTrigger.getAsBoolean()) {
-            observation
-                    .gyroAngle()
-                    .ifPresent(
-                            angle ->
-                                    resetPose(
-                                            new Pose2d(
-                                                    getEstimatedPose().getTranslation(), angle)));
+            poseEstimator.addGyroObservation(observation);
             return;
         }
 
