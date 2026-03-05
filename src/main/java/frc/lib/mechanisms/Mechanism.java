@@ -49,18 +49,18 @@ public abstract class Mechanism<T extends MotorIO> {
         this.io = io;
     }
 
-    private static final class TunablePidConfig {
-        private final PIDSlot slot;
-        private final LoggedTunableNumber kp;
-        private final LoggedTunableNumber ki;
-        private final LoggedTunableNumber kd;
-        private final LoggedTunableNumber ka;
-        private final LoggedTunableNumber kv;
-        private final LoggedTunableNumber kg;
-        private final LoggedTunableNumber ks;
-        private final int id;
+    public static final class TunablePidConfig {
+        public final PIDSlot slot;
+        public final LoggedTunableNumber kp;
+        public final LoggedTunableNumber ki;
+        public final LoggedTunableNumber kd;
+        public final LoggedTunableNumber ka;
+        public final LoggedTunableNumber kv;
+        public final LoggedTunableNumber kg;
+        public final LoggedTunableNumber ks;
+        public final int id;
 
-        private TunablePidConfig(
+        public TunablePidConfig(
                 PIDSlot slot,
                 LoggedTunableNumber kp,
                 LoggedTunableNumber ki,
@@ -168,8 +168,8 @@ public abstract class Mechanism<T extends MotorIO> {
      *
      * @param dutyCycle Fractional output between 0 and 1.
      */
-    public void runDutyCycle(double dutyCycle) {
-        io.runDutyCycle(dutyCycle);
+    public void runDutyCycle(double dutyCycle, boolean ignoringSoftLimits) {
+        io.runDutyCycle(dutyCycle, ignoringSoftLimits);
     }
 
     /**
@@ -180,6 +180,16 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void runPosition(Angle position, PIDSlot slot) {
         io.runPosition(position, slot);
+    }
+
+    /**
+     * Runs the mechanism to a specific position without a motion profile.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     */
+    public void runUnprofiledPosition(Angle position, PIDSlot slot) {
+        io.runUnprofiledPosition(position, slot);
     }
 
     /**
@@ -220,6 +230,15 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public Current getSupplyCurrent() {
         return inputs.supplyCurrent;
+    }
+
+    /**
+     * Gets the applied voltage draw of the mechanism.
+     *
+     * @return The applied voltage
+     */
+    public Voltage getAppliedVoltage() {
+        return inputs.appliedVoltage;
     }
 
     /**

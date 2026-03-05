@@ -18,7 +18,6 @@ package frc.robot.subsystems.drive;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -43,7 +42,7 @@ public class GyroIOPigeon2 implements GyroIO {
 
     /** Constructs a new GyroIOPigeon2 instance and configures the Pigeon 2 gyro. */
     public GyroIOPigeon2() {
-        pigeon.getConfigurator().apply(new Pigeon2Configuration());
+        pigeon.getConfigurator().apply(DriveConstants.PIGEON_CONFIGURATION);
         pigeon.getConfigurator().setYaw(0.0);
         yaw.setUpdateFrequency(Drive.ODOMETRY_FREQUENCY);
         pitch.setUpdateFrequency(Drive.ODOMETRY_FREQUENCY);

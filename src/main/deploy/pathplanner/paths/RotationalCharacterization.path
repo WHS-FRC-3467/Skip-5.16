@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.5,
-        "y": 7.0
+        "x": 2.344094151212553,
+        "y": 7.560784593437946
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.5,
-        "y": 5.524992867332383
+        "x": 1.8969584674966815,
+        "y": 6.10684483753557
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "CharacterizationStart"
     },
     {
       "anchor": {
-        "x": 6.380955777460769,
-        "y": 4.326119828815978
+        "x": 2.344094151212553,
+        "y": 4.067346647646221
       },
       "prevControl": {
-        "x": 6.380955777460769,
-        "y": 5.762544094381979
+        "x": 1.9926160887056734,
+        "y": 5.91804264929492
       },
       "nextControl": null,
       "isLocked": false,
@@ -38,12 +38,12 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 480.0,
+    "maxAngularAcceleration": 600.0,
     "nominalVoltage": 12.0,
-    "unlimited": true
+    "unlimited": false
   },
   "goalEndState": {
     "velocity": 0,
@@ -55,5 +55,5 @@
     "velocity": 0,
     "rotation": -90.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

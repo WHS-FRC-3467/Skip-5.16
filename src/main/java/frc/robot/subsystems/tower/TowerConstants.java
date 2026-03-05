@@ -18,7 +18,7 @@ package frc.robot.subsystems.tower;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Millimeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
 import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
@@ -40,6 +40,7 @@ import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
@@ -51,8 +52,9 @@ import frc.robot.Robot;
 public class TowerConstants {
     public static String NAME = "Tower";
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(2 * Math.PI);
-    public static final AngularAcceleration MAX_ACCELERATION = MAX_VELOCITY.per(Second);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(116.6);
+    public static final AngularAcceleration MAX_ACCELERATION =
+            RotationsPerSecondPerSecond.of(406.0);
 
     private static final double GEARING = (36.0 / 12.0);
 
@@ -143,7 +145,7 @@ public class TowerConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return new Tower(mechanism);
+        return new Tower(new DistanceControlledMechanism<>(mechanism, MAXIMUM_TRIP_DISTANCE));
     }
 
     // Return an IO implementation of distance sensor IO based on current robot state

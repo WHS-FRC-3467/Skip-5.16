@@ -22,11 +22,14 @@ import au.grapplerobotics.interfaces.LaserCanInterface.Measurement;
 import au.grapplerobotics.interfaces.LaserCanInterface.RangingMode;
 import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
 import au.grapplerobotics.interfaces.LaserCanInterface.TimingBudget;
+
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.Device;
 import frc.lib.util.LaserCANConfigurator;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -120,6 +123,7 @@ public class DistanceSensorIOLaserCAN implements DistanceSensorIO {
             return;
         }
 
+        invalidReadingAlert.set(false);
         inputs.ambientSignal = measure.ambient;
         inputs.distance = Millimeters.of(measure.distance_mm);
     }

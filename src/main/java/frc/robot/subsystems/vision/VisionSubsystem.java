@@ -15,15 +15,20 @@
 
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.Radians;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
+import frc.lib.util.VisionOdometryCharacterizer;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
+import frc.robot.subsystems.drive.DriveConstants;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,16 +56,16 @@ public class VisionSubsystem extends SubsystemBase {
     public static final String LOG_PREFIX = "VisionProcessor/";
 
     /** Baseline linear standard deviation used for vision observations. */
-    public static final double LINEAR_STDDEV_BASELINE = 0.4;
+    public static final double LINEAR_STDDEV_BASELINE = 0.01;
 
     /** Baseline angular standard deviation used for vision observations. */
-    public static final double ANGULAR_STDDEV_BASELINE = 0.4;
+    public static final double ANGULAR_STDDEV_BASELINE = 0.01;
 
     /** Maximum allowable height (Z-axis) of a detected pose to be considered valid. */
     public static final double MAX_Z_METERS = 0.75;
 
     /** Maximum allowable distance from a target to be considered valid. */
-    public static final double MAX_DISTANCE_METERS = 10;
+    public static final double MAX_DISTANCE_METERS = 4.0;
 
     /** Maximum ambiguity ratio allowed in a result */
     public static final double MAX_AMBIGUITY = 0.2;
@@ -78,7 +83,7 @@ public class VisionSubsystem extends SubsystemBase {
      * Quickly checks whether a {@link PhotonPipelineResult} is likely to be useful before full
      * processing.
      *
-     * <p>Rejects results with no targets, ambiguous poses above 0.2, or targets farther than 10
+     * <p>Rejects results with no targets, ambiguous poses above 0.2, or targets farther than 4
      * meters.
      *
      * @param result the pipeline result to pre-filter
@@ -89,7 +94,19 @@ public class VisionSubsystem extends SubsystemBase {
             return false;
         }
 
+        if (RobotState.getInstance().getFieldRelativeVelocity().omegaRadiansPerSecond > 2.0) {
+            return false;
+        }
+
         if (result.getMultiTagResult().isPresent()) {
+            if (result.getTargets().stream()
+                            .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
+                            .average()
+                            .getAsDouble()
+                    > MAX_DISTANCE_METERS) {
+                return false;
+            }
+
             return true;
         }
 
@@ -114,7 +131,15 @@ public class VisionSubsystem extends SubsystemBase {
         double x = pose.getX();
         double y = pose.getY();
         double z = pose.getZ();
-        return !(z > MAX_Z_METERS || x < 0.0 || x > FIELD_LENGTH || y < 0.0 || y > FIELD_WIDTH);
+        double pitch = Math.abs(pose.getRotation().getY());
+        double roll = Math.abs(pose.getRotation().getX());
+        return !(z > MAX_Z_METERS
+                || x < 0.0
+                || x > FIELD_LENGTH
+                || y < 0.0
+                || y > FIELD_WIDTH
+                || pitch > DriveConstants.ANGLED_TOLERANCE.in(Radians)
+                || roll > DriveConstants.ANGLED_TOLERANCE.in(Radians));
     }
 
     private final RobotState robotState = RobotState.getInstance();
@@ -203,6 +228,7 @@ public class VisionSubsystem extends SubsystemBase {
                         (Math.pow(poseRecord.averageDistanceMeters(), 2.0)
                                         / result.getTargets().size())
                                 * cameras[c].getProperties().stdDevFactor();
+
                 double linearStdDev = LINEAR_STDDEV_BASELINE * stdDevFactor;
                 double angularStdDev = ANGULAR_STDDEV_BASELINE * stdDevFactor;
 
@@ -210,6 +236,8 @@ public class VisionSubsystem extends SubsystemBase {
                         new VisionPoseObservation(
                                 result.getTimestampSeconds(),
                                 poseRecord.pose().toPose2d(),
+                                poseRecord.averageDistanceMeters(),
+                                poseRecord.tagsUsed().size(),
                                 linearStdDev,
                                 angularStdDev));
 
@@ -266,6 +294,20 @@ public class VisionSubsystem extends SubsystemBase {
                     cameraLogPrefix + "/TagPoses/Rejected",
                     tagPosesRejected.toArray(Pose3d[]::new));
         }
+
+        VisionOdometryCharacterizer.printResults();
+        SmartDashboard.putNumber(
+                "Vision Characterization Sample Count",
+                VisionOdometryCharacterizer.getVisionSampleSize());
+        SmartDashboard.putBoolean(
+                "Vision Characterization Sufficient Samples",
+                VisionOdometryCharacterizer.hasSufficientVisionSamples());
+        SmartDashboard.putNumber(
+                "Odometry Characterization Sample Count",
+                VisionOdometryCharacterizer.getOdoSampleSize());
+        SmartDashboard.putBoolean(
+                "Odometry Characterization Sufficient Samples",
+                VisionOdometryCharacterizer.hasSufficientOdoSamples());
     }
 
     private double getAvgDistanceMeters(List<PhotonTrackedTarget> targets) {

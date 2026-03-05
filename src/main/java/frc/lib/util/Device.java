@@ -47,6 +47,8 @@ public sealed interface Device {
                 ids.put(bus, idSet);
             } else if (ids.get(bus).contains(id)) {
                 throw new IllegalArgumentException("CAN ID Conflict on ID " + id);
+            } else {
+                ids.get(bus).add(id);
             }
 
             this.id = id;

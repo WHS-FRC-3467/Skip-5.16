@@ -14,64 +14,75 @@
  */
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.RobotState;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
+import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
-import java.util.function.BooleanSupplier;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Utility class for FUEL manipulation commands anticipated for use in teleop or auto that require
+ * Utility class for FUEL manipulation commands anticipated for use in teleop OR auto that require
  * coordination of multiple subsystems.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FuelCommands {
 
     /**
-     * Returns a command that feeds the tower until one of the laserCANs is tripped to increase
-     * hopper capacity. Does nothing if a laserCAN is already tripped.
+     * Creates a command sequence that attempts to shoot fuel from the robot for duration.
+     * DYNAMICALLY CORRECTS shooter setpoints to ACTUAL CURRENT POSE (bringing it from rest or
+     * trimming error associated with static spin up) and only pulls fuel through the feeder when
+     * ready (i.e. proper shooter state + robot alignment), then stops indexer and tower after
+     * duration. Shooter remains spun-up.
      *
-     * @param indexer the indexer subsystem
-     * @return a command that feeds the tower until a laserCAN is tripped
-     */
-    public static Command stageFuel(IndexerSuperstructure indexer, Tower tower) {
-        return Commands.parallel(indexer.feed(), tower.feed())
-                .until(tower.isStaged)
-                .withName("StageFuel");
-    }
-
-    /**
-     * Creates a command sequence that attempts to shoot fuel from the robot for duration. Spins up
-     * the shooter, only pulls fuel through the feeder when ready (i.e. proper shooter state +
-     * alignment), then stops indexer and tower after duration. Shooter remains spun-up. If shooting
-     * is disrupted during duration because shooting readiness drops, attempt a flywheel/hood
-     * adjustment and, if successful, re-commence shooting within the remaining window. Alignment
-     * correction must be handled by external means. Unconditionally stops shot attempts after
+     * <p>If shooting is disrupted during duration because shooting readiness drops or robot
+     * misalignment is detected, attempt a flywheel/hood adjustment and, if successful, re-commence
+     * shooting within the remaining window. See {@code ShooterSuperstructure.shootFuel()}.
+     * Alignment correction is not attempted here. Unconditionally STOPS SHOTS attempts after
      * duration.
      *
      * @param indexer the indexer subsystem
      * @param tower the tower subsystem
      * @param shooter the shooter superstructure
-     * @param canShoot secondary check on whether the robot is properly aligned to the target,
-     *     independent of whether the shooter is at the proper state
      * @param duration the approximate duration in seconds to run the shooting sequence
      * @return a command that shoots fuel and then stops the indexer / tower after the given
      *     duration
      */
-    public static Command shootFuel(
+    public static Command prepareShot(
             IndexerSuperstructure indexer,
             Tower tower,
+            IntakeSuperstructure intake,
             ShooterSuperstructure shooter,
-            BooleanSupplier canShoot,
+            LinearVelocity retractSpeed,
             double duration) {
-        Command feed =
-                Commands.parallel(indexer.shoot(), tower.shoot())
-                        .until(() -> !canShoot.getAsBoolean());
-
-        return shooter.prepareShot(Commands.waitUntil(canShoot).andThen(feed))
-                .withTimeout(duration);
+        return Commands.parallel(
+                        shooter.spinUpShooter(),
+                        intake.slowRetract(retractSpeed).asProxy(),
+                        Commands.parallel(
+                                        indexer.shoot()
+                                                .withInterruptBehavior(
+                                                        InterruptionBehavior.kCancelIncoming),
+                                        tower.shoot())
+                                .onlyWhile(
+                                        shooter.readyToShoot.and(
+                                                RobotState.getInstance().facingTarget))
+                                .repeatedly())
+                .withTimeout(duration)
+                .finallyDo(
+                        () -> {
+                            CommandScheduler.getInstance()
+                                    .schedule(shooter.setFlywheelSpeed(RotationsPerSecond.zero()));
+                            CommandScheduler.getInstance()
+                                    .schedule(shooter.setHoodAngle(Rotations.zero()));
+                        });
     }
 }

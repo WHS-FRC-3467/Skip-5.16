@@ -54,7 +54,7 @@ public class IntakeTest {
 
     @Test // marks this method as a test
     void intake() {
-        TestUtil.runTest(intake.extendIntake(), 2, intake);
+        TestUtil.runTest(intake.intake(), 4, intake);
         try {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
             assertTrue(intake.isIntaking());
