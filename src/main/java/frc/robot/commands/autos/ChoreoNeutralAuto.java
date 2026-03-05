@@ -15,16 +15,15 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
-
 import java.util.List;
 
 public class ChoreoNeutralAuto extends AutoRoutine {
@@ -56,16 +55,15 @@ public class ChoreoNeutralAuto extends AutoRoutine {
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    // AutoCommands.shootCommand(
-                    //         drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1),
-                    // 3.5),
+                    AutoCommands.shootCommand(
+                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 3.5),
                     // Run back under the trench and shoot
                     // Initialize intake and hood to starting positions for teleop
-                    // AutoCommands.stowHood(shooter),
-                    // intake.retractIntake().asProxy().withTimeout(0.5),
+                    AutoCommands.stowHood(shooter),
+                    intake.retractIntake().asProxy().withTimeout(0.5),
                     // Drive to the neutral zone
-                    AutoBuilder.followPath(pathPlannerPaths.get(1)));
-        // AutoCommands.shootCommand(
-        //         drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 10));
+                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                    AutoCommands.shootCommand(
+                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 10));
     }
 }

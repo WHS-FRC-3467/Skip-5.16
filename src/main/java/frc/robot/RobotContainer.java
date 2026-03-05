@@ -21,7 +21,6 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.events.EventTrigger;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
@@ -30,7 +29,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -57,7 +55,6 @@ import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.RobotSim;
-
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -214,7 +211,7 @@ public class RobotContainer {
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
 
         // D-Pad Up: Force Intake Linear Slide Back
-        controller.povUp().onTrue(intake.retractIntake());
+        controller.leftBumper().onTrue(intake.retractIntake());
 
         // D-Pad Down: Unjam
         controller
@@ -259,6 +256,7 @@ public class RobotContainer {
 
         new EventTrigger("RetractIntake").onTrue(intake.retractIntake());
         new EventTrigger("ExtendIntake").onTrue(intake.intake());
+        new EventTrigger("Spinup").onTrue(shooter.spinUpShooterToHubDistance(Meters.of(3.555)));
     }
 
     /**

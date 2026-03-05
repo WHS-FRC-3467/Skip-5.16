@@ -35,10 +35,10 @@ import java.util.function.Supplier;
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 70.0);
 
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -70.0);
 
     private static final LoggedTunableNumber SLOW_MPS =
             new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowMPS", 0.05);
@@ -50,9 +50,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private final LoggedTrigger isRetracted;
     private final LoggedTrigger isCycleComplete;
     private int shuffleCount;
-    private double initialShuffleLinearVelocity = 0.25;
+    private double initialShuffleLinearVelocity = 0.4;
     private double shuffleLinearVelocityMultiplier =
-            0.1; // Multiplies shuffle count to add to the new linear velocity
+            0.2; // Multiplies shuffle count to add to the new linear velocity
 
     private final TrapezoidProfile fastMotionProfiler =
             new TrapezoidProfile(

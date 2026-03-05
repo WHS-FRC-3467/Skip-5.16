@@ -132,6 +132,29 @@ public class PoseEstimator {
         estimatedPose = estimatedPose.exp(twist);
     }
 
+    /**
+     * Adds a new odometry observation to the pose estimator, ignores everything except gyro, and
+     * updates the estimated pose.
+     *
+     * <p>This method retrieves the last odometry pose, applies the new odometry observation, and
+     * calculates the change in pose (twist) between the last and new odometry poses. The estimated
+     * pose is then updated by applying the calculated twist.
+     *
+     * @param observation The new odometry observation to be added. This observation typically
+     *     contains information about the robot's movement such as displacement and rotation.
+     */
+    public void addGyroObservation(OdometryObservation observation) {
+        Pose2d lastOdometryPose = odometry.odometryPose();
+        odometry.addGyroObservation(observation);
+        Pose2d newOdometryPose = odometry.odometryPose();
+
+        Twist2d twist = lastOdometryPose.log(newOdometryPose);
+        // Utility listener characterizing odometry measurement variance for Kalman gain tuning
+        VisionOdometryCharacterizer.recordOdometryTwist(observation.timestamp().in(Seconds), twist);
+
+        estimatedPose = estimatedPose.exp(twist);
+    }
+
     private void updateOdometryStdDevMultipliersFromSkid(boolean[] badWheels) {
         if (badWheels == null) {
             odometryStdDevMultiplierLinear = 1.0;
