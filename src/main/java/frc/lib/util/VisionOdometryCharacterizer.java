@@ -18,16 +18,29 @@ package frc.lib.util;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
+import frc.robot.Robot;
+import frc.robot.RobotState;
+import java.util.Random;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * Attempts to characterize vision and odometry covariance diagonals for use in WPILib Kalman
- * filter. Recommended for use with controlled motion sequences.
+ * Attempts to semi-autonomously characterize both vision and odometry covariance diagonals for use
+ * in WPILib Kalman filter gain calculation. This utility produces baseline estimates that can be
+ * further tuned empirically as necessary.
  */
 public class VisionOdometryCharacterizer {
-    /** Static threshold for tuning */
-    private static final int MINIMUM_SAMPLE_SIZE = 1000;
+    private static final RobotState robotState = RobotState.getInstance();
+
+    /** Static limits for tuning */
+    private static final int MINIMUM_VISION_SAMPLE_SIZE = 2000;
+
+    private static final int MINIMUM_ODOMETRY_SAMPLE_SIZE = 550;
+
+    // Vision standard error for sampling
+    private static final double VISION_STANDARD_ERROR_THRESHOLD = 0.03;
+    private static final double ODOMETRY_STANDARD_ERROR_THRESHOLD = 0.03;
 
     /** Whether to collect observations */
     private static boolean enabled = false;
@@ -35,175 +48,305 @@ public class VisionOdometryCharacterizer {
     /** Vision statistics tracking */
     private static int nVis = 0;
 
-    private static double meanX = 0.0;
-    private static double meanY = 0.0;
-    private static double meanTheta = 0.0;
-    private static double m2X = 0.0;
-    private static double m2Y = 0.0;
-    private static double m2Theta = 0.0;
+    private static double meanVisX = 0.0;
+    private static double meanVisY = 0.0;
+    private static double meanVisTheta = 0.0;
+    private static double m2VisX = 0.0;
+    private static double m2VisY = 0.0;
+    private static double m2VisTheta = 0.0;
 
-    /** Odometry process noise tracking */
+    // Used to filter results and generate/verify variance scaling equation
+    private static double meanVisDistance = 0.0;
+    private static double meanNumVisTags = 0.0;
+
+    /** Odometry statistics tracking */
     private static int nOdo = 0;
 
-    private static double meanVx = 0.0;
-    private static double meanVy = 0.0;
-    private static double meanOmega = 0.0;
-    private static double m2Vx = 0.0;
-    private static double m2Vy = 0.0;
-    private static double m2Omega = 0.0;
+    private static double meanOdoX = 0.0;
+    private static double meanOdoY = 0.0;
+    private static double meanOdoTheta = 0.0;
+    private static double m2OdoX = 0.0;
+    private static double m2OdoY = 0.0;
+    private static double m2OdoTheta = 0.0;
 
-    private static double lastOdoTimestamp = -1.0;
-    private static double odoTimestep = -1.0;
+    private static Pose2d lastOdoPoseForP = null;
+    private static Pose2d lastVisPoseForP = null;
 
-    public static void enable() {
-        enabled = true;
-    }
-
-    public static void reset() {
-        nVis = nOdo = 0;
-        meanX = meanY = meanTheta = 0.0;
-        meanVx = meanVy = meanOmega = 0.0;
-        m2X = m2Y = m2Theta = 0.0;
-        m2Vx = m2Vy = m2Omega = 0.0;
-        lastOdoTimestamp = odoTimestep = -1.0;
-    }
-
-    public static boolean isEnabled() {
-        return enabled;
-    }
+    /** For simulation testing with configurable noise */
+    private static final Random NOISE_DISTRIBUTION = new Random();
 
     // ----------------------
     // Vision Noise (R) Tracking
     // ----------------------
 
-    /** Record a state estimator prediction and measurement delta to calculate innovation */
+    /**
+     * Record a state estimator (model) pose prediction (x_k|k-1) and vision measurement (z_k) delta
+     * to calculate innovation (y_k) and track variance such that y_​k ​= z_k ​− x_k|k-1​
+     * (innovation ~ measurement - model prediction at time of measurement).
+     *
+     * <p>This method computes the covariance of the innovation S_k = P_k|k-1 + R where P_k|k-1 is
+     * the prediction covariance and R is the measurement covariance. S_k represents the total
+     * uncertainty in the measurement update step of the Kalman filter, combining both the
+     * uncertainty from the state prediction and the measurement noise.
+     *
+     * <p>Under specific conditions, tracking the variance (diagonals) of S_k allows us to
+     * empirically estimate the measurement noise covariance R, which is crucial for tuning the
+     * Kalman filter's performance. Specifically, this approximation is only valid when the robot is
+     * approximately stationary, such that the prediction covariance P_k|k-1 is minimal and
+     * innovation variance is dominated by measurement noise -- in other words, as the prediction
+     * covariance P_k|k-1 is minimized, S_k becomes more reflective of R.
+     *
+     * @param predictedPose pose predicted by state estimator (model) at time t (x_k|k-1).
+     * @param observation vision observation containing pure vision pose at time t (z_k).
+     */
     public static void recordVisionCorrection(
-            double timestamp, Pose2d predictedPose, Pose2d visionPose) {
-        if (!enabled || predictedPose == null || visionPose == null) return;
+            Pose2d predictedPose, VisionPoseObservation observation) {
+        if (!validVisionMeasurement(predictedPose, observation)) return;
 
-        Transform2d innovation = visionPose.minus(predictedPose);
-        double errX = innovation.getX();
-        double errY = innovation.getY();
+        Transform2d innovation = observation.robotPose().minus(predictedPose);
+        double errX = innovation.getX() + generateSimNoise();
+        double errY = innovation.getY() + generateSimNoise();
         double errTheta =
-                MathUtil.angleModulus(
-                        innovation.getRotation().getRadians()); // Prevent wrapping issues
+                MathUtil.angleModulus(innovation.getRotation().getRadians())
+                        + generateSimNoise(); // Prevent wrapping issues
 
         // Welford update
         nVis++;
         // X
-        double dx = errX - meanX;
-        meanX += dx / nVis;
-        m2X += dx * (errX - meanX);
+        double dx = errX - meanVisX;
+        meanVisX += dx / nVis;
+        m2VisX += dx * (errX - meanVisX);
 
         // Y
-        double dy = errY - meanY;
-        meanY += dy / nVis;
-        m2Y += dy * (errY - meanY);
+        double dy = errY - meanVisY;
+        meanVisY += dy / nVis;
+        m2VisY += dy * (errY - meanVisY);
 
         // Theta
-        double dtheta = errTheta - meanTheta;
-        meanTheta += dtheta / nVis;
-        m2Theta += dtheta * (errTheta - meanTheta);
+        double dtheta = errTheta - meanVisTheta;
+        meanVisTheta += dtheta / nVis;
+        m2VisTheta += dtheta * (errTheta - meanVisTheta);
+
+        // Distance & tags
+        meanVisDistance += (observation.avgTagDistance() - meanVisDistance) / nVis;
+        meanNumVisTags += (observation.numTagsUsed() - meanNumVisTags) / nVis;
+
+        if (hasSufficientVisionSamples() && hasSufficientOdoSamples()) disable();
+    }
+
+    /**
+     * Ensure the vision measurement is valid. This check should ensure the vision measurement is
+     * being taken at representative conditions. The result is an estimate of R (baseline) such that
+     * this characterizer produces LINEAR_STDDEV_BASELINE & ANGULAR_STDDEV_BASELINE.
+     *
+     * <p>Note that avgTagDistance is used as a proxy for measurement variance since variance scales
+     * with distance, and numTagsUsed is used as a proxy for number of independent measurements
+     * contributing to the correction since variance scales with 1/N such that sigma^2 ~ d^2 / N.
+     */
+    private static boolean validVisionMeasurement(
+            Pose2d predictedPose, VisionPoseObservation observation) {
+        // Verify enabled & valid poses
+        if (!enabled || predictedPose == null || observation.robotPose() == null) {
+            return false;
+        }
+        // Verify robot is approximately stationary to ensure innovation covariance approximates
+        // measurement covariance
+        ChassisSpeeds vel = robotState.getFieldRelativeVelocity();
+        if (Math.hypot(vel.vxMetersPerSecond, vel.vyMetersPerSecond) > 0.1
+                || Math.abs(vel.omegaRadiansPerSecond) > 0.35) {
+            return false;
+        }
+        // Verify measurement is within typical bounds to ensure we are characterizing expected
+        // vision noise and not outliers
+        if (observation.avgTagDistance() > 4
+                || observation.avgTagDistance() < 1.5
+                || observation.numTagsUsed() < 2
+                || observation.numTagsUsed() > 4) {
+            return false;
+        }
+        return true;
     }
 
     private static double getVisionStdDevX() {
-        return nVis > 1 ? Math.sqrt(m2X / (nVis - 1)) : 0.0;
+        return nVis > 1 ? Math.sqrt(m2VisX / (nVis - 1)) : 0.0;
     }
 
     private static double getVisionStdDevY() {
-        return nVis > 1 ? Math.sqrt(m2Y / (nVis - 1)) : 0.0;
+        return nVis > 1 ? Math.sqrt(m2VisY / (nVis - 1)) : 0.0;
     }
 
     private static double getVisionStdDevTheta() {
-        return nVis > 1 ? Math.sqrt(m2Theta / (nVis - 1)) : 0.0;
+        return nVis > 1 ? Math.sqrt(m2VisTheta / (nVis - 1)) : 0.0;
+    }
+
+    public static int getVisionSampleSize() {
+        return nVis;
+    }
+
+    public static boolean hasSufficientVisionSamples() {
+        if (nVis < MINIMUM_VISION_SAMPLE_SIZE) return false;
+
+        double visStdError = 1.0 / Math.sqrt(2.0 * nVis);
+        return visStdError < VISION_STANDARD_ERROR_THRESHOLD;
     }
 
     // ----------------------
-    // Process Noise (Q) Tracking
+    // Odometry Noise (P) Tracking
     // ----------------------
 
-    /** Records latest odometry twist required for process noise estimate */
-    public static void recordOdometryTwist(double timestamp, Twist2d odomTwist) {
-        if (!enabled || odomTwist == null) return;
-        calculateTwistVariance(timestamp, odomTwist.dx, odomTwist.dy, odomTwist.dtheta);
-    }
+    /**
+     * Assume high confidence vision measurement is "ground truth" and represents the actual delta
+     * traveled across time. Compare motion model (odometry) predicted delta to the "ground truth"
+     * vision delta. The noise in the motion model predicted delta can be abstracted as P (process
+     * noise covariance) in the Kalman filter, which is crucial for predicting Kalman filter gain.
+     */
+    public static void recordOdometryCorrection(
+            Pose2d odometryPoseAtTimestamp, VisionPoseObservation observation) {
+        if (!validOdometryMeasurement(odometryPoseAtTimestamp, observation)) return;
 
-    /** Update running variance of odometry twists (velocities) */
-    private static void calculateTwistVariance(
-            double timestamp, double dx, double dy, double dtheta) {
-        if (lastOdoTimestamp < 0.0) {
-            lastOdoTimestamp = timestamp;
+        // Initialization
+        if (lastOdoPoseForP == null || lastVisPoseForP == null) {
+            lastOdoPoseForP = odometryPoseAtTimestamp;
+            lastVisPoseForP = observation.robotPose();
             return;
         }
 
-        odoTimestep = timestamp - lastOdoTimestamp;
-        lastOdoTimestamp = timestamp;
+        // Compute deltas
+        Transform2d odoDelta = odometryPoseAtTimestamp.minus(lastOdoPoseForP);
+        Transform2d visDelta = observation.robotPose().minus(lastVisPoseForP);
 
-        if (odoTimestep <= 1e-6) return;
-
-        double vx = dx / odoTimestep;
-        double vy = dy / odoTimestep;
-        double omega = dtheta / odoTimestep;
+        // Estimate error in motion model
+        double errX = odoDelta.getX() - visDelta.getX() + generateSimNoise();
+        double errY = odoDelta.getY() - visDelta.getY() + generateSimNoise();
+        double errTheta =
+                MathUtil.angleModulus(
+                                odoDelta.getRotation().getRadians()
+                                        - visDelta.getRotation().getRadians())
+                        + generateSimNoise(); // Prevent wrapping issues
 
         // Welford update
         nOdo++;
-        // Vx
-        double dvx = vx - meanVx;
-        meanVx += dvx / nOdo;
-        m2Vx += dvx * (vx - meanVx);
+        // X
+        double dx = errX - meanOdoX;
+        meanOdoX += dx / nOdo;
+        m2OdoX += dx * (errX - meanOdoX);
+        // Y
+        double dy = errY - meanOdoY;
+        meanOdoY += dy / nOdo;
+        m2OdoY += dy * (errY - meanOdoY);
+        // Theta
+        double dtheta = errTheta - meanOdoTheta;
+        meanOdoTheta += dtheta / nOdo;
+        m2OdoTheta += dtheta * (errTheta - meanOdoTheta);
 
-        // Vy
-        double dvy = vy - meanVy;
-        meanVy += dvy / nOdo;
-        m2Vy += dvy * (vy - meanVy);
+        // Update history
+        lastOdoPoseForP = odometryPoseAtTimestamp;
+        lastVisPoseForP = observation.robotPose();
 
-        // omega
-        double domega = omega - meanOmega;
-        meanOmega += domega / nOdo;
-        m2Omega += domega * (omega - meanOmega);
+        if (hasSufficientVisionSamples() && hasSufficientOdoSamples()) disable();
     }
 
-    public static double getOdoStdDevX(double dt) {
-        return nOdo > 1 ? Math.sqrt(m2Vx / (nOdo - 1)) * dt : 0.0;
+    /**
+     * Ensure the odometry measurement is valid. This is only true if we're confident our vision
+     * measurement grants us an estimate of "ground truth" at the time of the odometry measurement,
+     * such that the delta between the odometry pose and vision pose is representative of odometry
+     * noise.
+     *
+     * <p>TODO: Complete docstring. Explore udpating model to include camera FPS normalization.
+     * Verify math.
+     */
+    private static boolean validOdometryMeasurement(
+            Pose2d odometryPoseAtTimestamp, VisionPoseObservation observation) {
+        // Verify enabled & valid poses
+        if (!enabled || odometryPoseAtTimestamp == null || observation.robotPose() == null) {
+            return false;
+        }
+        // Verify robot is in motion to ensure we are capturing odometry covariance (wheel slip,
+        // encoder quantization, kinematic linearization, gyro noise, etc)
+        ChassisSpeeds vel = robotState.getFieldRelativeVelocity();
+        if (Math.hypot(vel.vxMetersPerSecond, vel.vyMetersPerSecond) < 0.3
+                && Math.abs(vel.omegaRadiansPerSecond) < 1.0) {
+            return false;
+        }
+        // Assume vision is "ground truth" only if it is a high confidence measurement (multiple
+        // tags, close range)
+        if (observation.avgTagDistance() > 2.75 || observation.numTagsUsed() < 3) {
+            return false;
+        }
+        return true;
     }
 
-    public static double getOdoStdDevY(double dt) {
-        return nOdo > 1 ? Math.sqrt(m2Vy / (nOdo - 1)) * dt : 0.0;
+    private static double getOdoStdDevX() {
+        return nOdo > 1 ? Math.sqrt(m2OdoX / (nOdo - 1)) : 0.0;
     }
 
-    public static double getOdoStdDevTheta(double dt) {
-        return nOdo > 1 ? Math.sqrt(m2Omega / (nOdo - 1)) * dt : 0.0;
+    private static double getOdoStdDevY() {
+        return nOdo > 1 ? Math.sqrt(m2OdoY / (nOdo - 1)) : 0.0;
+    }
+
+    private static double getOdoStdDevTheta() {
+        return nOdo > 1 ? Math.sqrt(m2OdoTheta / (nOdo - 1)) : 0.0;
+    }
+
+    public static int getOdoSampleSize() {
+        return nOdo;
+    }
+
+    public static boolean hasSufficientOdoSamples() {
+        if (nOdo < MINIMUM_ODOMETRY_SAMPLE_SIZE) return false;
+
+        double odoStdError = 1.0 / Math.sqrt(2.0 * nOdo);
+        return odoStdError < ODOMETRY_STANDARD_ERROR_THRESHOLD;
     }
 
     // ----------------------
     // Utility / Reporting
     // ----------------------
 
-    public static int getVisionSampleSize() {
-        return nVis;
+    public static void enable() {
+        enabled = true;
     }
 
-    public static int getOdometrySampleSize() {
-        return nOdo;
+    public static void disable() {
+        enabled = false;
     }
 
-    public static boolean hasSufficientSamples() {
-        if (nVis < MINIMUM_SAMPLE_SIZE || nOdo < MINIMUM_SAMPLE_SIZE) return false;
+    public static void reset() {
+        nVis = nOdo = 0;
+        meanVisX = meanVisY = meanVisTheta = 0.0;
+        meanVisDistance = meanNumVisTags = 0.0;
+        m2VisX = m2VisY = m2VisTheta = 0.0;
+        meanOdoX = meanOdoY = meanOdoTheta = 0.0;
+        m2OdoX = m2OdoY = m2OdoTheta = 0.0;
+        lastOdoPoseForP = lastVisPoseForP = null;
+    }
 
-        double visStdError = 1.0 / Math.sqrt(2.0 * nVis);
-        double odoStdError = 1.0 / Math.sqrt(2.0 * nOdo);
-        return visStdError < 0.03 && odoStdError < 0.03;
+    public static boolean isEnabled() {
+        return enabled;
+    }
+
+    /** Generate noise in sim to verify functionality before deployment. */
+    private static double generateSimNoise() {
+        if (Robot.isSimulation()) {
+            return NOISE_DISTRIBUTION.nextGaussian() * 0.02;
+        } else {
+            return 0.0;
+        }
     }
 
     public static void printResults() {
-        if (odoTimestep < 0.0) return;
-
         String prefix = "Pose Stats/";
         Logger.recordOutput(prefix + "VisionSigmaX", getVisionStdDevX());
         Logger.recordOutput(prefix + "VisionSigmaY", getVisionStdDevY());
         Logger.recordOutput(prefix + "VisionSigmaTheta", getVisionStdDevTheta());
-        Logger.recordOutput(prefix + "OdometrySigmaX", getOdoStdDevX(odoTimestep));
-        Logger.recordOutput(prefix + "OdometrySigmaY", getOdoStdDevY(odoTimestep));
-        Logger.recordOutput(prefix + "OdometrySigmaTheta", getOdoStdDevTheta(odoTimestep));
+        Logger.recordOutput(prefix + "VisionAvgDistance", meanVisDistance);
+        Logger.recordOutput(prefix + "VisionAvgNumTags", meanNumVisTags);
+        Logger.recordOutput(prefix + "VisionBiasX", meanVisX);
+        Logger.recordOutput(prefix + "VisionBiasY", meanVisY);
+        Logger.recordOutput(prefix + "VisionBiasTheta", meanVisTheta);
+
+        Logger.recordOutput(prefix + "OdoSigmaX", getOdoStdDevX());
+        Logger.recordOutput(prefix + "OdoSigmaY", getOdoStdDevY());
+        Logger.recordOutput(prefix + "OdoSigmaTheta", getOdoStdDevTheta());
     }
 }
