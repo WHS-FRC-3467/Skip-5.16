@@ -288,6 +288,8 @@ public class RobotContainer {
                 ShooterSuperstructureConstants.NAME + "/Stop", shooter.stopFlywheels());
         SmartDashboard.putData(
                 ShooterSuperstructureConstants.NAME + "/Spinup", shooter.spinUpShooter());
+        SmartDashboard.putData(
+                ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
 
         // Drivetrain Commands
         SmartDashboard.putData(

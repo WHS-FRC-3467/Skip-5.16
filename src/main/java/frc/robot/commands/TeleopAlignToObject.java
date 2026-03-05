@@ -22,12 +22,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
-
 import java.util.function.DoubleSupplier;
 
 /**
