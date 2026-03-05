@@ -22,7 +22,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.robot.Robot;
 import frc.robot.RobotState;
-import java.util.Random;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -73,11 +72,7 @@ public class VisionOdometryCharacterizer {
     private static Pose2d lastVisPoseForP = null;
 
     /** For simulation testing with configurable noise */
-    private static final Random NOISE_DISTRIBUTION = new Random();
-
-    // ----------------------
-    // Vision Noise (R) Tracking
-    // ----------------------
+    // private static final Random NOISE_DISTRIBUTION = new Random();
 
     /**
      * Record a state estimator (model) pose prediction (x_k|k-1) and vision measurement (z_k) delta
@@ -190,10 +185,6 @@ public class VisionOdometryCharacterizer {
         return visStdError < VISION_STANDARD_ERROR_THRESHOLD;
     }
 
-    // ----------------------
-    // Odometry Noise (P) Tracking
-    // ----------------------
-
     /**
      * Assume high confidence vision measurement is "ground truth" and represents the actual delta
      * traveled across time. Compare motion model (odometry) predicted delta to the "ground truth"
@@ -262,7 +253,7 @@ public class VisionOdometryCharacterizer {
             return false;
         }
         // Verify robot is in motion to ensure we are capturing odometry covariance (wheel slip,
-        // encoder quantization, kinematic linearization, gyro noise, etc)
+        // encoder quantization, kinematic linearization, gyro noise, etc.)
         ChassisSpeeds vel = robotState.getFieldRelativeVelocity();
         if (Math.hypot(vel.vxMetersPerSecond, vel.vyMetersPerSecond) < 0.3
                 && Math.abs(vel.omegaRadiansPerSecond) < 1.0) {
@@ -299,18 +290,17 @@ public class VisionOdometryCharacterizer {
         return odoStdError < ODOMETRY_STANDARD_ERROR_THRESHOLD;
     }
 
-    // ----------------------
-    // Utility / Reporting
-    // ----------------------
-
+    /** Enable the characterizer */
     public static void enable() {
         enabled = true;
     }
 
+    /** Disable the characterizer */
     public static void disable() {
         enabled = false;
     }
 
+    /** Reset all of the characterizer parameters. Does not disable. */
     public static void reset() {
         nVis = nOdo = 0;
         meanVisX = meanVisY = meanVisTheta = 0.0;
@@ -321,19 +311,21 @@ public class VisionOdometryCharacterizer {
         lastOdoPoseForP = lastVisPoseForP = null;
     }
 
+    /** Returns whether the characterizer is enabled */
     public static boolean isEnabled() {
         return enabled;
     }
 
-    /** Generate noise in sim to verify functionality before deployment. */
+    /** Generate noise in sim to verify functionality before deployment */
     private static double generateSimNoise() {
         if (Robot.isSimulation()) {
-            return NOISE_DISTRIBUTION.nextGaussian() * 0.02;
+            return 0.0; // NOISE_DISTRIBUTION.nextGaussian() * 0.02;
         } else {
             return 0.0;
         }
     }
 
+    /** Print result to AScope for analysis */
     public static void printResults() {
         String prefix = "Pose Stats/";
         Logger.recordOutput(prefix + "VisionSigmaX", getVisionStdDevX());
