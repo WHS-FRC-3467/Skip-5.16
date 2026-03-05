@@ -28,7 +28,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
  * double output = controller.calculate(position, setpoint);
  * }</pre>
  */
-public class LoggedTuneableProfiledPID extends ProfiledPIDController {
+public class LoggedTunableProfiledPID extends ProfiledPIDController {
 
     // Tunable numbers
     private LoggedTunableNumber p;
@@ -47,7 +47,7 @@ public class LoggedTuneableProfiledPID extends ProfiledPIDController {
      * @param maxV Maximum velocity
      * @param maxA Maximum acceleration
      */
-    public LoggedTuneableProfiledPID(
+    public LoggedTunableProfiledPID(
             String name, double kP, double kI, double kD, double maxV, double maxA) {
         this(name, kP, kI, kD, maxV, maxA, .02);
     }
@@ -63,7 +63,7 @@ public class LoggedTuneableProfiledPID extends ProfiledPIDController {
      * @param maxAcceleration Maximum acceleration
      * @param period Loop period in seconds
      */
-    public LoggedTuneableProfiledPID(
+    public LoggedTunableProfiledPID(
             String name,
             double p,
             double i,
