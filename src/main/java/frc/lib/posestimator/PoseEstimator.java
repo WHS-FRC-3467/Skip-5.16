@@ -28,13 +28,11 @@ import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Time;
-
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
-
+import frc.lib.util.VisionOdometryCharacterizer;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-
-import java.util.Optional;
 
 @Accessors(fluent = true)
 public class PoseEstimator {
@@ -154,9 +152,6 @@ public class PoseEstimator {
         Pose2d newOdometryPose = odometry.odometryPose();
 
         Twist2d twist = lastOdometryPose.log(newOdometryPose);
-        // Utility listener characterizing odometry measurement variance for Kalman gain tuning
-        // VisionOdometryCharacterizer.recordOdometryTwist(observation.timestamp().in(Seconds),
-        // twist);
 
         estimatedPose = estimatedPose.exp(twist);
     }
@@ -237,11 +232,11 @@ public class PoseEstimator {
         Pose2d newVisionPose = observation.robotPose;
         // Utility listener characterizing vision measurement deviation from state
         // prediction for Kalman gain tuning
-        // VisionOdometryCharacterizer.recordVisionCorrection(oldPose, observation);
+        VisionOdometryCharacterizer.recordVisionCorrection(oldPose, observation);
         // Utility listener characterizing odometry prediction deviation from high
         // confidence "vision ground truth" measurement for Kalman gain tuning
-        // VisionOdometryCharacterizer.recordOdometryCorrection(
-        // odometryPose().plus(poseDeltaThenToNow.inverse()), observation);
+        VisionOdometryCharacterizer.recordOdometryCorrection(
+                odometryPose().plus(poseDeltaThenToNow.inverse()), observation);
 
         double visionLinearVariance = observation.linearStdDev * observation.linearStdDev;
         double visionAngularVariance = observation.angularStdDev * observation.angularStdDev;
