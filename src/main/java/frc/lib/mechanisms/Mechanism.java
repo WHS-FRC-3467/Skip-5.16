@@ -164,6 +164,16 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
+     * Runs the mechanism with a specified current output.
+     *
+     * @param current Desired torque-producing current.
+     * @param dutyCycle Desired dutycycle of current output, limiting top speed
+     */
+    public void runCurrent(Current current, double dutyCycle) {
+        io.runCurrent(current, dutyCycle);
+    }
+
+    /**
      * Runs the mechanism using duty cycle (percentage of available voltage).
      *
      * @param dutyCycle Fractional output between 0 and 1.
