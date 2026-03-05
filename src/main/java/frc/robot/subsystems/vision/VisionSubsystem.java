@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
@@ -235,6 +236,8 @@ public class VisionSubsystem extends SubsystemBase {
                         new VisionPoseObservation(
                                 result.getTimestampSeconds(),
                                 poseRecord.pose().toPose2d(),
+                                poseRecord.averageDistanceMeters(),
+                                poseRecord.tagsUsed().size(),
                                 linearStdDev,
                                 angularStdDev));
 
@@ -293,6 +296,18 @@ public class VisionSubsystem extends SubsystemBase {
         }
 
         VisionOdometryCharacterizer.printResults();
+        SmartDashboard.putNumber(
+                "Vision Characterization Sample Count",
+                VisionOdometryCharacterizer.getVisionSampleSize());
+        SmartDashboard.putBoolean(
+                "Vision Characterization Sufficient Samples",
+                VisionOdometryCharacterizer.hasSufficientVisionSamples());
+        SmartDashboard.putNumber(
+                "Odometry Characterization Sample Count",
+                VisionOdometryCharacterizer.getOdoSampleSize());
+        SmartDashboard.putBoolean(
+                "Odometry Characterization Sufficient Samples",
+                VisionOdometryCharacterizer.hasSufficientOdoSamples());
     }
 
     private double getAvgDistanceMeters(List<PhotonTrackedTarget> targets) {

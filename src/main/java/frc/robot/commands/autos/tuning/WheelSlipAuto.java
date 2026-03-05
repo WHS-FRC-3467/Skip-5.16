@@ -11,9 +11,11 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.lib.util.AutoRoutine;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -67,9 +69,10 @@ public class WheelSlipAuto extends AutoRoutine {
                                                 > speedLimit.in(RotationsPerSecond)),
                         Commands.run(
                                 () -> {
-                                    double current = timer.get() * rampRate;
-                                    drive.runCharacterization(current);
-                                    Logger.recordOutput("Wheel Slip Current: ", current);
-                                })));
+                                    double voltage = timer.get() * rampRate;
+                                    drive.runCharacterization(voltage);
+                                    Logger.recordOutput("WheelSlip/Voltage", voltage);
+                                })),
+                Commands.runOnce(() -> drive.stop()));
     }
 }

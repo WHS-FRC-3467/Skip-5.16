@@ -15,18 +15,20 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.util.LoggedTuneableProfiledPID;
+
+import frc.lib.util.LoggedTunableProfiledPID;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
+
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class AlignToPose extends Command {
-    private static final LoggedTuneableProfiledPID linearController =
-            new LoggedTuneableProfiledPID("DriveToPose/LinearController", 3.0, 0, 0.1, 3.0, 0.0);
+    private static final LoggedTunableProfiledPID linearController =
+            new LoggedTunableProfiledPID("DriveToPose/LinearController", 3.0, 0, 0.1, 3.0, 0.0);
 
-    private static final LoggedTuneableProfiledPID angularController =
-            new LoggedTuneableProfiledPID("DriveToPose/AngularController", 3.0, 0, 0, 0, 0);
+    private static final LoggedTunableProfiledPID angularController =
+            new LoggedTunableProfiledPID("DriveToPose/AngularController", 3.0, 0, 0, 0, 0);
 
     private final RobotState robotState = RobotState.getInstance();
 

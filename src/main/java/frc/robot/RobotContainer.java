@@ -100,7 +100,6 @@ public class RobotContainer {
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
-        VisionOdometryCharacterizer.enable();
         // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
@@ -311,6 +310,17 @@ public class RobotContainer {
                 "Drive/Face 180",
                 DriveCommands.joystickDriveAtAngle(
                         drive, () -> 0.0, () -> 0.0, () -> Rotation2d.k180deg));
+
+        // Diagnostics
+        SmartDashboard.putData(
+                "Enable Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.enable()));
+        SmartDashboard.putData(
+                "Disable Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.disable()));
+        SmartDashboard.putData(
+                "Reset Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
     }
 
     /** Creates and/or binds triggers to LED states */
