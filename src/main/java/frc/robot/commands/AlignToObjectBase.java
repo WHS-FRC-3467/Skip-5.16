@@ -19,18 +19,14 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.math.MathUtil;
-
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.util.LoggedTunableProfiledPID;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
-
-import lombok.Getter;
-
-import org.littletonrobotics.junction.Logger;
-
 import java.util.Optional;
 import java.util.OptionalDouble;
+import lombok.Getter;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Strategy layer that determines robot heading required to align robot with centroid of detected

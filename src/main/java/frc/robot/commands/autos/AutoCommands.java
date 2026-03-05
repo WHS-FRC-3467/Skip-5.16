@@ -66,8 +66,7 @@ public class AutoCommands {
             double timeoutDuration) {
         return Commands.deadline(
                 Commands.parallel(
-                                shooter.spinUpShooter(),
-                                intake.slowRetract(retractSpeed).asProxy(),
+                                shooter.spinUpShooter().asProxy(),
                                 Commands.parallel(
                                                 indexer.shoot()
                                                         .withInterruptBehavior(
@@ -78,6 +77,7 @@ public class AutoCommands {
                                                 shooter.readyToShoot.and(
                                                         RobotState.getInstance().facingTarget))
                                         .repeatedly())
+                        .deadlineFor(intake.shuffleStep().repeatedly().asProxy())
                         .withTimeout(timeoutDuration)
                         .finallyDo(
                                 () -> {
