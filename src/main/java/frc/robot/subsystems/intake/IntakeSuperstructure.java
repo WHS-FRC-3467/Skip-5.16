@@ -17,12 +17,14 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -30,15 +32,20 @@ import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
+import frc.robot.RobotState;
+
 import java.util.function.Supplier;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0); // 70 for auto
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0);
 
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
+
+    private static final LoggedTunableNumber ROLLER_SCALE_RPS_PER_MPS =
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/RollerScaleRPSPerMPS", 4.0);
 
     private static final LoggedTunableNumber SLOW_MPS =
             new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowMPS", 0.05);
@@ -77,6 +84,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     private double lastTimestamp = Timer.getTimestamp();
     private boolean runProfile = true;
+
+    private AngularVelocity commandedRollerVelocity = RotationsPerSecond.zero();
 
     public IntakeSuperstructure(
             DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO,
@@ -185,27 +194,21 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     }
 
     private Command runRoller(Supplier<AngularVelocity> angularVelocity) {
-        return this.runOnce(
-                        () ->
-                                intakeRollerIO.runVelocity(
-                                        angularVelocity.get(),
-                                        IntakeRollerConstants.MAX_ACCELERATION,
-                                        PIDSlot.SLOT_0))
+        return this.runOnce(() -> commandedRollerVelocity = angularVelocity.get())
                 .withName("Run Roller");
     }
 
     public Command stopRoller() {
-        return this.runOnce(intakeRollerIO::runBrake).withName("Stop Roller");
+        return this.runOnce(() -> commandedRollerVelocity = RotationsPerSecond.zero())
+                .withName("Stop Roller");
     }
 
     public Command ejectRoller() {
         return this.startEnd(
                         () ->
-                                intakeRollerIO.runVelocity(
+                                commandedRollerVelocity =
                                         RotationsPerSecond.of(ROLLER_EJECT_RPS.get()),
-                                        IntakeRollerConstants.MAX_ACCELERATION,
-                                        PIDSlot.SLOT_0),
-                        intakeRollerIO::runBrake)
+                        () -> commandedRollerVelocity = RotationsPerSecond.zero())
                 .withName("Eject Roller");
     }
 
@@ -310,6 +313,15 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         });
     }
 
+    private AngularVelocity getFinalRollerVelocity() {
+        ChassisSpeeds robotVelocity = RobotState.getInstance().getFieldRelativeVelocity();
+        double linearVelocityMPS =
+                Math.hypot(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond);
+
+        double extraVelocityRPS = linearVelocityMPS * ROLLER_SCALE_RPS_PER_MPS.get();
+        return commandedRollerVelocity.plus(RotationsPerSecond.of(extraVelocityRPS));
+    }
+
     @Override
     public void periodic() {
 
@@ -332,6 +344,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
             intakeLinearIO.runUnprofiledLinearPosition(
                     Meters.of(setpointState.position), PIDSlot.SLOT_0);
         }
+
+        intakeRollerIO.runVelocity(
+                getFinalRollerVelocity(), IntakeRollerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
 
         LoggerHelper.recordCurrentCommand(this.getName(), this);
         intakeLinearIO.periodic();
