@@ -79,17 +79,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new InterpolatingDoubleTreeMap();
 
     static {
-        feedFlywheelMap.put(3.0, 17.0);
-        feedFlywheelMap.put(4.0, 18.0);
-        feedFlywheelMap.put(5.0, 20.0);
-        feedFlywheelMap.put(6.0, 22.0);
-        feedFlywheelMap.put(7.0, 25.0);
-        feedFlywheelMap.put(8.0, 27.0);
-        feedFlywheelMap.put(9.0, 29.0);
-        feedFlywheelMap.put(10.0, 30.5);
-        feedFlywheelMap.put(11.0, 32.0);
-        feedFlywheelMap.put(12.0, 34.0);
-        feedFlywheelMap.put(13.0, 35.0);
+        feedFlywheelMap.put(0.0, 50.0);
+        feedFlywheelMap.put(6.0, 50.0);
+        feedFlywheelMap.put(7.0, 55.0);
+        feedFlywheelMap.put(8.0, 60.0);
+        feedFlywheelMap.put(20.0, 60.0);
     }
 
     private final RobotState robotState = RobotState.getInstance();
@@ -146,7 +140,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // User-defined trim at runtime, not including default trim
     private AngularVelocity flywheelTrim = RotationsPerSecond.zero();
 
-    private AngularVelocity getFlywheelTimStep() {
+    private AngularVelocity getFlywheelTrimStep() {
         return RotationsPerSecond.of(flywheelTrimStepRPS.get());
     }
 
@@ -243,18 +237,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private AngularVelocity getDesiredFlywheelVelocity() {
-        // InterpolatingDoubleTreeMap flywheelMap =
-        //         switch (robotState.getTarget()) {
-        //             case HUB -> hubFlywheelMap;
-        //             case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
-        //         };
+        InterpolatingDoubleTreeMap flywheelMap =
+                switch (robotState.getTarget()) {
+                    case HUB -> hubFlywheelMap;
+                    case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
+                };
 
-        if (robotState.getTarget() != Target.HUB) {
-            return RotationsPerSecond.of(50.0);
-        }
-
-        return RotationsPerSecond.of(
-                hubFlywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
+        return RotationsPerSecond.of(flywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
     }
 
     private Angle getDesiredHoodAngle() {
@@ -423,12 +412,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     public Command trimFlywheelSpeedUp() {
         // Doesn't require subsystem to allow for trimming while shooting
-        return Commands.runOnce(() -> flywheelTrim.plus(getFlywheelTimStep()));
+        return Commands.runOnce(() -> flywheelTrim = flywheelTrim.plus(getFlywheelTrimStep()));
     }
 
     public Command trimFlywheelSpeedDown() {
         // Doesn't require subsystem to allow for trimming while shooting
-        return Commands.runOnce(() -> flywheelTrim.minus(getFlywheelTimStep()));
+        return Commands.runOnce(() -> flywheelTrim = flywheelTrim.minus(getFlywheelTrimStep()));
     }
 
     @Override

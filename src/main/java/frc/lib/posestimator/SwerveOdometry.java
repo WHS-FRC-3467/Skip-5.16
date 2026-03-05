@@ -190,6 +190,28 @@ public class SwerveOdometry {
         odometryBuffer.addSample(timestampSeconds, odometryPose);
     }
 
+    /**
+     * Adds an odometry observation to the integrator, ignoring everything except gyro.
+     *
+     * @param observation an {@link OdometryObservation} containing an optional gyro angle
+     */
+    public void addGyroObservation(OdometryObservation observation) {
+        double timestampSeconds = observation.timestamp().in(Seconds);
+
+        // If gyro angle is available, correct heading drift
+        observation
+                .gyroAngle()
+                .ifPresent(
+                        angle ->
+                                odometryPose =
+                                        new Pose2d(
+                                                odometryPose.getTranslation(),
+                                                angle.plus(gyroOffset)));
+
+        // Store pose for later interpolation (e.g., vision sync)
+        odometryBuffer.addSample(timestampSeconds, odometryPose);
+    }
+
     private Twist2d computeTwist(
             SwerveModulePosition[] last, SwerveModulePosition[] current, boolean[] badWheels) {
 

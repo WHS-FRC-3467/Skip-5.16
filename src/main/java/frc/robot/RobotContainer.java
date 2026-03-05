@@ -206,14 +206,11 @@ public class RobotContainer {
         // Right Bumper: Manually cycle intake
         controller.rightBumper().onTrue(intake.shuffleStep()).onFalse(intake.stopRoller());
 
-        // Start: Reset shuffle speedup tracker
-        controller.start().onTrue(intake.resetShuffleCounter());
-
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
 
         // D-Pad Up: Force Intake Linear Slide Back
-        controller.povUp().onTrue(intake.retractIntake());
+        controller.leftBumper().onTrue(intake.retractIntake());
 
         // D-Pad Down: Unjam
         controller
