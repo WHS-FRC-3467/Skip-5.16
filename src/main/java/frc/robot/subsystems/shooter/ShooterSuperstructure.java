@@ -15,6 +15,7 @@
 
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -130,6 +131,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // How much to add or subtract on each button press
     private final LoggedTunableNumber flywheelTrimStepRPS =
             new LoggedTunableNumber(getName() + "/FlywheelTrimStepRPS", 0.5);
+
+    private final LoggedTunableNumber flywheelSlowSpinupTorque =
+            new LoggedTunableNumber(getName() + "/FlywheelSlowSpinupTorque", 10.0);
+    private final LoggedTunableNumber flywheelSlowSpinupDutyCycle =
+            new LoggedTunableNumber(getName() + "/FlywheelSlowSpinupDutyCycle", 0.3);
 
     // User-defined trim at runtime, not including default trim
     private AngularVelocity flywheelTrim = RotationsPerSecond.zero();
@@ -295,6 +301,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         },
                         this)
                 .withName("Spin-Up Shooter");
+    }
+
+    public Command slowSpinup() {
+        return this.runOnce(
+                () -> {
+                    leftFlywheelIO.runCurrent(
+                            Amps.of(flywheelSlowSpinupTorque.getAsDouble()),
+                            flywheelSlowSpinupDutyCycle.getAsDouble());
+                    rightFlywheelIO.runCurrent(
+                            Amps.of(flywheelSlowSpinupTorque.getAsDouble()),
+                            flywheelSlowSpinupDutyCycle.getAsDouble());
+                });
     }
 
     /**
