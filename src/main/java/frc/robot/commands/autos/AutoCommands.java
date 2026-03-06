@@ -73,7 +73,8 @@ public class AutoCommands {
                                                                 InterruptionBehavior
                                                                         .kCancelIncoming),
                                                 tower.shoot(),
-                                                intake.shuffleStep().repeatedly().asProxy())
+                                                intake.shuffleStep().repeatedly().asProxy(),
+                                                intake.slowRetract(retractSpeed).asProxy())
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(
                                                         RobotState.getInstance().facingTarget))

@@ -51,7 +51,7 @@ public class NeutralAuto extends AutoRoutine {
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (!pathPlannerPaths.isEmpty()
                 && pathPlannerPaths.size() == expectedPaths.size()
-                && !pathPlannerPaths.contains(null))
+                && !pathPlannerPaths.contains(null)) {
             loadCommands(
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Sweep neutral zone while intaking
@@ -78,5 +78,6 @@ public class NeutralAuto extends AutoRoutine {
                                                     .schedule(
                                                             intake.stopRoller()
                                                                     .ignoringDisable(true))));
+        }
     }
 }
