@@ -1,0 +1,25 @@
+name: Build
+
+on:
+  push:
+
+jobs:
+  run_tests:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+      - name: Grant execute permission
+        run: chmod +x gradlew
+      - name: Build Robot Code
+        run: ./gradlew build -x test
+      - name: Test Robot Code
+        run: ./gradlew test
+      - name: Check Formatting
+        run: ./gradlew spotlessCheck

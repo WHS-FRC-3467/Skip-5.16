@@ -1,0 +1,1759 @@
+{
+  "version": 1.0,
+  "grid_size": 50,
+  "tabs": [
+    {
+      "name": "Teleoperated",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Alerts",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 300.0,
+            "height": 800.0,
+            "type": "Alerts",
+            "properties": {
+              "topic": "/SmartDashboard/Alerts",
+              "period": 0.06
+            }
+          },
+          {
+            "title": "Time Until Next Phase",
+            "x": 300.0,
+            "y": 0.0,
+            "width": 900.0,
+            "height": 800.0,
+            "type": "Match Time",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Hub/Time Until Next Phase",
+              "period": 0.06,
+              "data_type": "double",
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 20,
+              "yellow_start_time": 30
+            }
+          },
+          {
+            "title": "Can Shoot!",
+            "x": 1200.0,
+            "y": 0.0,
+            "width": 300.0,
+            "height": 650.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Can Shoot!",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Drive to Start Pose",
+            "x": 1200.0,
+            "y": 650.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Drive to Start Pose",
+              "period": 0.06,
+              "show_type": true,
+              "maximize_button_space": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Autonomous",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Auto Preview",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 900.0,
+            "height": 400.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Preview",
+              "period": 0.06,
+              "field_game": "Rebuilt",
+              "robot_width": 0.85,
+              "robot_length": 0.85,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295,
+              "show_robot_outside_widget": true
+            }
+          },
+          {
+            "title": "Auto Choices",
+            "x": 900.0,
+            "y": 400.0,
+            "width": 600.0,
+            "height": 150.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Choices",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "Inches from Start",
+            "x": 450.0,
+            "y": 400.0,
+            "width": 450.0,
+            "height": 400.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Pose Check/Inches from Start",
+              "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "Degrees from Start",
+            "x": 0.0,
+            "y": 400.0,
+            "width": 450.0,
+            "height": 400.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Pose Check/Degrees from Start",
+              "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "Position Good",
+            "x": 900.0,
+            "y": 0.0,
+            "width": 300.0,
+            "height": 400.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Pose Check/Robot Position within 2.9999999999999996 inches",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "Checkmark",
+              "false_icon": "Exclamation Point"
+            }
+          },
+          {
+            "title": "Rotation Good",
+            "x": 1200.0,
+            "y": 0.0,
+            "width": 300.0,
+            "height": 400.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Pose Check/Robot Rotation within 5.0 degrees",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "Checkmark",
+              "false_icon": "Exclamation Point"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Pit",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "Intake Roller",
+            "x": 400.0,
+            "y": 50.0,
+            "width": 300.0,
+            "height": 350.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Eject",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Roller/Eject",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Intake",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Roller/Intake",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Stop",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Roller/Stop",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Intake Linear",
+            "x": 50.0,
+            "y": 50.0,
+            "width": 300.0,
+            "height": 450.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Coast",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Coast",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Cycle",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Cycle",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Extend",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Extend",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Retract",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Retract",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Indexer",
+            "x": 750.0,
+            "y": 50.0,
+            "width": 300.0,
+            "height": 450.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Expel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Indexer/Expel",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Feed",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Indexer/Feed",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Shoot",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Indexer/Shoot",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Stop",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Indexer/Stop",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              }
+            ]
+          }
+        ],
+        "containers": []
+      }
+    },
+    {
+      "name": "Sim",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "Intake Linear",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 350.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Cycle",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Cycle",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Extend",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Extend",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Retract",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Linear/Retract",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Intake Roller",
+            "x": 200.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 350.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Eject",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Roller/Eject",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Intake",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Roller/Intake",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Stop",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Roller/Stop",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Indexer",
+            "x": 400.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 450.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Expel",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Indexer/Expel",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Feed",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Indexer/Feed",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Shoot",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Indexer/Shoot",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              },
+              {
+                "title": "Stop",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 300.0,
+                "height": 150.0,
+                "type": "Command",
+                "properties": {
+                  "topic": "/SmartDashboard/Indexer/Stop",
+                  "period": 0.06,
+                  "show_type": true,
+                  "maximize_button_space": false
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "title": "Ready Shooter",
+            "x": 0.0,
+            "y": 350.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Ready Shooter",
+              "period": 0.06,
+              "show_type": true,
+              "maximize_button_space": false
+            }
+          },
+          {
+            "title": "Reset Fuel",
+            "x": 300.0,
+            "y": 500.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Reset Fuel",
+              "period": 0.06,
+              "show_type": true,
+              "maximize_button_space": false
+            }
+          },
+          {
+            "title": "Set flywheel to 30",
+            "x": 0.0,
+            "y": 650.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Set flywheel to 30",
+              "period": 0.06,
+              "show_type": true,
+              "maximize_button_space": false
+            }
+          },
+          {
+            "title": "Set hood to 45 deg",
+            "x": 300.0,
+            "y": 650.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Set hood to 45 deg",
+              "period": 0.06,
+              "show_type": true,
+              "maximize_button_space": false
+            }
+          },
+          {
+            "title": "Shoot Fuel",
+            "x": 0.0,
+            "y": 500.0,
+            "width": 300.0,
+            "height": 150.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Shoot Fuel",
+              "period": 0.06,
+              "show_type": true,
+              "maximize_button_space": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PID Tuning",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "IndexerFloor",
+            "x": 400.0,
+            "y": 500.0,
+            "width": 200.0,
+            "height": 250.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "EjectRPS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerFloor/EjectRPS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "FeedRPS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerFloor/FeedRPS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "FloorShootRPS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerFloor/FloorShootRPS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "IndexerCenter",
+            "x": 600.0,
+            "y": 500.0,
+            "width": 200.0,
+            "height": 250.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "EjectRPS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerCenter/EjectRPS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "FeedRPS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerCenter/FeedRPS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "FloorShootRPS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerCenter/FloorShootRPS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Indexer Center SLOT_0",
+            "x": 600.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 500.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kA",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerCenter/PID/SLOT_0/kA",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerCenter/PID/SLOT_0/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kG",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerCenter/PID/SLOT_0/kG",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerCenter/PID/SLOT_0/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerCenter/PID/SLOT_0/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerCenter/PID/SLOT_0/kS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kV",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerCenter/PID/SLOT_0/kV",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Indexer Floor SLOT_0",
+            "x": 400.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 500.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kA",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerFloor/PID/SLOT_0/kA",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerFloor/PID/SLOT_0/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kG",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerFloor/PID/SLOT_0/kG",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerFloor/PID/SLOT_0/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerFloor/PID/SLOT_0/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerFloor/PID/SLOT_0/kS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kV",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/IndexerFloor/PID/SLOT_0/kV",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Flywheel Right SLOT_0",
+            "x": 1350.0,
+            "y": 0.0,
+            "width": 150.0,
+            "height": 500.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kA",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Right Flywheel/PID/SLOT_0/kA",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Right Flywheel/PID/SLOT_0/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kG",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Right Flywheel/PID/SLOT_0/kG",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Right Flywheel/PID/SLOT_0/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Right Flywheel/PID/SLOT_0/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Right Flywheel/PID/SLOT_0/kS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kV",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Right Flywheel/PID/SLOT_0/kV",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Flywheel Left SLOT_0",
+            "x": 1200.0,
+            "y": 0.0,
+            "width": 150.0,
+            "height": 500.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kA",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Left Flywheel/PID/SLOT_0/kA",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Left Flywheel/PID/SLOT_0/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kG",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Left Flywheel/PID/SLOT_0/kG",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Left Flywheel/PID/SLOT_0/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Left Flywheel/PID/SLOT_0/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Left Flywheel/PID/SLOT_0/kS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kV",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Left Flywheel/PID/SLOT_0/kV",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Hood SLOT_0",
+            "x": 1000.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 500.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kA",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Hood/PID/SLOT_0/kA",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Hood/PID/SLOT_0/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kG",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Hood/PID/SLOT_0/kG",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Hood/PID/SLOT_0/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Hood/PID/SLOT_0/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Hood/PID/SLOT_0/kS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kV",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Hood/PID/SLOT_0/kV",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Tower SLOT_0",
+            "x": 800.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 500.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kA",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Tower/PID/SLOT_0/kA",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Tower/PID/SLOT_0/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kG",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Tower/PID/SLOT_0/kG",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Tower/PID/SLOT_0/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Tower/PID/SLOT_0/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Tower/PID/SLOT_0/kS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kV",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Tower/PID/SLOT_0/kV",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Intake Linear SLOT_0",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 500.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kA",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Linear/PID/SLOT_0/kA",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Linear/PID/SLOT_0/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kG",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Linear/PID/SLOT_0/kG",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Linear/PID/SLOT_0/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Linear/PID/SLOT_0/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Linear/PID/SLOT_0/kS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kV",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Linear/PID/SLOT_0/kV",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Intake Roller SLOT_0",
+            "x": 200.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 500.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kA",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Roller/PID/SLOT_0/kA",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Roller/PID/SLOT_0/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kG",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Roller/PID/SLOT_0/kG",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Roller/PID/SLOT_0/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Roller/PID/SLOT_0/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Roller/PID/SLOT_0/kS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "kV",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "Tuning/Intake Roller/PID/SLOT_0/kV",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          }
+        ],
+        "containers": []
+      }
+    },
+    {
+      "name": "Lookup Tuning",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "FlywheelSpeedRPS",
+            "x": 950.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/ShooterSuperstructure/Tuning/FlywheelSpeedRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "HoodAngleDegrees",
+            "x": 750.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/ShooterSuperstructure/Tuning/HoodAngleDegrees",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Enable",
+            "x": 350.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/Tuning/ShooterSuperstructure/Tuning/Enable",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "EjectRPS",
+            "x": 350.0,
+            "y": 150.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/Tower/EjectRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "IdleRPS",
+            "x": 550.0,
+            "y": 150.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/Tower/IdleRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "ShootRPS",
+            "x": 750.0,
+            "y": 150.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/Tower/ShootRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "StopRPS",
+            "x": 950.0,
+            "y": 150.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/Tower/StopRPS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "DistanceToTargetMeters",
+            "x": 550.0,
+            "y": 0.0,
+            "width": 200.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterSuperstructure/Tuning/DistanceToTargetMeters",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
