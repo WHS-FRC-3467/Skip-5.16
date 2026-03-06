@@ -35,7 +35,10 @@ import java.util.function.Supplier;
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0); // 70 for auto
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0);
+
+    private static final LoggedTunableNumber ROLLER_AUTO_INTAKE_RPS =
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/AutoIntakeRPS", 50.0);
 
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
@@ -219,6 +222,17 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 .withName("Intake");
     }
 
+    // For autos only
+    public Command autoIntake() {
+        return Commands.sequence(
+                        runRoller(() -> RotationsPerSecond.of(ROLLER_AUTO_INTAKE_RPS.get())),
+                        moveToPosition(
+                                fastMotionProfiler,
+                                IntakeLinearConstants.MAX_DISTANCE.in(Meters),
+                                "Extend Linear"))
+                .withName("Auto Intake");
+    }
+
     public Command extendIntake() {
         return Commands.sequence(
                         runRoller(RotationsPerSecond::zero),
@@ -277,19 +291,21 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                 Commands.none(),
                                 isCycleComplete),
                         moveByInches(
-                                -6,
-                                shuffleMotionProfiler,
-                                true,
-                                0.6,
-                                Inches.of(0.5).in(Meters),
-                                "Shuffle Retract"),
+                                        -6,
+                                        shuffleMotionProfiler,
+                                        true,
+                                        0.6,
+                                        Inches.of(0.5).in(Meters),
+                                        "Shuffle Retract")
+                                .withTimeout(0.5),
                         moveByInches(
-                                3,
-                                shuffleMotionProfiler,
-                                false,
-                                0.0,
-                                Inches.of(0.5).in(Meters),
-                                "Shuffle Extend"),
+                                        4.5,
+                                        shuffleMotionProfiler,
+                                        false,
+                                        0.0,
+                                        Inches.of(0.5).in(Meters),
+                                        "Shuffle Extend")
+                                .withTimeout(0.5),
                         stopRoller())
                 .withName("Intake Shuffle Step");
     }
@@ -305,7 +321,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         this.idle())
                 .finallyDo(
                         () -> {
-                            intakeLinearIO.setEncoderPosition(Rotations.of(3.56));
+                            intakeLinearIO.setEncoderPosition(Rotations.of(3.7));
                             runProfile = true;
                         });
     }

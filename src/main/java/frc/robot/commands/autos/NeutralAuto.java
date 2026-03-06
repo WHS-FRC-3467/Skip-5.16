@@ -18,6 +18,7 @@ package frc.robot.commands.autos;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -34,12 +35,18 @@ public class NeutralAuto extends AutoRoutine {
             IndexerSuperstructure indexer,
             Tower tower,
             ShooterSuperstructure shooter,
-            boolean shouldMirror) {
-
-        List<String> expectedPaths = List.of("Neutral1", "Neutral2", "Neutral3");
+            boolean shouldMirror,
+            boolean isSafe) {
+        // Choose path names based on start position
+        List<String> expectedPaths;
+        if (isSafe) {
+            expectedPaths = List.of("NeutralSafe1", "Neutral2");
+        } else {
+            expectedPaths = List.of("Neutral1", "Neutral2");
+        }
 
         // Load the named paths
-        this.loadAllPaths(expectedPaths, shouldMirror, false);
+        this.loadAllPaths(expectedPaths, shouldMirror, true);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (!pathPlannerPaths.isEmpty()
@@ -49,16 +56,27 @@ public class NeutralAuto extends AutoRoutine {
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
                     AutoCommands.shootCommand(
-                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 3.5),
+                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 3.0),
                     // Run back under the trench and shoot
                     // Initialize intake and hood to starting positions for teleop
                     AutoCommands.stowHood(shooter),
                     intake.retractIntake().asProxy().withTimeout(0.5),
                     // Drive to the neutral zone
-                    AutoBuilder.followPath(pathPlannerPaths.get(2)),
+                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
                     AutoCommands.shootCommand(
-                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 10));
+                                    drive,
+                                    intake,
+                                    indexer,
+                                    tower,
+                                    shooter,
+                                    MetersPerSecond.of(0.1),
+                                    10)
+                            .finallyDo(
+                                    () ->
+                                            CommandScheduler.getInstance()
+                                                    .schedule(
+                                                            intake.stopRoller()
+                                                                    .ignoringDisable(true))));
     }
 }

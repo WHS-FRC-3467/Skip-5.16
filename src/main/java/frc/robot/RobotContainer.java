@@ -122,22 +122,15 @@ public class RobotContainer {
 
         // Neutral Autos
         autoChooser.addOption(
-                "NeutralAuto-Left", new NeutralAuto(drive, intake, indexer, tower, shooter, false));
+                "Aggressive-Left",
+                new NeutralAuto(drive, intake, indexer, tower, shooter, false, false));
         autoChooser.addOption(
-                "NeutralAuto-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true));
-
+                "Aggressive-Right",
+                new NeutralAuto(drive, intake, indexer, tower, shooter, true, false));
         autoChooser.addOption(
-                "ChoreoNeutralAuto-Left",
-                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, false, false));
+                "Safe-Left", new NeutralAuto(drive, intake, indexer, tower, shooter, false, true));
         autoChooser.addOption(
-                "ChoreoNeutralAuto-Right",
-                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, true, false));
-        autoChooser.addOption(
-                "ChoreoNeutralSafeAuto-Left",
-                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, false, true));
-        autoChooser.addOption(
-                "ChoreoNeutralSafeAuto-Right",
-                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, true, true));
+                "Safe-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true, true));
 
         // Depot Autos
         autoChooser.addOption(
@@ -254,8 +247,8 @@ public class RobotContainer {
         //                 .onlyIf(isAutonomous.negate()));
 
         new EventTrigger("RetractIntake").onTrue(intake.retractIntake());
-        new EventTrigger("ExtendIntake").onTrue(intake.intake());
-        new EventTrigger("Spinup").onTrue(shooter.slowSpinup());
+        new EventTrigger("ExtendIntake").onTrue(intake.autoIntake());
+        new EventTrigger("Spinup").onTrue(shooter.spinUpShooterToHubDistance(Meters.of(3.555)));
     }
 
     /**
@@ -264,7 +257,7 @@ public class RobotContainer {
      */
     private void initializeDashboard() {
 
-        // Indexder Commands
+        // Indexer Commands
         SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Shoot", indexer.shoot());
         SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Expel", indexer.eject());
         SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Feed", indexer.feed());
