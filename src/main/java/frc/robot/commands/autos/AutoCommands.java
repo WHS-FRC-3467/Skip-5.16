@@ -72,12 +72,12 @@ public class AutoCommands {
                                                         .withInterruptBehavior(
                                                                 InterruptionBehavior
                                                                         .kCancelIncoming),
-                                                tower.shoot())
+                                                tower.shoot(),
+                                                intake.shuffleStep().repeatedly().asProxy())
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(
                                                         RobotState.getInstance().facingTarget))
                                         .repeatedly())
-                        .deadlineFor(intake.shuffleStep().repeatedly().asProxy())
                         .withTimeout(timeoutDuration)
                         .finallyDo(
                                 () -> {

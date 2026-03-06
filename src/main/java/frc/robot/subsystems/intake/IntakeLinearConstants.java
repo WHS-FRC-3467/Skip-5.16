@@ -59,7 +59,7 @@ public class IntakeLinearConstants {
     public static final double GEARING = (42.0 / 12.0);
 
     public static final Distance MIN_DISTANCE = Inches.of(0.1);
-    public static final Distance MAX_DISTANCE = Inches.of(11.0);
+    public static final Distance MAX_DISTANCE = Inches.of(11.1);
     public static final Distance STARTING_DISTANCE = Inches.of(0.1);
 
     public static final LinearVelocity CRUISE_VELOCITY = MetersPerSecond.of(1.0);
@@ -85,7 +85,7 @@ public class IntakeLinearConstants {
             new LinearMechCharacteristics(
                     MIN_DISTANCE, MAX_DISTANCE, STARTING_DISTANCE, DRUM_RADIUS, ORIENTATION);
 
-    public static final PID SLOT0_PID = new PID(50.0, 0.0, 0.0).withS(14.0);
+    public static final PID SLOT0_PID = new PID(30.0, 0.0, 0.0).withS(14.0);
     public static final PID SLOT1_PID = new PID(50.0, 0.0, 0.0);
 
     /**

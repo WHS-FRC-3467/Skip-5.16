@@ -21,6 +21,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -170,7 +171,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit() {
         // Switch to Autonomous tab in Elastic Dashboard
-        if (DriverStation.isFMSAttached()) {
+        if (RobotBase.isReal()) {
             Elastic.selectTab(1);
         }
 
@@ -200,7 +201,7 @@ public class Robot extends LoggedRobot {
         }
 
         // Switch to Teleop tab in Elastic Dashboard
-        if (DriverStation.isFMSAttached()) {
+        if (RobotBase.isReal()) {
             Elastic.selectTab(0);
         }
 
