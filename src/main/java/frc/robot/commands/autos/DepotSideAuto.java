@@ -15,8 +15,6 @@
 
 package frc.robot.commands.autos;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
@@ -61,14 +59,7 @@ public class DepotSideAuto extends AutoRoutine {
                     // Drive to depot and start intake, then run through depot while intaking FUEL
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     // Drive to shooting location and shoot all FUEL
-                    AutoCommands.shootCommand(
-                            drive,
-                            intake,
-                            indexer,
-                            tower,
-                            shooter,
-                            MetersPerSecond.of(0.15),
-                            10.0));
+                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 10.0));
         }
     }
 }

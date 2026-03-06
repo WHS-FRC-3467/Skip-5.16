@@ -53,7 +53,7 @@ public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
         CANCoder = new CANcoder(id.id(), new CANBus(id.bus()));
 
         updateThread
-                .CTRECheckErrorAndRetry(() -> CANCoder.getConfigurator().apply(configuration))
+                .ctreCheckErrorAndRetry(() -> CANCoder.getConfigurator().apply(configuration))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);
@@ -63,7 +63,7 @@ public class AbsoluteEncoderIOCANCoder implements AbsoluteEncoderIO {
         angle = CANCoder.getAbsolutePosition();
 
         updateThread
-                .CTRECheckErrorAndRetry(() -> angle.setUpdateFrequency(200))
+                .ctreCheckErrorAndRetry(() -> angle.setUpdateFrequency(200))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);

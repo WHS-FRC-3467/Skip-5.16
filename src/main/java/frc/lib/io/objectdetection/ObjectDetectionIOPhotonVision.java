@@ -44,7 +44,7 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
         camera = new PhotonCamera(cameraName);
         disconnectedAlert =
                 new Alert(
-                        "PhotoVision Camera " + cameraName + " is not connected.",
+                        "PhotonVision Camera " + cameraName + " is not connected.",
                         AlertType.kError);
         this.cameraName = cameraName;
     }
