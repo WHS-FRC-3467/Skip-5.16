@@ -35,13 +35,13 @@ import java.util.function.Supplier;
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 50.0);
 
     private static final LoggedTunableNumber ROLLER_AUTO_INTAKE_RPS =
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/AutoIntakeRPS", 50.0);
 
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -50.0);
 
     private static final LoggedTunableNumber SLOW_MPS =
             new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowMPS", 0.05);
