@@ -15,8 +15,6 @@
 
 package frc.robot.commands.autos;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.util.AutoRoutine;
@@ -56,22 +54,14 @@ public class NeutralAuto extends AutoRoutine {
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    AutoCommands.shootCommand(
-                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 3.0),
+                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 3.0),
                     // Run back under the trench and shoot
                     // Initialize intake and hood to starting positions for teleop
                     AutoCommands.stowHood(shooter),
                     intake.retractIntake().asProxy().withTimeout(0.5),
                     // Drive to the neutral zone
                     AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                    AutoCommands.shootCommand(
-                                    drive,
-                                    intake,
-                                    indexer,
-                                    tower,
-                                    shooter,
-                                    MetersPerSecond.of(0.1),
-                                    10)
+                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 10)
                             .finallyDo(
                                     () ->
                                             CommandScheduler.getInstance()
