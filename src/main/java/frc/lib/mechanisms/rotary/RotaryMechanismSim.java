@@ -29,7 +29,7 @@ import java.util.Optional;
 public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEncoderIOSim> {
     private final SingleJointedArmSim sim;
 
-    private Time lastTime = Seconds.zero();
+    private Time lastTime = RobotController.getMeasureTime();
 
     public RotaryMechanismSim(
             String name,

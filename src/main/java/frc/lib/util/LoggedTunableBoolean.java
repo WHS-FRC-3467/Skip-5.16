@@ -33,7 +33,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
  * }</pre>
  */
 public class LoggedTunableBoolean implements BooleanSupplier {
-    private static final String tableKey = "/Tuning";
+    private static final String tableKey = "Tuning";
 
     private final String key;
     private boolean hasDefault = false;

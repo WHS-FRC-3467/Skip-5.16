@@ -22,7 +22,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.autos.StartPosition;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,37 +32,34 @@ import java.util.List;
  */
 public abstract class AutoRoutine extends SequentialCommandGroup {
     protected final List<PathPlannerPath> pathPlannerPaths = new ArrayList<>();
-    // Per-path flags: when true, the corresponding path's poses will be mirrored
-    // (useful for displaying the selected auto on the dashboard or for right-side starts).
-    protected final List<Boolean> pathMirrorFlags = new ArrayList<>();
 
     /**
      * Loads all PathPlanner paths from the given path names.
      *
      * @param pathNames List of path file names to load
+     * @param shouldMirror Whether to mirror the paths
+     * @param isChoreo Whether the paths are choreographed (loaded from Choreo JSON instead of
+     *     PathPlanner path file)
      */
-    public void loadAllPaths(List<String> pathNames) {
-        // Load paths into a temporary list so we can initialize mirror flags to the
-        // same size and keep things consistent even if loading fails.
-        List<PathPlannerPath> loaded = pathNames.stream().map(name -> loadPath(name)).toList();
-
+    public void loadAllPaths(List<String> pathNames, boolean shouldMirror, boolean isChoreo) {
+        List<PathPlannerPath> loaded =
+                pathNames.stream().map(name -> loadPath(name, shouldMirror, isChoreo)).toList();
         pathPlannerPaths.addAll(loaded);
-
-        // Initialize mirror flags to false for each loaded path (default: no mirror).
-        pathMirrorFlags.clear();
-        for (int i = 0; i < loaded.size(); ++i) {
-            pathMirrorFlags.add(false);
-        }
     }
 
-    private PathPlannerPath loadPath(String pathName) {
+    private PathPlannerPath loadPath(String pathName, boolean shouldMirror, boolean isChoreo) {
         PathPlannerPath path;
         try {
-            path = PathPlannerPath.fromPathFile(pathName);
+            if (isChoreo) {
+                path = PathPlannerPath.fromChoreoTrajectory(pathName);
+            } else path = PathPlannerPath.fromPathFile(pathName);
         } catch (Exception e) {
             DriverStation.reportError(
                     "Failed to load PathPlanner path: " + pathName, e.getStackTrace());
-            path = null;
+            return null;
+        }
+        if (shouldMirror) {
+            return path.mirrorPath();
         }
 
         return path;
@@ -94,81 +90,14 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
             return List.of();
         }
 
-        // Defensive: ensure mirror flags list matches the number of loaded paths. If it
-        // doesn't, treat missing flags as `false` (no mirror).
         List<Pose2d> poses = new ArrayList<>();
-        boolean mirror;
-        // Loop through each path and check for whether the mirror should be applied.
         for (int i = 0; i < pathPlannerPaths.size(); ++i) {
             PathPlannerPath path = pathPlannerPaths.get(i);
-            mirror = false;
-            if (i < pathMirrorFlags.size() && Boolean.TRUE.equals(pathMirrorFlags.get(i))) {
-                mirror = true;
-            }
 
-            // Apply mirror to poses in that path
-            if (mirror) {
-                poses.addAll(path.mirrorPath().getPathPoses());
-            } else {
-                poses.addAll(path.getPathPoses());
-            }
+            poses.addAll(path.getPathPoses());
         }
 
         return List.copyOf(poses);
-    }
-
-    /**
-     * RIGHT side autos - Reset the mirror flags for applicable paths. If the provided list is
-     * shorter than the number of loaded paths, remaining flags default to false. If longer, extra
-     * values are ignored.
-     *
-     * @param mirrors a list of booleans indicating whether to mirror each corresponding path for
-     *     RIGHT side autos.
-     * @param start the starting side of the field - LEFT, CENTER, or RIGHT.
-     */
-    public void setMirrorFlags(List<Boolean> mirrors, StartPosition start) {
-        if (mirrors == null) {
-            return;
-        }
-
-        switch (start) {
-            case RIGHT:
-                pathMirrorFlags.clear();
-                // Copy up to the number of loaded paths
-                for (int i = 0; i < pathPlannerPaths.size(); ++i) {
-                    if (i < mirrors.size()) {
-                        pathMirrorFlags.add(mirrors.get(i));
-                    } else {
-                        pathMirrorFlags.add(false);
-                    }
-                }
-                break;
-            case CENTER:
-                return;
-            case LEFT:
-                return;
-            default:
-                return;
-        }
-    }
-
-    /**
-     * Set a single path's mirror flag. If index is out of range this is a no-op.
-     *
-     * @param index path index
-     * @param mirror whether to mirror that path
-     */
-    public void setShouldMirrorPath(int index, boolean mirror) {
-        if (index < 0 || index >= pathPlannerPaths.size()) {
-            return;
-        }
-
-        // Ensure the flags list is large enough
-        while (pathMirrorFlags.size() < pathPlannerPaths.size()) {
-            pathMirrorFlags.add(false);
-        }
-
-        pathMirrorFlags.set(index, mirror);
     }
 
     /**

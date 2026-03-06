@@ -58,7 +58,7 @@ public class IntakeRollerConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.1);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(5.0, 0.0, 0.0);
+    public static final PID SLOT0_PID = new PID(8.0, 0.0, 0.0).withS(5.0);
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the intake roller.

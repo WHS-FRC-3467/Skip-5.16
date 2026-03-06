@@ -114,9 +114,13 @@ public class HubState {
                 "Can Shoot!", hubActive.getAsBoolean() || hubChange.getAsBoolean());
 
         double next = nextSwitchTime(matchTime);
-        if (next > 0) {
-            Logger.recordOutput("Hub/Time Until Next Phase", matchTime - next);
+
+        // If no more hub switches, count down to end of match
+        if (next < 0) {
+            next = 0;
         }
+
+        Logger.recordOutput("Hub/Time Until Next Phase", matchTime - next);
     }
 
     private Alliance opposite(Alliance alliance) {

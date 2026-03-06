@@ -61,11 +61,11 @@ public class DriveCommands {
     @Getter private static final double ANGLE_MAX_VELOCITY = 8.3;
     @Getter private static final double ANGLE_MAX_ACCELERATION = 20.0;
     private static final LoggedTunableNumber ANGLE_KP =
-            new LoggedTunableNumber("Drive/AngleP", 5.0);
+            new LoggedTunableNumber("Drive/AngleP", 10.0);
     private static final LoggedTunableNumber ANGLE_KD =
-            new LoggedTunableNumber("Drive/AngleD", 0.4);
+            new LoggedTunableNumber("Drive/AngleD", 0.5);
     private static final LoggedTunableNumber ANGLE_TOLERANCE_ROTATIONS =
-            new LoggedTunableNumber("Drive/AngleToleranceRotations", 0.01);
+            new LoggedTunableNumber("Drive/AngleToleranceRotations", 0.005);
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 2.0; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.2; // Rad/Sec
@@ -264,22 +264,13 @@ public class DriveCommands {
     public static Command staticAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
         return Commands.repeatingSequence(
-                joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget)
-                        .until(robotState.facingTarget),
-                drive.runOnce(drive::stopWithX)
-                        .andThen(drive.idle())
-                        .onlyWhile(robotState.facingTarget));
+                joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget));
     }
 
     // This will need to get updated. This is not the most optimal set of code - Wilk
     public static Command autoAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
-        return Commands.repeatingSequence(
-                joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget)
-                        .until(robotState.facingTarget),
-                drive.runOnce(drive::stopWithX)
-                        .andThen(drive.idle())
-                        .onlyWhile(robotState.facingTarget));
+        return joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget);
     }
 
     /**

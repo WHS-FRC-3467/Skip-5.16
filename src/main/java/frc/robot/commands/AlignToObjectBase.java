@@ -21,7 +21,7 @@ import static edu.wpi.first.units.Units.Radians;
 import edu.wpi.first.math.MathUtil;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
-import frc.lib.util.LoggedTuneableProfiledPID;
+import frc.lib.util.LoggedTunableProfiledPID;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -33,7 +33,7 @@ import org.littletonrobotics.junction.Logger;
  * contour. Communal for both teleop &amp; auto. Logs outputs for sim.
  */
 public abstract class AlignToObjectBase {
-    @Getter private final LoggedTuneableProfiledPID angularController;
+    @Getter private final LoggedTunableProfiledPID angularController;
     private final ObjectDetector objectDetector;
     private final ContourSelectionMode mode;
     private final double maxAngularSpeed; // rad/s
@@ -60,7 +60,7 @@ public abstract class AlignToObjectBase {
         this.mode = mode;
         this.maxAngularSpeed = maxAngularSpeed;
         this.angularController =
-                new LoggedTuneableProfiledPID(
+                new LoggedTunableProfiledPID(
                         "AlignToObject", K_P, K_I, K_D, maxAngularSpeed, maxAngularAcceleration);
         hasTarget = false;
     }
@@ -112,7 +112,7 @@ public abstract class AlignToObjectBase {
 
     // Private helper for sim logging
     private void logObjectAlign(
-            Optional<ObjectDetectionObservation> observation, double speedDegPerSec) {
+            Optional<ObjectDetectionObservation> observation, double speedRadPerSec) {
         // Log for sim
         if (observation.isPresent()) {
             Logger.recordOutput(
@@ -120,7 +120,7 @@ public abstract class AlignToObjectBase {
         } else {
             Logger.recordOutput("VisionAlign/" + "ContourYawDeg", -9999.0);
         }
-        Logger.recordOutput("VisionAlign/" + "OmegaCmdDegPerSec", speedDegPerSec);
+        Logger.recordOutput("VisionAlign/" + "OmegaCmdRadPerSec", speedRadPerSec);
         Logger.recordOutput("VisionAlign/" + "HasTarget", hasTarget);
     }
 

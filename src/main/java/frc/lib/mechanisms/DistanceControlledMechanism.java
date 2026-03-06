@@ -180,6 +180,16 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
     }
 
     /**
+     * Runs the mechanism using torque-producing current control with a duty cycle limit.
+     *
+     * @param current Desired current
+     * @param dutyCycle Desired dutycycle of current output, limiting top speed
+     */
+    public void runCurrent(Current current, double dutyCycle) {
+        mechanism.runCurrent(current, dutyCycle);
+    }
+
+    /**
      * Runs the mechanism using duty cycle control.
      *
      * @param dutyCycle Fractional output between 0 and 1

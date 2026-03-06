@@ -21,16 +21,16 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.events.EventTrigger;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -41,6 +41,9 @@ import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
+import frc.robot.commands.autos.tuning.FeedforwardCharacterizationAuto;
+import frc.robot.commands.autos.tuning.WheelCharacterizationAuto;
+import frc.robot.commands.autos.tuning.WheelSlipAuto;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -54,6 +57,7 @@ import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.RobotSim;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -72,7 +76,7 @@ public class RobotContainer {
 
     // Subsystems
     public final Drive drive;
-    private final ShooterSuperstructure shooter;
+    final ShooterSuperstructure shooter;
     private final IntakeSuperstructure intake;
     private final IndexerSuperstructure indexer;
     private final Tower tower;
@@ -82,13 +86,13 @@ public class RobotContainer {
     // Controller
     private final CommandXboxControllerExtended controller =
             new CommandXboxControllerExtended(0).withDeadband(0.1);
+    private final CommandXboxControllerExtended operatorController =
+            new CommandXboxControllerExtended(1).withDeadband(0.1);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
     public final Field2d autoPreviewField = new Field2d();
     private Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
-
-    private final Trigger isAutonomous = new Trigger(DriverStation::isAutonomous);
 
     /** The container for the robot. Contains subsystems, IO devices, and commands. */
     public RobotContainer() {
@@ -99,7 +103,6 @@ public class RobotContainer {
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
-        VisionOdometryCharacterizer.enable();
         // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
@@ -115,52 +118,25 @@ public class RobotContainer {
 
         // Preload Autos
         autoChooser.addOption(
-                "PreloadAuto-Left",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "PreloadAuto-Center",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-        autoChooser.addOption(
-                "PreloadAuto-Right",
-                new PreloadAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+                "PreloadAuto", new PreloadAuto(drive, intake, indexer, tower, shooter));
 
         // Neutral Autos
         autoChooser.addOption(
-                "NeutralAuto-Left",
-                new NeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+                "Aggressive-Left",
+                new NeutralAuto(drive, intake, indexer, tower, shooter, false, false));
         autoChooser.addOption(
-                "NeutralAuto-Right",
-                new NeutralAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
+                "Aggressive-Right",
+                new NeutralAuto(drive, intake, indexer, tower, shooter, true, false));
+        autoChooser.addOption(
+                "Safe-Left", new NeutralAuto(drive, intake, indexer, tower, shooter, false, true));
+        autoChooser.addOption(
+                "Safe-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true, true));
 
         // Depot Autos
         autoChooser.addOption(
-                "DepotAuto-Left",
-                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
+                "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
         autoChooser.addOption(
-                "DepotAuto-Center",
-                new DepotAuto(drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-
-        // Outpost Auto
-        autoChooser.addOption(
-                "OutpostAuto-Right",
-                new OutpostAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
-
-        // Alliance Side Autos
-        autoChooser.addOption(
-                "Depot-Then-OutpostAuto-Left",
-                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.LEFT));
-        autoChooser.addOption(
-                "Depot-Then-OutpostAuto-Center",
-                new AllianceComboAuto(
-                        drive, intake, indexer, tower, shooter, StartPosition.CENTER));
-        autoChooser.addOption(
-                "Outpost-Then-DepotAuto-Right",
-                new AllianceComboAuto(drive, intake, indexer, tower, shooter, StartPosition.RIGHT));
-
-        // Drivebase Characterization Autos
-        autoChooser.addOption("LinearCharacterization", new LinearCharacterizationAuto(drive));
-        autoChooser.addOption(
-                "RotationalCharacterization", new RotationalCharacterizationAuto(drive));
+                "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
 
         autoChooser.onChange(
                 auto -> {
@@ -181,10 +157,6 @@ public class RobotContainer {
 
         autoChooser.addOption(
                 "Feedforward Characterization", new FeedforwardCharacterizationAuto(drive));
-
-        autoChooser.addOption(
-                "Rotational Characterization", new RotationalCharacterizationAuto(drive));
-        autoChooser.addOption("Linear Characterization", new LinearCharacterizationAuto(drive));
 
         // Configure the button bindings
         configureButtonBindings();
@@ -225,23 +197,13 @@ public class RobotContainer {
                                 shooter.retractHood()));
 
         // Right Bumper: Manually cycle intake
-        controller.rightBumper().onTrue(intake.slowRetract()).onFalse(intake.extendIntake());
+        controller.rightBumper().onTrue(intake.shuffleStep()).onFalse(intake.stopRoller());
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
 
-        // A: Trench Align
-        controller
-                .a()
-                .whileTrue(
-                        DriveCommands.joystickDriveAtAngle(
-                                drive,
-                                () -> -controller.getLeftY(),
-                                () -> -controller.getLeftX(),
-                                robotState::getTunnelAssistHeading));
-
         // D-Pad Up: Force Intake Linear Slide Back
-        controller.povUp().onTrue(intake.retractIntake());
+        controller.leftBumper().onTrue(intake.retractIntake());
 
         // D-Pad Down: Unjam
         controller
@@ -250,7 +212,7 @@ public class RobotContainer {
 
         // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
         controller
-                .a()
+                .x()
                 .onTrue(
                         shooter.spinUpShooterToHubDistance(
                                 Meters.of(
@@ -269,6 +231,15 @@ public class RobotContainer {
                                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                                 indexer.stopCommand(),
                                 tower.stopCommand()));
+        operatorController
+                .a()
+                .whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));
+        operatorController
+                .b()
+                .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
+        operatorController.x().onTrue(intake.retractIntake());
+        operatorController.povUp().onTrue(shooter.trimFlywheelSpeedUp());
+        operatorController.povDown().onTrue(shooter.trimFlywheelSpeedDown());
 
         // robotState.enteringTrench.whileTrue(
         //         shooter.forceHoodAngle(Rotations.zero())
@@ -276,7 +247,8 @@ public class RobotContainer {
         //                 .onlyIf(isAutonomous.negate()));
 
         new EventTrigger("RetractIntake").onTrue(intake.retractIntake());
-        new EventTrigger("ExtendIntake").onTrue(intake.intake());
+        new EventTrigger("ExtendIntake").onTrue(intake.autoIntake());
+        new EventTrigger("Spinup").onTrue(shooter.spinUpShooterToHubDistance(Meters.of(3.555)));
     }
 
     /**
@@ -285,7 +257,7 @@ public class RobotContainer {
      */
     private void initializeDashboard() {
 
-        // Indexder Commands
+        // Indexer Commands
         SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Shoot", indexer.shoot());
         SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Expel", indexer.eject());
         SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Feed", indexer.feed());
@@ -310,6 +282,8 @@ public class RobotContainer {
                 ShooterSuperstructureConstants.NAME + "/Stop", shooter.stopFlywheels());
         SmartDashboard.putData(
                 ShooterSuperstructureConstants.NAME + "/Spinup", shooter.spinUpShooter());
+        SmartDashboard.putData(
+                ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
 
         // Drivetrain Commands
         SmartDashboard.putData(
@@ -331,6 +305,17 @@ public class RobotContainer {
                 "Drive/Face 180",
                 DriveCommands.joystickDriveAtAngle(
                         drive, () -> 0.0, () -> 0.0, () -> Rotation2d.k180deg));
+
+        // Diagnostics
+        SmartDashboard.putData(
+                "Enable Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.enable()));
+        SmartDashboard.putData(
+                "Disable Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.disable()));
+        SmartDashboard.putData(
+                "Reset Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
     }
 
     /** Creates and/or binds triggers to LED states */

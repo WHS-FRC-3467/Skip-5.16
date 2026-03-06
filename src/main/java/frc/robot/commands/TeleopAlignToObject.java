@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
+import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
 import java.util.function.DoubleSupplier;
@@ -37,6 +38,7 @@ public class TeleopAlignToObject extends Command {
     private final DoubleSupplier ySupplier;
     private final DoubleSupplier rotSupplier;
     private final AlignToObjectBase strategy;
+    private final RobotState robotState = RobotState.getInstance();
 
     /**
      * Creates a command to align the robot to a detected object while allowing driver control.
@@ -118,11 +120,11 @@ public class TeleopAlignToObject extends Command {
                 ChassisSpeeds.fromFieldRelativeSpeeds(
                         speeds,
                         isFlipped
-                                ? drive.robotState
+                                ? robotState
                                         .getEstimatedPose()
                                         .getRotation()
                                         .plus(Rotation2d.k180deg)
-                                : drive.robotState.getEstimatedPose().getRotation()));
+                                : robotState.getEstimatedPose().getRotation()));
     }
 
     /**

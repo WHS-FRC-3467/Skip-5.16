@@ -120,6 +120,7 @@ public class DistanceSensorIOLaserCAN implements DistanceSensorIO {
             return;
         }
 
+        invalidReadingAlert.set(false);
         inputs.ambientSignal = measure.ambient;
         inputs.distance = Millimeters.of(measure.distance_mm);
     }
