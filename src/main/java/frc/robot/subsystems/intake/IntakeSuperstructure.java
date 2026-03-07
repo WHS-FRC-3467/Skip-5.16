@@ -116,7 +116,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         IntakeLinearConstants.MIN_DISTANCE.in(Meters)
                                                 + Inches.of(3.0).in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
-                                        Inches.of(1.0).in(Meters)));
+                                        Inches.of(2.0).in(Meters)));
     }
 
     private void resetSetpoint() {
