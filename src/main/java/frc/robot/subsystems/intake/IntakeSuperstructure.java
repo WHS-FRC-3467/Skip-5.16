@@ -299,7 +299,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         "Shuffle Retract")
                                 .withTimeout(0.5),
                         moveByInches(
-                                        3.5,
+                                        3.0,
                                         shuffleMotionProfiler,
                                         false,
                                         0.0,

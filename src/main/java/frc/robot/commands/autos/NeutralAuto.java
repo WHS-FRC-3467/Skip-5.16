@@ -38,9 +38,9 @@ public class NeutralAuto extends AutoRoutine {
         // Choose path names based on start position
         List<String> expectedPaths;
         if (isSafe) {
-            expectedPaths = List.of("NeutralSafe1", "Neutral2");
+            expectedPaths = List.of("NeutralSafe1", "NeutralSafe2");
         } else {
-            expectedPaths = List.of("Neutral1", "Neutral2");
+            expectedPaths = List.of("Neutral1", "NeutralSafe2");
         }
 
         // Load the named paths
