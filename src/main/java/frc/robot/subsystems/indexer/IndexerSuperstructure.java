@@ -162,6 +162,12 @@ public class IndexerSuperstructure extends SubsystemBase {
         CommandScheduler.getInstance().cancel(tuningModeCommand);
     }
 
+    public Command fountain() {
+        return this.runOnce(() -> runVelocity(
+                                        RotationsPerSecond.of(5.0),
+                                        RotationsPerSecond.of(5.0)));
+    }
+
     /**
      * Creates a command to run the indexer at shooting velocities. The indexer will stop when the
      * command is interrupted or cancelled.
