@@ -54,7 +54,7 @@ public class NeutralAuto extends AutoRoutine {
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 3.0),
+                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 1.5),
                     // Run back under the trench and shoot
                     // Initialize intake and hood to starting positions for teleop
                     AutoCommands.stowHood(shooter),
