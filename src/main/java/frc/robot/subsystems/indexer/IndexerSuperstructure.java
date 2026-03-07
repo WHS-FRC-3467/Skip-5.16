@@ -163,9 +163,8 @@ public class IndexerSuperstructure extends SubsystemBase {
     }
 
     public Command fountain() {
-        return this.runOnce(() -> runVelocity(
-                                        RotationsPerSecond.of(5.0),
-                                        RotationsPerSecond.of(5.0)));
+        return this.runOnce(
+                () -> runVelocity(RotationsPerSecond.of(5.0), RotationsPerSecond.of(5.0)));
     }
 
     /**

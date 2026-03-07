@@ -282,7 +282,9 @@ public class RobotContainer {
         SmartDashboard.putData(
                 ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
 
-        SmartDashboard.putData("Fountain", Commands.parallel(shooter.fountain(), indexer.fountain(), tower.fountain()));
+        SmartDashboard.putData(
+                "Fountain",
+                Commands.parallel(shooter.fountain(), indexer.fountain(), tower.fountain()));
 
         // Drivetrain Commands
         SmartDashboard.putData(

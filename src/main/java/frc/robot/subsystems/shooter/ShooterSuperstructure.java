@@ -337,9 +337,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     public Command fountain() {
         return Commands.sequence(
-            setHoodAngle(Degrees.of(24.0)),
-            setFlywheelSpeed(RotationsPerSecond.of(5.0))
-        );
+                setHoodAngle(Degrees.of(24.0)), setFlywheelSpeed(RotationsPerSecond.of(10.0)));
     }
 
     /**
