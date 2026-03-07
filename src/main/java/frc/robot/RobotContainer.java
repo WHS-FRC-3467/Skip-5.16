@@ -210,24 +210,20 @@ public class RobotContainer {
         // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
         controller
                 .x()
-                .onTrue(
-                        shooter.spinUpShooterToHubDistance(
-                                Meters.of(
-                                        (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters))
-                                                / 2.0)))
                 .whileTrue(
-                        // Shoot while superstructure is at the flywheel and hood setpoints
                         Commands.parallel(
-                                        indexer.shoot(),
-                                        tower.shoot(),
-                                        Commands.runOnce(() -> drive.stopWithX()))
-                                .onlyWhile(shooter.atHubSetpoints)
-                                .repeatedly())
+                                shooter.spinUpShooterToHubDistance(),
+                                Commands.parallel(indexer.shoot(), tower.shoot())
+                                        .onlyWhile(
+                                                shooter.atHubSetpoints)
+                                        .repeatedly()))
                 .onFalse(
                         Commands.parallel(
-                                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                                shooter.stopAndStow(),
                                 indexer.stopCommand(),
-                                tower.stopCommand()));
+                                tower.stopCommand(),
+                                intake.extendIntake(),
+                                shooter.retractHood()));
         operatorController
                 .a()
                 .whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));

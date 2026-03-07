@@ -285,6 +285,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 .withName("Spin-Up Shooter to Distance");
     }
 
+    public Command spinUpShooterToHubDistance() {
+        double distance = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
+        return Commands.run(
+                        () -> {
+                            spinFlywheel(
+                                    RotationsPerSecond.of(hubFlywheelMap.get(distance)));
+                                setHoodPosition(Degrees.of(hoodAngleMap.get(distance)));
+                        },
+                        this)
+                .withName("Spin-Up Shooter to Distance");
+    }
+
     /**
      * Dynamically spins the flywheel and actuates the hood to the proper values for ANY target shot
      * given current field-relative robot pose. Valid for ANY target. Perpetual command -- never
