@@ -40,7 +40,6 @@ public class AutoCommands {
      * @return a command that resets the robot's pose to the path's starting position
      */
     public static Command resetSimOdom(Drive drive, PathPlannerPath path) {
-        if (RobotBase.isSimulation()) {
             return drive.runOnce(
                     () -> {
                         Pose2d pose = path.getStartingHolonomicPose().get();
@@ -50,9 +49,6 @@ public class AutoCommands {
 
                         robotState.resetPose(pose);
                     });
-        } else {
-            return Commands.none();
-        }
     }
 
     public static Command shootCommand(
