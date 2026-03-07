@@ -289,9 +289,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         double distance = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
         return Commands.run(
                         () -> {
-                            spinFlywheel(
-                                    RotationsPerSecond.of(hubFlywheelMap.get(distance)));
-                                setHoodPosition(Degrees.of(hoodAngleMap.get(distance)));
+                            spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance)));
+                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance)));
                         },
                         this)
                 .withName("Spin-Up Shooter to Distance");

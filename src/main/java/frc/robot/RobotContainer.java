@@ -18,7 +18,6 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -35,7 +34,6 @@ import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.VisionOdometryCharacterizer;
 import frc.robot.Constants.PathConstants;
-import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
@@ -214,8 +212,7 @@ public class RobotContainer {
                         Commands.parallel(
                                 shooter.spinUpShooterToHubDistance(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
-                                        .onlyWhile(
-                                                shooter.atHubSetpoints)
+                                        .onlyWhile(shooter.atHubSetpoints)
                                         .repeatedly()))
                 .onFalse(
                         Commands.parallel(
