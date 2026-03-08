@@ -126,6 +126,10 @@ public class RobotContainer {
                 "Safe-Left", new NeutralAuto(drive, intake, indexer, tower, shooter, false, true));
         autoChooser.addOption(
                 "Safe-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true, true));
+        autoChooser.addOption(
+                "AntiNashoba-Left", new AntiNashoba(drive, intake, indexer, tower, shooter, false));
+        autoChooser.addOption(
+                "AntiNashoba-Right", new AntiNashoba(drive, intake, indexer, tower, shooter, true));
 
         // Depot Autos
         autoChooser.addOption(
