@@ -17,6 +17,7 @@ package frc.robot.commands.autos;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -52,6 +53,7 @@ public class NeutralAuto extends AutoRoutine {
                 && !pathPlannerPaths.contains(null)) {
             loadCommands(
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                    Commands.waitSeconds(3.0),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
