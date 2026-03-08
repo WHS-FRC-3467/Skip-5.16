@@ -211,9 +211,7 @@ public class RobotContainer {
                 .whileTrue(
                         Commands.parallel(
                                 shooter.spinUpShooterToHubDistance(),
-                                Commands.parallel(indexer.shoot(), tower.shoot())
-                                        .onlyWhile(shooter.atHubSetpoints)
-                                        .repeatedly()))
+                                Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(),
