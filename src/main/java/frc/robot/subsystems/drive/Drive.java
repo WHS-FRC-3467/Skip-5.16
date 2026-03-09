@@ -245,6 +245,7 @@ public class Drive extends SubsystemBase {
 
             PathPlannerLogging.setLogTargetPoseCallback(
                     (targetPose) -> {
+                        robotState.setActiveTrajPose(targetPose);
                         Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
                     });
         }

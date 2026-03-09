@@ -19,6 +19,8 @@ import au.grapplerobotics.CanBridge;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
+import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -29,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.Elastic;
 import frc.robot.util.HubState;
+import frc.robot.util.LocalADStarAK;
 import frc.robot.util.RobotSim;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedPowerDistribution;
@@ -123,6 +126,9 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
+        // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
+        Pathfinding.setPathfinder(new LocalADStarAK());
+        CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
         // Log first 8 character of robot serial
         Logger.recordOutput(
                 "Robot Serial",

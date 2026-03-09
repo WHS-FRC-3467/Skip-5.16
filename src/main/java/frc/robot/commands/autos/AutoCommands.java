@@ -7,17 +7,22 @@ package frc.robot.commands.autos;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
@@ -116,5 +121,25 @@ public class AutoCommands {
      */
     public static Command stowHood(ShooterSuperstructure shooter) {
         return Commands.parallel(shooter.retractHood()).withTimeout(1.25);
+    }
+
+    public static Command safeFollowPath(
+            Drive drive, PathPlannerPath path, Distance pathErrorTol, PathPlannerPath tunnelPath) {
+        return AutoBuilder.followPath(path)
+                .until(
+                        () ->
+                                robotState.getActiveTrajectoryError().gte(pathErrorTol)
+                                        || robotState.forcePathFind.get())
+                .andThen(
+                        Commands.either(
+                                AutoBuilder.pathfindThenFollowPath(
+                                        tunnelPath, DriveConstants.PATH_CONSTRAINTS),
+                                Commands.none(),
+                                () ->
+                                        robotState
+                                                        .getActiveTrajectoryError()
+                                                        .gte(pathErrorTol) // TODO switch to end
+                                                // pose check
+                                                || robotState.forcePathFind.get()));
     }
 }

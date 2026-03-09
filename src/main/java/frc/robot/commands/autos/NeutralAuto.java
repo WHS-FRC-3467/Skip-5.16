@@ -15,14 +15,17 @@
 
 package frc.robot.commands.autos;
 
-import com.pathplanner.lib.auto.AutoBuilder;
+import static edu.wpi.first.units.Units.Feet;
+
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
+
 import java.util.List;
 
 public class NeutralAuto extends AutoRoutine {
@@ -53,14 +56,22 @@ public class NeutralAuto extends AutoRoutine {
             loadCommands(
                     AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
                     // Sweep neutral zone while intaking
-                    AutoBuilder.followPath(pathPlannerPaths.get(0)),
+                    AutoCommands.safeFollowPath(
+                            drive,
+                            pathPlannerPaths.get(0),
+                            Feet.of(1),
+                            loadPath("TunnelPath", shouldMirror, false)),
                     AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 3.0),
                     // Run back under the trench and shoot
                     // Initialize intake and hood to starting positions for teleop
                     AutoCommands.stowHood(shooter),
                     intake.retractIntake().asProxy().withTimeout(0.5),
                     // Drive to the neutral zone
-                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                    AutoCommands.safeFollowPath(
+                            drive,
+                            pathPlannerPaths.get(1),
+                            Feet.of(1),
+                            loadPath("TunnelPath", shouldMirror, false)),
                     AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 10)
                             .finallyDo(
                                     () ->

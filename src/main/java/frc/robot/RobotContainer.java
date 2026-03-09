@@ -18,6 +18,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.events.EventTrigger;
@@ -303,6 +304,16 @@ public class RobotContainer {
                 DriveCommands.joystickDriveAtAngle(
                         drive, () -> 0.0, () -> 0.0, () -> Rotation2d.k180deg));
 
+        SmartDashboard.putData(
+                "Pathfind to Start",
+                DriveCommands.pathFindToPose(
+                        drive,
+                        () -> robotState.getEstimatedPose(),
+                        () -> startPose,
+                        DriveConstants.PATH_CONSTRAINTS,
+                        MetersPerSecond.of(0),
+                        Inches.of(5)));
+
         // Diagnostics
         SmartDashboard.putData(
                 "Enable Vision Odometry Characterization",
@@ -349,7 +360,7 @@ public class RobotContainer {
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
         try {
-            Pose2d startPose = autoPreviewField.getObject("path").getPoses().get(0);
+            startPose = autoPreviewField.getObject("path").getPoses().get(0);
             Logger.recordOutput("Auto/StartPose", startPose);
 
             autoPreviewField.getObject("startPose").setPose(startPose);
