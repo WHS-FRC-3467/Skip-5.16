@@ -390,4 +390,7 @@ public class DriveConstants {
                     RotationsPerSecondPerSecond.of(2).in(RadiansPerSecondPerSecond),
                     12.0,
                     false);
+
+    public static final Distance ALLOWABLE_PATH_ERROR = Inches.of(12.0);
+    public static final Distance ALLOWABLE_SHOT_POSE_ERROR = Inches.of(6.0);
 }

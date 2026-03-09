@@ -4,12 +4,12 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-
 import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.commands.DriveCommands;
@@ -137,9 +136,16 @@ public class AutoCommands {
                                 Commands.none(),
                                 () ->
                                         robotState
-                                                        .getActiveTrajectoryError()
-                                                        .gte(pathErrorTol) // TODO switch to end
-                                                // pose check
-                                                || robotState.forcePathFind.get()));
+                                                        .getEstimatedPose()
+                                                        .getTranslation()
+                                                        .getDistance(
+                                                                path.getPathPoses()
+                                                                        .get(
+                                                                                path.getPathPoses()
+                                                                                                .size()
+                                                                                        - 1)
+                                                                        .getTranslation())
+                                                > DriveConstants.ALLOWABLE_SHOT_POSE_ERROR.in(
+                                                        Meters)));
     }
 }
