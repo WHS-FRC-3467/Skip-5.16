@@ -55,7 +55,7 @@ public class DepotCenterAuto extends AutoRoutine {
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null)) {
             loadCommands(
                     // Reset odometry
-                    AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                    AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
                     // Drive to depot and start intake, then run through depot while intaking FUEL
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     // // Drive to shooting location and shoot all FUEL
