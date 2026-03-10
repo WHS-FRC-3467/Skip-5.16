@@ -116,6 +116,6 @@ public class BeamBreakIOLaserCAN implements BeamBreakIO {
             return;
         }
 
-        inputs.isBroken = Millimeters.of(measure.distance_mm).gte(triggerDistance);
+        inputs.isBroken = Millimeters.of(measure.distance_mm).lte(triggerDistance);
     }
 }

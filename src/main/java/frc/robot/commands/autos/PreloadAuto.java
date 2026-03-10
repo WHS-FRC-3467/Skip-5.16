@@ -15,8 +15,6 @@
 
 package frc.robot.commands.autos;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -34,8 +32,6 @@ public class PreloadAuto extends AutoRoutine {
             Tower tower,
             ShooterSuperstructure shooter) {
 
-        loadCommands(
-                AutoCommands.shootCommand(
-                        drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.15), 10.0));
+        loadCommands(AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 10.0));
     }
 }

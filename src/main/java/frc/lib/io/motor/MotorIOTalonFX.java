@@ -101,7 +101,7 @@ public class MotorIOTalonFX implements MotorIO {
 
         motor = new TalonFX(main.id(), new CANBus(main.bus()));
         updateThread
-                .CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(config))
+                .ctreCheckErrorAndRetry(() -> motor.getConfigurator().apply(config))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);
@@ -137,7 +137,7 @@ public class MotorIOTalonFX implements MotorIO {
 
             TalonFX follower = followers[i];
             updateThread
-                    .CTRECheckErrorAndRetry(() -> follower.getConfigurator().apply(config))
+                    .ctreCheckErrorAndRetry(() -> follower.getConfigurator().apply(config))
                     .exceptionally(
                             ex -> {
                                 LOGGER.log(Level.SEVERE, ex.toString(), ex);
@@ -162,7 +162,7 @@ public class MotorIOTalonFX implements MotorIO {
         closedLoopReferenceSlope = motor.getClosedLoopReferenceSlope();
 
         updateThread
-                .CTRECheckErrorAndRetry(
+                .ctreCheckErrorAndRetry(
                         () ->
                                 BaseStatusSignal.setUpdateFrequencyForAll(
                                         100.0,
@@ -433,7 +433,7 @@ public class MotorIOTalonFX implements MotorIO {
                 .withKS(pid.S());
 
         updateThread
-                .CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
+                .ctreCheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);
@@ -453,7 +453,7 @@ public class MotorIOTalonFX implements MotorIO {
                 .withKS(pid.S());
 
         updateThread
-                .CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
+                .ctreCheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);
@@ -473,7 +473,7 @@ public class MotorIOTalonFX implements MotorIO {
                 .withKS(pid.S());
 
         updateThread
-                .CTRECheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
+                .ctreCheckErrorAndRetry(() -> motor.getConfigurator().apply(currentConfig))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);

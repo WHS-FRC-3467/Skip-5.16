@@ -83,7 +83,7 @@ public class RotaryVisualizer {
                 new LoggedMechanismLigament2d(
                         name + "Measured",
                         armLength,
-                        constants.startingAngle().in(Radians),
+                        constants.startingAngle().in(Degrees),
                         3,
                         new Color8Bit(Color.kGreen));
 
@@ -91,7 +91,7 @@ public class RotaryVisualizer {
                 new LoggedMechanismLigament2d(
                         name + "Trajectory",
                         armLength,
-                        constants.startingAngle().in(Radians),
+                        constants.startingAngle().in(Degrees),
                         3,
                         new Color8Bit(Color.kYellow));
 
@@ -99,7 +99,7 @@ public class RotaryVisualizer {
                 new LoggedMechanismLigament2d(
                         name + "Goal",
                         armLength,
-                        constants.startingAngle().in(Radians),
+                        constants.startingAngle().in(Degrees),
                         3,
                         new Color8Bit(Color.kRed));
 

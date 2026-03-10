@@ -9,7 +9,6 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -62,18 +61,17 @@ public class AutoCommands {
             IndexerSuperstructure indexer,
             Tower tower,
             ShooterSuperstructure shooter,
-            LinearVelocity retractSpeed,
             double timeoutDuration) {
         return Commands.deadline(
                 Commands.parallel(
-                                shooter.spinUpShooter(),
-                                intake.slowRetract(retractSpeed).asProxy(),
+                                shooter.spinUpShooter().asProxy(),
                                 Commands.parallel(
                                                 indexer.shoot()
                                                         .withInterruptBehavior(
                                                                 InterruptionBehavior
                                                                         .kCancelIncoming),
-                                                tower.shoot())
+                                                tower.shoot(),
+                                                intake.shuffleStep().repeatedly().asProxy())
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(
                                                         RobotState.getInstance().facingTarget))

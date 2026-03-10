@@ -100,11 +100,22 @@ public class AprilTagCamera {
         // Get camera intrinsics from inputs to potentially pull from log if replaying
         Logger.processInputs(properties.name(), inputs);
 
-        Matrix<N3, N3> cameraMatrix = MatBuilder.fill(Nat.N3(), Nat.N3(), inputs.cameraMatrix);
-        Matrix<N8, N1> distCoeffs = MatBuilder.fill(Nat.N8(), Nat.N1(), inputs.distCoeffs);
+        Matrix<N3, N3> cameraMatrix = null;
+        Matrix<N8, N1> distCoeffs = null;
 
-        if (!cameraMatrix.equals(properties.cameraMatrix())
-                || !distCoeffs.equals(properties.distCoeffs())) {
+        if (inputs.cameraMatrix != null) {
+            cameraMatrix = MatBuilder.fill(Nat.N3(), Nat.N3(), inputs.cameraMatrix);
+        }
+        if (inputs.distCoeffs != null) {
+            distCoeffs = MatBuilder.fill(Nat.N8(), Nat.N1(), inputs.distCoeffs);
+        }
+
+        if (properties.cameraMatrix() != null
+                && properties.distCoeffs() != null
+                && cameraMatrix != null
+                && distCoeffs != null
+                && (!cameraMatrix.equals(properties.cameraMatrix())
+                        || !distCoeffs.equals(properties.distCoeffs()))) {
             mismatchedIntrinsicsAlert.set(true);
         }
 

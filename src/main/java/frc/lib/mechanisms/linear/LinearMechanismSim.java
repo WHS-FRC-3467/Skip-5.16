@@ -38,7 +38,7 @@ import frc.lib.io.motor.MotorIOSim;
 public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
     private final ElevatorSim sim;
 
-    private Time lastTime = Seconds.zero();
+    private Time lastTime = RobotController.getMeasureTime();
 
     /**
      * Creates a new LinearMechanismSim.

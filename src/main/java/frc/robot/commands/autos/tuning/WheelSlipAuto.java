@@ -67,9 +67,10 @@ public class WheelSlipAuto extends AutoRoutine {
                                                 > speedLimit.in(RotationsPerSecond)),
                         Commands.run(
                                 () -> {
-                                    double current = timer.get() * rampRate;
-                                    drive.runCharacterization(current);
-                                    Logger.recordOutput("Wheel Slip Current: ", current);
-                                })));
+                                    double voltage = timer.get() * rampRate;
+                                    drive.runCharacterization(voltage);
+                                    Logger.recordOutput("WheelSlip/Voltage", voltage);
+                                })),
+                Commands.runOnce(() -> drive.stop()));
     }
 }

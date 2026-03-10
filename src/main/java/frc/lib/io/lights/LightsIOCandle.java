@@ -44,7 +44,7 @@ public class LightsIOCandle implements LightsIO {
         candle = new CANdle(id.id(), new CANBus(id.bus()));
 
         updateThread
-                .CTRECheckErrorAndRetry(() -> candle.getConfigurator().apply(config))
+                .ctreCheckErrorAndRetry(() -> candle.getConfigurator().apply(config))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);

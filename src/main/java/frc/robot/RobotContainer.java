@@ -83,6 +83,8 @@ public class RobotContainer {
     // Controller
     private final CommandXboxControllerExtended controller =
             new CommandXboxControllerExtended(0).withDeadband(0.1);
+    private final CommandXboxControllerExtended operatorController =
+            new CommandXboxControllerExtended(1).withDeadband(0.1);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
@@ -98,7 +100,6 @@ public class RobotContainer {
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
-        VisionOdometryCharacterizer.enable();
         // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
@@ -118,22 +119,15 @@ public class RobotContainer {
 
         // Neutral Autos
         autoChooser.addOption(
-                "NeutralAuto-Left", new NeutralAuto(drive, intake, indexer, tower, shooter, false));
+                "Aggressive-Left",
+                new NeutralAuto(drive, intake, indexer, tower, shooter, false, false));
         autoChooser.addOption(
-                "NeutralAuto-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true));
-
+                "Aggressive-Right",
+                new NeutralAuto(drive, intake, indexer, tower, shooter, true, false));
         autoChooser.addOption(
-                "ChoreoNeutralAuto-Left",
-                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, false, false));
+                "Safe-Left", new NeutralAuto(drive, intake, indexer, tower, shooter, false, true));
         autoChooser.addOption(
-                "ChoreoNeutralAuto-Right",
-                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, true, false));
-        autoChooser.addOption(
-                "ChoreoNeutralSafeAuto-Left",
-                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, false, true));
-        autoChooser.addOption(
-                "ChoreoNeutralSafeAuto-Right",
-                new ChoreoNeutralAuto(drive, intake, indexer, tower, shooter, true, true));
+                "Safe-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true, true));
 
         // Depot Autos
         autoChooser.addOption(
@@ -200,13 +194,13 @@ public class RobotContainer {
                                 shooter.retractHood()));
 
         // Right Bumper: Manually cycle intake
-        controller.rightBumper().onTrue(intake.slowRetract()).onFalse(intake.extendIntake());
+        controller.rightBumper().onTrue(intake.shuffleStep()).onFalse(intake.stopRoller());
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
 
         // D-Pad Up: Force Intake Linear Slide Back
-        controller.povUp().onTrue(intake.retractIntake());
+        controller.leftBumper().onTrue(intake.retractIntake());
 
         // D-Pad Down: Unjam
         controller
@@ -234,11 +228,15 @@ public class RobotContainer {
                                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
                                 indexer.stopCommand(),
                                 tower.stopCommand()));
-
-        // Hold to trim flywheel speed up/down by ~ 2 RPS/sec while shooting. Driver trim
-        // adjustments persist until dashboard value changes or robot power cycle.
-        controller.y().and(controller.rightTrigger()).onTrue(shooter.trimFlywheelSpeedUp());
-        controller.a().and(controller.rightTrigger()).onFalse(shooter.trimFlywheelSpeedDown());
+        operatorController
+                .a()
+                .whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));
+        operatorController
+                .b()
+                .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
+        operatorController.x().onTrue(intake.retractIntake());
+        operatorController.povUp().onTrue(shooter.trimFlywheelSpeedUp());
+        operatorController.povDown().onTrue(shooter.trimFlywheelSpeedDown());
 
         // robotState.enteringTrench.whileTrue(
         //         shooter.forceHoodAngle(Rotations.zero())
@@ -246,7 +244,8 @@ public class RobotContainer {
         //                 .onlyIf(isAutonomous.negate()));
 
         new EventTrigger("RetractIntake").onTrue(intake.retractIntake());
-        new EventTrigger("ExtendIntake").onTrue(intake.intake());
+        new EventTrigger("ExtendIntake").onTrue(intake.autoIntake());
+        new EventTrigger("Spinup").onTrue(shooter.spinUpShooterToHubDistance(Meters.of(3.555)));
     }
 
     /**
@@ -255,7 +254,7 @@ public class RobotContainer {
      */
     private void initializeDashboard() {
 
-        // Indexder Commands
+        // Indexer Commands
         SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Shoot", indexer.shoot());
         SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Expel", indexer.eject());
         SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Feed", indexer.feed());
@@ -280,6 +279,8 @@ public class RobotContainer {
                 ShooterSuperstructureConstants.NAME + "/Stop", shooter.stopFlywheels());
         SmartDashboard.putData(
                 ShooterSuperstructureConstants.NAME + "/Spinup", shooter.spinUpShooter());
+        SmartDashboard.putData(
+                ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
 
         // Drivetrain Commands
         SmartDashboard.putData(
@@ -301,6 +302,17 @@ public class RobotContainer {
                 "Drive/Face 180",
                 DriveCommands.joystickDriveAtAngle(
                         drive, () -> 0.0, () -> 0.0, () -> Rotation2d.k180deg));
+
+        // Diagnostics
+        SmartDashboard.putData(
+                "Enable Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.enable()));
+        SmartDashboard.putData(
+                "Disable Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.disable()));
+        SmartDashboard.putData(
+                "Reset Vision Odometry Characterization",
+                Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
     }
 
     /** Creates and/or binds triggers to LED states */
