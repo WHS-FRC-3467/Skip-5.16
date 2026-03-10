@@ -473,7 +473,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
             previousLeftVelocity = leftFlywheelIO.getLinearVelocity().in(MetersPerSecond);
             previousRightVelocity = rightFlywheelIO.getLinearVelocity().in(MetersPerSecond);
+
+            // Allow proper shot & hopper detection on shooter start by initializing
+            lastFuelDetectionTime = now - minShotSpacingSeconds.getAsDouble(); 
             shotStartTime = now;
+
             currentFuelCount = 0;
         }
         // Shooter is falling, aggregate shot data and reset state
