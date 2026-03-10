@@ -193,8 +193,19 @@ public class RobotContainer {
                                 intake.extendIntake(),
                                 shooter.retractHood()));
 
-        // Right Bumper: Manually cycle intake
-        controller.rightBumper().onTrue(intake.shuffleStep()).onFalse(intake.stopRoller());
+        // Tap Right Bumper while Right Trigger held: Manually cycle intake
+        controller
+                .rightBumper()
+                .and(controller.rightTrigger())
+                .onTrue(intake.shuffleStep())
+                .onFalse(intake.stopRoller());
+
+        // Tap Right Bumper while X held: Manually cycle intake within bumpers
+        controller
+                .rightBumper()
+                .and(controller.x())
+                .onTrue(intake.hubShuffleStep())
+                .onFalse(intake.stopRoller());
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
@@ -207,7 +218,7 @@ public class RobotContainer {
                 .povDown()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
-        // Tap X: Prepare shot from up against the HUB (No-Vision Fallback)
+        // Driver X: Hub Shot with Automated Agitation (No-Vision Fallback)
         controller
                 .x()
                 .onTrue(
@@ -215,30 +226,6 @@ public class RobotContainer {
                                 Meters.of(
                                         (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters))
                                                 / 2.0)))
-                .whileTrue(
-                        // Shoot while superstructure is at the flywheel and hood setpoints
-                        Commands.parallel(
-                                        indexer.shoot(),
-                                        tower.shoot(),
-                                        Commands.runOnce(() -> drive.stopWithX()))
-                                .onlyWhile(shooter.atHubSetpoints)
-                                .repeatedly())
-                .onFalse(
-                        Commands.parallel(
-                                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
-                                indexer.stopCommand(),
-                                tower.stopCommand()));
-
-        // Y: Hub Shot with Automated Agitation
-        controller
-                .y()
-                .onTrue(
-                        shooter.spinUpShooterToHubDistance(
-                                Meters.of( // Account for intake linear extending 11 - 3.25 inches
-                                        // past bumpers
-                                        (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0
-                                                + 11
-                                                - 3.25)))
                 .whileTrue(
                         Commands.parallel(
                                 // Shoot while superstructure is at the flywheel and hood setpoints
@@ -249,7 +236,7 @@ public class RobotContainer {
                                         .onlyWhile(shooter.atHubSetpoints)
                                         .repeatedly(),
                                 Commands.repeatingSequence(
-                                        intake.shuffleStep(), Commands.waitSeconds(0.2))))
+                                        intake.hubShuffleStep(), Commands.waitSeconds(0.2))))
                 .onFalse(
                         Commands.parallel(
                                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),

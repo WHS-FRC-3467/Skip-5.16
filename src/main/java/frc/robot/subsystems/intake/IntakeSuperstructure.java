@@ -310,6 +310,39 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 .withName("Intake Shuffle Step");
     }
 
+    /**
+     * Create a command to shuffle the intake between its retracted position and a partially
+     * extended position aligned with the front buumper edge.
+     *
+     * @return a Command that is a step in this intake shuffle for up-against-hub shooting.
+     */
+    public Command hubShuffleStep() {
+        return Commands.sequence(
+                        // Extend intake if there is no more space to retract
+                        Commands.either(
+                                Commands.sequence(retractIntake(), Commands.waitUntil(isRetracted)),
+                                Commands.none(),
+                                isRetracted),
+                        moveByInches(
+                                        3.25,
+                                        shuffleMotionProfiler,
+                                        false,
+                                        0.0,
+                                        Inches.of(0.5).in(Meters),
+                                        "Hub Shuffle Extend")
+                                .withTimeout(0.5),
+                        moveByInches(
+                                        -3.25,
+                                        shuffleMotionProfiler,
+                                        true,
+                                        0.6,
+                                        Inches.of(0.5).in(Meters),
+                                        "Hub Shuffle Retract")
+                                .withTimeout(0.5),
+                        stopRoller())
+                .withName("Intake Hub Shuffle Step");
+    }
+
     public Command linearCoast() {
         return this.runOnce(intakeLinearIO::runCoast).withName("Linear Coast");
     }
