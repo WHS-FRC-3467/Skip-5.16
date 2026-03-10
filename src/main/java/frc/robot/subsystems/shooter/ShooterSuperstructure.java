@@ -457,15 +457,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // Detects unique fuel passing through the shooter and calculates BPS shot statistics
     private void detectFuel() {
         double now = Timer.getFPGATimestamp();
+        boolean shooting = staticShotState.getAsBoolean();
         // Shooter is rising, initialize tracking variables
-        if (staticShotState.getAsBoolean() && !shotInProgress) {
+        if (shooting && !shotInProgress) {
             shotInProgress = true;
 
+            previousLeftVelocity = leftFlywheelIO.getLinearVelocity().in(MetersPerSecond);
+            previousRightVelocity = rightFlywheelIO.getLinearVelocity().in(MetersPerSecond);
             shotStartTime = now;
             currentFuelCount = 0;
         }
         // Shooter is falling, aggregate shot data and reset state
-        if (!staticShotState.getAsBoolean() && shotInProgress) {
+        if (!shooting && shotInProgress) {
             shotInProgress = false;
 
             double duration = now - shotStartTime;
