@@ -207,7 +207,7 @@ public class RobotContainer {
                 .povDown()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
-        // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
+        // Tap X: Prepare shot from up against the HUB (No-Vision Fallback)
         controller
                 .x()
                 .onTrue(
@@ -223,6 +223,33 @@ public class RobotContainer {
                                         Commands.runOnce(() -> drive.stopWithX()))
                                 .onlyWhile(shooter.atHubSetpoints)
                                 .repeatedly())
+                .onFalse(
+                        Commands.parallel(
+                                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                                indexer.stopCommand(),
+                                tower.stopCommand()));
+
+        // Y: Hub Shot with Automated Agitation
+        controller
+                .y()
+                .onTrue(
+                        shooter.spinUpShooterToHubDistance(
+                                Meters.of( // Account for intake linear extending 11 - 3.25 inches
+                                        // past bumpers
+                                        (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0
+                                                + 11
+                                                - 3.25)))
+                .whileTrue(
+                        Commands.parallel(
+                                // Shoot while superstructure is at the flywheel and hood setpoints
+                                Commands.parallel(
+                                                indexer.shoot(),
+                                                tower.shoot(),
+                                                Commands.runOnce(() -> drive.stopWithX()))
+                                        .onlyWhile(shooter.atHubSetpoints)
+                                        .repeatedly(),
+                                Commands.repeatingSequence(
+                                        intake.shuffleStep(), Commands.waitSeconds(0.2))))
                 .onFalse(
                         Commands.parallel(
                                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
