@@ -18,6 +18,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -148,6 +149,29 @@ public class RobotState {
                             getFieldRegion() == FieldRegion.ALLIANCE_ZONE
                                     && enteringTrench.negate().getAsBoolean());
 
+    /** Trigger determining whether robot is ready for a static shot */
+    private final Debouncer staticShootingDebouncer = new Debouncer(0.05, DebounceType.kRising);
+
+    public final LoggedTrigger withinStaticShootingTolerance =
+            new LoggedTrigger(
+                    "RobotState/withinStaticShootingTolerance",
+                    () -> {
+                        ChassisSpeeds chassisVelocity = getFieldRelativeVelocity();
+                        double linearVelocityMPS =
+                                Math.hypot(
+                                        chassisVelocity.vxMetersPerSecond,
+                                        chassisVelocity.vyMetersPerSecond);
+                        // Arbitrary threshold to determine if the robot is ready for a
+                        // static shot
+                        return linearVelocityMPS < 0.02 && facingTarget.getAsBoolean();
+                    });
+
+    public final LoggedTrigger atStaticShootingState =
+            new LoggedTrigger(
+                    "RobotState/atStaticShootingState",
+                    () ->
+                            staticShootingDebouncer.calculate(
+                                    withinStaticShootingTolerance.getAsBoolean()));
     // -------- POSE ESTIMATION --------
 
     private final PoseEstimator poseEstimator =

@@ -30,6 +30,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -45,6 +46,7 @@ import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
+import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
@@ -143,6 +145,38 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private AngularVelocity getFlywheelTrimStep() {
         return RotationsPerSecond.of(flywheelTrimStepRPS.get());
     }
+
+    /** Shooter diagnostics */
+    // Trigger for whether we are at the static shooting state (shooter ready, robot stationary &
+    // aligned to target)
+    private final LoggedTrigger staticShotState =
+            new LoggedTrigger(
+                    this.getName() + "/StaticShotState",
+                    readyToShoot.and(robotState.atStaticShootingState));
+
+    private final LoggedTunableNumber shotDetectionThresholdMPS =
+            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.8);
+    private final LoggedTunableNumber minShotSpacingSeconds =
+            new LoggedTunableNumber(getName() + "/MinimumShotCountSpacingSeconds", 0.07);
+
+    private boolean shotInProgress = false;
+
+    private int currentFuelCount = 0;
+    // Total fuel count the shooter has detected since the robot started
+    private @Getter int totalFuelCount = 0;
+
+    private double lastFuelDetectionTime = 0.0;
+    private double shotStartTime = 0.0;
+    // Total time the shooter has been in a "shot in progress" state since the robot started
+    private @Getter double totalShotTime = 0.0;
+
+    private double previousLeftVelocity = 0.0;
+    private double previousRightVelocity = 0.0;
+
+    // Balls per second for the most recent shot
+    private @Getter double lastShotBPS = 0.0;
+    // Average balls per second since the robot started
+    private @Getter double averageShotBPS = 0.0;
 
     /**
      * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
@@ -420,6 +454,79 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Commands.runOnce(() -> flywheelTrim = flywheelTrim.minus(getFlywheelTrimStep()));
     }
 
+    // Detects unique fuel passing through the shooter and calculates BPS shot statistics
+    private void detectFuel() {
+        double now = Timer.getFPGATimestamp();
+        // Shooter is rising, initialize tracking variables
+        if (staticShotState.getAsBoolean() && !shotInProgress) {
+            shotInProgress = true;
+
+            shotStartTime = now;
+            currentFuelCount = 0;
+        }
+        // Shooter is falling, aggregate shot data and reset state
+        if (!staticShotState.getAsBoolean() && shotInProgress) {
+            shotInProgress = false;
+
+            double duration = now - shotStartTime;
+            totalShotTime += duration;
+            totalFuelCount += currentFuelCount;
+
+            if (duration > 0) {
+                lastShotBPS = currentFuelCount / duration;
+            }
+            if (totalShotTime > 0) {
+                averageShotBPS = totalFuelCount / totalShotTime;
+            }
+        }
+        // Between shots, return early
+        if (!shotInProgress) return;
+
+        // During shot, detect unique fuel through shooter via velocity drop
+        velocityDropDetection(now);
+    }
+
+    // Detects fuel passing through the shooter by looking for drops in flywheel velocities
+    private void velocityDropDetection(double time) {
+        // Current flywheel velocities
+        double leftVelocity = leftFlywheelIO.getLinearVelocity().in(MetersPerSecond);
+        double rightVelocity = rightFlywheelIO.getLinearVelocity().in(MetersPerSecond);
+        // Flywheel velocity drops since last check
+        double leftVelocityDrop = previousLeftVelocity - leftVelocity;
+        double rightVelocityDrop = previousRightVelocity - rightVelocity;
+
+        // Ball hitting flywheel -> motor velocity drop
+        boolean leftDropDetected = leftVelocityDrop > shotDetectionThresholdMPS.getAsDouble();
+        boolean rightDropDetected = rightVelocityDrop > shotDetectionThresholdMPS.getAsDouble();
+        // If no drops detected, update previous velocities and return
+        if (!(leftDropDetected || rightDropDetected)) {
+            previousLeftVelocity = leftVelocity;
+            previousRightVelocity = rightVelocity;
+            return;
+        }
+
+        // Spacing filter to prevent false positives from multiple velocity drops from the same ball
+        double dt = time - lastFuelDetectionTime;
+        if (dt < minShotSpacingSeconds.getAsDouble()) {
+            // Detected shot too soon after previous shot -- likely a false positive, so ignore
+            previousLeftVelocity = leftVelocity;
+            previousRightVelocity = rightVelocity;
+            return;
+        }
+
+        // Unique fuel(s) detected
+        if (leftDropDetected && rightDropDetected) {
+            currentFuelCount += 2;
+        } else {
+            currentFuelCount++;
+        }
+
+        lastFuelDetectionTime = time;
+
+        previousLeftVelocity = leftVelocity;
+        previousRightVelocity = rightVelocity;
+    }
+
     @Override
     public void periodic() {
         if (tuningMode.get()) {
@@ -439,6 +546,20 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         leftFlywheelIO.periodic();
         rightFlywheelIO.periodic();
         hoodIO.periodic();
+
+        detectFuel();
+
+        Logger.recordOutput(getName() + "/LastShotBPS", lastShotBPS);
+
+        Logger.recordOutput(getName() + "/AverageShotBPS", averageShotBPS);
+
+        Logger.recordOutput(getName() + "/TotalFuelCount", totalFuelCount);
+
+        Logger.recordOutput(getName() + "/CurrentFuelCount", currentFuelCount);
+
+        Logger.recordOutput(getName() + "/ShotInProgress", shotInProgress);
+
+        Logger.recordOutput(getName() + "/TotalShotTime", totalShotTime);
 
         Logger.recordOutput(
                 getName() + "/VelocityErrorDifference",
