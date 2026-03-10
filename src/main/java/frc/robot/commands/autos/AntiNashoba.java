@@ -45,7 +45,7 @@ public class AntiNashoba extends AutoRoutine {
                 && pathPlannerPaths.size() == expectedPaths.size()
                 && !pathPlannerPaths.contains(null)) {
             loadCommands(
-                    AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                    AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
