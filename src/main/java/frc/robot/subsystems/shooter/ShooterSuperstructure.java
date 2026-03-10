@@ -154,8 +154,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     this.getName() + "/StaticShotState",
                     readyToShoot.and(robotState.atStaticShootingState));
 
+    // Linear velocity drop required to detect a shot passing through the shooter
     private final LoggedTunableNumber shotDetectionThresholdMPS =
             new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.8);
+    // A velocity drop detected within this time of the previous detection is ignored to prevent false positives from the same ball
     private final LoggedTunableNumber minShotSpacingSeconds =
             new LoggedTunableNumber(getName() + "/MinimumShotCountSpacingSeconds", 0.07);
 
@@ -475,7 +477,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             previousRightVelocity = rightFlywheelIO.getLinearVelocity().in(MetersPerSecond);
 
             // Allow proper shot & hopper detection on shooter start by initializing
-            lastFuelDetectionTime = now - minShotSpacingSeconds.getAsDouble(); 
+            lastFuelDetectionTime = now - minShotSpacingSeconds.getAsDouble();
             shotStartTime = now;
 
             currentFuelCount = 0;
