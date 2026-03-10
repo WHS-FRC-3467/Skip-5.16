@@ -26,4 +26,8 @@ public interface LightsIO {
      * @param request {@link ControlRequest}
      */
     public default void setAnimation(ControlRequest request) {}
+
+    public default void updateLedsSim() {}
+
+    public record LEDSegment(int startIndex, int endIndex, int animationSlot) {}
 }

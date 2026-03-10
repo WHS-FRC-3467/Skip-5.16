@@ -42,9 +42,9 @@ public class LEDs extends SubsystemBase {
         // RUNNING_INTAKE are true it will set to RUNNING_AUTO
 
         RUNNING_AUTO(0, LEDsConstants.autoAnimation),
-        READY_TO_SHOOT(1, LEDsConstants.offAnimation),
-        RUNNING_INTAKE(2, LEDsConstants.offAnimation),
-        NONE(3, LEDsConstants.offAnimation);
+        READY_TO_SHOOT(1, LEDsConstants.autoAnimation),
+        RUNNING_INTAKE(2, LEDsConstants.autoAnimation),
+        NONE(3, LEDsConstants.autoAnimation);
 
         // Lower priority first
         private final int priority;
@@ -101,6 +101,16 @@ public class LEDs extends SubsystemBase {
         Logger.recordOutput(
                 LEDsConstants.NAME + "/StateQueue",
                 stateQueue.stream().map(s -> s.name()).toArray(String[]::new));
+    }
+
+    @Override
+    public void simulationPeriodic() {
+
+        if (updateCurrentState()) {
+            lights.setAnimations(currentState.getAnimation());
+        } else {
+            lights.updateLedsSim();
+        }
     }
 
     public Command scheduleStateCommand(State state) {
