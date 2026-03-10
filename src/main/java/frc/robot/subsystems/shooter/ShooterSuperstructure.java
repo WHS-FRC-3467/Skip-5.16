@@ -178,6 +178,15 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // Average balls per second since the robot started
     private @Getter double averageShotBPS = 0.0;
 
+    /** Whether the hopper is estimated to be empty during a shot */
+    public LoggedTrigger shotHopperEmpty =
+            new LoggedTrigger(
+                    this.getName() + "/shotHopperEmpty",
+                    () -> {
+                        boolean fuelNear = Timer.getFPGATimestamp() - lastFuelDetectionTime <= 0.5;
+                        return !fuelNear && shotInProgress;
+                    });
+
     /**
      * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
      *
