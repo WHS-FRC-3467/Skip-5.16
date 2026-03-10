@@ -157,7 +157,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // Linear velocity drop required to detect a shot passing through the shooter
     private final LoggedTunableNumber shotDetectionThresholdMPS =
             new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.8);
-    // A velocity drop detected within this time of the previous detection is ignored to prevent false positives from the same ball
+    // A velocity drop detected within this time of the previous detection is ignored to prevent
+    // false positives from the same ball
     private final LoggedTunableNumber minShotSpacingSeconds =
             new LoggedTunableNumber(getName() + "/MinimumShotCountSpacingSeconds", 0.07);
 
@@ -181,7 +182,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private @Getter double averageShotBPS = 0.0;
 
     /** Whether the hopper is estimated to be empty during a shot */
-    public LoggedTrigger shotHopperEmpty =
+    public final LoggedTrigger shotHopperEmpty =
             new LoggedTrigger(
                     this.getName() + "/shotHopperEmpty",
                     () -> {
