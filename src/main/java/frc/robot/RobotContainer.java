@@ -200,7 +200,7 @@ public class RobotContainer {
                 .onTrue(intake.shuffleStep())
                 .onFalse(intake.stopRoller());
 
-        // Tap Right Bumper while X held: Manually cycle intake within bumpers
+        // Tap Right Bumper while X held: Manually cycle intake within bumpers for hub shot
         controller
                 .rightBumper()
                 .and(controller.x())
@@ -218,7 +218,7 @@ public class RobotContainer {
                 .povDown()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
-        // Driver X: Hub Shot with Automated Agitation (No-Vision Fallback)
+        // Driver X: Hub Shot (No-Vision Fallback)
         controller
                 .x()
                 .onTrue(
@@ -227,16 +227,13 @@ public class RobotContainer {
                                         (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters))
                                                 / 2.0)))
                 .whileTrue(
+                        // Shoot while superstructure is at the flywheel and hood setpoints
                         Commands.parallel(
-                                // Shoot while superstructure is at the flywheel and hood setpoints
-                                Commands.parallel(
-                                                indexer.shoot(),
-                                                tower.shoot(),
-                                                Commands.runOnce(() -> drive.stopWithX()))
-                                        .onlyWhile(shooter.atHubSetpoints)
-                                        .repeatedly(),
-                                Commands.repeatingSequence(
-                                        intake.hubShuffleStep(), Commands.waitSeconds(0.2))))
+                                        indexer.shoot(),
+                                        tower.shoot(),
+                                        Commands.runOnce(() -> drive.stopWithX()))
+                                .onlyWhile(shooter.atHubSetpoints)
+                                .repeatedly())
                 .onFalse(
                         Commands.parallel(
                                 shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
