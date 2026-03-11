@@ -35,13 +35,13 @@ import java.util.function.Supplier;
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 50.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0);
 
     private static final LoggedTunableNumber ROLLER_AUTO_INTAKE_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/AutoIntakeRPS", 50.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/AutoIntakeRPS", 40.0);
 
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -50.0);
+            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
 
     private static final LoggedTunableNumber SLOW_MPS =
             new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowMPS", 0.05);
@@ -117,7 +117,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         IntakeLinearConstants.MIN_DISTANCE.in(Meters)
                                                 + Inches.of(3.0).in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
-                                        Inches.of(1.0).in(Meters)));
+                                        Inches.of(2.0).in(Meters)));
         isFullyRetracted =
                 new LoggedTrigger(
                         "IntakeSuperstructure/IsFullyRetracted",
@@ -343,7 +343,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         "Shuffle Retract")
                                 .withTimeout(0.5),
                         moveByInches(
-                                        4.5,
+                                        3.0,
                                         shuffleMotionProfiler,
                                         false,
                                         0.0,
