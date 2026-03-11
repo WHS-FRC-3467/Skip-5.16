@@ -167,7 +167,7 @@ public class RobotState {
                                         chassisVelocity.vyMetersPerSecond);
                         // Arbitrary threshold to determine if the robot is ready for a
                         // static shot
-                        return linearVelocityMPS < 0.02 && facingTarget.getAsBoolean();
+                        return linearVelocityMPS < 0.05 && facingTarget.getAsBoolean();
                     });
 
     public final LoggedTrigger atStaticShootingState =

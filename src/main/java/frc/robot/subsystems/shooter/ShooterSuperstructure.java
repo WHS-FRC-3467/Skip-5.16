@@ -574,7 +574,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
         leftBallTrigger.getAsBoolean();
         rightBallTrigger.getAsBoolean();
+        staticShotState.getAsBoolean();
         hopperEmpty.getAsBoolean();
+
+        Logger.recordOutput(
+                getName() + "/TimeSinceLastFuel", Timer.getFPGATimestamp() - lastFuelDetectionTime);
 
         Logger.recordOutput(
                 getName() + "/VelocityErrorDifference",
