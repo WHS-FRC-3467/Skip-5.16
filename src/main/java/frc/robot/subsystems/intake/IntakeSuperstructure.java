@@ -379,7 +379,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         Inches.of(0.5).in(Meters),
                                         "Hub Shuffle Extend")
                                 .withTimeout(1),
-                        stopRoller()).finallyDo(stopRoller())
+                        stopRoller())
                 .withName("Intake Hub Shuffle Step");
     }
 
