@@ -256,7 +256,7 @@ public class RobotContainer {
                                 controller.rumbleForTime(
                                         RumbleType.kBothRumble, 1.0, Seconds.of(0.5)),
                                 Commands.waitSeconds(0.5)))
-                .onFalse(Commands.runOnce(() -> controller.setRumble(RumbleType.kBothRumble, 0.0)));
+                .onFalse(controller.rumble(RumbleType.kBothRumble, 0.0));
     }
 
     /**
