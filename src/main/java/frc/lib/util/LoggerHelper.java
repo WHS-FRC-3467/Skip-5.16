@@ -2,8 +2,10 @@ package frc.lib.util;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.List;
+
 import org.littletonrobotics.junction.Logger;
+
+import java.util.List;
 
 /**
  * A helper class for logging various types of data related to FRC subsystems by Team 604 Quixilver

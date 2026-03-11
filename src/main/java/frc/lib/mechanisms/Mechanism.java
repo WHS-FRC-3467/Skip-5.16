@@ -20,16 +20,20 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorInputsAutoLogged;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.PID;
+
+import lombok.Getter;
+
+import org.littletonrobotics.junction.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import lombok.Getter;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * Abstract base class for all robot mechanisms that use motors. Provides common functionality for
