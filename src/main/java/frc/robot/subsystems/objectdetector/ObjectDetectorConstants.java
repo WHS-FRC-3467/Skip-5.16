@@ -21,17 +21,21 @@ import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
+
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.lib.io.objectdetection.*;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.util.RobotSim;
-import java.util.Comparator;
-import java.util.function.Supplier;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.VisionTargetSim;
+
+import java.util.Comparator;
+import java.util.function.Supplier;
 
 /**
  * Configuration constants for the object detection subsystem.

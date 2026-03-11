@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -160,6 +161,11 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     void disableTuningMode() {
         CommandScheduler.getInstance().cancel(tuningModeCommand);
+    }
+
+    public Command fountain() {
+        return this.runOnce(
+                () -> runVelocity(RotationsPerSecond.of(5.0), RotationsPerSecond.of(5.0)));
     }
 
     /**

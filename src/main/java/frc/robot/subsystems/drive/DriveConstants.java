@@ -12,6 +12,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.*;
+
 import frc.robot.Constants;
 import frc.robot.Ports;
 
@@ -103,7 +104,7 @@ public class DriveConstants {
 
     private static final double kDriveGearRatio = 6.0;
     private static final double kSteerGearRatio = 24.0;
-    private static final Distance kWheelRadius = Inches.of(1.971);
+    private static final Distance kWheelRadius = Inches.of(1.957);
 
     private static final boolean kInvertLeftSide = false;
     private static final boolean kInvertRightSide = true;

@@ -16,6 +16,7 @@
 package frc.lib.io.vision;
 
 import frc.lib.devices.AprilTagCamera.CameraProperties;
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 

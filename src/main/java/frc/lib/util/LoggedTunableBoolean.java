@@ -7,12 +7,14 @@ package frc.lib.util;
 // license that can be found in the LICENSE file at
 // the root directory of this project.
 import frc.robot.Constants;
+
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 /**
  * A tunable boolean value that can be adjusted from the dashboard during tuning.

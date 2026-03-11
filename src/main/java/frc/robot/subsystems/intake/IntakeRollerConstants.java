@@ -23,10 +23,12 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
+
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
@@ -38,6 +40,7 @@ import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -74,7 +77,7 @@ public class IntakeRollerConstants {
         config.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
         config.CurrentLimits.StatorCurrentLimitEnable = Robot.isReal();
-        config.CurrentLimits.StatorCurrentLimit = 80.0;
+        config.CurrentLimits.StatorCurrentLimit = 120.0;
 
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;

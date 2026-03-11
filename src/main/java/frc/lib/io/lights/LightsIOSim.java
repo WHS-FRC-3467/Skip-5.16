@@ -16,8 +16,10 @@
 package frc.lib.io.lights;
 
 import com.ctre.phoenix6.controls.ControlRequest;
-import java.util.Map;
+
 import org.littletonrobotics.junction.Logger;
+
+import java.util.Map;
 
 /** A simulated lights implementation */
 public class LightsIOSim implements LightsIO {
