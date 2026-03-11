@@ -17,10 +17,12 @@ package frc.lib.io.objectdetection;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import java.util.List;
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+
+import java.util.List;
 
 /**
  * An ObjectDetectionIO implementation that uses a camera connected to hardware running the

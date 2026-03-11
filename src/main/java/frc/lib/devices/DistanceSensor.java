@@ -16,10 +16,13 @@
 package frc.lib.devices;
 
 import edu.wpi.first.units.measure.Distance;
+
 import frc.lib.io.distancesensor.DistanceSensorIO;
 import frc.lib.io.distancesensor.DistanceSensorInputsAutoLogged;
-import java.util.Optional;
+
 import org.littletonrobotics.junction.Logger;
+
+import java.util.Optional;
 
 /** Class for simplified DistanceSensorIO implementation */
 public class DistanceSensor {

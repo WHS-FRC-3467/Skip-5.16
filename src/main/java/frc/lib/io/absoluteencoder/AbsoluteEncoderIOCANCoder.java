@@ -20,9 +20,12 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
+
 import edu.wpi.first.units.measure.Angle;
+
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.Device;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

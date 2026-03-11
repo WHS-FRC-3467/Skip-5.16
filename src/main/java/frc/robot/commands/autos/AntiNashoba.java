@@ -17,6 +17,8 @@ package frc.robot.commands.autos;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -26,42 +28,43 @@ import frc.robot.subsystems.tower.Tower;
 
 import java.util.List;
 
-/**
- * Auto routine that utilizes AutoSegment command sequences to drive to the DEPOT, collect FUEL from
- * the DEPOT, and then shoot them. Strategy layer.
- */
-public class DepotCenterAuto extends AutoRoutine {
-    /**
-     * Constructs a DepotAuto routine that drive to depot, collects from depot, and shoots collected
-     * fuel. Path selection is based on the starting position (LEFT, or CENTER).
-     *
-     * @param drive the drive subsystem
-     * @param intake the intake subsystem
-     * @param indexer the indexer subsystem for managing fuel flow
-     * @param tower the tower subsystem for moving fuel to shooter
-     * @param shooter the shooter superstructure for launching fuel
-     */
-    public DepotCenterAuto(
+public class AntiNashoba extends AutoRoutine {
+
+    public AntiNashoba(
             Drive drive,
             IntakeSuperstructure intake,
             IndexerSuperstructure indexer,
             Tower tower,
-            ShooterSuperstructure shooter) {
+            ShooterSuperstructure shooter,
+            boolean shouldMirror) {
         // Choose path names based on start position
-        List<String> expectedPaths = List.of("DepotCenter1");
+        List<String> expectedPaths = List.of("Neutral1Nashoba", "NeutralSafe2");
 
         // Load the named paths
-        this.loadAllPaths(expectedPaths, false, false);
+        this.loadAllPaths(expectedPaths, shouldMirror, true);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
-        if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null)) {
+        if (!pathPlannerPaths.isEmpty()
+                && pathPlannerPaths.size() == expectedPaths.size()
+                && !pathPlannerPaths.contains(null)) {
             loadCommands(
-                    // Reset odometry
                     AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
-                    // Drive to depot and start intake, then run through depot while intaking FUEL
+                    // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    // // Drive to shooting location and shoot all FUEL
-                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 10.0));
+                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
+                    // Run back under the trench and shoot
+                    // Initialize intake and hood to starting positions for teleop
+                    AutoCommands.stowHood(shooter),
+                    intake.retractIntake().asProxy().withTimeout(0.5),
+                    // Drive to the neutral zone
+                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 10)
+                            .finallyDo(
+                                    () ->
+                                            CommandScheduler.getInstance()
+                                                    .schedule(
+                                                            intake.stopRoller()
+                                                                    .ignoringDisable(true))));
         }
     }
 }

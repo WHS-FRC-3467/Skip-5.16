@@ -16,6 +16,7 @@
 package frc.lib.mechanisms.linear;
 
 import edu.wpi.first.units.measure.Angle;
+
 import frc.lib.io.motor.MotorIO;
 
 /**

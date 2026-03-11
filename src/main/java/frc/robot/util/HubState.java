@@ -3,12 +3,16 @@ package frc.robot.util;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import frc.lib.util.LoggedTrigger;
-import java.util.Arrays;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import org.littletonrobotics.junction.Logger;
+
+import java.util.Arrays;
 
 /**
  * Models the state of the game hub across match phases.

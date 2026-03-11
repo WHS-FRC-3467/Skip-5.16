@@ -18,9 +18,9 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.events.EventTrigger;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
@@ -28,14 +28,15 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.lib.util.VisionOdometryCharacterizer;
 import frc.robot.Constants.PathConstants;
-import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
@@ -55,6 +56,7 @@ import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.RobotSim;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -128,6 +130,10 @@ public class RobotContainer {
                 "Safe-Left", new NeutralAuto(drive, intake, indexer, tower, shooter, false, true));
         autoChooser.addOption(
                 "Safe-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true, true));
+        autoChooser.addOption(
+                "AntiNashoba-Left", new AntiNashoba(drive, intake, indexer, tower, shooter, false));
+        autoChooser.addOption(
+                "AntiNashoba-Right", new AntiNashoba(drive, intake, indexer, tower, shooter, true));
 
         // Depot Autos
         autoChooser.addOption(
@@ -210,24 +216,17 @@ public class RobotContainer {
         // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
         controller
                 .x()
-                .onTrue(
-                        shooter.spinUpShooterToHubDistance(
-                                Meters.of(
-                                        (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters))
-                                                / 2.0)))
                 .whileTrue(
-                        // Shoot while superstructure is at the flywheel and hood setpoints
                         Commands.parallel(
-                                        indexer.shoot(),
-                                        tower.shoot(),
-                                        Commands.runOnce(() -> drive.stopWithX()))
-                                .onlyWhile(shooter.atHubSetpoints)
-                                .repeatedly())
+                                shooter.spinUpShooterToHubDistance(),
+                                Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
                         Commands.parallel(
-                                shooter.setFlywheelSpeed(RotationsPerSecond.zero()),
+                                shooter.stopAndStow(),
                                 indexer.stopCommand(),
-                                tower.stopCommand()));
+                                tower.stopCommand(),
+                                intake.extendIntake(),
+                                shooter.retractHood()));
         operatorController
                 .a()
                 .whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));
@@ -281,6 +280,23 @@ public class RobotContainer {
                 ShooterSuperstructureConstants.NAME + "/Spinup", shooter.spinUpShooter());
         SmartDashboard.putData(
                 ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
+
+        SmartDashboard.putData(
+                "Fountain",
+                Commands.sequence(
+                                Commands.sequence(
+                                        Commands.parallel(
+                                                shooter.fountain(),
+                                                indexer.fountain(),
+                                                tower.fountain())),
+                                Commands.parallel(shooter.idle(), indexer.idle(), tower.idle()))
+                        .finallyDo(
+                                () ->
+                                        CommandScheduler.getInstance()
+                                                .schedule(
+                                                        shooter.stopAndStow(),
+                                                        indexer.stopCommand(),
+                                                        tower.stopCommand())));
 
         // Drivetrain Commands
         SmartDashboard.putData(
