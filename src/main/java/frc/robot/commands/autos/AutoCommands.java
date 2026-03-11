@@ -136,7 +136,7 @@ public class AutoCommands {
                                 .get(tunnelPath.getPathPoses().size() - 1)
                                 .getTranslation(),
                         tunnelPath.getGoalEndState().rotation());
-        Pose2d tunnelEnterancePose = tunnelPath.getPathPoses().get(0);
+        Pose2d tunnelEntrancePose = tunnelPath.getPathPoses().get(0);
 
         return AutoBuilder.followPath(path)
                 .beforeStarting(errorCheckDelayTimer::restart)
@@ -158,7 +158,7 @@ public class AutoCommands {
                                         () ->
                                                 FieldUtil.apply(robotState.getEstimatedPose())
                                                         .getMeasureX()
-                                                        .lt(tunnelEnterancePose.getMeasureX())),
+                                                        .lt(tunnelEntrancePose.getMeasureX())),
                                 Commands.none(),
                                 () ->
                                         pathErrorDebouncer.calculate(
