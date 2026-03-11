@@ -47,7 +47,9 @@ import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
+
 import lombok.Getter;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
@@ -154,7 +156,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final LoggedTrigger staticShotState =
             new LoggedTrigger(
                     this.getName() + "/StaticShotState",
-                    readyToShoot.and(robotState.atStaticShootingState));
+                    () ->
+                            readyToShoot.getAsBoolean()
+                                    && robotState.atStaticShootingState.getAsBoolean());
 
     // Linear velocity drop required to detect a shot passing through the shooter
     private final LoggedTunableNumber shotDetectionThresholdMPS =
@@ -585,6 +589,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         hoodIO.periodic();
 
         detectFuel();
+        shotHopperEmpty.getAsBoolean();
 
         Logger.recordOutput(getName() + "/LastShotBPS", lastShotBPS);
 
