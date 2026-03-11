@@ -14,6 +14,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -29,8 +30,6 @@ import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.util.RobotSim;
-
-import org.littletonrobotics.junction.Logger;
 
 /**
  * Class containing useful individual commands or small-group command sequences that can be strung
@@ -129,6 +128,7 @@ public class AutoCommands {
     public static Command safeFollowPath(
             Drive drive, PathPlannerPath path, Distance pathErrorTol, PathPlannerPath tunnelPath) {
         Debouncer pathErrorDebouncer = new Debouncer(.5);
+        Timer errorCheckDelayTimer = new Timer();
         Pose2d goalPose =
                 new Pose2d(
                         tunnelPath
@@ -138,27 +138,22 @@ public class AutoCommands {
                         tunnelPath.getGoalEndState().rotation());
         Pose2d tunnelEnterancePose = tunnelPath.getPathPoses().get(0);
 
-        Logger.recordOutput("RobotState/GoalPose", goalPose);
-        Logger.recordOutput("RobotState/TunnelEntrancePose", tunnelEnterancePose);
-
         return AutoBuilder.followPath(path)
+                .beforeStarting(errorCheckDelayTimer::restart)
                 .until(
                         () ->
-                                pathErrorDebouncer.calculate(
-                                                robotState
-                                                        .getActiveTrajectoryError()
-                                                        .gte(pathErrorTol))
-                                        || robotState.forcePathFind.get())
+                                errorCheckDelayTimer.hasElapsed(2.0)
+                                        && (pathErrorDebouncer.calculate(
+                                                        robotState
+                                                                .getActiveTrajectoryError()
+                                                                .gte(pathErrorTol))
+                                                || robotState.forcePathFind.get()))
                 .andThen(
-                        // TODO: Repeatedly check if pathfinding error is too high, then re-run
-                        // pathfind or pathfindandfollow
                         Commands.either(
                                 Commands.either(
                                         AutoBuilder.pathfindToPoseFlipped(
                                                 goalPose, DriveConstants.PATH_CONSTRAINTS),
                                         AutoBuilder.pathfindThenFollowPath(
-                                                // TOOD: Bug with pathfinding when running blue auto
-                                                // and triggering forcePathfind in neutral zone
                                                 tunnelPath, DriveConstants.PATH_CONSTRAINTS),
                                         () ->
                                                 FieldUtil.apply(robotState.getEstimatedPose())
