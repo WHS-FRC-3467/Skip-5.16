@@ -8,8 +8,10 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 
 import edu.wpi.first.units.measure.*;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.util.PID;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -68,6 +70,17 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
     public void runLinearPosition(Distance position, PIDSlot slot) {
         Angle angle = Radians.of(position.in(Meters) / radiusMeters);
         mechanism.runPosition(angle, slot);
+    }
+
+    /**
+     * Runs the mechanism to a target linear position without a motion profile.
+     *
+     * @param position Desired linear position
+     * @param slot PID slot to use
+     */
+    public void runUnprofiledLinearPosition(Distance position, PIDSlot slot) {
+        Angle angle = Radians.of(position.in(Meters) / radiusMeters);
+        mechanism.runUnprofiledPosition(angle, slot);
     }
 
     /**
@@ -169,12 +182,22 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
     }
 
     /**
+     * Runs the mechanism using torque-producing current control with a duty cycle limit.
+     *
+     * @param current Desired current
+     * @param dutyCycle Desired dutycycle of current output, limiting top speed
+     */
+    public void runCurrent(Current current, double dutyCycle) {
+        mechanism.runCurrent(current, dutyCycle);
+    }
+
+    /**
      * Runs the mechanism using duty cycle control.
      *
      * @param dutyCycle Fractional output between 0 and 1
      */
-    public void runDutyCycle(double dutyCycle) {
-        mechanism.runDutyCycle(dutyCycle);
+    public void runDutyCycle(double dutyCycle, boolean ignoringSoftLimits) {
+        mechanism.runDutyCycle(dutyCycle, ignoringSoftLimits);
     }
 
     /**
@@ -185,6 +208,16 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
      */
     public void runPosition(Angle position, PIDSlot slot) {
         mechanism.runPosition(position, slot);
+    }
+
+    /**
+     * Runs the mechanism to a specific position without a motion profile.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     */
+    public void runUnprofiledPosition(Angle position, PIDSlot slot) {
+        mechanism.runUnprofiledPosition(position, slot);
     }
 
     /**

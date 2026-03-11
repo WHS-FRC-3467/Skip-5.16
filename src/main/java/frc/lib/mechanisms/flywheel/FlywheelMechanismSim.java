@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.util.Color;
+
 import frc.lib.io.motor.MotorIOSim;
 
 /**
@@ -42,7 +43,7 @@ public class FlywheelMechanismSim extends FlywheelMechanism<MotorIOSim> {
     private final FlywheelVisualizer visualizer;
     private final AngularVelocity tolerance;
 
-    private Time lastTime = Seconds.zero();
+    private Time lastTime = RobotController.getMeasureTime();
 
     public FlywheelMechanismSim(
             String name,
@@ -95,10 +96,8 @@ public class FlywheelMechanismSim extends FlywheelMechanism<MotorIOSim> {
         super.periodic();
 
         visualizer.setAngle(inputs.position);
-        if (inputs.velocityError != null) {
-            if (inputs.velocityError.lte(tolerance)) {
-                visualizer.setColor(Color.kGreen);
-            }
+        if (inputs.velocityError != null && inputs.velocityError.lte(tolerance)) {
+            visualizer.setColor(Color.kGreen);
         } else {
             visualizer.setColor(Color.kBlack);
         }

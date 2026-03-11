@@ -16,11 +16,14 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+
 import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryMechCharacteristics;
-import java.util.Optional;
+
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
+
+import java.util.Optional;
 
 /**
  * A visualizer for rotary mechanisms that displays the current angle, trajectory, and goal angle
@@ -83,7 +86,7 @@ public class RotaryVisualizer {
                 new LoggedMechanismLigament2d(
                         name + "Measured",
                         armLength,
-                        constants.startingAngle().in(Radians),
+                        constants.startingAngle().in(Degrees),
                         3,
                         new Color8Bit(Color.kGreen));
 
@@ -91,7 +94,7 @@ public class RotaryVisualizer {
                 new LoggedMechanismLigament2d(
                         name + "Trajectory",
                         armLength,
-                        constants.startingAngle().in(Radians),
+                        constants.startingAngle().in(Degrees),
                         3,
                         new Color8Bit(Color.kYellow));
 
@@ -99,7 +102,7 @@ public class RotaryVisualizer {
                 new LoggedMechanismLigament2d(
                         name + "Goal",
                         armLength,
-                        constants.startingAngle().in(Radians),
+                        constants.startingAngle().in(Degrees),
                         3,
                         new Color8Bit(Color.kRed));
 

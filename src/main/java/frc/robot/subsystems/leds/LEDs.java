@@ -16,17 +16,22 @@
 package frc.robot.subsystems.leds;
 
 import com.ctre.phoenix6.controls.ControlRequest;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.lib.devices.Lights;
 import frc.lib.io.lights.LightsIO;
 import frc.lib.util.LoggerHelper;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+import org.littletonrobotics.junction.Logger;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * Subsystem that controls the robot's LED lights for visual feedback and animations. Provides

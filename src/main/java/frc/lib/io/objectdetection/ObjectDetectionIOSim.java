@@ -6,12 +6,15 @@ package frc.lib.io.objectdetection;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Units;
+
 import frc.lib.devices.AprilTagCamera.CameraProperties;
-import java.util.function.Supplier;
+
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
+
+import java.util.function.Supplier;
 
 /** An object detection sim class that utilizes the PhotonVision implementation for tests. */
 public class ObjectDetectionIOSim extends ObjectDetectionIOPhotonVision {

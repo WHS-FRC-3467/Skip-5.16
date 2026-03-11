@@ -16,7 +16,9 @@
 package frc.lib.util;
 
 import au.grapplerobotics.ConfigurationFailedException;
+
 import com.ctre.phoenix6.StatusCode;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -44,7 +46,7 @@ public class CANUpdateThread implements AutoCloseable {
      * @param action Supplier that returns a StatusCode from a CTRE configuration call
      * @return CompletableFuture that completes when successful or throws on persistent failure
      */
-    public CompletableFuture<Void> CTRECheckErrorAndRetry(Supplier<StatusCode> action) {
+    public CompletableFuture<Void> ctreCheckErrorAndRetry(Supplier<StatusCode> action) {
         return CompletableFuture.runAsync(
                 () -> {
                     StatusCode lastStatus = StatusCode.OK;

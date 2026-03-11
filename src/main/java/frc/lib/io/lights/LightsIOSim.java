@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.random.RandomGenerator;
 import org.littletonrobotics.junction.Logger;
 
+import java.util.Map;
+
 /** A simulated lights implementation */
 public class LightsIOSim implements LightsIO {
 

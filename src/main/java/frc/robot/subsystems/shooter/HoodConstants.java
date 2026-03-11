@@ -15,6 +15,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -23,6 +24,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.wpilibj.RobotBase;
+
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
@@ -33,9 +35,11 @@ import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryMechCharacteristics;
 import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
-import java.util.Optional;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
+import java.util.Optional;
 
 /**
  * Defines configuration and physical constants for the turret hood mechanism, including motion
@@ -46,7 +50,7 @@ import lombok.NoArgsConstructor;
 public class HoodConstants {
     public static final String NAME = "Hood";
 
-    public static final Angle TOLERANCE = Degrees.of(1.0);
+    public static final Angle TOLERANCE = Degrees.of(1.5);
 
     public static final AngularVelocity CRUISE_VELOCITY = RadiansPerSecond.of(187.75);
     public static final AngularAcceleration ACCELERATION = RadiansPerSecondPerSecond.of(293.0);
@@ -70,7 +74,7 @@ public class HoodConstants {
 
     private static PID getPID() {
         if (RobotBase.isReal()) {
-            return new PID(800.0, 0.0, 20.0).withS(8.0);
+            return new PID(3000.0, 0.0, 160.0).withS(8.0);
         } else {
             return new PID(5.0, 0.0, 0.0).withS(8.0);
         }

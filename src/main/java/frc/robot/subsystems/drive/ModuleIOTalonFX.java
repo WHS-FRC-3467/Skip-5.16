@@ -33,6 +33,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -40,8 +41,11 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+
 import frc.lib.util.CANUpdateThread;
+import frc.lib.util.PID;
 import frc.robot.Ports;
+
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,6 +106,9 @@ public class ModuleIOTalonFX implements ModuleIO {
     // Configuration Thread
     CANUpdateThread updateThread = new CANUpdateThread();
 
+    private volatile TalonFXConfiguration driveConfig;
+    private volatile TalonFXConfiguration turnConfig;
+
     /**
      * Constructs a new ModuleIOTalonFX instance.
      *
@@ -116,27 +123,27 @@ public class ModuleIOTalonFX implements ModuleIO {
         cancoder = new CANcoder(constants.EncoderId, Ports.DRIVETRAIN_BUS);
 
         // Configure drive motor
-        var driveConfig = constants.DriveMotorInitialConfigs;
+        var driveConfig = constants.DriveMotorInitialConfigs.clone();
         driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         driveConfig.Slot0 = constants.DriveMotorGains;
         driveConfig.Feedback.SensorToMechanismRatio = constants.DriveMotorGearRatio;
         driveConfig.TorqueCurrent.PeakForwardTorqueCurrent = constants.SlipCurrent;
         driveConfig.TorqueCurrent.PeakReverseTorqueCurrent = -constants.SlipCurrent;
-        driveConfig.CurrentLimits.StatorCurrentLimit = constants.SlipCurrent;
-        driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         driveConfig.MotorOutput.Inverted =
                 constants.DriveMotorInverted
                         ? InvertedValue.Clockwise_Positive
                         : InvertedValue.CounterClockwise_Positive;
+
+        this.driveConfig = driveConfig;
         updateThread
-                .CTRECheckErrorAndRetry(() -> driveTalon.getConfigurator().apply(driveConfig, 0.25))
+                .ctreCheckErrorAndRetry(() -> driveTalon.getConfigurator().apply(driveConfig, 0.25))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);
                             return null;
                         });
         updateThread
-                .CTRECheckErrorAndRetry(() -> driveTalon.setPosition(0.0, 0.25))
+                .ctreCheckErrorAndRetry(() -> driveTalon.setPosition(0.0, 0.25))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);
@@ -173,8 +180,11 @@ public class ModuleIOTalonFX implements ModuleIO {
                 constants.SteerMotorInverted
                         ? InvertedValue.Clockwise_Positive
                         : InvertedValue.CounterClockwise_Positive;
+
+        this.turnConfig = turnConfig;
+
         updateThread
-                .CTRECheckErrorAndRetry(() -> turnTalon.getConfigurator().apply(turnConfig, 0.25))
+                .ctreCheckErrorAndRetry(() -> turnTalon.getConfigurator().apply(turnConfig, 0.25))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);
@@ -212,9 +222,9 @@ public class ModuleIOTalonFX implements ModuleIO {
 
         // Configure periodic frames
         BaseStatusSignal.setUpdateFrequencyForAll(
-                Drive.ODOMETRY_FREQUENCY, drivePosition, turnPosition);
-        BaseStatusSignal.setUpdateFrequencyForAll(
-                50.0,
+                Drive.ODOMETRY_FREQUENCY,
+                drivePosition,
+                turnPosition,
                 driveVelocity,
                 driveAppliedVolts,
                 driveCurrent,
@@ -307,5 +317,47 @@ public class ModuleIOTalonFX implements ModuleIO {
                     case TorqueCurrentFOC ->
                             positionTorqueCurrentRequest.withPosition(rotation.getRotations());
                 });
+    }
+
+    @Override
+    public void setDrivePID(PID pid) {
+        driveConfig
+                .Slot0
+                .withKP(pid.P())
+                .withKI(pid.I())
+                .withKD(pid.D())
+                .withKA(pid.A())
+                .withKV(pid.V())
+                .withKG(pid.G())
+                .withKS(pid.S());
+
+        updateThread
+                .ctreCheckErrorAndRetry(() -> driveTalon.getConfigurator().apply(driveConfig))
+                .exceptionally(
+                        ex -> {
+                            LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                            return null;
+                        });
+    }
+
+    @Override
+    public void setTurnPID(PID pid) {
+        turnConfig
+                .Slot0
+                .withKP(pid.P())
+                .withKI(pid.I())
+                .withKD(pid.D())
+                .withKA(pid.A())
+                .withKV(pid.V())
+                .withKG(pid.G())
+                .withKS(pid.S());
+
+        updateThread
+                .ctreCheckErrorAndRetry(() -> turnTalon.getConfigurator().apply(turnConfig))
+                .exceptionally(
+                        ex -> {
+                            LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                            return null;
+                        });
     }
 }

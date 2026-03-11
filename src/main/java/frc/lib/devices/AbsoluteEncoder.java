@@ -16,8 +16,10 @@
 package frc.lib.devices;
 
 import edu.wpi.first.units.measure.Angle;
+
 import frc.lib.io.absoluteencoder.AbsoluteEncoderIO;
 import frc.lib.io.absoluteencoder.AbsoluteEncoderInputsAutoLogged;
+
 import org.littletonrobotics.junction.Logger;
 
 /** Class for simplified AbsoluteEncoderIO implementation */

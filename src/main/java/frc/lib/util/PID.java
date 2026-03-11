@@ -16,6 +16,7 @@
 package frc.lib.util;
 
 import com.ctre.phoenix6.configs.SlotConfigs;
+
 import lombok.With;
 
 /**
@@ -46,6 +47,11 @@ public record PID(double P, double I, double D, double A, double V, double G, do
     /** Constructs a PID record with all gains set to 0.0. Useful as a default starting point. */
     public PID() {
         this(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    }
+
+    /** Constructs a PID record from a CTRE SlotConfigs */
+    public PID(SlotConfigs pid) {
+        this(pid.kP, pid.kI, pid.kD, pid.kA, pid.kV, pid.kG, pid.kS);
     }
 
     /**

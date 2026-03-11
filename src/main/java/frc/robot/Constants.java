@@ -19,13 +19,16 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 
 import com.pathplanner.lib.path.PathConstraints;
+
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
+
 import frc.robot.subsystems.drive.DriveConstants;
+
 import java.util.Set;
 
 /**
@@ -112,5 +115,6 @@ public final class Constants {
     public static final Transform3d RIGHT_SHOOTER_EXIT_TRANSFORM =
             new Transform3d(
                     Inches.of(-7.346), Inches.of(-3.84), Inches.of(22), new Rotation3d(0, 0, 0));
-    public static final Set<Integer> FILTERED_TAGS = Set.of(1, 12, 22, 23, 28, 17, 7, 6);
+    // public static final Set<Integer> FILTERED_TAGS = Set.of(1, 12, 22, 23, 28, 17, 7, 6);
+    public static final Set<Integer> FILTERED_TAGS = Set.of();
 }
