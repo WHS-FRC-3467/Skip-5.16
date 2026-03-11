@@ -336,6 +336,7 @@ public class RobotState {
      *
      * @return The field region the robot is in
      */
+    @AutoLogOutput(key = "RobotState/FieldRegion")
     public FieldRegion getFieldRegion() {
         return getFieldRegion(getEstimatedPose());
     }
