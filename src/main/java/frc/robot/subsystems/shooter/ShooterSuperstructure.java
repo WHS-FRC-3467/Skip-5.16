@@ -156,8 +156,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final LoggedTunableNumber shotDetectionThresholdMPS =
             new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.85);
 
-    private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
-
     // Fuel counts
     private @Getter int leftFuelCount = 0;
     private @Getter int rightFuelCount = 0;
@@ -181,9 +179,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new LoggedTrigger(
                     getName() + "/hopperEmpty",
                     () ->
-                            hopperEmptyDebouncer.calculate(
-                                    Timer.getFPGATimestamp() - lastFuelDetectionTime > 0.5
-                                            && staticShotState.getAsBoolean()));
+                            Timer.getFPGATimestamp() - lastFuelDetectionTime > 0.5
+                                    && staticShotState.getAsBoolean());
     // Triggers determining whether a ball has passed through the shooter based on flywheel velocity
     // drops from current setpoint, debounced to prevent multiple detections from the same ball
     private final LoggedTrigger leftBallTrigger =
@@ -251,36 +248,34 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Determines whether left flywheel linear velocity has dropped by at least the specified
-     * velocity from the current flywheel linear velocity setpoint.
+     * velocity from the current flywheel linear velocity setpoint. Only applicable during
+     * feeding/shooting.
      *
      * @param drop the magnitude of drop to compare
      */
     private boolean detectLeftFlywheelDrop(LinearVelocity drop) {
-        return leftFlywheelIO
-                        .getLinearVelocity()
-                        .minus(getDesiredFlywheelLinearVelocity())
-                        .in(MetersPerSecond)
-                <= -drop.in(MetersPerSecond);
+        LinearVelocity desiredLinearVelocity = getDesiredFlywheelLinearVelocity();
+        return leftFlywheelIO.getLinearVelocity().minus(desiredLinearVelocity).in(MetersPerSecond)
+                        <= -drop.in(MetersPerSecond)
+                && leftFlywheelIO.getLinearVelocity().in(MetersPerSecond)
+                        > FlywheelConstants.TOLERANCE.in(RadiansPerSecond)
+                                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters);
     }
 
     /**
      * Determines whether right flywheel linear velocity has dropped by at least the specified
-     * velocity from the current flywheel linear velocity setpoint.
+     * velocity from the current flywheel linear velocity setpoint. Only applicable during
+     * feeding/shooting.
      *
      * @param drop the magnitude of drop to compare
      */
     private boolean detectRightFlywheelDrop(LinearVelocity drop) {
-        Logger.recordOutput(
-                "drop",
-                rightFlywheelIO
-                        .getLinearVelocity()
-                        .minus(getDesiredFlywheelLinearVelocity())
-                        .in(MetersPerSecond));
-        return rightFlywheelIO
-                        .getLinearVelocity()
-                        .minus(getDesiredFlywheelLinearVelocity())
-                        .in(MetersPerSecond)
-                <= -drop.in(MetersPerSecond);
+        LinearVelocity desiredLinearVelocity = getDesiredFlywheelLinearVelocity();
+        return rightFlywheelIO.getLinearVelocity().minus(desiredLinearVelocity).in(MetersPerSecond)
+                        <= -drop.in(MetersPerSecond)
+                && rightFlywheelIO.getLinearVelocity().in(MetersPerSecond)
+                        > FlywheelConstants.TOLERANCE.in(RadiansPerSecond)
+                                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters);
     }
 
     // Hood
