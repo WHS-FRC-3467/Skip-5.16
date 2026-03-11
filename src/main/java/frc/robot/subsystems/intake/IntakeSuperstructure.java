@@ -23,6 +23,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -30,6 +31,7 @@ import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
+
 import java.util.function.Supplier;
 
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {

@@ -30,6 +30,7 @@ import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
+
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.lib.io.vision.VisionIO;
@@ -38,10 +39,13 @@ import frc.lib.io.vision.VisionIOPhotonVisionSim;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
-import java.util.Optional;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
 import org.photonvision.simulation.VisionSystemSim;
+
+import java.util.Optional;
 
 /**
  * Configuration constants for the vision subsystem.

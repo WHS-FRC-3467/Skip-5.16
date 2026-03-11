@@ -16,6 +16,7 @@
 package frc.lib.util;
 
 import com.ctre.phoenix6.configs.SlotConfigs;
+
 import lombok.With;
 
 /**
