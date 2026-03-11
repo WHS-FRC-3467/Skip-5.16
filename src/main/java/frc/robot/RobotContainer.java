@@ -202,7 +202,7 @@ public class RobotContainer {
         // Tap Right Bumper while Right Trigger held: Manually cycle intake
         controller
                 .rightBumper()
-                .and(controller.rightTrigger())
+                .and(controller.x().negate())
                 .onTrue(intake.shuffleStep())
                 .onFalse(intake.stopRoller());
 
