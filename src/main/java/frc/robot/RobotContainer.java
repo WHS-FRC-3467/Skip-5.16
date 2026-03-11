@@ -21,6 +21,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.events.EventTrigger;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
@@ -31,6 +32,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -57,6 +59,7 @@ import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -252,7 +255,8 @@ public class RobotContainer {
                         Commands.repeatingSequence(
                                 controller.rumbleForTime(
                                         RumbleType.kBothRumble, 1.0, Seconds.of(0.5)),
-                                Commands.waitSeconds(0.5)));
+                                Commands.waitSeconds(0.5)))
+                .onFalse(Commands.runOnce(() -> controller.setRumble(RumbleType.kBothRumble, 0.0)));
     }
 
     /**
