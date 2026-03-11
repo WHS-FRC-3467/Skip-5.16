@@ -154,7 +154,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     /** Shooter diagnostics */
     // Linear velocity drop required to detect a shot passing through the shooter
     private final LoggedTunableNumber shotDetectionThresholdMPS =
-            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.3);
+            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.85);
 
     private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
 
@@ -255,23 +255,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      *
      * @param drop the magnitude of drop to compare
      */
-    // private boolean detectLeftFlywheelDrop(LinearVelocity drop) {
-    //     return leftFlywheelIO
-    //                     .getLinearVelocity()
-    //                     .minus(getDesiredFlywheelLinearVelocity())
-    //                     .in(MetersPerSecond)
-    //             <= -drop.in(MetersPerSecond);
-    // }
     private boolean detectLeftFlywheelDrop(LinearVelocity drop) {
-        double velError =
-                leftFlywheelIO
+        return leftFlywheelIO
                         .getLinearVelocity()
                         .minus(getDesiredFlywheelLinearVelocity())
-                        .in(MetersPerSecond);
-        boolean dropped = velError <= -drop.in(MetersPerSecond);
-        boolean triggered = dropped && !lastLeftDrop;
-        lastLeftDrop = dropped;
-        return triggered;
+                        .in(MetersPerSecond)
+                <= -drop.in(MetersPerSecond);
     }
 
     /**
@@ -280,23 +269,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      *
      * @param drop the magnitude of drop to compare
      */
-    // private boolean detectRightFlywheelDrop(LinearVelocity drop) {
-    //     return rightFlywheelIO
-    //                     .getLinearVelocity()
-    //                     .minus(getDesiredFlywheelLinearVelocity())
-    //                     .in(MetersPerSecond)
-    //             <= -drop.in(MetersPerSecond);
-    // }
     private boolean detectRightFlywheelDrop(LinearVelocity drop) {
-        double velError =
+        Logger.recordOutput(
+                "drop",
                 rightFlywheelIO
                         .getLinearVelocity()
                         .minus(getDesiredFlywheelLinearVelocity())
-                        .in(MetersPerSecond);
-        boolean dropped = velError <= -drop.in(MetersPerSecond);
-        boolean triggered = dropped && !lastRightDrop;
-        lastRightDrop = dropped;
-        return triggered;
+                        .in(MetersPerSecond));
+        return rightFlywheelIO
+                        .getLinearVelocity()
+                        .minus(getDesiredFlywheelLinearVelocity())
+                        .in(MetersPerSecond)
+                <= -drop.in(MetersPerSecond);
     }
 
     // Hood
@@ -356,8 +340,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public LinearVelocity getDesiredFlywheelLinearVelocity() {
         return MetersPerSecond.of(
                 getDesiredFlywheelVelocity().in(RadiansPerSecond)
-                        * 2.0
-                        * Math.PI
                         * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
     }
 
