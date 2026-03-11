@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 import frc.lib.util.AutoRoutine;
+import frc.robot.generated.ChoreoTraj;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
@@ -40,15 +41,15 @@ public class NeutralAuto extends AutoRoutine {
             boolean shouldMirror,
             boolean isSafe) {
         // Choose path names based on start position
-        List<String> expectedPaths;
+        List<ChoreoTraj> expectedPaths;
         if (isSafe) {
-            expectedPaths = List.of("NeutralSafe1", "NeutralSafe2");
+            expectedPaths = List.of(ChoreoTraj.NeutralSafe1, ChoreoTraj.NeutralSafe2);
         } else {
-            expectedPaths = List.of("Neutral1", "NeutralSafe2");
+            expectedPaths = List.of(ChoreoTraj.Neutral1, ChoreoTraj.NeutralSafe2);
         }
 
         // Load the named paths
-        this.loadAllPaths(expectedPaths, shouldMirror, true);
+        this.loadAllPaths(expectedPaths.stream().map(p -> p.name()).toList(), shouldMirror, true);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (!pathPlannerPaths.isEmpty()

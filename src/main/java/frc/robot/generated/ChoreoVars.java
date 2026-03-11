@@ -1,0 +1,23 @@
+// spotless:off
+package frc.robot.generated;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.*;
+
+/**
+ * Generated file containing variables defined in Choreo. DO NOT MODIFY THIS FILE YOURSELF; instead,
+ * change these values in the Choreo GUI.
+ */
+public final class ChoreoVars {
+
+    public static final class Poses {
+        public static final Pose2d NeutralShoot =
+                new Pose2d(3.5, 7.4, Rotation2d.fromRadians(-1.2864087));
+        public static final Pose2d TunnelEntrance =
+                new Pose2d(4, 7.3992772, Rotation2d.fromRadians(-1.5707963));
+        public static final Pose2d TunnelExit =
+                new Pose2d(5.65, 7.3992772, Rotation2d.fromRadians(-1.5707963));
+    }
+}
+// spotless:on
