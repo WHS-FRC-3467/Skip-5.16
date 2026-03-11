@@ -32,7 +32,7 @@ public class RotationalCharacterizationAuto extends AutoRoutine {
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null))
             loadCommands(
                     // Reset odometry
-                    AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                    AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
                     // Follow rotational path
                     AutoBuilder.followPath(pathPlannerPaths.get(0)));
     }

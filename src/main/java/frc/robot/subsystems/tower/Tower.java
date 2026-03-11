@@ -121,6 +121,10 @@ public class Tower extends SubsystemBase {
         return io.getVelocity().in(RotationsPerSecond);
     }
 
+    public Command fountain() {
+        return this.runOnce(() -> runVelocity(RotationsPerSecond.of(5.0)));
+    }
+
     /**
      * Creates a command to run the tower at shooting velocity to transfer game pieces to the
      * shooter. The tower will stop when the command is interrupted or cancelled.
