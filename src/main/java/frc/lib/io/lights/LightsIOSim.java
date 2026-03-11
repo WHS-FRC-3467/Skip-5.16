@@ -37,23 +37,25 @@ import org.littletonrobotics.junction.Logger;
 public class LightsIOSim implements LightsIO {
 
     private Map<String, String> requestInfo;
-    AddressableLED led;
-    AddressableLEDBuffer buffer;
-    ArrayList<AddressableLEDBufferView> views;
+   private AddressableLED led;
+   private AddressableLEDBuffer buffer;
+   private ArrayList<AddressableLEDBufferView> views;
 
-    /** Constructs a {@link LightsIOSim} object. */
+    /** 
+     * Translates CTRE LED Commands To WPILIB Sim LED Commands
+     */
     public LightsIOSim(List<LEDSegment> ledSegments) {
         this.led = new AddressableLED(0);
 
         this.views = new ArrayList<>();
-        int largestEndIndex = 2;
+        int largestEndIndex = 2; // must be 2 because that is the minimum end index
         for (var ledSegment : ledSegments) {
             if (ledSegment.endIndex() > largestEndIndex) {
                 largestEndIndex = ledSegment.endIndex();
             }
         }
 
-        this.buffer = new AddressableLEDBuffer(largestEndIndex + 1);
+        this.buffer = new AddressableLEDBuffer(largestEndIndex + 1); // ctre to wpilib offset
         for (var ledSegment : ledSegments) {
             this.views.add(buffer.createView(ledSegment.startIndex(), ledSegment.endIndex()));
         }
@@ -64,40 +66,48 @@ public class LightsIOSim implements LightsIO {
 
     @Override
     public void updateLedsSim() {
-        led.setData(this.buffer);
+        led.setData(this.buffer); 
     }
+    /**
+     * 
+     * @param key Map Key
+     * @return Value From Map Of Key
+     */
+    String checkAndGet(String key) {
+        if (requestInfo.containsKey(key)) {
+            return requestInfo.get(key);
+        }
+        else {
+            Logger.recordOutput(this.toString() + "/KeyNotFound", "Request Does Not Contain Key Of: " + key);
+            return "EmptyKey";
+        }
+    }
+
 
     @Override
     public void setAnimation(ControlRequest request) {
 
         this.requestInfo = request.getControlInfo();
 
-        double direction = 1.0;
-        if (requestInfo.containsKey("Direction")) {
-            String directionString = requestInfo.get("Direction");
-            if (directionString != "Forward") {
-                direction = -1.0;
-            }
-        }
-        int slot = 0;
-        if (requestInfo.containsKey("Slot")) {
-            slot = Integer.valueOf(requestInfo.get("Slot"));
-            Logger.recordOutput("LEDs/Slot" + slot, requestInfo.toString());
-        }
+        double direction = checkAndGet("Direction") == "Foward" ? 1.0 : -1.0;
+       
+        int slot = Integer.valueOf(checkAndGet("Slot"));
+        Logger.recordOutput("LEDs/Slot" + slot, requestInfo.toString());
+    
         final Distance kLedSpacing = // do not set to double, LEDPattern casts the input as an int
                 Inches.of(1);
         switch (requestInfo.get("Name")) {
-            case "RainbowAnimation":
+            case "RainbowAnimation": // scrolling rainbow animation
                 final LEDPattern rainbow = LEDPattern.rainbow(255, 128);
                 final LEDPattern scrollingRainbow =
                         rainbow.scrollAtAbsoluteSpeed(
                                 InchesPerSecond.of(
-                                        Double.valueOf(requestInfo.get("FrameRate")) * direction),
+                                        Double.valueOf(checkAndGet("FrameRate")) * direction),
                                 kLedSpacing);
                 scrollingRainbow.applyTo(views.get(slot));
                 led.setData(this.buffer);
                 break;
-            case "FireAnimation":
+            case "FireAnimation": //  fire like animation
                 final LEDPattern fire =
                         LEDPattern.gradient(
                                 LEDPattern.GradientType.kContinuous,
@@ -108,7 +118,7 @@ public class LightsIOSim implements LightsIO {
                 final LEDPattern fireScroll =
                         fire.scrollAtAbsoluteSpeed(
                                         InchesPerSecond.of(
-                                                Double.valueOf(requestInfo.get("FrameRate"))
+                                                Double.valueOf(checkAndGet("FrameRate"))
                                                         * (direction / 0.5)),
                                         kLedSpacing)
                                 .blink(
