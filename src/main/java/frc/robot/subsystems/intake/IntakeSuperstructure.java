@@ -54,6 +54,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private final LoggedTrigger isExtended;
     private final LoggedTrigger isRetracted;
     private final LoggedTrigger isCycleComplete;
+    private final LoggedTrigger isFullyRetracted; // Prep for hub shot
 
     private final LinearVelocity shuffleVelocity = MetersPerSecond.of(0.8);
 
@@ -119,6 +120,15 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                                 + Inches.of(3.0).in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
                                         Inches.of(2.0).in(Meters)));
+        isFullyRetracted =
+                new LoggedTrigger(
+                        "IntakeSuperstructure/IsFullyRetracted",
+                        () ->
+                                MathUtil.isNear(
+                                        IntakeLinearConstants.MIN_DISTANCE.in(Meters)
+                                                + Inches.of(0.5).in(Meters),
+                                        intakeLinearIO.getLinearPosition().in(Meters),
+                                        IntakeLinearConstants.TOLERANCE.in(Meters)));
     }
 
     private void resetSetpoint() {
@@ -169,6 +179,40 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                     double goal =
                                             MathUtil.clamp(
                                                     current + delta,
+                                                    IntakeLinearConstants.MIN_DISTANCE.in(Meters),
+                                                    IntakeLinearConstants.MAX_DISTANCE.in(Meters));
+
+                                    startProfile(profiler, goal);
+                                }),
+                        runRoller
+                                ? runRoller(
+                                        () ->
+                                                RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())
+                                                        .times(rollerScale))
+                                : Commands.none(),
+                        Commands.waitUntil(
+                                () ->
+                                        MathUtil.isNear(
+                                                goalState.position,
+                                                intakeLinearIO.getLinearPosition().in(Meters),
+                                                toleranceMeters)))
+                .withName(name);
+    }
+
+    private Command moveToInches(
+            double inches,
+            TrapezoidProfile profiler,
+            boolean runRoller,
+            double rollerScale,
+            double toleranceMeters,
+            String name) {
+
+        return Commands.sequence(
+                        this.runOnce(
+                                () -> {
+                                    double goal =
+                                            MathUtil.clamp(
+                                                    Inches.of(inches).in(Meters),
                                                     IntakeLinearConstants.MIN_DISTANCE.in(Meters),
                                                     IntakeLinearConstants.MAX_DISTANCE.in(Meters));
 
@@ -310,6 +354,35 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                 .withTimeout(0.5),
                         stopRoller())
                 .withName("Intake Shuffle Step");
+    }
+
+    /**
+     * Create a command to shuffle the intake between its retracted position and a partially
+     * extended position aligned with the front buumper edge.
+     *
+     * @return a Command that is a step in this intake shuffle for up-against-hub shooting.
+     */
+    public Command hubShuffleStep() {
+        return Commands.sequence(
+                        // Ensure intake is retracted
+                        moveToInches(
+                                        IntakeLinearConstants.MIN_DISTANCE.in(Inches),
+                                        shuffleMotionProfiler,
+                                        true,
+                                        0.6,
+                                        Inches.of(0.5).in(Meters),
+                                        "Hub Shuffle Pre Retract")
+                                .withTimeout(1),
+                        moveByInches(
+                                        3.15,
+                                        shuffleMotionProfiler,
+                                        false,
+                                        0.0,
+                                        Inches.of(0.5).in(Meters),
+                                        "Hub Shuffle Extend")
+                                .withTimeout(1),
+                        stopRoller())
+                .withName("Intake Hub Shuffle Step");
     }
 
     public Command linearCoast() {
