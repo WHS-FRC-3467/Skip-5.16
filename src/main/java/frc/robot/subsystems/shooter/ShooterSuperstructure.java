@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -151,6 +152,21 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /** Shooter diagnostics */
+    // Linear velocity drop required to detect a shot passing through the shooter
+    private final LoggedTunableNumber shotDetectionThresholdMPS =
+            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.3);
+
+    private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
+
+    // Fuel counts
+    private @Getter int leftFuelCount = 0;
+    private @Getter int rightFuelCount = 0;
+    private @Getter int totalFuelCount = 0;
+
+    boolean lastLeftDrop = false;
+    boolean lastRightDrop = false;
+    private double lastFuelDetectionTime = 0.0;
+
     // Trigger for whether we are at the static shooting state (shooter ready, robot stationary &
     // aligned to target)
     private final LoggedTrigger staticShotState =
@@ -159,42 +175,29 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     () ->
                             readyToShoot.getAsBoolean()
                                     && robotState.atStaticShootingState.getAsBoolean());
-
-    // Linear velocity drop required to detect a shot passing through the shooter
-    private final LoggedTunableNumber shotDetectionThresholdMPS =
-            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.8);
-    // A velocity drop detected within this time of the previous detection is ignored to prevent
-    // false positives from the same ball
-    private final LoggedTunableNumber minShotSpacingSeconds =
-            new LoggedTunableNumber(getName() + "/MinimumShotCountSpacingSeconds", 0.07);
-
-    private boolean shotInProgress = false;
-
-    private int currentFuelCount = 0;
-    // Total fuel count the shooter has detected since the robot started
-    private @Getter int totalFuelCount = 0;
-
-    private double lastFuelDetectionTime = 0.0;
-    private double shotStartTime = 0.0;
-    // Total time the shooter has been in a "shot in progress" state since the robot started
-    private @Getter double totalShotTime = 0.0;
-
-    private double previousLeftVelocity = 0.0;
-    private double previousRightVelocity = 0.0;
-
-    // Balls per second for the most recent shot
-    private @Getter double lastShotBPS = 0.0;
-    // Average balls per second since the robot started
-    private @Getter double averageShotBPS = 0.0;
-
-    /** Whether the hopper is estimated to be empty during a shot */
-    public final LoggedTrigger shotHopperEmpty =
+    // Determines whether the hopper is empty for at least 0.5s while shooting, using
+    // staticShotState as a proxy for a shot
+    private final LoggedTrigger hopperEmpty =
             new LoggedTrigger(
-                    this.getName() + "/shotHopperEmpty",
-                    () -> {
-                        boolean fuelNear = Timer.getFPGATimestamp() - lastFuelDetectionTime <= 0.5;
-                        return !fuelNear && shotInProgress;
-                    });
+                    getName() + "/hopperEmpty",
+                    () ->
+                            hopperEmptyDebouncer.calculate(
+                                    Timer.getFPGATimestamp() - lastFuelDetectionTime > 0.5
+                                            && staticShotState.getAsBoolean()));
+    // Triggers determining whether a ball has passed through the shooter based on flywheel velocity
+    // drops from current setpoint, debounced to prevent multiple detections from the same ball
+    private final LoggedTrigger leftBallTrigger =
+            new LoggedTrigger(
+                    getName() + "/LeftBallTrigger",
+                    () ->
+                            detectLeftFlywheelDrop(
+                                    MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
+    private final LoggedTrigger rightBallTrigger =
+            new LoggedTrigger(
+                    getName() + "/RightBallTrigger",
+                    () ->
+                            detectRightFlywheelDrop(
+                                    MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
 
     /**
      * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
@@ -220,6 +223,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         this.hoodIO = hoodIO;
         this.leftFlywheelIO = leftFlywheelIO;
         this.rightFlywheelIO = rightFlywheelIO;
+
+        attachBallTriggers();
     }
 
     private void spinFlywheel(AngularVelocity velocity) {
@@ -242,6 +247,56 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         velocity.in(RotationsPerSecond),
                         rightFlywheelIO.getVelocity().in(RotationsPerSecond),
                         FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
+    }
+
+    /**
+     * Determines whether left flywheel linear velocity has dropped by at least the specified
+     * velocity from the current flywheel linear velocity setpoint.
+     *
+     * @param drop the magnitude of drop to compare
+     */
+    // private boolean detectLeftFlywheelDrop(LinearVelocity drop) {
+    //     return leftFlywheelIO
+    //                     .getLinearVelocity()
+    //                     .minus(getDesiredFlywheelLinearVelocity())
+    //                     .in(MetersPerSecond)
+    //             <= -drop.in(MetersPerSecond);
+    // }
+    private boolean detectLeftFlywheelDrop(LinearVelocity drop) {
+        double velError =
+                leftFlywheelIO
+                        .getLinearVelocity()
+                        .minus(getDesiredFlywheelLinearVelocity())
+                        .in(MetersPerSecond);
+        boolean dropped = velError <= -drop.in(MetersPerSecond);
+        boolean triggered = dropped && !lastLeftDrop;
+        lastLeftDrop = dropped;
+        return triggered;
+    }
+
+    /**
+     * Determines whether right flywheel linear velocity has dropped by at least the specified
+     * velocity from the current flywheel linear velocity setpoint.
+     *
+     * @param drop the magnitude of drop to compare
+     */
+    // private boolean detectRightFlywheelDrop(LinearVelocity drop) {
+    //     return rightFlywheelIO
+    //                     .getLinearVelocity()
+    //                     .minus(getDesiredFlywheelLinearVelocity())
+    //                     .in(MetersPerSecond)
+    //             <= -drop.in(MetersPerSecond);
+    // }
+    private boolean detectRightFlywheelDrop(LinearVelocity drop) {
+        double velError =
+                rightFlywheelIO
+                        .getLinearVelocity()
+                        .minus(getDesiredFlywheelLinearVelocity())
+                        .in(MetersPerSecond);
+        boolean dropped = velError <= -drop.in(MetersPerSecond);
+        boolean triggered = dropped && !lastRightDrop;
+        lastRightDrop = dropped;
+        return triggered;
     }
 
     // Hood
@@ -296,6 +351,14 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 };
 
         return RotationsPerSecond.of(flywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
+    }
+
+    public LinearVelocity getDesiredFlywheelLinearVelocity() {
+        return MetersPerSecond.of(
+                getDesiredFlywheelVelocity().in(RadiansPerSecond)
+                        * 2.0
+                        * Math.PI
+                        * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
     }
 
     private Angle getDesiredHoodAngle() {
@@ -488,84 +551,28 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Commands.runOnce(() -> flywheelTrim = flywheelTrim.minus(getFlywheelTrimStep()));
     }
 
-    // Detects unique fuel passing through the shooter and calculates BPS shot statistics
-    private void detectFuel() {
-        double now = Timer.getFPGATimestamp();
-        boolean shooting = staticShotState.getAsBoolean();
-        // Shooter is rising, initialize tracking variables
-        if (shooting && !shotInProgress) {
-            shotInProgress = true;
-
-            previousLeftVelocity = leftFlywheelIO.getLinearVelocity().in(MetersPerSecond);
-            previousRightVelocity = rightFlywheelIO.getLinearVelocity().in(MetersPerSecond);
-
-            // Allow proper shot & hopper detection on shooter start by initializing
-            lastFuelDetectionTime = now - minShotSpacingSeconds.getAsDouble();
-            shotStartTime = now;
-
-            currentFuelCount = 0;
-        }
-        // Shooter is falling, aggregate shot data and reset state
-        if (!shooting && shotInProgress) {
-            shotInProgress = false;
-
-            double duration = now - shotStartTime;
-            totalShotTime += duration;
-            totalFuelCount += currentFuelCount;
-
-            if (duration > 0) {
-                lastShotBPS = currentFuelCount / duration;
-            }
-            if (totalShotTime > 0) {
-                averageShotBPS = totalFuelCount / totalShotTime;
-            }
-        }
-        // Between shots, return early
-        if (!shotInProgress) return;
-
-        // During shot, detect unique fuel through shooter via velocity drop
-        velocityDropDetection(now);
+    private void attachBallTriggers() {
+        leftBallTrigger.onTrue(
+                Commands.runOnce(
+                        () -> {
+                            leftFuelCount++;
+                            lastFuelDetectionTime = Timer.getFPGATimestamp();
+                            Logger.recordOutput(getName() + "/LeftFuelCount", leftFuelCount);
+                            updateTotalFuelCount();
+                        }));
+        rightBallTrigger.onTrue(
+                Commands.runOnce(
+                        () -> {
+                            rightFuelCount++;
+                            lastFuelDetectionTime = Timer.getFPGATimestamp();
+                            Logger.recordOutput(getName() + "/RightFuelCount", rightFuelCount);
+                            updateTotalFuelCount();
+                        }));
     }
 
-    // Detects fuel passing through the shooter by looking for drops in flywheel velocities
-    private void velocityDropDetection(double time) {
-        // Current flywheel velocities
-        double leftVelocity = leftFlywheelIO.getLinearVelocity().in(MetersPerSecond);
-        double rightVelocity = rightFlywheelIO.getLinearVelocity().in(MetersPerSecond);
-        // Flywheel velocity drops since last check
-        double leftVelocityDrop = previousLeftVelocity - leftVelocity;
-        double rightVelocityDrop = previousRightVelocity - rightVelocity;
-
-        // Ball hitting flywheel -> motor velocity drop
-        boolean leftDropDetected = leftVelocityDrop > shotDetectionThresholdMPS.getAsDouble();
-        boolean rightDropDetected = rightVelocityDrop > shotDetectionThresholdMPS.getAsDouble();
-        // If no drops detected, update previous velocities and return
-        if (!(leftDropDetected || rightDropDetected)) {
-            previousLeftVelocity = leftVelocity;
-            previousRightVelocity = rightVelocity;
-            return;
-        }
-
-        // Spacing filter to prevent false positives from multiple velocity drops from the same ball
-        double dt = time - lastFuelDetectionTime;
-        if (dt < minShotSpacingSeconds.getAsDouble()) {
-            // Detected shot too soon after previous shot -- likely a false positive, so ignore
-            previousLeftVelocity = leftVelocity;
-            previousRightVelocity = rightVelocity;
-            return;
-        }
-
-        // Unique fuel(s) detected
-        if (leftDropDetected && rightDropDetected) {
-            currentFuelCount += 2;
-        } else {
-            currentFuelCount++;
-        }
-
-        lastFuelDetectionTime = time;
-
-        previousLeftVelocity = leftVelocity;
-        previousRightVelocity = rightVelocity;
+    private void updateTotalFuelCount() {
+        totalFuelCount = leftFuelCount + rightFuelCount;
+        Logger.recordOutput(getName() + "/TotalFuelCount", totalFuelCount);
     }
 
     @Override
@@ -588,20 +595,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         rightFlywheelIO.periodic();
         hoodIO.periodic();
 
-        detectFuel();
-        shotHopperEmpty.getAsBoolean();
-
-        Logger.recordOutput(getName() + "/LastShotBPS", lastShotBPS);
-
-        Logger.recordOutput(getName() + "/AverageShotBPS", averageShotBPS);
-
-        Logger.recordOutput(getName() + "/TotalFuelCount", totalFuelCount);
-
-        Logger.recordOutput(getName() + "/CurrentFuelCount", currentFuelCount);
-
-        Logger.recordOutput(getName() + "/ShotInProgress", shotInProgress);
-
-        Logger.recordOutput(getName() + "/TotalShotTime", totalShotTime);
+        leftBallTrigger.getAsBoolean();
+        rightBallTrigger.getAsBoolean();
+        hopperEmpty.getAsBoolean();
 
         Logger.recordOutput(
                 getName() + "/VelocityErrorDifference",
