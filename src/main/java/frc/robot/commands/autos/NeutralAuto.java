@@ -17,7 +17,6 @@ package frc.robot.commands.autos;
 
 import static edu.wpi.first.units.Units.Feet;
 
-
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
