@@ -33,26 +33,22 @@ public class AutoCommands {
 
     /**
      * Resets the robot's odometry to the starting pose of the specified path. Handles alliance
-     * flipping if necessary. ONLY RUNS IN SIMULATION.
+     * flipping if necessary.
      *
      * @param drive the drive subsystem
      * @param path the PathPlanner path containing the starting pose
      * @return a command that resets the robot's pose to the path's starting position
      */
-    public static Command resetSimOdom(Drive drive, PathPlannerPath path) {
-        if (RobotBase.isSimulation()) {
-            return drive.runOnce(
-                    () -> {
-                        Pose2d pose = path.getStartingHolonomicPose().get();
-                        if (FieldUtil.shouldFlip()) {
-                            pose = FieldUtil.apply(pose);
-                        }
+    public static Command resetOdom(Drive drive, PathPlannerPath path) {
+        return drive.runOnce(
+                () -> {
+                    Pose2d pose = path.getStartingHolonomicPose().get();
+                    if (FieldUtil.shouldFlip()) {
+                        pose = FieldUtil.apply(pose);
+                    }
 
-                        robotState.resetPose(pose);
-                    });
-        } else {
-            return Commands.none();
-        }
+                    robotState.resetPose(pose);
+                });
     }
 
     public static Command shootCommand(

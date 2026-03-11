@@ -74,7 +74,7 @@ public class IntakeRollerConstants {
         config.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
         config.CurrentLimits.StatorCurrentLimitEnable = Robot.isReal();
-        config.CurrentLimits.StatorCurrentLimit = 80.0;
+        config.CurrentLimits.StatorCurrentLimit = 120.0;
 
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
