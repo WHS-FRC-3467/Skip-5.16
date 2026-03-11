@@ -21,11 +21,14 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
+
 import frc.lib.devices.AprilTagCamera.CameraProperties;
-import java.util.function.Supplier;
+
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
+
+import java.util.function.Supplier;
 
 /**
  * Simulated implementation of {@link VisionIOPhotonVision} using the PhotonVision simulation

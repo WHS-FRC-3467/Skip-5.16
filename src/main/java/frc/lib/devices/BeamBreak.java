@@ -17,6 +17,7 @@ package frc.lib.devices;
 
 import frc.lib.io.beambreak.BeamBreakIO;
 import frc.lib.io.beambreak.BeamBreakInputsAutoLogged;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
