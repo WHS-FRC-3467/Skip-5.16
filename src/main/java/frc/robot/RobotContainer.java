@@ -106,6 +106,7 @@ public class RobotContainer {
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
+        VisionOdometryCharacterizer.enable();
         // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
@@ -207,18 +208,10 @@ public class RobotContainer {
                                 shooter.retractHood()));
 
         // Tap Right Bumper while Right Trigger held: Manually cycle intake
-        controller
-                .rightBumper()
-                .and(controller.x().negate())
-                .onTrue(intake.shuffleStep())
-                .onFalse(intake.stopRoller());
+        controller.rightBumper().and(controller.x().negate()).onTrue(intake.shuffleStep());
 
         // Tap Right Bumper while X held: Manually cycle intake within bumpers for hub shot
-        controller
-                .rightBumper()
-                .and(controller.x())
-                .onTrue(intake.hubShuffleStep())
-                .onFalse(intake.stopRoller());
+        controller.rightBumper().and(controller.x()).onTrue(intake.hubShuffleStep());
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
