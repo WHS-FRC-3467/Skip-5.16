@@ -4,6 +4,8 @@
 
 package frc.robot.commands.autos;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -122,7 +124,10 @@ public class AutoCommands {
     }
 
     public static Command safeFollowPath(
-            Drive drive, PathPlannerPath path, Distance pathErrorTol, PathPlannerPath tunnelPath) {
+            Drive drive, PathPlannerPath path, PathPlannerPath tunnelPath) {
+        Distance pathErrorTol = Inches.of(18.0);
+        Distance goalErrorTol = Inches.of(4.0);
+
         Debouncer pathErrorDebouncer = new Debouncer(.5);
         Timer errorCheckDelayTimer = new Timer();
         Pose2d goalPose =
@@ -132,6 +137,8 @@ public class AutoCommands {
                                 .get(tunnelPath.getPathPoses().size() - 1)
                                 .getTranslation(),
                         tunnelPath.getGoalEndState().rotation());
+        Debouncer goalPoseDebouncer = new Debouncer(.25);
+
         Pose2d tunnelEntrancePose = tunnelPath.getPathPoses().get(0);
 
         return AutoBuilder.followPath(path)
@@ -156,10 +163,14 @@ public class AutoCommands {
                                                         .lt(tunnelEntrancePose.getMeasureX())),
                                 Commands.none(),
                                 () ->
-                                        pathErrorDebouncer.calculate(
+                                        goalPoseDebouncer.calculate(
                                                         robotState
-                                                                .getActiveTrajectoryError()
-                                                                .gte(pathErrorTol))
+                                                                        .getEstimatedPose()
+                                                                        .getTranslation()
+                                                                        .getDistance(
+                                                                                goalPose
+                                                                                        .getTranslation())
+                                                                > goalErrorTol.in(Meters))
                                                 || robotState.forcePathFind.get()));
     }
 
