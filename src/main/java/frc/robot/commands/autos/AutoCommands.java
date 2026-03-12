@@ -33,10 +33,9 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.util.RobotSim;
 
-import java.util.function.BooleanSupplier;
-
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+
+import java.util.function.BooleanSupplier;
 
 /**
  * Class containing useful individual commands or small-group command sequences that can be strung
@@ -144,14 +143,14 @@ public class AutoCommands {
 
         Timer errorCheckDelayTimer = new Timer();
 
-        Pose2d goalPose = FieldUtil.apply(
-                new Pose2d(
-                        tunnelPath
-                                .getPathPoses()
-                                .get(tunnelPath.getPathPoses().size() - 1)
-                                .getTranslation(),
-                        tunnelPath.getGoalEndState().rotation()));
-                        
+        Pose2d goalPose =
+                FieldUtil.apply(
+                        new Pose2d(
+                                tunnelPath
+                                        .getPathPoses()
+                                        .get(tunnelPath.getPathPoses().size() - 1)
+                                        .getTranslation(),
+                                tunnelPath.getGoalEndState().rotation()));
 
         Debouncer pathErrorDebouncer = new Debouncer(.5);
 
@@ -169,7 +168,11 @@ public class AutoCommands {
                                         < goalErrorTol.in(Meters));
 
         return AutoBuilder.followPath(path)
-                .beforeStarting(() -> {errorCheckDelayTimer.restart(); Logger.recordOutput("Auto/Goal Pose", goalPose);})
+                .beforeStarting(
+                        () -> {
+                            errorCheckDelayTimer.restart();
+                            Logger.recordOutput("Auto/Goal Pose", goalPose);
+                        })
                 .until(
                         () ->
                                 errorCheckDelayTimer.hasElapsed(2.0)
