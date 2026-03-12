@@ -517,8 +517,7 @@ public class DriveCommands {
                                                                                                 .get())
                                                                                 .getTranslation()
                                                                                 .getNorm()
-                                                                        < tolerance.in(Meters)))
-                                        .withName("Pathfind to " + targetPose.get().toString()),
+                                                                        < tolerance.in(Meters))),
                         Set.of(drive))
                 .withName("Pathfind to Pose");
     }
