@@ -21,31 +21,30 @@ import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.controls.ControlRequest;
+
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
+
+import org.littletonrobotics.junction.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.random.RandomGenerator;
-import org.littletonrobotics.junction.Logger;
-
-import java.util.Map;
 
 /** A simulated lights implementation */
 public class LightsIOSim implements LightsIO {
 
     private Map<String, String> requestInfo;
-   private AddressableLED led;
-   private AddressableLEDBuffer buffer;
-   private ArrayList<AddressableLEDBufferView> views;
+    private AddressableLED led;
+    private AddressableLEDBuffer buffer;
+    private ArrayList<AddressableLEDBufferView> views;
 
-    /** 
-     * Translates CTRE LED Commands To WPILIB Sim LED Commands
-     */
+    /** Translates CTRE LED Commands To WPILIB Sim LED Commands */
     public LightsIOSim(List<LEDSegment> ledSegments) {
         this.led = new AddressableLED(0);
 
@@ -68,34 +67,33 @@ public class LightsIOSim implements LightsIO {
 
     @Override
     public void updateLedsSim() {
-        led.setData(this.buffer); 
+        led.setData(this.buffer);
     }
+
     /**
-     * 
      * @param key Map Key
      * @return Value From Map Of Key
      */
     String checkAndGet(String key) {
         if (requestInfo.containsKey(key)) {
             return requestInfo.get(key);
-        }
-        else {
-            Logger.recordOutput(this.toString() + "/KeyNotFound", "Request Does Not Contain Key Of: " + key);
+        } else {
+            Logger.recordOutput(
+                    this.toString() + "/KeyNotFound", "Request Does Not Contain Key Of: " + key);
             return "EmptyKey";
         }
     }
-
 
     @Override
     public void setAnimation(ControlRequest request) {
 
         this.requestInfo = request.getControlInfo();
 
-        double direction = "Forward".equals(checkAndGet("Direction"))  ? 1.0 : -1.0;
-       
+        double direction = "Forward".equals(checkAndGet("Direction")) ? 1.0 : -1.0;
+
         int slot = Integer.valueOf(checkAndGet("Slot"));
         Logger.recordOutput("LEDs/Slot" + slot, requestInfo.toString());
-    
+
         final Distance kLedSpacing = // do not set to double, LEDPattern casts the input as an int
                 Inches.of(1);
         switch (requestInfo.get("Name")) {
@@ -124,9 +122,9 @@ public class LightsIOSim implements LightsIO {
                                                         * (direction / 0.5)),
                                         kLedSpacing)
                                 .blink(
-                                        Seconds.of(random == 0 ? 5.0 : random * 3),
-                                        Milliseconds.of(1))
-                                .breathe(Seconds.of((random == 0 ? 1.0 : random) * 5));
+                                        Seconds.of((random == 0.0 ? 5.0 : random) * 3),
+                                        Milliseconds.of(8));
+                fireScroll.breathe(Seconds.of(3));
                 fireScroll.applyTo(views.get(slot));
                 led.setData(this.buffer);
                 break;

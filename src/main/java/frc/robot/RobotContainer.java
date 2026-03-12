@@ -52,6 +52,8 @@ import frc.robot.subsystems.indexer.IndexerSuperstructureConstants;
 import frc.robot.subsystems.intake.IntakeLinearConstants;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
+import frc.robot.subsystems.leds.LEDs;
+import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
@@ -82,7 +84,7 @@ public class RobotContainer {
     private final IntakeSuperstructure intake;
     private final IndexerSuperstructure indexer;
     private final Tower tower;
-    // private final LEDs leds;
+    private final LEDs leds;
     // private final ObjectDetector objectDetector;
 
     // Controller
@@ -105,7 +107,7 @@ public class RobotContainer {
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
-        // leds = LEDsConstants.get();
+        leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
         if (RobotBase.isSimulation()) {
