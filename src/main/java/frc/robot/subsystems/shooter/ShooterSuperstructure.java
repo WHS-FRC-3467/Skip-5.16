@@ -152,9 +152,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /** Shooter diagnostics */
     // Linear velocity drop required to detect a shot passing through the shooter, default tuned
-    // from replay logs
+    // from auto replay logs. Typically 0.5 - 1 m/s.
     private final LoggedTunableNumber shotDetectionThresholdMPS =
-            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.85);
+            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.65);
 
     // Fuel counts
     private @Getter int leftFuelCount = 0;
@@ -247,8 +247,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Determines whether left flywheel linear velocity has dropped by at least the specified
-     * velocity from the current flywheel linear velocity setpoint. Only applicable during
-     * feeding/shooting.
+     * velocity from the current flywheel linear velocity setpoint. Currently only applicable during
+     * STATIC feeding/shooting. Primarily for use in autos.
+     *
+     * <p>Gating the check behind having the flywheel be above a certain minimum velocity and the
+     * static shot state helps prevent false positives from spurious velocity drops when the
+     * flywheel is at low speed or the robot is moving/spinning up.
      *
      * @param drop the magnitude of drop to compare
      */
@@ -258,13 +262,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         <= -drop.in(MetersPerSecond)
                 && leftFlywheelIO.getLinearVelocity().in(MetersPerSecond)
                         > FlywheelConstants.TOLERANCE.in(RadiansPerSecond)
-                                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters);
+                                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters)
+                && staticShotState.getAsBoolean();
     }
 
     /**
      * Determines whether right flywheel linear velocity has dropped by at least the specified
-     * velocity from the current flywheel linear velocity setpoint. Only applicable during
-     * feeding/shooting.
+     * velocity from the current flywheel linear velocity setpoint. Currenrtly only applicable
+     * during STATIC feeding/shooting. Primarily for use in autos.
+     *
+     * <p>Gating the check behind having the flywheel be above a certain minimum velocity and the
+     * static shot state helps prevent false positives from spurious velocity drops when the
+     * flywheel is at low speed or the robot is moving/spinning up.
      *
      * @param drop the magnitude of drop to compare
      */
@@ -274,7 +283,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         <= -drop.in(MetersPerSecond)
                 && rightFlywheelIO.getLinearVelocity().in(MetersPerSecond)
                         > FlywheelConstants.TOLERANCE.in(RadiansPerSecond)
-                                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters);
+                                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters)
+                && staticShotState.getAsBoolean();
     }
 
     // Hood
