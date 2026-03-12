@@ -16,6 +16,7 @@
 package frc.lib.devices;
 
 import edu.wpi.first.units.measure.Angle;
+
 import frc.lib.io.servo.ServoIO;
 
 /**

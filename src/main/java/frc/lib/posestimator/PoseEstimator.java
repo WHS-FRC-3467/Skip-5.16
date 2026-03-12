@@ -28,11 +28,14 @@ import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Time;
+
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.VisionOdometryCharacterizer;
-import java.util.Optional;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
+
+import java.util.Optional;
 
 @Accessors(fluent = true)
 public class PoseEstimator {

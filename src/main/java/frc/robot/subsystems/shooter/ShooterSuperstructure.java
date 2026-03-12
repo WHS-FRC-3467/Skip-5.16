@@ -33,6 +33,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -45,6 +46,7 @@ import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
@@ -66,12 +68,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new InterpolatingDoubleTreeMap();
 
     static {
+        hubFlywheelMap.put(1.03, 38.0);
         hubFlywheelMap.put(1.30, 40.6);
         hubFlywheelMap.put(1.72, 42.6);
-        hubFlywheelMap.put(2.1, 44.6);
-        hubFlywheelMap.put(3.05, 48.6);
-        hubFlywheelMap.put(3.54, 50.6);
-        hubFlywheelMap.put(4.6, 52.1);
+        hubFlywheelMap.put(2.1, 43.6);
+        hubFlywheelMap.put(3.05, 47.6);
+        hubFlywheelMap.put(3.54, 49.8);
+        hubFlywheelMap.put(4.6, 50.5);
     }
 
     /** Distance from feed pose in meters -> flywheel speed in rotations per second */
@@ -127,7 +130,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     // Default trim to apply
     private final LoggedTunableNumber flywheelTrimDefaultRPS =
-            new LoggedTunableNumber(getName() + "/FlywheelTrimDefaultRPS", 0.0);
+            new LoggedTunableNumber(getName() + "/FlywheelTrimDefaultRPS", 1.0);
     // How much to add or subtract on each button press
     private final LoggedTunableNumber flywheelTrimStepRPS =
             new LoggedTunableNumber(getName() + "/FlywheelTrimStepRPS", 0.5);
@@ -285,6 +288,17 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 .withName("Spin-Up Shooter to Distance");
     }
 
+    public Command spinUpShooterToHubDistance() {
+        double distance = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
+        return Commands.run(
+                        () -> {
+                            spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance)));
+                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance)));
+                        },
+                        this)
+                .withName("Spin-Up Shooter to Distance");
+    }
+
     /**
      * Dynamically spins the flywheel and actuates the hood to the proper values for ANY target shot
      * given current field-relative robot pose. Valid for ANY target. Perpetual command -- never
@@ -345,6 +359,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                                         Commands.waitUntil(readyToShoot),
                                         whileAtPosition.until(readyToShoot.negate()))))
                 .withName("Shoot Fuel");
+    }
+
+    public Command fountain() {
+        return Commands.sequence(
+                setHoodAngle(Degrees.of(24.0)), setFlywheelSpeed(RotationsPerSecond.of(10.0)));
     }
 
     /**

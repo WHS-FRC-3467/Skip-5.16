@@ -17,8 +17,10 @@ package frc.lib.util;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import java.util.function.BooleanSupplier;
+
 import org.littletonrobotics.junction.Logger;
+
+import java.util.function.BooleanSupplier;
 
 /**
  * A Trigger that automatically logs state changes to AdvantageKit.
