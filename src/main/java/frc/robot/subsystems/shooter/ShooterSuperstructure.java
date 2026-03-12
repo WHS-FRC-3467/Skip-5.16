@@ -30,7 +30,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -304,18 +303,16 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 .withName("Spin-Up Shooter");
     }
 
-    private boolean spinUpBoolean = true;
+    public Command interruptableSpinup() {
 
-    public void spinUpToggle() {
-
-        if (spinUpBoolean) {
-            spinUpBoolean = false;
-            spinFlywheel(getDesiredFlywheelVelocity());
-            setHoodPosition(getDesiredHoodAngle());
-        } else {
-            spinUpBoolean = true;
-            stopFlywheels();
-        }
+        return this.run(
+                        () -> {
+                            spinFlywheel(getDesiredFlywheelVelocity());
+                            setHoodPosition(getDesiredHoodAngle());
+                        })
+                .withName("Interruptable Spinup")
+                .handleInterrupt(() -> stopFlywheels())
+                .withInterruptBehavior(Command.InterruptionBehavior.kCancelSelf);
     }
 
     public Command slowSpinup() {

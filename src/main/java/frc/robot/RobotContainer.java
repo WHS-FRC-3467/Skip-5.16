@@ -237,7 +237,7 @@ public class RobotContainer {
         operatorController.x().onTrue(intake.retractIntake());
         operatorController.povUp().onTrue(shooter.trimFlywheelSpeedUp());
         operatorController.povDown().onTrue(shooter.trimFlywheelSpeedDown());
-        operatorController.y().onTrue(Commands.runOnce(() -> shooter.spinUpToggle(), shooter));
+        operatorController.y().whileTrue(shooter.interruptableSpinup());
 
         // robotState.enteringTrench.whileTrue(
         //         shooter.forceHoodAngle(Rotations.zero())
