@@ -26,12 +26,16 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+
 import frc.lib.io.vision.VisionIO;
 import frc.lib.io.vision.VisionIO.VisionIOInputs;
-import java.util.Optional;
+
 import lombok.Getter;
+
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonPipelineResult;
+
+import java.util.Optional;
 
 /**
  * Represents a single AprilTag camera on the robot.
@@ -100,11 +104,22 @@ public class AprilTagCamera {
         // Get camera intrinsics from inputs to potentially pull from log if replaying
         Logger.processInputs(properties.name(), inputs);
 
-        Matrix<N3, N3> cameraMatrix = MatBuilder.fill(Nat.N3(), Nat.N3(), inputs.cameraMatrix);
-        Matrix<N8, N1> distCoeffs = MatBuilder.fill(Nat.N8(), Nat.N1(), inputs.distCoeffs);
+        Matrix<N3, N3> cameraMatrix = null;
+        Matrix<N8, N1> distCoeffs = null;
 
-        if (!cameraMatrix.equals(properties.cameraMatrix())
-                || !distCoeffs.equals(properties.distCoeffs())) {
+        if (inputs.cameraMatrix != null) {
+            cameraMatrix = MatBuilder.fill(Nat.N3(), Nat.N3(), inputs.cameraMatrix);
+        }
+        if (inputs.distCoeffs != null) {
+            distCoeffs = MatBuilder.fill(Nat.N8(), Nat.N1(), inputs.distCoeffs);
+        }
+
+        if (properties.cameraMatrix() != null
+                && properties.distCoeffs() != null
+                && cameraMatrix != null
+                && distCoeffs != null
+                && (!cameraMatrix.equals(properties.cameraMatrix())
+                        || !distCoeffs.equals(properties.distCoeffs()))) {
             mismatchedIntrinsicsAlert.set(true);
         }
 

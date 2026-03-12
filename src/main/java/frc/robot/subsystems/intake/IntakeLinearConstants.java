@@ -21,19 +21,23 @@ import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.Units;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.wpilibj.RobotBase;
+
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
@@ -46,7 +50,7 @@ import frc.lib.mechanisms.linear.LinearMechanismSim;
 import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
-import frc.robot.Robot;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -57,11 +61,11 @@ public class IntakeLinearConstants {
 
     public static final double GEARING = (42.0 / 12.0);
 
-    public static final Distance MIN_DISTANCE = Inches.of(0.1);
-    public static final Distance MAX_DISTANCE = Inches.of(11.4);
+    public static final Distance MIN_DISTANCE = Inches.of(0.02);
+    public static final Distance MAX_DISTANCE = Inches.of(11.1);
     public static final Distance STARTING_DISTANCE = Inches.of(0.1);
 
-    public static final LinearVelocity CRUISE_VELOCITY = MetersPerSecond.of(3.83);
+    public static final LinearVelocity CRUISE_VELOCITY = MetersPerSecond.of(1.0);
 
     public static final LinearAcceleration MAX_ACCELERATION = MetersPerSecondPerSecond.of(999.0);
 
@@ -78,13 +82,14 @@ public class IntakeLinearConstants {
     // Pitch of 0 degrees would be horizontal extending forward.
     // Roll and yaw can be used for mechanisms that extend in other directions.
     public static final Rotation3d ORIENTATION =
-            new Rotation3d(0.0, Degrees.of(0.0).in(Units.Radians), 0.0);
+            new Rotation3d(0.0, Degrees.of(0.0).in(Radians), 0.0);
 
     public static final LinearMechCharacteristics CHARACTERISTICS =
             new LinearMechCharacteristics(
                     MIN_DISTANCE, MAX_DISTANCE, STARTING_DISTANCE, DRUM_RADIUS, ORIENTATION);
 
-    public static final PID SLOT0_PID = new PID(500.0, 0.0, 20.0).withS(14.0);
+    public static final PID SLOT0_PID = new PID(30.0, 0.0, 0.0).withS(14.0);
+    public static final PID SLOT1_PID = new PID(50.0, 0.0, 0.0);
 
     /**
      * Creates and configures a TalonFX motor controller configuration for the intake linear
@@ -95,16 +100,14 @@ public class IntakeLinearConstants {
     public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
-        config.CurrentLimits.SupplyCurrentLimitEnable = Robot.isReal();
-        config.CurrentLimits.SupplyCurrentLimit = 40.0;
-        config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
-        config.CurrentLimits.SupplyCurrentLowerTime = 0.1;
-
-        config.CurrentLimits.StatorCurrentLimitEnable = Robot.isReal();
-        config.CurrentLimits.StatorCurrentLimit = 80.0;
+        config.CurrentLimits.SupplyCurrentLimitEnable = false;
+        config.CurrentLimits.StatorCurrentLimitEnable = false;
 
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
+
+        config.TorqueCurrent.PeakForwardTorqueCurrent = 50.0;
+        config.TorqueCurrent.PeakReverseTorqueCurrent = -50.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.MotorOutput.Inverted =
@@ -114,22 +117,25 @@ public class IntakeLinearConstants {
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-                MAX_DISTANCE.in(Meters) / DRUM_RADIUS.in(Meters);
+                Units.radiansToRotations(MAX_DISTANCE.in(Meters) / DRUM_RADIUS.in(Meters));
 
         config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
-                MIN_DISTANCE.in(Meters) / DRUM_RADIUS.in(Meters);
+                Units.radiansToRotations(MIN_DISTANCE.in(Meters) / DRUM_RADIUS.in(Meters));
 
         config.MotionMagic.MotionMagicCruiseVelocity =
-                CRUISE_VELOCITY.in(MetersPerSecond) / DRUM_RADIUS.in(Meters);
+                Units.radiansToRotations(
+                        CRUISE_VELOCITY.in(MetersPerSecond) / DRUM_RADIUS.in(Meters));
         config.MotionMagic.MotionMagicAcceleration =
-                MAX_ACCELERATION.in(MetersPerSecondPerSecond) / DRUM_RADIUS.in(Meters);
+                Units.radiansToRotations(
+                        MAX_ACCELERATION.in(MetersPerSecondPerSecond) / DRUM_RADIUS.in(Meters));
 
         config.Feedback.RotorToSensorRatio = 1.0;
 
         config.Feedback.SensorToMechanismRatio = GEARING;
 
         config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
+        config.Slot1 = Slot1Configs.from(SLOT1_PID.toSlotConfigs());
 
         return config;
     }
@@ -167,6 +173,7 @@ public class IntakeLinearConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
 
         return new DistanceControlledMechanism<LinearMechanism<?>>(mechanism, DRUM_RADIUS)
                 .withKey("IntakeSuperstructure/Linear");

@@ -16,6 +16,7 @@
 package frc.lib.util;
 
 import edu.wpi.first.units.measure.Time;
+
 import java.util.function.Supplier;
 
 public record Timestamped<T>(Time timestamp, T get) implements Supplier<T> {}

@@ -18,8 +18,10 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+
 import frc.lib.io.absoluteencoder.AbsoluteEncoderIOSim;
 import frc.lib.io.motor.MotorIOSim;
+
 import java.util.Optional;
 
 /**
@@ -29,7 +31,7 @@ import java.util.Optional;
 public class RotaryMechanismSim extends RotaryMechanism<MotorIOSim, AbsoluteEncoderIOSim> {
     private final SingleJointedArmSim sim;
 
-    private Time lastTime = Seconds.zero();
+    private Time lastTime = RobotController.getMeasureTime();
 
     public RotaryMechanismSim(
             String name,

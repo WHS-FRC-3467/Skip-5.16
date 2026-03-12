@@ -111,7 +111,7 @@ public class CommandXboxControllerExtended extends CommandXboxController {
 
     double applyModifiers(double joystickInput) {
         if (applyCurve) {
-            joystickInput = joystickInput * joystickInput;
+            joystickInput = Math.copySign(joystickInput * joystickInput, joystickInput);
         }
 
         return MathUtil.applyDeadband(joystickInput, deadband);

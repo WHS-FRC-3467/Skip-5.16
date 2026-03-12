@@ -20,16 +20,20 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorInputsAutoLogged;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.PID;
+
+import lombok.Getter;
+
+import org.littletonrobotics.junction.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import lombok.Getter;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * Abstract base class for all robot mechanisms that use motors. Provides common functionality for
@@ -49,18 +53,18 @@ public abstract class Mechanism<T extends MotorIO> {
         this.io = io;
     }
 
-    private static final class TunablePidConfig {
-        private final PIDSlot slot;
-        private final LoggedTunableNumber kp;
-        private final LoggedTunableNumber ki;
-        private final LoggedTunableNumber kd;
-        private final LoggedTunableNumber ka;
-        private final LoggedTunableNumber kv;
-        private final LoggedTunableNumber kg;
-        private final LoggedTunableNumber ks;
-        private final int id;
+    public static final class TunablePidConfig {
+        public final PIDSlot slot;
+        public final LoggedTunableNumber kp;
+        public final LoggedTunableNumber ki;
+        public final LoggedTunableNumber kd;
+        public final LoggedTunableNumber ka;
+        public final LoggedTunableNumber kv;
+        public final LoggedTunableNumber kg;
+        public final LoggedTunableNumber ks;
+        public final int id;
 
-        private TunablePidConfig(
+        public TunablePidConfig(
                 PIDSlot slot,
                 LoggedTunableNumber kp,
                 LoggedTunableNumber ki,
@@ -164,12 +168,22 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
+     * Runs the mechanism with a specified current output.
+     *
+     * @param current Desired torque-producing current.
+     * @param dutyCycle Desired dutycycle of current output, limiting top speed
+     */
+    public void runCurrent(Current current, double dutyCycle) {
+        io.runCurrent(current, dutyCycle);
+    }
+
+    /**
      * Runs the mechanism using duty cycle (percentage of available voltage).
      *
      * @param dutyCycle Fractional output between 0 and 1.
      */
-    public void runDutyCycle(double dutyCycle) {
-        io.runDutyCycle(dutyCycle);
+    public void runDutyCycle(double dutyCycle, boolean ignoringSoftLimits) {
+        io.runDutyCycle(dutyCycle, ignoringSoftLimits);
     }
 
     /**
@@ -180,6 +194,16 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public void runPosition(Angle position, PIDSlot slot) {
         io.runPosition(position, slot);
+    }
+
+    /**
+     * Runs the mechanism to a specific position without a motion profile.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     */
+    public void runUnprofiledPosition(Angle position, PIDSlot slot) {
+        io.runUnprofiledPosition(position, slot);
     }
 
     /**

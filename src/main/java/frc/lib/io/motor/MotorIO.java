@@ -29,9 +29,12 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+
 import frc.lib.util.PID;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 import org.littletonrobotics.junction.AutoLog;
 
 /**
@@ -143,7 +146,7 @@ public interface MotorIO extends AutoCloseable {
      *
      * @param dutyCycle Fractional output between -1 and 1.
      */
-    public default void runDutyCycle(double dutyCycle) {}
+    public default void runDutyCycle(double dutyCycle, boolean ignoringSoftLimits) {}
 
     /**
      * Runs the motor to a specific position.
@@ -152,6 +155,14 @@ public interface MotorIO extends AutoCloseable {
      * @param slot PID slot index.
      */
     public default void runPosition(Angle position, PIDSlot slot) {}
+
+    /**
+     * Runs the motor to a specific position without a motion profile.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     */
+    public default void runUnprofiledPosition(Angle position, PIDSlot slot) {}
 
     /**
      * Runs the motor at a target velocity.

@@ -24,6 +24,7 @@ import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
@@ -31,12 +32,15 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
+
+import org.littletonrobotics.junction.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 public class OnTheFlyPathCommand extends Command {
 

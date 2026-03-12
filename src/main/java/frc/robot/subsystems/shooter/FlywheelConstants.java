@@ -13,17 +13,20 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.wpilibj.RobotBase;
+
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
+import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
@@ -42,7 +45,7 @@ public class FlywheelConstants {
 
     private static final double GEARING = (20.0 / 18.0);
 
-    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(200.0);
+    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(2);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.001);
@@ -110,7 +113,7 @@ public class FlywheelConstants {
      *
      * @return configured left flywheel mechanism
      */
-    public static FlywheelMechanism<?> getLeft() {
+    public static DistanceControlledMechanism<FlywheelMechanism<?>> getLeft() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -143,7 +146,7 @@ public class FlywheelConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return mechanism;
+        return new DistanceControlledMechanism<>(mechanism, FLYWHEEL_RADIUS);
     }
 
     /**
@@ -152,7 +155,7 @@ public class FlywheelConstants {
      *
      * @return configured right flywheel mechanism
      */
-    public static FlywheelMechanism<?> getRight() {
+    public static DistanceControlledMechanism<FlywheelMechanism<?>> getRight() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -185,6 +188,6 @@ public class FlywheelConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return mechanism;
+        return new DistanceControlledMechanism<>(mechanism, FLYWHEEL_RADIUS);
     }
 }

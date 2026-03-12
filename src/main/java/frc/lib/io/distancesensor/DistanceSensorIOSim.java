@@ -18,6 +18,7 @@ package frc.lib.io.distancesensor;
 import static edu.wpi.first.units.Units.Inches;
 
 import edu.wpi.first.units.measure.Distance;
+
 import frc.lib.util.LoggedTunableNumber;
 
 /** A simulated distance sensor implementation */

@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+
 import frc.lib.io.motor.MotorIOSim;
 
 /**
@@ -38,7 +39,7 @@ import frc.lib.io.motor.MotorIOSim;
 public class LinearMechanismSim extends LinearMechanism<MotorIOSim> {
     private final ElevatorSim sim;
 
-    private Time lastTime = Seconds.zero();
+    private Time lastTime = RobotController.getMeasureTime();
 
     /**
      * Creates a new LinearMechanismSim.

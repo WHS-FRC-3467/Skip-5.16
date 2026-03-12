@@ -18,6 +18,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -25,7 +26,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import frc.lib.posestimator.PoseEstimator;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
@@ -33,21 +36,23 @@ import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
-import frc.robot.RobotState.FieldRegion;
 import frc.robot.subsystems.drive.Drive;
-import java.util.Optional;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import org.littletonrobotics.junction.AutoLogOutput;
+
+import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RobotState {
 
     private static final LoggedTunableNumber SHOOT_TOLERANCE_DEGREES =
-            new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 1.0);
+            new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 5.0);
     private static final LoggedTunableNumber MAX_HOOD_RETRACT_TIME =
             new LoggedTunableNumber("RobotState/MaxHoodRetractTime", 0.2);
 
@@ -60,10 +65,11 @@ public class RobotState {
     @Getter(lazy = true)
     private static final RobotState instance = new RobotState();
 
-    @Setter
-    @Getter
+    @Setter @Getter private boolean drivetrainAngled = false;
+
     @AutoLogOutput(key = "Drive/DrivetrainAngled")
-    private boolean drivetrainAngled = false;
+    private final Trigger drivetrainAngledTrigger =
+            new Trigger(() -> drivetrainAngled).debounce(0.5, DebounceType.kFalling);
 
     @Getter
     @AutoLogOutput(key = "Drive/FacingTarget")
@@ -84,6 +90,17 @@ public class RobotState {
             new LoggedTrigger(
                     "RobotState/EnteringTrench",
                     () -> {
+                        // Test if the robot is in motion
+                        ChassisSpeeds chassisVelocity = getFieldRelativeVelocity();
+                        double linearVelocityMPS =
+                                Math.hypot(
+                                        chassisVelocity.vxMetersPerSecond,
+                                        chassisVelocity.vyMetersPerSecond);
+                        double angularVelocityRadsPS = chassisVelocity.omegaRadiansPerSecond;
+
+                        // Arbitrary
+                        boolean inMotion = linearVelocityMPS > 0.02 || angularVelocityRadsPS > 0.03;
+
                         // Predict future pose
                         Pose2d futurePose =
                                 getEstimatedPose()
@@ -126,7 +143,9 @@ public class RobotState {
                                                         .LEFT_TRENCH_OPEN_START;
 
                         return (inAllianceCorridor || inOpponentCorridor)
-                                && (inLeftTrench || inRightTrench);
+                                && (inLeftTrench || inRightTrench)
+                                // Allow hood actuation while stationary
+                                && inMotion;
                     });
 
     /** Trigger determining whether hood is safe to actuate for a HUB shot in auto. */
@@ -141,7 +160,9 @@ public class RobotState {
 
     private final PoseEstimator poseEstimator =
             new PoseEstimator(
-                    new SwerveDriveKinematics(Drive.getModuleTranslations()),
+                    new SwerveDriveKinematics(
+                            Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new)),
+                    Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new),
                     Seconds.of(2),
                     LINEAR_ODOMETRY_STD_DEV,
                     ANGULAR_ODOMETRY_STD_DEV);
@@ -174,6 +195,13 @@ public class RobotState {
      * @param observation the odometry observation to add
      */
     public void addOdometryObservation(OdometryObservation observation) {
+        if (DriverStation.isDisabled()) return;
+
+        if (drivetrainAngledTrigger.getAsBoolean()) {
+            poseEstimator.addGyroObservation(observation);
+            return;
+        }
+
         poseEstimator.addOdometryObservation(observation);
     }
 
@@ -184,10 +212,13 @@ public class RobotState {
      * @param observation the vision observation to add
      */
     public void addVisionObservation(VisionPoseObservation observation) {
-        // // Only add vision observation if robot is not angled (i.e. when going over a bump)
-        // if (drivetrainAngled) {
-        //     return;
-        // }
+        // Only add vision observation if robot is not angled (i.e. when going over a bump)
+
+        if (DriverStation.isDisabled() || drivetrainAngledTrigger.getAsBoolean()) {
+            resetPose(observation.robotPose());
+            return;
+        }
+
         poseEstimator.addVisionObservation(observation);
     }
 
