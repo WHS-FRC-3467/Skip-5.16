@@ -149,8 +149,7 @@ public class AutoCommands {
                                 Commands.either(
                                         AutoBuilder.pathfindToPoseFlipped(
                                                 goalPose, DriveConstants.PATH_CONSTRAINTS),
-                                        AutoBuilder.pathfindThenFollowPath(
-                                                tunnelPath, DriveConstants.PATH_CONSTRAINTS),
+                                        pathFindThenFollow(tunnelPath),
                                         () ->
                                                 FieldUtil.apply(robotState.getEstimatedPose())
                                                         .getMeasureX()
@@ -162,5 +161,14 @@ public class AutoCommands {
                                                                 .getActiveTrajectoryError()
                                                                 .gte(pathErrorTol))
                                                 || robotState.forcePathFind.get()));
+    }
+
+    private static Command pathFindThenFollow(PathPlannerPath path) {
+        return Commands.sequence(
+                AutoBuilder.pathfindToPoseFlipped(
+                        path.getStartingHolonomicPose().get(),
+                        DriveConstants.PATH_CONSTRAINTS,
+                        path.getIdealStartingState().velocity()),
+                AutoBuilder.followPath(path));
     }
 }
