@@ -228,7 +228,17 @@ public class DriveCommands {
                                         drive)
                                 .until(angleController::atGoal),
                         drive.runOnce(drive::stop),
-                        drive.idle().until(() -> !angleController.atGoal()))
+                        joystickDrive(drive, xSupplier, ySupplier, () -> 0.0)
+                                .onlyWhile(
+                                        () ->
+                                                MathUtil.isNear(
+                                                        rotationSupplier.get().getRadians(),
+                                                        robotState
+                                                                .getEstimatedPose()
+                                                                .getRotation()
+                                                                .getRadians(),
+                                                        Units.rotationsToRadians(
+                                                                ANGLE_TOLERANCE_ROTATIONS.get()))))
 
                 // Reset PID controller when command starts
                 .beforeStarting(

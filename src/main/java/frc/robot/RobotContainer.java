@@ -188,11 +188,14 @@ public class RobotContainer {
                 .rightTrigger()
                 .whileTrue(
                         Commands.parallel(
-                                DriveCommands.staticAimTowardsTarget(drive),
+                                DriveCommands.joystickDriveAtAngle(
+                                        drive,
+                                        () -> -controller.getLeftY(),
+                                        () -> -controller.getLeftX(),
+                                        robotState::getAngleToTarget),
                                 shooter.spinUpShooter(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
-                                        .onlyWhile(
-                                                shooter.readyToShoot.and(robotState.facingTarget))
+                                        .onlyWhile(shooter.readyToShoot.and(robotState.canShoot))
                                         .repeatedly()))
                 .onFalse(
                         Commands.parallel(
@@ -202,8 +205,19 @@ public class RobotContainer {
                                 intake.extendIntake(),
                                 shooter.retractHood()));
 
-        // Right Bumper: Manually cycle intake
-        controller.rightBumper().onTrue(intake.shuffleStep()).onFalse(intake.stopRoller());
+        // Tap Right Bumper while Right Trigger held: Manually cycle intake
+        controller
+                .rightBumper()
+                .and(controller.x().negate())
+                .onTrue(intake.shuffleStep())
+                .onFalse(intake.stopRoller());
+
+        // Tap Right Bumper while X held: Manually cycle intake within bumpers for hub shot
+        controller
+                .rightBumper()
+                .and(controller.x())
+                .onTrue(intake.hubShuffleStep())
+                .onFalse(intake.stopRoller());
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
@@ -231,7 +245,7 @@ public class RobotContainer {
                 .povDown()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
-        // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
+        // Driver X: Hub Shot (No-Vision Fallback)
         controller
                 .x()
                 .whileTrue(
