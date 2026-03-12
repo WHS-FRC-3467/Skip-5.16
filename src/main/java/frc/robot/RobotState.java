@@ -16,6 +16,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
@@ -26,6 +27,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -81,6 +83,11 @@ public class RobotState {
                                                     .minus(getEstimatedPose().getRotation())
                                                     .getDegrees())
                                     < SHOOT_TOLERANCE_DEGREES.get());
+
+    @Getter
+    @AutoLogOutput(key = "Drive/CanShoot")
+    public final Trigger canShoot =
+            facingTarget.and(() -> getLinearVelocity().lt(MetersPerSecond.of(0.2)));
 
     /**
      * Whether or not the robot is entering the trench in {@code MAX_HOOD_RETRACT_TIME}. For use to
@@ -243,6 +250,16 @@ public class RobotState {
                 velocity.vyMetersPerSecond,
                 velocity.omegaRadiansPerSecond,
                 getEstimatedPose().getRotation());
+    }
+
+    /**
+     * Returns the robot's linear velocity.
+     *
+     * @return the linear velocity of the robot
+     */
+    public LinearVelocity getLinearVelocity() {
+        var speeds = getFieldRelativeVelocity();
+        return MetersPerSecond.of(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     }
 
     /**
