@@ -170,7 +170,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                             readyToShoot.getAsBoolean()
                                     && robotState.atStaticShootingState.getAsBoolean());
     // Triggers determining whether a ball has passed through the shooter based on flywheel velocity
-    // drops from current setpoint, only registering true during feeding/shooting
+    // drops from current setpoint, currently only registering true during static feeding/shooting
     private final LoggedTrigger leftBallTrigger =
             new LoggedTrigger(
                     getName() + "/LeftBallTrigger",
@@ -248,7 +248,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     /**
      * Determines whether left flywheel linear velocity has dropped by at least the specified
      * velocity from the current flywheel linear velocity setpoint. Currently only applicable during
-     * STATIC feeding/shooting. Primarily for use in autos.
+     * static feeding/shooting. Primarily for use in autos.
      *
      * <p>Gating the check behind having the flywheel be above a certain minimum velocity and the
      * static shot state helps prevent false positives from spurious velocity drops when the
@@ -268,8 +268,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Determines whether right flywheel linear velocity has dropped by at least the specified
-     * velocity from the current flywheel linear velocity setpoint. Currenrtly only applicable
-     * during STATIC feeding/shooting. Primarily for use in autos.
+     * velocity from the current flywheel linear velocity setpoint. Currently only applicable
+     * during static feeding/shooting. Primarily for use in autos.
      *
      * <p>Gating the check behind having the flywheel be above a certain minimum velocity and the
      * static shot state helps prevent false positives from spurious velocity drops when the
@@ -341,7 +341,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return RotationsPerSecond.of(flywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
     }
 
-    public LinearVelocity getDesiredFlywheelLinearVelocity() {
+    private LinearVelocity getDesiredFlywheelLinearVelocity() {
         return MetersPerSecond.of(
                 getDesiredFlywheelVelocity().in(RadiansPerSecond)
                         * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
