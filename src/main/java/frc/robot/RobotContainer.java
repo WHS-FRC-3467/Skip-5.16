@@ -18,12 +18,14 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.events.EventTrigger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -55,6 +57,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
@@ -185,11 +188,14 @@ public class RobotContainer {
                 .rightTrigger()
                 .whileTrue(
                         Commands.parallel(
-                                DriveCommands.staticAimTowardsTarget(drive),
+                                DriveCommands.joystickDriveAtAngle(
+                                        drive,
+                                        () -> -controller.getLeftY(),
+                                        () -> -controller.getLeftX(),
+                                        robotState::getAngleToTarget),
                                 shooter.spinUpShooter(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
-                                        .onlyWhile(
-                                                shooter.readyToShoot.and(robotState.facingTarget))
+                                        .onlyWhile(shooter.readyToShoot.and(robotState.canShoot))
                                         .repeatedly()))
                 .onFalse(
                         Commands.parallel(
@@ -199,8 +205,19 @@ public class RobotContainer {
                                 intake.extendIntake(),
                                 shooter.retractHood()));
 
-        // Right Bumper: Manually cycle intake
-        controller.rightBumper().onTrue(intake.shuffleStep()).onFalse(intake.stopRoller());
+        // Tap Right Bumper while Right Trigger held: Manually cycle intake
+        controller
+                .rightBumper()
+                .and(controller.x().negate())
+                .onTrue(intake.shuffleStep())
+                .onFalse(intake.stopRoller());
+
+        // Tap Right Bumper while X held: Manually cycle intake within bumpers for hub shot
+        controller
+                .rightBumper()
+                .and(controller.x())
+                .onTrue(intake.hubShuffleStep())
+                .onFalse(intake.stopRoller());
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
@@ -213,7 +230,7 @@ public class RobotContainer {
                 .povDown()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
-        // Tap D-Pad Right: Prepare shot from up against the HUB (No-Vision Fallback)
+        // Driver X: Hub Shot (No-Vision Fallback)
         controller
                 .x()
                 .whileTrue(
@@ -245,6 +262,15 @@ public class RobotContainer {
         new EventTrigger("RetractIntake").onTrue(intake.retractIntake());
         new EventTrigger("ExtendIntake").onTrue(intake.autoIntake());
         new EventTrigger("Spinup").onTrue(shooter.spinUpShooterToHubDistance(Meters.of(3.555)));
+
+        HubState.getInstance()
+                .getHubChange()
+                .whileTrue(
+                        Commands.repeatingSequence(
+                                controller.rumbleForTime(
+                                        RumbleType.kBothRumble, 1.0, Seconds.of(0.5)),
+                                Commands.waitSeconds(0.5)))
+                .onFalse(controller.rumble(RumbleType.kBothRumble, 0.0));
     }
 
     /**
