@@ -484,6 +484,7 @@ public class DriveCommands {
     /**
      * Pathfinding command that uses the AutoBuilder to generate a path to a target position.
      *
+     * @param drive the drive subsystem used for pathfinding
      * @param currentPose supplier for the robot's current pose
      * @param targetPose the target pose to pathfind to
      * @param constraints the path constraints to apply

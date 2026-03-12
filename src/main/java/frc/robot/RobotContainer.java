@@ -322,7 +322,7 @@ public class RobotContainer {
                 ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
 
         SmartDashboard.putData(
-                "Set odom to 66",
+                "Debug/SetOdometryToTestPose",
                 Commands.runOnce(() -> robotState.resetPose(new Pose2d(8, 5, Rotation2d.k180deg))));
 
         SmartDashboard.putData(

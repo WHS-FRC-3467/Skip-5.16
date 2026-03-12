@@ -139,18 +139,18 @@ public class AutoCommands {
      */
     public static Command safeFollowPath(
             Drive drive, PathPlannerPath path, PathPlannerPath tunnelPath) {
-        Distance pathErrorTol = Inches.of(18.0);
+        Distance pathErrorTol = DriveConstants.ALLOWABLE_PATH_ERROR;
 
         Timer errorCheckDelayTimer = new Timer();
 
         Pose2d goalPose =
                 FieldUtil.apply(
                         new Pose2d(
-                                tunnelPath
+                                path
                                         .getPathPoses()
-                                        .get(tunnelPath.getPathPoses().size() - 1)
+                                        .get(path.getPathPoses().size() - 1)
                                         .getTranslation(),
-                                tunnelPath.getGoalEndState().rotation()));
+                                path.getGoalEndState().rotation()));
 
         Debouncer pathErrorDebouncer = new Debouncer(.5);
 
@@ -191,7 +191,11 @@ public class AutoCommands {
     private static Command pathFindThenFollow(PathPlannerPath path) {
         return Commands.sequence(
                 AutoBuilder.pathfindToPoseFlipped(
-                        path.getStartingHolonomicPose().get(),
+                        path.getStartingHolonomicPose()
+                                .orElseThrow(
+                                        () ->
+                                                new IllegalStateException(
+                                                        "Path has no starting holonomic pose")),
                         DriveConstants.PATH_CONSTRAINTS,
                         path.getIdealStartingState().velocity()),
                 AutoBuilder.followPath(path));
@@ -220,7 +224,11 @@ public class AutoCommands {
                                 robotState.getActiveTrajectoryError().gte(pathErrorTol));
 
         return Commands.repeatingSequence(
-                        Commands.runOnce(() -> System.out.println("STARTING RETRY LOOP")),
+                        Commands.runOnce(
+                                () ->
+                                        Logger.recordOutput(
+                                                "AutoCommands/RetryPathingStatus",
+                                                "STARTING RETRY LOOP")),
                         // If robot Y is behind (less than) the tunnel entrance Y, it is
                         // already past the tunnel on the alliance side — pathfind directly.
                         // Otherwise, it still needs to travel through the tunnel.
@@ -239,6 +247,10 @@ public class AutoCommands {
                                 .until(pathErrorExceeded),
                         Commands.waitSeconds(0.5))
                 .until(successCondition)
-                .finallyDo(() -> System.out.println("RETRY PATHING DONE"));
+                .finallyDo(
+                        () ->
+                                Logger.recordOutput(
+                                        "AutoCommands/RetryPathingStatus",
+                                        "RETRY PATHING DONE"));
     }
 }
