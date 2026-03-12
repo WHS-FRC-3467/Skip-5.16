@@ -104,7 +104,6 @@ public class RobotContainer {
         if (RobotBase.isSimulation()) {
             RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intake);
         }
-
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
 
@@ -231,8 +230,8 @@ public class RobotContainer {
                 .whileTrue(
                         DriveCommands.joystickDriveAtAngle(
                                 drive,
-                                () -> -controller.getLeftY(),
-                                () -> -controller.getLeftX(),
+                                () -> -controller.slewLeftY(),
+                                () -> -controller.slewLeftX(),
                                 robotState::getTunnelAssistHeading));
 
         controller.rightBumper().onTrue(intake.retractIntake());

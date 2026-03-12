@@ -50,7 +50,7 @@ public class CommandXboxControllerExtended extends CommandXboxController {
     private GenericHID hid;
     private double deadband = 0.0;
     private boolean applyCurve = false;
-
+    private static final double RATE_LIMIT = 1.0;
     /**
      * Constructs an extended Xbox controller with additional functionality.
      *
@@ -117,20 +117,23 @@ public class CommandXboxControllerExtended extends CommandXboxController {
         return MathUtil.applyDeadband(joystickInput, deadband);
     }
 
-    double rateLimit = 1.0;
+   
     private final List<SlewRateLimiter> filter =
             List.of(
-                    new SlewRateLimiter(rateLimit),
-                    new SlewRateLimiter(rateLimit),
-                    new SlewRateLimiter(rateLimit),
-                    new SlewRateLimiter(rateLimit));
-
-    double slewModifier(double joystickInput, int index) {
-
+                    new SlewRateLimiter(RATE_LIMIT),
+                    new SlewRateLimiter(RATE_LIMIT),
+                    new SlewRateLimiter(RATE_LIMIT),
+                    new SlewRateLimiter(RATE_LIMIT));
+    
+    
+   private double slewModifier(double joystickInput, int index) {
+        
+        
         if (RobotState.getInstance().LOW_POWER_MODE.getAsBoolean()) {
             return filter.get(index).calculate(joystickInput);
 
         } else {
+            filter.get(index).calculate(joystickInput);
             return joystickInput;
         }
     }
