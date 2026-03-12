@@ -31,7 +31,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -152,7 +151,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /** Shooter diagnostics */
-    // Linear velocity drop required to detect a shot passing through the shooter
+    // Linear velocity drop required to detect a shot passing through the shooter, default tuned
+    // from replay logs
     private final LoggedTunableNumber shotDetectionThresholdMPS =
             new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.85);
 
@@ -160,8 +160,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private @Getter int leftFuelCount = 0;
     private @Getter int rightFuelCount = 0;
     private @Getter int totalFuelCount = 0;
-
-    private double lastFuelDetectionTime = 0.0;
 
     // Trigger for whether we are at the static shooting state (shooter ready, robot stationary &
     // aligned to target)
@@ -171,16 +169,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     () ->
                             readyToShoot.getAsBoolean()
                                     && robotState.atStaticShootingState.getAsBoolean());
-    // Determines whether the hopper is empty for at least 0.5s while shooting, using
-    // staticShotState as a proxy for a shot
-    private final LoggedTrigger hopperEmpty =
-            new LoggedTrigger(
-                    getName() + "/hopperEmpty",
-                    () ->
-                            Timer.getFPGATimestamp() - lastFuelDetectionTime > 0.5
-                                    && staticShotState.getAsBoolean());
     // Triggers determining whether a ball has passed through the shooter based on flywheel velocity
-    // drops from current setpoint, debounced to prevent multiple detections from the same ball
+    // drops from current setpoint, only registering true during feeding/shooting
     private final LoggedTrigger leftBallTrigger =
             new LoggedTrigger(
                     getName() + "/LeftBallTrigger",
@@ -193,6 +183,17 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     () ->
                             detectRightFlywheelDrop(
                                     MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
+    // Determines whether the hopper is empty for at least 0.5s while shooting, using
+    // staticShotState as a proxy for a shot
+    private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
+    private final LoggedTrigger hopperEmpty =
+            new LoggedTrigger(
+                    getName() + "/hopperEmpty",
+                    () ->
+                            hopperEmptyDebouncer.calculate(
+                                    staticShotState.getAsBoolean()
+                                            && leftBallTrigger.getAsBoolean() == false
+                                            && rightBallTrigger.getAsBoolean() == false));
 
     /**
      * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
@@ -531,7 +532,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 Commands.runOnce(
                         () -> {
                             leftFuelCount++;
-                            lastFuelDetectionTime = Timer.getFPGATimestamp();
                             Logger.recordOutput(getName() + "/LeftFuelCount", leftFuelCount);
                             updateTotalFuelCount();
                         }));
@@ -539,7 +539,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 Commands.runOnce(
                         () -> {
                             rightFuelCount++;
-                            lastFuelDetectionTime = Timer.getFPGATimestamp();
                             Logger.recordOutput(getName() + "/RightFuelCount", rightFuelCount);
                             updateTotalFuelCount();
                         }));
@@ -574,9 +573,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         rightBallTrigger.getAsBoolean();
         staticShotState.getAsBoolean();
         hopperEmpty.getAsBoolean();
-
-        Logger.recordOutput(
-                getName() + "/TimeSinceLastFuel", Timer.getFPGATimestamp() - lastFuelDetectionTime);
 
         Logger.recordOutput(
                 getName() + "/VelocityErrorDifference",
