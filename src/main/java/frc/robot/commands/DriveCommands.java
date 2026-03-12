@@ -101,6 +101,10 @@ public class DriveCommands {
                 .getTranslation();
     }
 
+    public static Command stopWithX(Drive drive) {
+        return drive.runOnce(() -> drive.stopWithX());
+    }
+
     /**
      * Field relative drive command using two joysticks (controlling linear and angular velocities).
      *
