@@ -94,7 +94,7 @@ public class DriveCommands {
     }
 
     public static Command stopWithX(Drive drive) {
-        return drive.run(() -> drive.stopWithX());
+        return drive.runOnce(() -> drive.stopWithX());
     }
 
     /**
