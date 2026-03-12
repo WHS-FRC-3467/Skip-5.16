@@ -229,6 +229,7 @@ public class RobotContainer {
                 .x()
                 .whileTrue(
                         Commands.parallel(
+                                DriveCommands.stopWithX(drive),
                                 shooter.spinUpShooterToHubDistance(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
