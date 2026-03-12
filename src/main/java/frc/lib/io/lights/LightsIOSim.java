@@ -91,7 +91,7 @@ public class LightsIOSim implements LightsIO {
 
         this.requestInfo = request.getControlInfo();
 
-        double direction = checkAndGet("Direction") == "Foward" ? 1.0 : -1.0;
+        double direction = "Forward".equals(checkAndGet("Direction"))  ? 1.0 : -1.0;
        
         int slot = Integer.valueOf(checkAndGet("Slot"));
         Logger.recordOutput("LEDs/Slot" + slot, requestInfo.toString());
@@ -133,6 +133,7 @@ public class LightsIOSim implements LightsIO {
             case "EmptyAnimation":
                 LEDPattern.kOff.applyTo(views.get(slot));
                 led.setData(this.buffer);
+                break;
             default:
                 break;
         }
