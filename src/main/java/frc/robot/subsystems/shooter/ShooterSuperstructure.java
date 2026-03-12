@@ -161,8 +161,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private @Getter int rightFuelCount = 0;
     private @Getter int totalFuelCount = 0;
 
-    boolean lastLeftDrop = false;
-    boolean lastRightDrop = false;
     private double lastFuelDetectionTime = 0.0;
 
     // Trigger for whether we are at the static shooting state (shooter ready, robot stationary &
