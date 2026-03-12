@@ -317,18 +317,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 .withName("Spin-Up Shooter");
     }
 
-    public Command interruptableSpinup() {
-
-        return this.run(
-                        () -> {
-                            spinFlywheel(getDesiredFlywheelVelocity());
-                            setHoodPosition(getDesiredHoodAngle());
-                        })
-                .withName("Interruptable Spinup")
-                .handleInterrupt(() -> stopFlywheels())
-                .withInterruptBehavior(Command.InterruptionBehavior.kCancelSelf);
-    }
-
     public Command slowSpinup() {
         return this.runOnce(
                 () -> {
