@@ -33,6 +33,11 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.util.RobotSim;
 
+import java.util.function.BooleanSupplier;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
 /**
  * Class containing useful individual commands or small-group command sequences that can be strung
  * together into larger autos (that extend AutoRoutine). Command logic layer.
@@ -123,26 +128,48 @@ public class AutoCommands {
         return Commands.parallel(shooter.retractHood()).withTimeout(1.25);
     }
 
+    /**
+     * Follows the given path, and if the trajectory error exceeds the tolerance after an initial
+     * delay, falls back to {@link #retryPathing} which pathfinds (or pathfind-then-follows through
+     * the tunnel) until the robot reaches the goal pose.
+     *
+     * @param drive the drive subsystem
+     * @param path the primary path to follow
+     * @param tunnelPath the tunnel path used for fallback pathing
+     * @return a command that safely follows the path with automatic fallback
+     */
     public static Command safeFollowPath(
             Drive drive, PathPlannerPath path, PathPlannerPath tunnelPath) {
         Distance pathErrorTol = Inches.of(18.0);
-        Distance goalErrorTol = Inches.of(4.0);
 
-        Debouncer pathErrorDebouncer = new Debouncer(.5);
         Timer errorCheckDelayTimer = new Timer();
-        Pose2d goalPose =
+
+        Pose2d goalPose = FieldUtil.apply(
                 new Pose2d(
                         tunnelPath
                                 .getPathPoses()
                                 .get(tunnelPath.getPathPoses().size() - 1)
                                 .getTranslation(),
-                        tunnelPath.getGoalEndState().rotation());
+                        tunnelPath.getGoalEndState().rotation()));
+                        
+
+        Debouncer pathErrorDebouncer = new Debouncer(.5);
+
+        Distance goalErrorTol = Inches.of(4.0);
         Debouncer goalPoseDebouncer = new Debouncer(.25);
 
-        Pose2d tunnelEntrancePose = tunnelPath.getPathPoses().get(0);
+        // Supplier that checks whether the robot has reached the goal pose
+        BooleanSupplier atGoal =
+                () ->
+                        goalPoseDebouncer.calculate(
+                                robotState
+                                                .getEstimatedPose()
+                                                .getTranslation()
+                                                .getDistance(goalPose.getTranslation())
+                                        < goalErrorTol.in(Meters));
 
         return AutoBuilder.followPath(path)
-                .beforeStarting(errorCheckDelayTimer::restart)
+                .beforeStarting(() -> {errorCheckDelayTimer.restart(); Logger.recordOutput("Auto/Goal Pose", goalPose);})
                 .until(
                         () ->
                                 errorCheckDelayTimer.hasElapsed(2.0)
@@ -153,25 +180,9 @@ public class AutoCommands {
                                                 || robotState.forcePathFind.get()))
                 .andThen(
                         Commands.either(
-                                Commands.either(
-                                        AutoBuilder.pathfindToPoseFlipped(
-                                                goalPose, DriveConstants.PATH_CONSTRAINTS),
-                                        pathFindThenFollow(tunnelPath),
-                                        () ->
-                                                FieldUtil.apply(robotState.getEstimatedPose())
-                                                        .getMeasureX()
-                                                        .lt(tunnelEntrancePose.getMeasureX())),
+                                retryPathing(goalPose, tunnelPath, atGoal),
                                 Commands.none(),
-                                () ->
-                                        goalPoseDebouncer.calculate(
-                                                        robotState
-                                                                        .getEstimatedPose()
-                                                                        .getTranslation()
-                                                                        .getDistance(
-                                                                                goalPose
-                                                                                        .getTranslation())
-                                                                > goalErrorTol.in(Meters))
-                                                || robotState.forcePathFind.get()));
+                                () -> !atGoal.getAsBoolean()));
     }
 
     private static Command pathFindThenFollow(PathPlannerPath path) {
@@ -181,5 +192,50 @@ public class AutoCommands {
                         DriveConstants.PATH_CONSTRAINTS,
                         path.getIdealStartingState().velocity()),
                 AutoBuilder.followPath(path));
+    }
+
+    /**
+     * Repeatedly attempts to reach the goal pose by choosing between a direct pathfind or a
+     * pathfind-then-follow through the tunnel, based on the robot's Y position relative to the
+     * tunnel entrance. Runs until the success condition is met (robot is at the goal).
+     *
+     * @param goalPose the target pose to reach
+     * @param tunnelPath the path through the tunnel
+     * @param successCondition returns true when the robot has reached the goal pose
+     * @return a command that retries pathing until success
+     */
+    private static Command retryPathing(
+            Pose2d goalPose, PathPlannerPath tunnelPath, BooleanSupplier successCondition) {
+        Distance pathErrorTol = Inches.of(18.0);
+        Debouncer pathErrorDebouncer = new Debouncer(0.5);
+
+        // Cancel the current pathfind when the trajectory error exceeds tolerance,
+        // causing the loop to restart and replan from the robot's current pose.
+        BooleanSupplier pathErrorExceeded =
+                () ->
+                        pathErrorDebouncer.calculate(
+                                robotState.getActiveTrajectoryError().gte(pathErrorTol));
+
+        return Commands.repeatingSequence(
+                        Commands.runOnce(() -> System.out.println("STARTING RETRY LOOP")),
+                        // If robot Y is behind (less than) the tunnel entrance Y, it is
+                        // already past the tunnel on the alliance side — pathfind directly.
+                        // Otherwise, it still needs to travel through the tunnel.
+                        Commands.either(
+                                        AutoBuilder.pathfindToPoseFlipped(
+                                                goalPose, DriveConstants.PATH_CONSTRAINTS),
+                                        pathFindThenFollow(tunnelPath),
+                                        () ->
+                                                FieldUtil.apply(robotState.getEstimatedPose())
+                                                        .getMeasureX()
+                                                        .lt(
+                                                                tunnelPath
+                                                                        .getPathPoses()
+                                                                        .get(0)
+                                                                        .getMeasureX()))
+                                .until(pathErrorExceeded),
+                        Commands.waitSeconds(0.5))
+                .until(successCondition)
+                .finallyDo(() -> System.out.println("RETRY PATHING DONE"));
     }
 }
