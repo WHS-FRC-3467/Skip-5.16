@@ -208,10 +208,18 @@ public class RobotContainer {
                                 shooter.retractHood()));
 
         // Tap Right Bumper while Right Trigger held: Manually cycle intake
-        controller.rightBumper().and(controller.x().negate()).onTrue(intake.shuffleStep());
+        controller
+                .rightBumper()
+                .and(controller.x().negate())
+                .onTrue(intake.shuffleStep())
+                .onFalse(intake.stopRoller());
 
         // Tap Right Bumper while X held: Manually cycle intake within bumpers for hub shot
-        controller.rightBumper().and(controller.x()).onTrue(intake.hubShuffleStep());
+        controller
+                .rightBumper()
+                .and(controller.x())
+                .onTrue(intake.hubShuffleStep())
+                .onFalse(intake.stopRoller());
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
