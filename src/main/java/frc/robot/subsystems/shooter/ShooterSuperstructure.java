@@ -133,7 +133,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     // Default trim to apply
     private final LoggedTunableNumber flywheelTrimDefaultRPS =
-            new LoggedTunableNumber(getName() + "/FlywheelTrimDefaultRPS", 1.0);
+            new LoggedTunableNumber(getName() + "/FlywheelTrimDefaultRPS", 0.0);
     // How much to add or subtract on each button press
     private final LoggedTunableNumber flywheelTrimStepRPS =
             new LoggedTunableNumber(getName() + "/FlywheelTrimStepRPS", 0.5);
@@ -268,8 +268,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Determines whether right flywheel linear velocity has dropped by at least the specified
-     * velocity from the current flywheel linear velocity setpoint. Currently only applicable
-     * during static feeding/shooting. Primarily for use in autos.
+     * velocity from the current flywheel linear velocity setpoint. Currently only applicable during
+     * static feeding/shooting. Primarily for use in autos.
      *
      * <p>Gating the check behind having the flywheel be above a certain minimum velocity and the
      * static shot state helps prevent false positives from spurious velocity drops when the
