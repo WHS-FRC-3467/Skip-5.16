@@ -247,7 +247,7 @@ public class AutoCommands {
                                                 goalPose, DriveConstants.PATH_CONSTRAINTS),
                                         pathFindThenFollow(tunnelPath),
                                         () ->
-                                                FieldUtil.apply(robotState.getEstimatedPose())
+                                                robotState.getEstimatedPose()
                                                         .getMeasureX()
                                                         .lt(
                                                                 tunnelPath
