@@ -135,6 +135,9 @@ public class Robot extends LoggedRobot {
                         : Constants.RobotConstants.serial);
 
         SmartDashboard.putData("Robot Pose Field Map", fieldMap);
+
+        // Warms up elastic function call to prevent delay during enable of auto
+        Elastic.selectTab(1);
     }
 
     /**
