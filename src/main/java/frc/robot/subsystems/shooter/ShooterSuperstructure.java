@@ -186,7 +186,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // Determines whether the hopper is empty for at least 0.5s while shooting, using
     // staticShotState as a proxy for a shot
     private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
-    private final LoggedTrigger hopperEmpty =
+    public final LoggedTrigger hopperEmpty =
             new LoggedTrigger(
                     getName() + "/hopperEmpty",
                     () ->
