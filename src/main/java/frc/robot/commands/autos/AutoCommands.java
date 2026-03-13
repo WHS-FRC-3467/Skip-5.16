@@ -188,6 +188,14 @@ public class AutoCommands {
                                 () -> !atGoal.getAsBoolean()));
     }
 
+    /**
+     * Pathfinds to the starting pose of the given path and then follows it to completion. Uses the
+     * path's ideal starting velocity as the handoff speed between the pathfinding and
+     * path-following segments.
+     *
+     * @param path the path to pathfind to and then follow
+     * @return a command that pathfinds to the path start and then follows the path
+     */
     private static Command pathFindThenFollow(PathPlannerPath path) {
         return Commands.sequence(
                 AutoBuilder.pathfindToPoseFlipped(
@@ -202,14 +210,16 @@ public class AutoCommands {
     }
 
     /**
-     * Repeatedly attempts to reach the goal pose by choosing between a direct pathfind or a
-     * pathfind-then-follow through the tunnel, based on the robot's Y position relative to the
-     * tunnel entrance. Runs until the success condition is met (robot is at the goal).
+     * Repeatedly attempts to reach the goal pose by choosing between a direct pathfind to the goal
+     * or a {@link #pathFindThenFollow} through the tunnel, based on the robot's X position relative
+     * to the first pose of the tunnel path. If the trajectory error exceeds tolerance during an
+     * attempt, that attempt is cancelled and a new plan is generated from the robot's current pose.
+     * Continues looping until the success condition is met.
      *
      * @param goalPose the target pose to reach
-     * @param tunnelPath the path through the tunnel
+     * @param tunnelPath the path through the tunnel used when the robot is on the neutral-zone side
      * @param successCondition returns true when the robot has reached the goal pose
-     * @return a command that retries pathing until success
+     * @return a command that retries pathing until the success condition is satisfied
      */
     private static Command retryPathing(
             Pose2d goalPose, PathPlannerPath tunnelPath, BooleanSupplier successCondition) {
