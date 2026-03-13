@@ -39,7 +39,6 @@ import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
-import frc.lib.util.VisionOdometryCharacterizer;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
@@ -107,6 +106,7 @@ public class RobotContainer {
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
+        // VisionOdometryCharacterizer.enable();
         // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
@@ -344,10 +344,6 @@ public class RobotContainer {
 
         // Drivetrain Commands
         SmartDashboard.putData(
-                "Face Target",
-                DriveCommands.joystickDriveFacingTarget(
-                        drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
-        SmartDashboard.putData(
                 "Drive to Start Pose",
                 new DriveToPose(drive, () -> startPose)
                         .withDistanceTolerance(Meters.of(0.04))
@@ -374,15 +370,15 @@ public class RobotContainer {
                         Inches.of(5)));
 
         // Diagnostics
-        SmartDashboard.putData(
-                "Enable Vision Odometry Characterization",
-                Commands.runOnce(() -> VisionOdometryCharacterizer.enable()));
-        SmartDashboard.putData(
-                "Disable Vision Odometry Characterization",
-                Commands.runOnce(() -> VisionOdometryCharacterizer.disable()));
-        SmartDashboard.putData(
-                "Reset Vision Odometry Characterization",
-                Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
+        // SmartDashboard.putData(
+        //         "Enable Vision Odometry Characterization",
+        //         Commands.runOnce(() -> VisionOdometryCharacterizer.enable()));
+        // SmartDashboard.putData(
+        //         "Disable Vision Odometry Characterization",
+        //         Commands.runOnce(() -> VisionOdometryCharacterizer.disable()));
+        // SmartDashboard.putData(
+        //         "Reset Vision Odometry Characterization",
+        //         Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
     }
 
     /** Creates and/or binds triggers to LED states */
