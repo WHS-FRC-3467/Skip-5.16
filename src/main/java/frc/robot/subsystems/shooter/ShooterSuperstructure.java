@@ -258,9 +258,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     private boolean detectLeftFlywheelDrop(LinearVelocity drop) {
         LinearVelocity desiredLinearVelocity = getDesiredFlywheelLinearVelocity();
-        return leftFlywheelIO.getLinearVelocity().minus(desiredLinearVelocity).in(MetersPerSecond)
+        LinearVelocity currentLinearVelocity = leftFlywheelIO.getLinearVelocity();
+        return currentLinearVelocity.minus(desiredLinearVelocity).in(MetersPerSecond)
                         <= -drop.in(MetersPerSecond)
-                && leftFlywheelIO.getLinearVelocity().in(MetersPerSecond)
+                && currentLinearVelocity.in(MetersPerSecond)
                         > FlywheelConstants.TOLERANCE.in(RadiansPerSecond)
                                 * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters)
                 && staticShotState.getAsBoolean();
@@ -279,9 +280,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     private boolean detectRightFlywheelDrop(LinearVelocity drop) {
         LinearVelocity desiredLinearVelocity = getDesiredFlywheelLinearVelocity();
-        return rightFlywheelIO.getLinearVelocity().minus(desiredLinearVelocity).in(MetersPerSecond)
+        LinearVelocity currentLinearVelocity = rightFlywheelIO.getLinearVelocity();
+        return currentLinearVelocity.minus(desiredLinearVelocity).in(MetersPerSecond)
                         <= -drop.in(MetersPerSecond)
-                && rightFlywheelIO.getLinearVelocity().in(MetersPerSecond)
+                && currentLinearVelocity.in(MetersPerSecond)
                         > FlywheelConstants.TOLERANCE.in(RadiansPerSecond)
                                 * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters)
                 && staticShotState.getAsBoolean();
