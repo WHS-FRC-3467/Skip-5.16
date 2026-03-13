@@ -32,6 +32,8 @@ import frc.robot.util.RobotSim;
  */
 public class AutoCommands {
     private static final RobotState robotState = RobotState.getInstance();
+    // Delay before following paths in auto.
+    public static double autoDelay = 0.0;
 
     /**
      * Resets the robot's odometry to the starting pose of the specified path. Handles alliance
@@ -114,5 +116,18 @@ public class AutoCommands {
      */
     public static Command stowHood(ShooterSuperstructure shooter) {
         return Commands.parallel(shooter.retractHood()).withTimeout(1.25);
+    }
+
+    /**
+     * Increments or Decrements the Beginning-of-Auto Delay
+     *
+     * @param changeSeconds The amount, in seconds, to delay the start of driving in auto
+     */
+    public static Command changeAutoDelayBy(double changeSeconds) {
+        return Commands.runOnce(
+                        () -> {
+                            autoDelay += changeSeconds;
+                        })
+                .ignoringDisable(true);
     }
 }

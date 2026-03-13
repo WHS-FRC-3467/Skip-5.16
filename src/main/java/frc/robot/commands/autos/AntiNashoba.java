@@ -18,6 +18,7 @@ package frc.robot.commands.autos;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
@@ -27,6 +28,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 
 import java.util.List;
+import java.util.Set;
 
 public class AntiNashoba extends AutoRoutine {
 
@@ -49,6 +51,8 @@ public class AntiNashoba extends AutoRoutine {
                 && !pathPlannerPaths.contains(null)) {
             loadCommands(
                     AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
+                    // Delay if necessary
+                    Commands.defer(() -> Commands.waitSeconds(AutoCommands.autoDelay), Set.of()),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),

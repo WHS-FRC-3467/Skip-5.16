@@ -368,6 +368,10 @@ public class RobotContainer {
         SmartDashboard.putData(
                 "Reset Vision Odometry Characterization",
                 Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
+
+        SmartDashboard.putData("Increment Auto Delay 0.5 sec", AutoCommands.changeAutoDelayBy(0.5));
+        SmartDashboard.putData(
+                "Decrement Auto Delay 0.1 sec", AutoCommands.changeAutoDelayBy(-0.1));
     }
 
     /** Creates and/or binds triggers to LED states */
