@@ -192,8 +192,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     () ->
                             hopperEmptyDebouncer.calculate(
                                     staticShotState.getAsBoolean()
-                                            && leftBallTrigger.getAsBoolean() == false
-                                            && rightBallTrigger.getAsBoolean() == false));
+                                            && !leftBallTrigger.getAsBoolean()
+                                            && !rightBallTrigger.getAsBoolean()));
 
     /**
      * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
