@@ -144,7 +144,7 @@ public class AutoCommands {
         Timer errorCheckDelayTimer = new Timer();
 
         Pose2d goalPose =
-                FieldUtil.apply(
+                (
                         new Pose2d(
                                 path
                                         .getPathPoses()
@@ -164,7 +164,7 @@ public class AutoCommands {
                                 robotState
                                                 .getEstimatedPose()
                                                 .getTranslation()
-                                                .getDistance(goalPose.getTranslation())
+                                                .getDistance(FieldUtil.apply(goalPose.getTranslation()))
                                         < goalErrorTol.in(Meters));
 
         return AutoBuilder.followPath(path)
@@ -225,14 +225,14 @@ public class AutoCommands {
 
         return Commands.repeatingSequence(
                         Commands.runOnce(
-                                () ->
-                                        Logger.recordOutput(
-                                                "AutoCommands/RetryPathingStatus",
-                                                "STARTING RETRY LOOP")),
-                        // If robot Y is behind (less than) the tunnel entrance Y, it is
+                        () ->
+                                Logger.recordOutput(
+                                        "AutoCommands/RetryPathingStatus",
+                                        "RETRY")),                       // If robot X is behind (less than) the tunnel entrance X, it is
                         // already past the tunnel on the alliance side — pathfind directly.
                         // Otherwise, it still needs to travel through the tunnel.
                         Commands.either(
+                                        
                                         AutoBuilder.pathfindToPoseFlipped(
                                                 goalPose, DriveConstants.PATH_CONSTRAINTS),
                                         pathFindThenFollow(tunnelPath),
@@ -244,13 +244,12 @@ public class AutoCommands {
                                                                         .getPathPoses()
                                                                         .get(0)
                                                                         .getMeasureX()))
-                                .until(pathErrorExceeded),
-                        Commands.waitSeconds(0.5))
+                                .until(pathErrorExceeded))
                 .until(successCondition)
                 .finallyDo(
                         () ->
                                 Logger.recordOutput(
                                         "AutoCommands/RetryPathingStatus",
-                                        "RETRY PATHING DONE"));
+                                        "DONE"));
     }
 }

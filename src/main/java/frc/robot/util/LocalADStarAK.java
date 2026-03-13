@@ -85,8 +85,8 @@ public class LocalADStarAK implements Pathfinder {
     /**
      * Set the goal position to pathfind to
      *
-     * @param goalPosition Goal position on the field. If this is within an obstacle it will be moved
-     *     to the nearest non-obstacle node.
+     * @param goalPosition Goal position on the field. If this is within an obstacle it will be
+     *     moved to the nearest non-obstacle node.
      */
     @Override
     public void setGoalPosition(Translation2d goalPosition) {
