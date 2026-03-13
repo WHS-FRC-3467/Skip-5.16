@@ -155,7 +155,7 @@ public class Robot extends LoggedRobot {
         fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
         // Update auto tab
         robotContainer.checkStartPose();
-        SmartDashboard.putNumber("Auto Delay", AutoCommands.autoDelay);
+        SmartDashboard.putNumber("Auto Delay", AutoCommands.getAutoDelay());
     }
 
     /** This function is called once when the robot is disabled. */

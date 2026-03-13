@@ -62,7 +62,7 @@ public class DepotSideAuto extends AutoRoutine {
                     // Reset odometry
                     AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
                     // Delay if necessary
-                    Commands.defer(() -> Commands.waitSeconds(AutoCommands.autoDelay), Set.of()),
+                    Commands.defer(() -> Commands.waitSeconds(AutoCommands.getAutoDelay()), Set.of()),
                     // Drive to depot and start intake, then run through depot while intaking FUEL
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     // Drive to shooting location and shoot all FUEL
