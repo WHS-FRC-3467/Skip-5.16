@@ -15,9 +15,11 @@
 
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -32,6 +34,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
@@ -44,6 +47,9 @@ import frc.robot.Constants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
+
+import lombok.Getter;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
@@ -65,12 +71,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new InterpolatingDoubleTreeMap();
 
     static {
+        hubFlywheelMap.put(1.03, 38.0);
         hubFlywheelMap.put(1.30, 40.6);
         hubFlywheelMap.put(1.72, 42.6);
-        hubFlywheelMap.put(2.1, 44.6);
-        hubFlywheelMap.put(3.05, 48.6);
-        hubFlywheelMap.put(3.54, 50.6);
-        hubFlywheelMap.put(4.6, 52.1);
+        hubFlywheelMap.put(2.1, 43.6);
+        hubFlywheelMap.put(3.05, 47.6);
+        hubFlywheelMap.put(3.54, 49.8);
+        hubFlywheelMap.put(4.6, 50.5);
     }
 
     /** Distance from feed pose in meters -> flywheel speed in rotations per second */
@@ -78,17 +85,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new InterpolatingDoubleTreeMap();
 
     static {
-        feedFlywheelMap.put(3.0, 17.0);
-        feedFlywheelMap.put(4.0, 18.0);
-        feedFlywheelMap.put(5.0, 20.0);
-        feedFlywheelMap.put(6.0, 22.0);
-        feedFlywheelMap.put(7.0, 25.0);
-        feedFlywheelMap.put(8.0, 27.0);
-        feedFlywheelMap.put(9.0, 29.0);
-        feedFlywheelMap.put(10.0, 30.5);
-        feedFlywheelMap.put(11.0, 32.0);
-        feedFlywheelMap.put(12.0, 34.0);
-        feedFlywheelMap.put(13.0, 35.0);
+        feedFlywheelMap.put(0.0, 50.0);
+        feedFlywheelMap.put(6.0, 50.0);
+        feedFlywheelMap.put(7.0, 55.0);
+        feedFlywheelMap.put(8.0, 60.0);
+        feedFlywheelMap.put(20.0, 60.0);
     }
 
     private final RobotState robotState = RobotState.getInstance();
@@ -137,12 +138,62 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final LoggedTunableNumber flywheelTrimStepRPS =
             new LoggedTunableNumber(getName() + "/FlywheelTrimStepRPS", 0.5);
 
+    private final LoggedTunableNumber flywheelSlowSpinupTorque =
+            new LoggedTunableNumber(getName() + "/FlywheelSlowSpinupTorque", 10.0);
+    private final LoggedTunableNumber flywheelSlowSpinupDutyCycle =
+            new LoggedTunableNumber(getName() + "/FlywheelSlowSpinupDutyCycle", 0.3);
+
     // User-defined trim at runtime, not including default trim
     private AngularVelocity flywheelTrim = RotationsPerSecond.zero();
 
-    private AngularVelocity getFlywheelTimStep() {
+    private AngularVelocity getFlywheelTrimStep() {
         return RotationsPerSecond.of(flywheelTrimStepRPS.get());
     }
+
+    /** Shooter diagnostics */
+    // Linear velocity drop required to detect a shot passing through the shooter, default tuned
+    // from auto replay logs. Typically 0.5 - 1 m/s.
+    private final LoggedTunableNumber shotDetectionThresholdMPS =
+            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.65);
+
+    // Fuel counts
+    private @Getter int leftFuelCount = 0;
+    private @Getter int rightFuelCount = 0;
+    private @Getter int totalFuelCount = 0;
+
+    // Trigger for whether we are at the static shooting state (shooter ready, robot stationary &
+    // aligned to target)
+    private final LoggedTrigger staticShotState =
+            new LoggedTrigger(
+                    this.getName() + "/StaticShotState",
+                    () ->
+                            readyToShoot.getAsBoolean()
+                                    && robotState.atStaticShootingState.getAsBoolean());
+    // Triggers determining whether a ball has passed through the shooter based on flywheel velocity
+    // drops from current setpoint, currently only registering true during static feeding/shooting
+    private final LoggedTrigger leftBallTrigger =
+            new LoggedTrigger(
+                    getName() + "/LeftBallTrigger",
+                    () ->
+                            detectLeftFlywheelDrop(
+                                    MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
+    private final LoggedTrigger rightBallTrigger =
+            new LoggedTrigger(
+                    getName() + "/RightBallTrigger",
+                    () ->
+                            detectRightFlywheelDrop(
+                                    MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
+    // Determines whether the hopper is empty for at least 0.5s while shooting, using
+    // staticShotState as a proxy for a shot
+    private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
+    public final LoggedTrigger hopperEmpty =
+            new LoggedTrigger(
+                    getName() + "/hopperEmpty",
+                    () ->
+                            hopperEmptyDebouncer.calculate(
+                                    staticShotState.getAsBoolean()
+                                            && !leftBallTrigger.getAsBoolean()
+                                            && !rightBallTrigger.getAsBoolean()));
 
     /**
      * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
@@ -168,6 +219,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         this.hoodIO = hoodIO;
         this.leftFlywheelIO = leftFlywheelIO;
         this.rightFlywheelIO = rightFlywheelIO;
+
+        attachBallTriggers();
     }
 
     private void spinFlywheel(AngularVelocity velocity) {
@@ -190,6 +243,50 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         velocity.in(RotationsPerSecond),
                         rightFlywheelIO.getVelocity().in(RotationsPerSecond),
                         FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
+    }
+
+    /**
+     * Determines whether left flywheel linear velocity has dropped by at least the specified
+     * velocity from the current flywheel linear velocity setpoint. Currently only applicable during
+     * static feeding/shooting. Primarily for use in autos.
+     *
+     * <p>Gating the check behind having the flywheel be above a certain minimum velocity and the
+     * static shot state helps prevent false positives from spurious velocity drops when the
+     * flywheel is at low speed or the robot is moving/spinning up.
+     *
+     * @param drop the magnitude of drop to compare
+     */
+    private boolean detectLeftFlywheelDrop(LinearVelocity drop) {
+        LinearVelocity desiredLinearVelocity = getDesiredFlywheelLinearVelocity();
+        LinearVelocity currentLinearVelocity = leftFlywheelIO.getLinearVelocity();
+        return currentLinearVelocity.minus(desiredLinearVelocity).in(MetersPerSecond)
+                        <= -drop.in(MetersPerSecond)
+                && currentLinearVelocity.in(MetersPerSecond)
+                        > FlywheelConstants.TOLERANCE.in(RadiansPerSecond)
+                                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters)
+                && staticShotState.getAsBoolean();
+    }
+
+    /**
+     * Determines whether right flywheel linear velocity has dropped by at least the specified
+     * velocity from the current flywheel linear velocity setpoint. Currently only applicable during
+     * static feeding/shooting. Primarily for use in autos.
+     *
+     * <p>Gating the check behind having the flywheel be above a certain minimum velocity and the
+     * static shot state helps prevent false positives from spurious velocity drops when the
+     * flywheel is at low speed or the robot is moving/spinning up.
+     *
+     * @param drop the magnitude of drop to compare
+     */
+    private boolean detectRightFlywheelDrop(LinearVelocity drop) {
+        LinearVelocity desiredLinearVelocity = getDesiredFlywheelLinearVelocity();
+        LinearVelocity currentLinearVelocity = rightFlywheelIO.getLinearVelocity();
+        return currentLinearVelocity.minus(desiredLinearVelocity).in(MetersPerSecond)
+                        <= -drop.in(MetersPerSecond)
+                && currentLinearVelocity.in(MetersPerSecond)
+                        > FlywheelConstants.TOLERANCE.in(RadiansPerSecond)
+                                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters)
+                && staticShotState.getAsBoolean();
     }
 
     // Hood
@@ -237,18 +334,19 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private AngularVelocity getDesiredFlywheelVelocity() {
-        // InterpolatingDoubleTreeMap flywheelMap =
-        //         switch (robotState.getTarget()) {
-        //             case HUB -> hubFlywheelMap;
-        //             case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
-        //         };
+        InterpolatingDoubleTreeMap flywheelMap =
+                switch (robotState.getTarget()) {
+                    case HUB -> hubFlywheelMap;
+                    case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
+                };
 
-        if (robotState.getTarget() != Target.HUB) {
-            return RotationsPerSecond.of(50.0);
-        }
+        return RotationsPerSecond.of(flywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
+    }
 
-        return RotationsPerSecond.of(
-                hubFlywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
+    private LinearVelocity getDesiredFlywheelLinearVelocity() {
+        return MetersPerSecond.of(
+                getDesiredFlywheelVelocity().in(RadiansPerSecond)
+                        * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters));
     }
 
     private Angle getDesiredHoodAngle() {
@@ -290,6 +388,17 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 .withName("Spin-Up Shooter to Distance");
     }
 
+    public Command spinUpShooterToHubDistance() {
+        double distance = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
+        return Commands.run(
+                        () -> {
+                            spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance)));
+                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance)));
+                        },
+                        this)
+                .withName("Spin-Up Shooter to Distance");
+    }
+
     /**
      * Dynamically spins the flywheel and actuates the hood to the proper values for ANY target shot
      * given current field-relative robot pose. Valid for ANY target. Perpetual command -- never
@@ -306,6 +415,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         },
                         this)
                 .withName("Spin-Up Shooter");
+    }
+
+    public Command slowSpinup() {
+        return this.runOnce(
+                () -> {
+                    leftFlywheelIO.runCurrent(
+                            Amps.of(flywheelSlowSpinupTorque.getAsDouble()),
+                            flywheelSlowSpinupDutyCycle.getAsDouble());
+                    rightFlywheelIO.runCurrent(
+                            Amps.of(flywheelSlowSpinupTorque.getAsDouble()),
+                            flywheelSlowSpinupDutyCycle.getAsDouble());
+                });
     }
 
     /**
@@ -326,6 +447,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                                         Commands.waitUntil(readyToShoot),
                                         whileAtPosition.until(readyToShoot.negate()))))
                 .withName("Shoot Fuel");
+    }
+
+    public Command fountain() {
+        return Commands.sequence(
+                setHoodAngle(Degrees.of(24.0)), setFlywheelSpeed(RotationsPerSecond.of(10.0)));
     }
 
     /**
@@ -405,12 +531,34 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     public Command trimFlywheelSpeedUp() {
         // Doesn't require subsystem to allow for trimming while shooting
-        return Commands.runOnce(() -> flywheelTrim.plus(getFlywheelTimStep()));
+        return Commands.runOnce(() -> flywheelTrim = flywheelTrim.plus(getFlywheelTrimStep()));
     }
 
     public Command trimFlywheelSpeedDown() {
         // Doesn't require subsystem to allow for trimming while shooting
-        return Commands.runOnce(() -> flywheelTrim.minus(getFlywheelTimStep()));
+        return Commands.runOnce(() -> flywheelTrim = flywheelTrim.minus(getFlywheelTrimStep()));
+    }
+
+    private void attachBallTriggers() {
+        leftBallTrigger.onTrue(
+                Commands.runOnce(
+                        () -> {
+                            leftFuelCount++;
+                            Logger.recordOutput(getName() + "/LeftFuelCount", leftFuelCount);
+                            updateTotalFuelCount();
+                        }));
+        rightBallTrigger.onTrue(
+                Commands.runOnce(
+                        () -> {
+                            rightFuelCount++;
+                            Logger.recordOutput(getName() + "/RightFuelCount", rightFuelCount);
+                            updateTotalFuelCount();
+                        }));
+    }
+
+    private void updateTotalFuelCount() {
+        totalFuelCount = leftFuelCount + rightFuelCount;
+        Logger.recordOutput(getName() + "/TotalFuelCount", totalFuelCount);
     }
 
     @Override
@@ -432,6 +580,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         leftFlywheelIO.periodic();
         rightFlywheelIO.periodic();
         hoodIO.periodic();
+
+        leftBallTrigger.getAsBoolean();
+        rightBallTrigger.getAsBoolean();
+        staticShotState.getAsBoolean();
+        hopperEmpty.getAsBoolean();
 
         Logger.recordOutput(
                 getName() + "/VelocityErrorDifference",

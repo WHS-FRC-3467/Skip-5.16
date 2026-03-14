@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.Degrees;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
+
 import lombok.Getter;
 
 public class ServoIOSim implements ServoIO {

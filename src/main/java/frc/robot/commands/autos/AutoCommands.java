@@ -8,13 +8,14 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.commands.DriveCommands;
@@ -34,26 +35,22 @@ public class AutoCommands {
 
     /**
      * Resets the robot's odometry to the starting pose of the specified path. Handles alliance
-     * flipping if necessary. ONLY RUNS IN SIMULATION.
+     * flipping if necessary.
      *
      * @param drive the drive subsystem
      * @param path the PathPlanner path containing the starting pose
      * @return a command that resets the robot's pose to the path's starting position
      */
-    public static Command resetSimOdom(Drive drive, PathPlannerPath path) {
-        if (RobotBase.isSimulation()) {
-            return drive.runOnce(
-                    () -> {
-                        Pose2d pose = path.getStartingHolonomicPose().get();
-                        if (FieldUtil.shouldFlip()) {
-                            pose = FieldUtil.apply(pose);
-                        }
+    public static Command resetOdom(Drive drive, PathPlannerPath path) {
+        return drive.runOnce(
+                () -> {
+                    Pose2d pose = path.getStartingHolonomicPose().get();
+                    if (FieldUtil.shouldFlip()) {
+                        pose = FieldUtil.apply(pose);
+                    }
 
-                        robotState.resetPose(pose);
-                    });
-        } else {
-            return Commands.none();
-        }
+                    robotState.resetPose(pose);
+                });
     }
 
     public static Command shootCommand(
@@ -62,22 +59,22 @@ public class AutoCommands {
             IndexerSuperstructure indexer,
             Tower tower,
             ShooterSuperstructure shooter,
-            LinearVelocity retractSpeed,
             double timeoutDuration) {
         return Commands.deadline(
                 Commands.parallel(
-                                shooter.spinUpShooter(),
-                                intake.slowRetract(retractSpeed).asProxy(),
+                                shooter.spinUpShooter().asProxy(),
                                 Commands.parallel(
                                                 indexer.shoot()
                                                         .withInterruptBehavior(
                                                                 InterruptionBehavior
                                                                         .kCancelIncoming),
-                                                tower.shoot())
+                                                tower.shoot(),
+                                                intake.shuffleStep().repeatedly().asProxy())
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(
                                                         RobotState.getInstance().facingTarget))
                                         .repeatedly())
+                        .until(shooter.hopperEmpty)
                         .withTimeout(timeoutDuration)
                         .finallyDo(
                                 () -> {

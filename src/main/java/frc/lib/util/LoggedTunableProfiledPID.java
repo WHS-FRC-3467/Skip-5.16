@@ -20,8 +20,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
  * <p>Example usage:
  *
  * <pre>{@code
- * LoggedTuneableProfiledPID controller =
- *     new LoggedTuneableProfiledPID("Arm/PID", 2.0, 0.0, 0.1, 2.0, 5.0);
+ * LoggedTunableProfiledPID controller =
+ *     new LoggedTunableProfiledPID("Arm/PID", 2.0, 0.0, 0.1, 2.0, 5.0);
  *
  * // In periodic():
  * controller.updatePID(); // Apply any changes from dashboard

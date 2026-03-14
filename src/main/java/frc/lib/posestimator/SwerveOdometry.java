@@ -26,12 +26,14 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.units.measure.Time;
+
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import lombok.Getter;
-import lombok.experimental.Accessors;
 
 /**
  * Integrates swerve-drive odometry observations to maintain a continuous estimate of the robot's
@@ -175,6 +177,28 @@ public class SwerveOdometry {
 
         // Integrate twist into odometry pose
         odometryPose = odometryPose.exp(twist);
+
+        // If gyro angle is available, correct heading drift
+        observation
+                .gyroAngle()
+                .ifPresent(
+                        angle ->
+                                odometryPose =
+                                        new Pose2d(
+                                                odometryPose.getTranslation(),
+                                                angle.plus(gyroOffset)));
+
+        // Store pose for later interpolation (e.g., vision sync)
+        odometryBuffer.addSample(timestampSeconds, odometryPose);
+    }
+
+    /**
+     * Adds an odometry observation to the integrator, ignoring everything except gyro.
+     *
+     * @param observation an {@link OdometryObservation} containing an optional gyro angle
+     */
+    public void addGyroObservation(OdometryObservation observation) {
+        double timestampSeconds = observation.timestamp().in(Seconds);
 
         // If gyro angle is available, correct heading drift
         observation

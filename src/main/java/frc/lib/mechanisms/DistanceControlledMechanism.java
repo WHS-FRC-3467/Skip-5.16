@@ -8,8 +8,10 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 
 import edu.wpi.first.units.measure.*;
+
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.util.PID;
+
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -177,6 +179,16 @@ public class DistanceControlledMechanism<T extends Mechanism<?>> {
      */
     public void runCurrent(Current current) {
         mechanism.runCurrent(current);
+    }
+
+    /**
+     * Runs the mechanism using torque-producing current control with a duty cycle limit.
+     *
+     * @param current Desired current
+     * @param dutyCycle Desired dutycycle of current output, limiting top speed
+     */
+    public void runCurrent(Current current, double dutyCycle) {
+        mechanism.runCurrent(current, dutyCycle);
     }
 
     /**

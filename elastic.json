@@ -12,7 +12,7 @@
             "x": 0.0,
             "y": 0.0,
             "width": 300.0,
-            "height": 800.0,
+            "height": 700.0,
             "type": "Alerts",
             "properties": {
               "topic": "/SmartDashboard/Alerts",
@@ -22,9 +22,9 @@
           {
             "title": "Time Until Next Phase",
             "x": 300.0,
-            "y": 0.0,
+            "y": 250.0,
             "width": 900.0,
-            "height": 800.0,
+            "height": 350.0,
             "type": "Match Time",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/Hub/Time Until Next Phase",
@@ -40,7 +40,7 @@
             "x": 1200.0,
             "y": 0.0,
             "width": 300.0,
-            "height": 650.0,
+            "height": 700.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/SmartDashboard/Can Shoot!",
@@ -53,17 +53,19 @@
             }
           },
           {
-            "title": "Drive to Start Pose",
-            "x": 1200.0,
-            "y": 650.0,
-            "width": 300.0,
-            "height": 150.0,
-            "type": "Command",
+            "title": "MatchTime",
+            "x": 300.0,
+            "y": 0.0,
+            "width": 900.0,
+            "height": 250.0,
+            "type": "Match Time",
             "properties": {
-              "topic": "/SmartDashboard/Drive to Start Pose",
+              "topic": "/AdvantageKit/DriverStation/MatchTime",
               "period": 0.06,
-              "show_type": true,
-              "maximize_button_space": false
+              "data_type": "double",
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 15,
+              "yellow_start_time": 30
             }
           }
         ]
@@ -84,7 +86,7 @@
             "properties": {
               "topic": "/SmartDashboard/Auto Preview",
               "period": 0.06,
-              "field_game": "Rebuilt",
+              "field_game": "Reefscape",
               "robot_width": 0.85,
               "robot_length": 0.85,
               "show_other_objects": true,
@@ -113,7 +115,7 @@
             "x": 450.0,
             "y": 400.0,
             "width": 450.0,
-            "height": 400.0,
+            "height": 300.0,
             "type": "Large Text Display",
             "properties": {
               "topic": "/SmartDashboard/Auto Pose Check/Inches from Start",
@@ -126,7 +128,7 @@
             "x": 0.0,
             "y": 400.0,
             "width": 450.0,
-            "height": 400.0,
+            "height": 300.0,
             "type": "Large Text Display",
             "properties": {
               "topic": "/SmartDashboard/Auto Pose Check/Degrees from Start",

@@ -19,8 +19,10 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANdleConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.CANdle;
+
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.Device;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,7 +46,7 @@ public class LightsIOCandle implements LightsIO {
         candle = new CANdle(id.id(), new CANBus(id.bus()));
 
         updateThread
-                .CTRECheckErrorAndRetry(() -> candle.getConfigurator().apply(config))
+                .ctreCheckErrorAndRetry(() -> candle.getConfigurator().apply(config))
                 .exceptionally(
                         ex -> {
                             LOGGER.log(Level.SEVERE, ex.toString(), ex);

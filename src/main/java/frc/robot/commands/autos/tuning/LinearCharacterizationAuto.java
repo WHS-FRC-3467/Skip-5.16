@@ -15,9 +15,11 @@
 package frc.robot.commands.autos.tuning;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+
 import frc.lib.util.AutoRoutine;
 import frc.robot.commands.autos.AutoCommands;
 import frc.robot.subsystems.drive.Drive;
+
 import java.util.List;
 
 public class LinearCharacterizationAuto extends AutoRoutine {
@@ -32,7 +34,7 @@ public class LinearCharacterizationAuto extends AutoRoutine {
         if (pathPlannerPaths.size() == expectedPaths.size() && !pathPlannerPaths.contains(null))
             loadCommands(
                     // Reset odometry
-                    AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                    AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
                     // Follow straight path
                     AutoBuilder.followPath(pathPlannerPaths.get(0)));
     }

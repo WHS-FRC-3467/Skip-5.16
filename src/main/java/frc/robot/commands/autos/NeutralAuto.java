@@ -15,15 +15,19 @@
 
 package frc.robot.commands.autos;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
 import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.lib.util.AutoRoutine;
+import frc.robot.generated.ChoreoTraj;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
+
 import java.util.List;
 
 public class NeutralAuto extends AutoRoutine {
@@ -34,31 +38,52 @@ public class NeutralAuto extends AutoRoutine {
             IndexerSuperstructure indexer,
             Tower tower,
             ShooterSuperstructure shooter,
-            boolean shouldMirror) {
-
-        List<String> expectedPaths = List.of("Neutral1", "Neutral2", "Neutral3");
+            boolean shouldMirror,
+            boolean isSafe) {
+        // Choose path names based on start position
+        List<ChoreoTraj> expectedPaths;
+        if (isSafe) {
+            expectedPaths =
+                    List.of(ChoreoTraj.NeutralSafe1, ChoreoTraj.NeutralSafe2, ChoreoTraj.Neutral2);
+        } else {
+            expectedPaths =
+                    List.of(ChoreoTraj.Neutral1, ChoreoTraj.NeutralSafe2, ChoreoTraj.Neutral2);
+        }
 
         // Load the named paths
-        this.loadAllPaths(expectedPaths, shouldMirror, false);
+        this.loadAllPaths(expectedPaths.stream().map(p -> p.name()).toList(), shouldMirror, true);
 
         // Defensive check: ensure we loaded exactly the expected number of paths and none are null
         if (!pathPlannerPaths.isEmpty()
                 && pathPlannerPaths.size() == expectedPaths.size()
-                && !pathPlannerPaths.contains(null))
+                && !pathPlannerPaths.contains(null)) {
             loadCommands(
-                    AutoCommands.resetSimOdom(drive, pathPlannerPaths.get(0)),
+                    AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
+                    // Commands.waitSeconds(3.0),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                    AutoCommands.shootCommand(
-                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 3.5),
+                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
                     // Run back under the trench and shoot
                     // Initialize intake and hood to starting positions for teleop
-                    AutoCommands.stowHood(shooter),
-                    intake.retractIntake().asProxy().withTimeout(0.5),
-                    // Drive to the neutral zone
-                    AutoBuilder.followPath(pathPlannerPaths.get(2)),
-                    AutoCommands.shootCommand(
-                            drive, intake, indexer, tower, shooter, MetersPerSecond.of(0.1), 10));
+                    Commands.repeatingSequence(
+                                    AutoCommands.stowHood(shooter),
+                                    intake.retractIntake().asProxy().withTimeout(0.5),
+                                    // Drive to the neutral zone
+                                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                                    AutoCommands.shootCommand(
+                                            drive, intake, indexer, tower, shooter, 10),
+                                    AutoCommands.stowHood(shooter),
+                                    intake.retractIntake().asProxy().withTimeout(0.5),
+                                    // Drive to the neutral zone
+                                    AutoBuilder.followPath(pathPlannerPaths.get(2)),
+                                    AutoCommands.shootCommand(
+                                            drive, intake, indexer, tower, shooter, 10))
+                            .finallyDo(
+                                    () ->
+                                            CommandScheduler.getInstance()
+                                                    .schedule(
+                                                            intake.stopRoller()
+                                                                    .ignoringDisable(true))));
+        }
     }
 }

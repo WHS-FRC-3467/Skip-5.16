@@ -19,6 +19,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
+
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -50,22 +51,29 @@ public interface VisionIO {
         /** Camera distortion coefficients (8x1) */
         public double[] distCoeffs = null;
 
+        /** Constructs vision inputs without camera intrinsic parameters. */
+        public VisionIOInputs() {}
+
         /**
          * Constructs vision inputs with camera intrinsic parameters.
          *
-         * @param cameraMatrix 3x3 camera intrinsic matrix
-         * @param distCoeffs 8x1 distortion coefficients
+         * @param cameraMatrix 3x3 camera intrinsic matrix (may be null if unavailable)
+         * @param distCoeffs 8x1 distortion coefficients (may be null if unavailable)
          */
         public VisionIOInputs(Matrix<N3, N3> cameraMatrix, Matrix<N8, N1> distCoeffs) {
-            this.cameraMatrix = cameraMatrix.getData();
-            this.distCoeffs = distCoeffs.getData();
+            this.cameraMatrix = cameraMatrix != null ? cameraMatrix.getData() : null;
+            this.distCoeffs = distCoeffs != null ? distCoeffs.getData() : null;
         }
 
         @Override
         public void toLog(LogTable table) {
             if (!hasLoggedIntrinsics) {
-                table.put("CameraMatrix", cameraMatrix);
-                table.put("DistCoeffs", distCoeffs);
+                if (cameraMatrix != null) {
+                    table.put("CameraMatrix", cameraMatrix);
+                }
+                if (distCoeffs != null) {
+                    table.put("DistCoeffs", distCoeffs);
+                }
 
                 hasLoggedIntrinsics = true;
             }

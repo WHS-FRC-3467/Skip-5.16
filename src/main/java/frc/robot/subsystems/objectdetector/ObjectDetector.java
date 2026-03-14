@@ -19,17 +19,21 @@ import static edu.wpi.first.units.Units.Degrees;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.lib.devices.ObjectDetection;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.robot.RobotState;
+
+import lombok.Getter;
+
+import org.littletonrobotics.junction.Logger;
+import org.photonvision.targeting.PhotonTrackedTarget;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import lombok.Getter;
-import org.littletonrobotics.junction.Logger;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
  * Generates the Object Detection subsystem which consists of some number of Object Detection

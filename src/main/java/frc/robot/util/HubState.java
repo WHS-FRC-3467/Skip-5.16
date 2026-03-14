@@ -3,12 +3,16 @@ package frc.robot.util;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import frc.lib.util.LoggedTrigger;
-import java.util.Arrays;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import org.littletonrobotics.junction.Logger;
+
+import java.util.Arrays;
 
 /**
  * Models the state of the game hub across match phases.
@@ -114,9 +118,13 @@ public class HubState {
                 "Can Shoot!", hubActive.getAsBoolean() || hubChange.getAsBoolean());
 
         double next = nextSwitchTime(matchTime);
-        if (next > 0) {
-            Logger.recordOutput("Hub/Time Until Next Phase", matchTime - next);
+
+        // If no more hub switches, count down to end of match
+        if (next < 0) {
+            next = 0;
         }
+
+        Logger.recordOutput("Hub/Time Until Next Phase", matchTime - next);
     }
 
     private Alliance opposite(Alliance alliance) {
