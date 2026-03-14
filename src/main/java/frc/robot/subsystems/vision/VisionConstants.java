@@ -377,24 +377,24 @@ public class VisionConstants {
         switch (Constants.currentMode) {
             case REAL -> {
                 var camera1 = new AprilTagCamera(FRONT, getFrontIOReal());
-                // var camera2 = new AprilTagCamera(LEFT, getLeftIOReal());
-                // var camera3 = new AprilTagCamera(RIGHT, getRightIOReal());
+                var camera2 = new AprilTagCamera(LEFT, getLeftIOReal());
+                var camera3 = new AprilTagCamera(RIGHT, getRightIOReal());
                 var camera4 = new AprilTagCamera(BACK, getBackIOReal());
-                new VisionSubsystem(camera1, camera4);
+                new VisionSubsystem(camera1, camera2, camera3, camera4);
             }
             case SIM -> {
                 var camera1 = new AprilTagCamera(FRONT, getFrontIOSim());
-                // var camera2 = new AprilTagCamera(LEFT, getLeftIOSim());
-                // var camera3 = new AprilTagCamera(RIGHT, getRightIOSim());
+                var camera2 = new AprilTagCamera(LEFT, getLeftIOSim());
+                var camera3 = new AprilTagCamera(RIGHT, getRightIOSim());
                 var camera4 = new AprilTagCamera(BACK, getBackIOSim());
-                new VisionSubsystem(camera1, camera4);
+                new VisionSubsystem(camera1, camera2, camera3, camera4);
             }
             case REPLAY -> {
                 var camera1 = new AprilTagCamera(FRONT, new VisionIO() {});
-                // var camera2 = new AprilTagCamera(LEFT, new VisionIO() {});
-                // var camera3 = new AprilTagCamera(RIGHT, new VisionIO() {});
+                var camera2 = new AprilTagCamera(LEFT, new VisionIO() {});
+                var camera3 = new AprilTagCamera(RIGHT, new VisionIO() {});
                 var camera4 = new AprilTagCamera(BACK, new VisionIO() {});
-                new VisionSubsystem(camera1, camera4);
+                new VisionSubsystem(camera1, camera2, camera3, camera4);
             }
         }
     }
