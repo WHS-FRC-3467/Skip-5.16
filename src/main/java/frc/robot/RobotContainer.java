@@ -188,14 +188,11 @@ public class RobotContainer {
                 .rightTrigger()
                 .whileTrue(
                         Commands.parallel(
-                                DriveCommands.joystickDriveAtAngle(
-                                        drive,
-                                        () -> -controller.getLeftY(),
-                                        () -> -controller.getLeftX(),
-                                        robotState::getAngleToTarget),
+                                DriveCommands.staticAimTowardsTarget(drive),
                                 shooter.spinUpShooter(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
-                                        .onlyWhile(shooter.readyToShoot.and(robotState.canShoot))
+                                        .onlyWhile(
+                                                shooter.readyToShoot.and(robotState.facingTarget))
                                         .repeatedly()))
                 .onFalse(
                         Commands.parallel(
