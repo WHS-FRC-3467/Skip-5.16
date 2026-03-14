@@ -91,7 +91,6 @@ public class RobotContainer {
             new CommandXboxControllerExtended(1).withDeadband(0.1);
 
     // Button board
-    private final ButtonBoardOverrides buttonBoard = new ButtonBoardOverrides(2);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
@@ -295,53 +294,18 @@ public class RobotContainer {
      */
     private void configureOverrideBindings() {
         // Button 1: Emergency stop all mechanisms (intake, indexer, tower, and shooter).
-        buttonBoard
-                .emergencyStop()
-                .whileTrue(
-                        Commands.parallel(
-                                        intake.stopAll(),
-                                        indexer.stopCommand(),
-                                        tower.stopCommand(),
-                                        shooter.setFlywheelSpeed(RadiansPerSecond.zero()))
-                                .repeatedly());
 
         // Button 2: Stop spinning the shooter and lower the hood.
-        buttonBoard
-                .shooterSpinDown()
-                .whileTrue(
-                        Commands.parallel(
-                                        shooter.setFlywheelSpeed(RadiansPerSecond.zero()),
-                                        shooter.setHoodAngle(Radians.zero()))
-                                .repeatedly());
 
         // Button 3: Unjam the pathway by running the flywheels in reverse; only run the roller if
         // it's extended.
-        buttonBoard
-                .unjam()
-                .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
         // Button 4: Forcibly retract the intake by applying negative current.
-        buttonBoard.forceRetractIntake().whileTrue(intake.retractIntake());
 
         // Button 5: Bypass shooter readiness and alignment requirements to force a shot with best
         // guess of current pose. Spin everything down afterwards.
-        buttonBoard
-                .forceShot()
-                .whileTrue(
-                        Commands.parallel(
-                                Commands.run(() -> drive.stopWithX(), drive),
-                                shooter.spinUpShooterToHubDistance(
-                                        robotState.getDistanceToTarget()),
-                                indexer.shoot(),
-                                tower.shoot()))
-                .onFalse(
-                        Commands.parallel(
-                                shooter.setFlywheelSpeed(RadiansPerSecond.zero()),
-                                indexer.stopCommand(),
-                                tower.stopCommand()));
-
+    
         // Button 6: X locks drive until button is unpressed and joystick commands new velocity.
-        buttonBoard.lockDrive().whileTrue(Commands.run(() -> drive.stopWithX(), drive));
     }
 
     /**
