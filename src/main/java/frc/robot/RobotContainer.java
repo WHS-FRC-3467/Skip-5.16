@@ -38,6 +38,7 @@ import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.robot.Constants.PathConstants;
+import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
@@ -230,14 +231,21 @@ public class RobotContainer {
                 .povDown()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
-        // Driver X: Hub Shot (No-Vision Fallback)
+        // Driver X: Hub Shot & Midline Feed (No-Vision Fallback)
         controller
                 .x()
                 .whileTrue(
-                        Commands.parallel(
-                                DriveCommands.stopWithX(drive),
-                                shooter.spinUpShooterToHubDistance(),
-                                Commands.parallel(indexer.shoot(), tower.shoot())))
+                        Commands.either(
+                                Commands.parallel(
+                                        DriveCommands.stopWithX(drive),
+                                        shooter.spinUpShooterToHubDistance(),
+                                        Commands.parallel(indexer.shoot(), tower.shoot())),
+                                Commands.parallel(
+                                        shooter.spinUpShooterMidlineFeed(),
+                                        Commands.sequence(
+                                            Commands.waitUntil(shooter.atMidlineFeedSetpoints).withTimeout(0.75),
+                                            Commands.parallel(indexer.shoot(), tower.shoot()))),
+                                () -> (robotState.getTarget() == RobotState.Target.HUB)))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(),

@@ -44,6 +44,7 @@ import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
@@ -121,6 +122,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         // vision fallback.
                         double dist = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
                         return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
+                                && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+                    });
+
+    public final LoggedTrigger atMidlineFeedSetpoints =
+            new LoggedTrigger(
+                    this.getName() + "/atMidlineFeedSetpoints",
+                    () -> {
+                        // Distance between robot and hub centers
+                        // Assume the Robot is pressed against the Hub. Hardcoded as part of no
+                        // vision fallback.
+                        double dist = FieldConstants.FIELD_WIDTH / 2;
+                        return isFlywheelAt(RotationsPerSecond.of(feedFlywheelMap.get(dist)))
                                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
                     });
 
@@ -388,6 +401,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 .withName("Spin-Up Shooter to Distance");
     }
 
+    /**
+     * Spin up shooter to HUB distance
+     * @return a Command to prepare for the hub shot
+     */
     public Command spinUpShooterToHubDistance() {
         double distance = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
         return Commands.run(
@@ -397,6 +414,21 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         },
                         this)
                 .withName("Spin-Up Shooter to Distance");
+    }
+
+    /** 
+     * Prepare to feed from the midline!
+     * @return a Command to spin up for a midline feed
+     */
+    public Command spinUpShooterMidlineFeed() {
+        double distance = FieldConstants.FIELD_LENGTH / 2;
+        return Commands.run(
+                        () -> {
+                            spinFlywheel(RotationsPerSecond.of(feedFlywheelMap.get(distance)));
+                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance)));
+                        },
+                        this)
+                .withName("Spin-Up Shooter to FEED Distance");
     }
 
     /**
