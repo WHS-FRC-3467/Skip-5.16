@@ -56,6 +56,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.ButtonBoard;
 import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 
@@ -89,8 +90,8 @@ public class RobotContainer {
             new CommandXboxControllerExtended(0).withDeadband(0.1);
     private final CommandXboxControllerExtended operatorController =
             new CommandXboxControllerExtended(1).withDeadband(0.1);
-
     // Button board
+    private final ButtonBoard buttonBoard = new ButtonBoard(2);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
@@ -168,7 +169,7 @@ public class RobotContainer {
 
         // Configure the button bindings
         configureButtonBindings();
-        configureOverrideBindings();
+        configureButtonBoard();
         initializeDashboard();
         configureLEDTriggers();
     }
@@ -292,8 +293,18 @@ public class RobotContainer {
      * Configures button bindings for the button board. Maps board inputs to robot commands for
      * teleop control. All bindings only apply while actively pressed.
      */
-    private void configureOverrideBindings() {
-        // Button 1: Emergency stop all mechanisms (intake, indexer, tower, and shooter).
+    private void configureButtonBoard() {
+        // Button 1: Emergency stop all mechanisms.
+        buttonBoard
+                .button1()
+                .onTrue(
+                        Commands.sequence(
+                                Commands.runOnce(() -> CommandScheduler.getInstance().cancelAll()),
+                                Commands.parallel(
+                                        shooter.stopFlywheels(),
+                                        tower.stopCommand(),
+                                        indexer.stopCommand(),
+                                        intake.stopRoller())));
 
         // Button 2: Stop spinning the shooter and lower the hood.
 
@@ -304,8 +315,9 @@ public class RobotContainer {
 
         // Button 5: Bypass shooter readiness and alignment requirements to force a shot with best
         // guess of current pose. Spin everything down afterwards.
-    
+
         // Button 6: X locks drive until button is unpressed and joystick commands new velocity.
+        buttonBoard.button(6).whileTrue(DriveCommands.stopWithX(drive));
     }
 
     /**

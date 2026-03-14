@@ -14,25 +14,36 @@
  */
 package frc.robot.util;
 
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-/** Interface defining methods a generic operator override device should support. */
-public interface OperatorOverrides {
-    // Stop intake, indexer, tower, and shooter
-    Trigger emergencyStop();
+/** Extended CommandGenericHID with additional functionality for FRC use. */
+public class ButtonBoard extends CommandGenericHID {
+    public ButtonBoard(int port) {
+        super(port);
+    }
 
-    // Shooter spindown -- stop flywheel and lower hood
-    Trigger shooterSpinDown();
+    public Trigger button1() {
+        return button(1);
+    }
 
-    // Reverse intake, indexer, and tower
-    Trigger unjam();
+    public Trigger button2() {
+        return button(2);
+    }
 
-    // Force retract intake
-    Trigger forceRetractIntake();
+    public Trigger button3() {
+        return button(3);
+    }
 
-    // Bypass readiness/alignment check and shoot
-    Trigger forceShot();
+    public Trigger button4() {
+        return button(4);
+    }
 
-    // X-lock drivetrain
-    Trigger lockDrive();
+    public Trigger button5() {
+        return button(5);
+    }
+
+    public Trigger button6() {
+        return button(6);
+    }
 }
