@@ -22,6 +22,7 @@ import static edu.wpi.first.units.Units.Meters;
 import com.pathplanner.lib.events.EventTrigger;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -239,6 +240,8 @@ public class RobotContainer {
                                 tower.stopCommand(),
                                 intake.extendIntake(),
                                 shooter.retractHood()));
+
+        controller.y().onTrue(Commands.runOnce(() -> robotState.resetPose(new Pose2d(robotState.getEstimatedPose().getTranslation(), Rotation2d.kZero))));
         operatorController
                 .a()
                 .whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));
