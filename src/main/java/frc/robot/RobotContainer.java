@@ -241,7 +241,17 @@ public class RobotContainer {
                                 intake.extendIntake(),
                                 shooter.retractHood()));
 
-        controller.y().onTrue(Commands.runOnce(() -> robotState.resetPose(new Pose2d(robotState.getEstimatedPose().getTranslation(), Rotation2d.kZero))));
+        controller
+                .y()
+                .onTrue(
+                        Commands.runOnce(
+                                () ->
+                                        robotState.resetPose(
+                                                new Pose2d(
+                                                        robotState
+                                                                .getEstimatedPose()
+                                                                .getTranslation(),
+                                                        Rotation2d.kZero))));
         operatorController
                 .a()
                 .whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));

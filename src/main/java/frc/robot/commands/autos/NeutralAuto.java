@@ -44,7 +44,7 @@ public class NeutralAuto extends AutoRoutine {
         List<ChoreoTraj> expectedPaths;
         if (isSafe) {
             expectedPaths =
-                    List.of(ChoreoTraj.NeutralSafe1, ChoreoTraj.NeutralSafe2, ChoreoTraj.Neutral2);
+                    List.of(ChoreoTraj.NeutralSafe1, ChoreoTraj.Neutral1, ChoreoTraj.NeutralSafe2);
         } else {
             expectedPaths =
                     List.of(ChoreoTraj.Neutral1, ChoreoTraj.NeutralSafe2, ChoreoTraj.Neutral2);
