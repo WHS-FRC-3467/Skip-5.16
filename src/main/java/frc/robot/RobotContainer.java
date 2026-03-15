@@ -242,7 +242,8 @@ public class RobotContainer {
                                 shooter.retractHood()));
 
         controller
-                .y()
+                .start()
+                .and(controller.back())
                 .onTrue(
                         Commands.runOnce(
                                 () ->
