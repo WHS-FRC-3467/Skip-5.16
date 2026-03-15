@@ -291,10 +291,10 @@ public class RobotContainer {
 
     /**
      * Configures button bindings for the button board. Maps board inputs to robot commands for
-     * teleop control. All bindings only apply while actively pressed.
+     * teleop control.
      */
     private void configureButtonBoard() {
-        // Button 1: Emergency stop all mechanisms.
+        // Button 1: Emergency stop all processes & mechanisms on press and release them afterwards.
         buttonBoard
                 .button1()
                 .onTrue(
@@ -304,20 +304,52 @@ public class RobotContainer {
                                         shooter.stopFlywheels(),
                                         tower.stopCommand(),
                                         indexer.stopCommand(),
+                                        intake.linearCoast(),
                                         intake.stopRoller())));
+        
+        // Button 2: Home the intake and hood.
+        buttonBoard.button2().whileTrue(
+            Commands.parallel(
+                intake.homeLinear(),
+                shooter.homeHood()));
 
-        // Button 2: Stop spinning the shooter and lower the hood.
+        // Button 3: Stop spinning the shooter and lower the hood.
+        buttonBoard.button3().onTrue(shooter.stopAndStow());
 
-        // Button 3: Unjam the pathway by running the flywheels in reverse; only run the roller if
-        // it's extended.
+        // Button 4: Forcibly retract the intake.
+        buttonBoard.button4().onTrue(intake.retractIntake());
 
-        // Button 4: Forcibly retract the intake by applying negative current.
+        // Button 5: Attempt to unload the hopper by reversing the relevant mechanisms.
+        buttonBoard.button5().whileTrue(
+            Commands.parallel(
+                tower.eject(),
+                indexer.eject(),
+                intake.ejectRoller()));
 
-        // Button 5: Bypass shooter readiness and alignment requirements to force a shot with best
-        // guess of current pose. Spin everything down afterwards.
+        // Button 6: X locks drive until button is unpressed and joystick commands new velocity. 
+        buttonBoard.button6().whileTrue(DriveCommands.stopWithX(drive));
 
-        // Button 6: X locks drive until button is unpressed and joystick commands new velocity.
-        buttonBoard.button(6).whileTrue(DriveCommands.stopWithX(drive));
+        // Button 7: Spin up the shooter. Incoming commands requiring shooter will cancel this operation.
+        buttonBoard.button7().whileTrue(shooter.spinUpShooter().withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+
+        // Button 8: Bypass shooter readiness and alignment requirements to force a shot with best
+        // guess of current pose. Spin everything down and extend intake when released.
+        buttonBoard
+                .button8()
+                .whileTrue(
+                        Commands.parallel(shooter.spinUpShooter(), tower.shoot(), indexer.shoot()))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stopAndStow(),
+                                tower.stopCommand(),
+                                indexer.stopCommand(),
+                                intake.extendIntake()));
+
+        // Button 9: Trim flywheel speed up
+        buttonBoard.button9().onTrue(shooter.trimFlywheelSpeedUp());
+
+        // Button 10: Trim flywheel speed down
+        buttonBoard.button10().onTrue(shooter.trimFlywheelSpeedDown());
     }
 
     /**

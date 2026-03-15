@@ -46,4 +46,20 @@ public class ButtonBoard extends CommandGenericHID {
     public Trigger button6() {
         return button(6);
     }
+
+    public Trigger button7() {
+        return button(7);
+    }
+
+    public Trigger button8() {
+        return button(8);
+    }
+
+    public Trigger button9() {
+        return button(9);
+    }
+
+    public Trigger button10() {
+        return button(10);
+    }
 }
