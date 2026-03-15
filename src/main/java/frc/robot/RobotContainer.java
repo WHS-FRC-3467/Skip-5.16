@@ -56,6 +56,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.ButtonBoard;
 import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 
@@ -89,6 +90,8 @@ public class RobotContainer {
             new CommandXboxControllerExtended(0).withDeadband(0.1);
     private final CommandXboxControllerExtended operatorController =
             new CommandXboxControllerExtended(1).withDeadband(0.1);
+    // Button board
+    private final ButtonBoard buttonBoard = new ButtonBoard(2);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
@@ -166,6 +169,7 @@ public class RobotContainer {
 
         // Configure the button bindings
         configureButtonBindings();
+        configureButtonBoard();
         initializeDashboard();
         configureLEDTriggers();
     }
@@ -283,6 +287,69 @@ public class RobotContainer {
                                         RumbleType.kBothRumble, 1.0, Seconds.of(0.5)),
                                 Commands.waitSeconds(0.5)))
                 .onFalse(controller.rumble(RumbleType.kBothRumble, 0.0));
+    }
+
+    /**
+     * Configures button bindings for the button board. Maps board inputs to robot commands for
+     * teleop control.
+     */
+    private void configureButtonBoard() {
+        // Button 1: Emergency stop all commands and brake mechanisms.
+        buttonBoard
+                .buttonBoardButton(1)
+                .onTrue(
+                        Commands.sequence(
+                                Commands.runOnce(() -> CommandScheduler.getInstance().cancelAll()),
+                                Commands.parallel(
+                                        shooter.stopFlywheels(),
+                                        tower.stopCommand(),
+                                        indexer.stopCommand(),
+                                        intake.stopRoller()),
+                                intake.linearCoast()));
+
+        // Button 2: Re-home mechanisms. Hold until home.
+        buttonBoard.buttonBoardButton(2).whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));
+
+        // Button 3: Stop spinning the shooter and lower the hood.
+        buttonBoard.buttonBoardButton(3).onTrue(shooter.stopAndStow());
+
+        // Button 4: Forcibly retract the intake.
+        buttonBoard.buttonBoardButton(4).onTrue(intake.retractIntake());
+
+        // Button 5: Attempt to unload the hopper by reversing the relevant mechanisms.
+        buttonBoard
+                .buttonBoardButton(5)
+                .whileTrue(Commands.parallel(tower.eject(), indexer.eject(), intake.ejectRoller()));
+
+        // Button 6: X locks drive until button is unpressed and joystick commands new velocity.
+        buttonBoard.buttonBoardButton(6).whileTrue(DriveCommands.stopWithX(drive));
+
+        // Button 7: Spin up the shooter. Incoming commands requiring shooter will cancel this
+        // operation.
+        buttonBoard
+                .buttonBoardButton(7)
+                .whileTrue(
+                        shooter.spinUpShooter()
+                                .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+
+        // Button 8: Bypass shooter readiness and alignment requirements to force a shot with best
+        // guess of current pose. Spin everything down and extend intake when released.
+        buttonBoard
+                .buttonBoardButton(8)
+                .whileTrue(
+                        Commands.parallel(shooter.spinUpShooter(), tower.shoot(), indexer.shoot()))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stopAndStow(),
+                                tower.stopCommand(),
+                                indexer.stopCommand(),
+                                intake.extendIntake()));
+
+        // Button 9: Trim flywheel speed up
+        buttonBoard.buttonBoardButton(9).onTrue(shooter.trimFlywheelSpeedUp());
+
+        // Button 10: Trim flywheel speed down
+        buttonBoard.buttonBoardButton(10).onTrue(shooter.trimFlywheelSpeedDown());
     }
 
     /**
