@@ -34,6 +34,8 @@ import frc.lib.util.LoggerHelper;
 
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable {
 
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
