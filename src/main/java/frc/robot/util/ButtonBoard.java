@@ -27,7 +27,7 @@ public class ButtonBoard extends CommandGenericHID {
         super(port);
     }
 
-    public Trigger button(int buttonNumber) {
+    public Trigger buttonBoardButton(int buttonNumber) {
         return super.button(buttonNumber);
     }
 
