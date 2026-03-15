@@ -17,49 +17,23 @@ package frc.robot.util;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-/** Extended CommandGenericHID with additional functionality for FRC use. */
+/**
+ * Extended CommandGenericHID with additional functionality for FRC use. This class is intended to
+ * provide support for a generic digital button board with multiple buttons/switches & LEDs/buzzers
+ * but no axes.
+ */
 public class ButtonBoard extends CommandGenericHID {
     public ButtonBoard(int port) {
         super(port);
     }
 
-    public Trigger button1() {
-        return button(1);
+    public Trigger button(int buttonNumber) {
+        return super.button(buttonNumber);
     }
 
-    public Trigger button2() {
-        return button(2);
-    }
-
-    public Trigger button3() {
-        return button(3);
-    }
-
-    public Trigger button4() {
-        return button(4);
-    }
-
-    public Trigger button5() {
-        return button(5);
-    }
-
-    public Trigger button6() {
-        return button(6);
-    }
-
-    public Trigger button7() {
-        return button(7);
-    }
-
-    public Trigger button8() {
-        return button(8);
-    }
-
-    public Trigger button9() {
-        return button(9);
-    }
-
-    public Trigger button10() {
-        return button(10);
-    }
+    // public Command flashLED(double seconds) {
+    //     return Commands.startEnd(
+    //         () -> setLED(true),
+    //         () -> setLED(false)).withTimeout(seconds);
+    // }
 }
