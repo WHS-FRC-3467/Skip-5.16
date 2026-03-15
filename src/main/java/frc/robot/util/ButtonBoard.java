@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
  * Extended CommandGenericHID with additional functionality for FRC use. This class is intended to
- * provide support for a generic digital button board with multiple buttons/switches & LEDs/buzzers
+ * provide support for a generic digital button board with multiple buttons/switches and LEDs/buzzers
  * but no axes.
  */
 public class ButtonBoard extends CommandGenericHID {
