@@ -117,7 +117,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         () ->
                                 MathUtil.isNear(
                                         IntakeLinearConstants.MIN_DISTANCE.in(Meters)
-                                                + Inches.of(3.0).in(Meters),
+                                                + Inches.of(1.5).in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
                                         Inches.of(2.0).in(Meters)));
         isFullyRetracted =
