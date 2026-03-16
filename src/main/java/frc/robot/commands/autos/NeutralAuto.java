@@ -43,9 +43,11 @@ public class NeutralAuto extends AutoRoutine {
         // Choose path names based on start position
         List<ChoreoTraj> expectedPaths;
         if (isSafe) {
-            expectedPaths = List.of(ChoreoTraj.NeutralSafe1, ChoreoTraj.NeutralSafe2);
+            expectedPaths =
+                    List.of(ChoreoTraj.NeutralSafe1, ChoreoTraj.NeutralSafe2, ChoreoTraj.Neutral2);
         } else {
-            expectedPaths = List.of(ChoreoTraj.Neutral1, ChoreoTraj.NeutralSafe2);
+            expectedPaths =
+                    List.of(ChoreoTraj.Neutral1, ChoreoTraj.NeutralSafe2, ChoreoTraj.Neutral2);
         }
 
         // Load the named paths
@@ -57,17 +59,25 @@ public class NeutralAuto extends AutoRoutine {
                 && !pathPlannerPaths.contains(null)) {
             loadCommands(
                     AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
-                    Commands.waitSeconds(3.0),
+                    // Commands.waitSeconds(3.0),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
                     // Run back under the trench and shoot
                     // Initialize intake and hood to starting positions for teleop
-                    AutoCommands.stowHood(shooter),
-                    intake.retractIntake().asProxy().withTimeout(0.5),
-                    // Drive to the neutral zone
-                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 10)
+                    Commands.repeatingSequence(
+                                    AutoCommands.stowHood(shooter),
+                                    intake.retractIntake().asProxy().withTimeout(0.5),
+                                    // Drive to the neutral zone
+                                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                                    AutoCommands.shootCommand(
+                                            drive, intake, indexer, tower, shooter, 10),
+                                    AutoCommands.stowHood(shooter),
+                                    intake.retractIntake().asProxy().withTimeout(0.5),
+                                    // Drive to the neutral zone
+                                    AutoBuilder.followPath(pathPlannerPaths.get(2)),
+                                    AutoCommands.shootCommand(
+                                            drive, intake, indexer, tower, shooter, 10))
                             .finallyDo(
                                     () ->
                                             CommandScheduler.getInstance()
