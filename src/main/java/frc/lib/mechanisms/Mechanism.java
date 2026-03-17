@@ -64,9 +64,6 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     private Double radiusMeters = null;
 
-    /** Logging key used for linear output values. Defaults to the mechanism name. */
-    private String linearKey = null;
-
     protected Mechanism(String name, T io) {
         this.name = name;
         this.io = io;
@@ -88,22 +85,6 @@ public abstract class Mechanism<T extends MotorIO> {
         }
         this.radiusMeters = r;
         return this;
-    }
-
-    /**
-     * Sets an explicit logging key for linear output values.
-     *
-     * @param key The key to use
-     * @return This mechanism, for chaining
-     */
-    public Mechanism<T> withLinearKey(String key) {
-        this.linearKey = key;
-        return this;
-    }
-
-    /** Returns the logging key used for linear output values. */
-    private String resolvedLinearKey() {
-        return linearKey != null ? linearKey : name;
     }
 
     /**
@@ -202,11 +183,10 @@ public abstract class Mechanism<T extends MotorIO> {
 
         // If a radius has been configured, also log linear equivalents of position/velocity.
         if (radiusMeters != null) {
-            String key = resolvedLinearKey();
-            Logger.recordOutput(key + "/LinearPosition", getLinearPosition());
-            Logger.recordOutput(key + "/LinearPositionError", getLinearPositionError());
-            Logger.recordOutput(key + "/LinearVelocity", getLinearVelocity());
-            Logger.recordOutput(key + "/LinearVelocityError", getLinearVelocityError());
+            Logger.recordOutput(this.name + "/LinearPosition", getLinearPosition());
+            Logger.recordOutput(this.name + "/LinearPositionError", getLinearPositionError());
+            Logger.recordOutput(this.name + "/LinearVelocity", getLinearVelocity());
+            Logger.recordOutput(this.name + "/LinearVelocityError", getLinearVelocityError());
         }
     }
 
@@ -370,10 +350,6 @@ public abstract class Mechanism<T extends MotorIO> {
     public AngularVelocity getVelocityError() {
         return inputs.velocityError;
     }
-
-    // -------------------------------------------------------------------------
-    // Linear (distance-based) control — only valid after withRadius() is called
-    // -------------------------------------------------------------------------
 
     /**
      * Checks that this mechanism was configured with a radius and throws if not.

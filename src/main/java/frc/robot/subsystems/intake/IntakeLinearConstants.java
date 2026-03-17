@@ -174,7 +174,6 @@ public class IntakeLinearConstants {
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
         mechanism.withRadius(DRUM_RADIUS);
-        mechanism.withLinearKey("IntakeSuperstructure/Linear");
         return mechanism;
     }
 }
