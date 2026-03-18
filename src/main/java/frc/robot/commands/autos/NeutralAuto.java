@@ -59,7 +59,8 @@ public class NeutralAuto extends AutoRoutine {
             loadCommands(
                     AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
                     // Delay if necessary
-                    Commands.defer(() -> Commands.waitSeconds(AutoCommands.getAutoDelay()), Set.of()),
+                    Commands.defer(
+                            () -> Commands.waitSeconds(AutoCommands.getAutoDelay()), Set.of()),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),

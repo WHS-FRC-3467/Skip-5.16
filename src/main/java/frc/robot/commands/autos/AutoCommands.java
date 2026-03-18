@@ -24,8 +24,8 @@ import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
+import frc.robot.util.AlwaysTunableNumber;
 import frc.robot.util.RobotSim;
-import lombok.Getter;
 
 /**
  * Class containing useful individual commands or small-group command sequences that can be strung
@@ -34,8 +34,16 @@ import lombok.Getter;
 public class AutoCommands {
     private static final RobotState robotState = RobotState.getInstance();
     // Delay before following paths in auto.
-    @Getter
-    private static double autoDelay = 0.0;
+    private static AlwaysTunableNumber autoDelay = new AlwaysTunableNumber("Auto/Delay", 0.0);
+
+    /**
+     * Accesses the value in the autoDelay AlwaysTunableNumber
+     *
+     * @return the delay, in seconds, to wait at the start of auto
+     */
+    public static double getAutoDelay() {
+        return autoDelay.get();
+    }
 
     /**
      * Resets the robot's odometry to the starting pose of the specified path. Handles alliance
@@ -118,23 +126,5 @@ public class AutoCommands {
      */
     public static Command stowHood(ShooterSuperstructure shooter) {
         return Commands.parallel(shooter.retractHood()).withTimeout(1.25);
-    }
-
-    /**
-     * Increments or Decrements the Beginning-of-Auto Delay. Delay cannot be less than zero seconds.
-     *
-     * @param changeSeconds The amount, in seconds, to delay the start of driving in auto
-     */
-    public static Command changeAutoDelayBy(double changeSeconds) {
-        return Commands.runOnce(
-                        () -> {
-                            autoDelay += changeSeconds;
-                            if (autoDelay < 0.0) {
-                                autoDelay = 0.0;
-                            } else {
-                                autoDelay = ((int) autoDelay * 10) / 10.0;
-                            }
-                        })
-                .ignoringDisable(true);
     }
 }
