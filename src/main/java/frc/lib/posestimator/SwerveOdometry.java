@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Integrates swerve-drive odometry observations to maintain a continuous estimate of the robot's
@@ -122,6 +123,9 @@ public class SwerveOdometry {
     /** The most recent odometry-based robot pose. */
     @Getter private Pose2d odometryPose = Pose2d.kZero;
 
+    /** Optional validator for candidate odometry poses. */
+    private Predicate<Pose2d> poseValidator = pose -> true;
+
     /**
      * Constructs a new {@code SwerveOdometry}.
      *
@@ -176,17 +180,23 @@ public class SwerveOdometry {
         lastModulePositions = copyPositions(currentPositions);
 
         // Integrate twist into odometry pose
-        odometryPose = odometryPose.exp(twist);
+        Pose2d candidatePose = odometryPose.exp(twist);
 
         // If gyro angle is available, correct heading drift
-        observation
-                .gyroAngle()
-                .ifPresent(
-                        angle ->
-                                odometryPose =
-                                        new Pose2d(
-                                                odometryPose.getTranslation(),
-                                                angle.plus(gyroOffset)));
+        if (observation.gyroAngle().isPresent()) {
+            Rotation2d angle = observation.gyroAngle().get();
+            candidatePose = new Pose2d(candidatePose.getTranslation(), angle.plus(gyroOffset));
+        }
+
+        if (poseValidator.test(candidatePose)) {
+            odometryPose = candidatePose;
+        } else if (observation.gyroAngle().isPresent()) {
+            // Keep translation stable but allow heading to track the gyro.
+            odometryPose =
+                    new Pose2d(
+                            odometryPose.getTranslation(),
+                            observation.gyroAngle().get().plus(gyroOffset));
+        }
 
         // Store pose for later interpolation (e.g., vision sync)
         odometryBuffer.addSample(timestampSeconds, odometryPose);
@@ -212,6 +222,16 @@ public class SwerveOdometry {
 
         // Store pose for later interpolation (e.g., vision sync)
         odometryBuffer.addSample(timestampSeconds, odometryPose);
+    }
+
+    /**
+     * Sets a validator for candidate odometry poses. When the validator returns {@code false},
+     * translation updates are rejected (heading may still update if gyro data is present).
+     *
+     * @param poseValidator predicate that returns {@code true} for acceptable poses
+     */
+    public void setPoseValidator(Predicate<Pose2d> poseValidator) {
+        this.poseValidator = poseValidator == null ? pose -> true : poseValidator;
     }
 
     private Twist2d computeTwist(

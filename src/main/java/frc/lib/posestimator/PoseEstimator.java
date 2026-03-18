@@ -35,6 +35,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Accessors(fluent = true)
 public class PoseEstimator {
@@ -59,6 +60,12 @@ public class PoseEstimator {
     private static final double ODOMETRY_STDDEV_MULTIPLIER_MAX_LINEAR = 4.0;
     private static final double ODOMETRY_STDDEV_MULTIPLIER_MAX_ANGULAR = 3.0;
 
+    // Vision gating: ignore noise and reject large outliers.
+    private static final double VISION_MIN_N_SIGMA_LINEAR = 0.6;
+    private static final double VISION_MIN_N_SIGMA_ANGULAR = 0.6;
+    private static final double VISION_MAX_N_SIGMA_LINEAR = 6.0;
+    private static final double VISION_MAX_N_SIGMA_ANGULAR = 6.0;
+
     private final SwerveOdometry odometry;
 
     /** Base odometry variances */
@@ -66,6 +73,10 @@ public class PoseEstimator {
 
     private double odometryStdDevMultiplierLinear = 1.0;
     private double odometryStdDevMultiplierAngular = 1.0;
+
+    private Predicate<Pose2d> odometryPoseValidator = pose -> true;
+    private Predicate<Pose2d> visionPoseValidator = pose -> true;
+    private Predicate<Pose2d> fusedPoseValidator = pose -> true;
 
     @Getter private Pose2d estimatedPose = Pose2d.kZero;
 
@@ -98,6 +109,7 @@ public class PoseEstimator {
                 };
 
         odometry = new SwerveOdometry(kinematics, moduleTranslations, odometryBufferSize);
+        refreshPoseValidators();
     }
 
     public PoseEstimator(
@@ -135,6 +147,16 @@ public class PoseEstimator {
         Twist2d twist = lastOdometryPose.log(newOdometryPose);
 
         estimatedPose = estimatedPose.exp(twist);
+    }
+
+    /**
+     * Sets a validator for odometry-integrated poses before they are committed.
+     *
+     * @param validator predicate that returns {@code true} for acceptable poses
+     */
+    public void setOdometryPoseValidator(Predicate<Pose2d> validator) {
+        odometryPoseValidator = validator == null ? pose -> true : validator;
+        refreshPoseValidators();
     }
 
     /**
@@ -266,6 +288,34 @@ public class PoseEstimator {
             odometryVariances[2] * angularVarianceMultiplier // Rotation
         };
 
+        // Transform between our best estimated pose at the time the frame was captured to where the
+        // camera is saying we should be, unscaled (without any Kalman gain applied)
+        // Logic is copied from:
+        // https://github.com/wpilibsuite/allwpilib/blob/b8d6bc2eb1b6cea10d1179939114d041945e172a/wpimath/src/main/java/edu/wpi/first/math/estimator/PoseEstimator.java#L276-L292
+        Transform2d unscaledVisionCorrection = new Transform2d(oldPose, newVisionPose);
+
+        double translationSigma =
+                Math.sqrt(Math.max(visionLinearVariance + effectiveOdometryVariances[0], 1.0e-9));
+        double rotationSigma =
+                Math.sqrt(Math.max(visionAngularVariance + effectiveOdometryVariances[2], 1.0e-9));
+
+        double translationMag =
+                Math.hypot(unscaledVisionCorrection.getX(), unscaledVisionCorrection.getY());
+        double rotationMag = Math.abs(unscaledVisionCorrection.getRotation().getRadians());
+
+        double translationNSigma = translationMag / translationSigma;
+        double rotationNSigma = rotationMag / rotationSigma;
+
+        if (translationNSigma < VISION_MIN_N_SIGMA_LINEAR
+                && rotationNSigma < VISION_MIN_N_SIGMA_ANGULAR) {
+            return;
+        }
+
+        if (translationNSigma > VISION_MAX_N_SIGMA_LINEAR
+                || rotationNSigma > VISION_MAX_N_SIGMA_ANGULAR) {
+            return;
+        }
+
         Matrix<N3, N3> visionKalmanGain = new Matrix<>(Nat.N3(), Nat.N3());
         for (int row = 0; row < 3; ++row) {
             double odometryVariance = effectiveOdometryVariances[row];
@@ -280,12 +330,6 @@ public class PoseEstimator {
                                         + Math.sqrt(odometryVariance * visionVariances[row])));
             }
         }
-
-        // Transform between our best estimated pose at the time the frame was captured to where the
-        // camera is saying we should be, unscaled (without any Kalman gain applied)
-        // Logic is copied from:
-        // https://github.com/wpilibsuite/allwpilib/blob/b8d6bc2eb1b6cea10d1179939114d041945e172a/wpimath/src/main/java/edu/wpi/first/math/estimator/PoseEstimator.java#L276-L292
-        Transform2d unscaledVisionCorrection = new Transform2d(oldPose, newVisionPose);
 
         // Scale the vision correction by the Kalman gain
         var scaledVisionCorrectionVector =
@@ -302,10 +346,16 @@ public class PoseEstimator {
                         scaledVisionCorrectionVector.get(1, 0),
                         Rotation2d.fromRadians(scaledVisionCorrectionVector.get(2, 0)));
 
-        estimatedPose =
+        Pose2d candidatePose =
                 oldPose.transformBy(scaledVisionCorrection) // Adjust by the correction
                         .transformBy(
                                 poseDeltaThenToNow); // Bring back to present time (latency comp)
+
+        if (!fusedPoseValidator.test(candidatePose)) {
+            return;
+        }
+
+        estimatedPose = candidatePose;
     }
 
     /**
@@ -323,5 +373,35 @@ public class PoseEstimator {
 
         odometryStdDevMultiplierLinear = 1.0;
         odometryStdDevMultiplierAngular = 1.0;
+    }
+
+    /**
+     * Sets a validator for fused vision poses before they are committed.
+     *
+     * @param validator predicate that returns {@code true} for acceptable poses
+     */
+    public void setVisionPoseValidator(Predicate<Pose2d> validator) {
+        visionPoseValidator = validator == null ? pose -> true : validator;
+        refreshPoseValidators();
+    }
+
+    /**
+     * Sets a validator that applies to both odometry and vision-fused poses.
+     *
+     * @param validator predicate that returns {@code true} for acceptable poses
+     * @return this
+     */
+    public PoseEstimator withPoseValidator(Predicate<Pose2d> validator) {
+        Predicate<Pose2d> resolved = validator == null ? pose -> true : validator;
+        odometryPoseValidator = resolved;
+        visionPoseValidator = resolved;
+        refreshPoseValidators();
+        return this;
+    }
+
+    private void refreshPoseValidators() {
+        fusedPoseValidator =
+                pose -> odometryPoseValidator.test(pose) && visionPoseValidator.test(pose);
+        odometry.setPoseValidator(fusedPoseValidator);
     }
 }
