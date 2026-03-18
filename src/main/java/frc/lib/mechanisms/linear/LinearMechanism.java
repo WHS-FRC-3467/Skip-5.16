@@ -84,7 +84,7 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
 
     /**
      * Gets the current goal linear position of the mechanism, as set by the last position control
-     * request. Returns {@link Distance#zero()} if not in position control mode.
+     * request. Returns 0 m if not in position control mode.
      *
      * @return Goal linear position
      */

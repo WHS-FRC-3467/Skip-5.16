@@ -23,6 +23,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -417,9 +418,10 @@ public class MotorIOTalonFX implements MotorIO {
         double newAccel = acceleration.in(RotationsPerSecondPerSecond);
 
         if (newCruise != lastAppliedMmCruiseVelocity || newAccel != lastAppliedMmAcceleration) {
-            currentConfig.MotionMagic.MotionMagicCruiseVelocity = newCruise;
-            currentConfig.MotionMagic.MotionMagicAcceleration = newAccel;
-            var status = motor.getConfigurator().apply(currentConfig.MotionMagic, 0.05);
+            MotionMagicConfigs mmConfig = new MotionMagicConfigs();
+            mmConfig.MotionMagicCruiseVelocity = newCruise;
+            mmConfig.MotionMagicAcceleration = newAccel;
+            var status = motor.getConfigurator().apply(mmConfig, 0.05);
             if (status.isOK()) {
                 lastAppliedMmCruiseVelocity = newCruise;
                 lastAppliedMmAcceleration = newAccel;
