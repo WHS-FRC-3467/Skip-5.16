@@ -235,8 +235,7 @@ public class RobotState {
     }
 
     /**
-     * Adds a new vision observation to the pose estimator. Vision observations are ignored when the
-     * drivetrain is tilted (e.g., going over a bump).
+     * Adds a new vision observation to the pose estimator.
      *
      * @param observation the vision observation to add
      */
