@@ -129,6 +129,7 @@ public class IndexerCenterConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
+        mechanism.withRadius(RADIUS);
         return mechanism;
     }
 }
