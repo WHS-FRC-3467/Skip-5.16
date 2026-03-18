@@ -17,11 +17,7 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.units.measure.*;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
 
 import frc.lib.io.motor.MotorIO.PIDSlot;
@@ -57,39 +53,17 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     private final LinearVelocity shuffleVelocity = MetersPerSecond.of(0.8);
 
-    private final TrapezoidProfile fastMotionProfiler =
-            new TrapezoidProfile(
-                    new Constraints(
-                            IntakeLinearConstants.CRUISE_VELOCITY.in(MetersPerSecond),
-                            IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
-
-    private TrapezoidProfile slowMotionProfiler =
-            new TrapezoidProfile(
-                    new Constraints(
-                            SLOW_MPS.get(),
-                            IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
-    private TrapezoidProfile shuffleMotionProfiler =
-            new TrapezoidProfile(
-                    new Constraints(
-                            shuffleVelocity.in(MetersPerSecond),
-                            IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
-
-    private State setpointState = new State(IntakeLinearConstants.MIN_DISTANCE.in(Meters), 0.0);
-
-    private State goalState = new State(IntakeLinearConstants.MIN_DISTANCE.in(Meters), 0.0);
-
-    private TrapezoidProfile activeProfiler = fastMotionProfiler;
-
-    private double lastTimestamp = Timer.getTimestamp();
-    private boolean runProfile = true;
-
     public IntakeSuperstructure(
             LinearMechanism<?> intakeLinearIO, FlywheelMechanism<?> intakeRollerIO) {
 
         this.intakeLinearIO = intakeLinearIO;
         this.intakeRollerIO = intakeRollerIO;
 
-        intakeLinearIO.runLinearPosition(IntakeLinearConstants.MIN_DISTANCE, PIDSlot.SLOT_0);
+        intakeLinearIO.runLinearPosition(
+                IntakeLinearConstants.MIN_DISTANCE,
+                PIDSlot.SLOT_0,
+                IntakeLinearConstants.CRUISE_VELOCITY,
+                IntakeLinearConstants.MAX_ACCELERATION);
 
         isExtended =
                 new LoggedTrigger(
@@ -129,40 +103,44 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         IntakeLinearConstants.TOLERANCE.in(Meters)));
     }
 
-    private void resetSetpoint() {
-        double current = intakeLinearIO.getLinearPosition().in(Meters);
-        setpointState = new State(current, 0.0);
-    }
-
-    private TrapezoidProfile createProfiler(double maxVelocityMetersPerSecond) {
-        return new TrapezoidProfile(
-                new Constraints(
-                        maxVelocityMetersPerSecond,
-                        IntakeLinearConstants.MAX_ACCELERATION.in(MetersPerSecondPerSecond)));
-    }
-
-    private void startProfile(TrapezoidProfile profiler, double goalMeters) {
-        resetSetpoint();
-
-        goalState.position = goalMeters;
-        goalState.velocity = 0.0;
-
-        activeProfiler = profiler;
-    }
-
     /** Returns true if the intake roller is running and the intake is extended. */
     public boolean isIntaking() {
         return intakeRollerIO.getVelocity().in(RotationsPerSecond) > 1.0
                 && isExtended.getAsBoolean();
     }
 
-    private Command moveToPosition(TrapezoidProfile profiler, double goalMeters, String name) {
-        return this.runOnce(() -> startProfile(profiler, goalMeters)).withName(name);
+    /**
+     * Moves the intake to a goal distance using Motion Magic with the given cruise velocity and
+     * acceleration. The command completes immediately after issuing the control request — use
+     * {@link Commands#waitUntil} to block until the goal is reached.
+     */
+    private Command moveToPosition(
+            Distance goal,
+            LinearVelocity cruiseVelocity,
+            LinearAcceleration acceleration,
+            String name) {
+        Distance clampedGoal =
+                Meters.of(
+                        MathUtil.clamp(
+                                goal.in(Meters),
+                                IntakeLinearConstants.MIN_DISTANCE.in(Meters),
+                                IntakeLinearConstants.MAX_DISTANCE.in(Meters)));
+        return this.runOnce(
+                        () ->
+                                intakeLinearIO.runLinearPosition(
+                                        clampedGoal, PIDSlot.SLOT_0, cruiseVelocity, acceleration))
+                .withName(name);
     }
 
+    /**
+     * Moves the intake by a delta in inches using Motion Magic with the given cruise velocity and
+     * acceleration, optionally running the roller at a scaled speed, and waits until within
+     * toleranceMeters of the goal.
+     */
     private Command moveByInches(
             double inches,
-            TrapezoidProfile profiler,
+            LinearVelocity cruiseVelocity,
+            LinearAcceleration acceleration,
             boolean runRoller,
             double rollerScale,
             double toleranceMeters,
@@ -172,15 +150,16 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         this.runOnce(
                                 () -> {
                                     double current = intakeLinearIO.getLinearPosition().in(Meters);
-                                    double delta = Inches.of(inches).in(Meters);
-
-                                    double goal =
-                                            MathUtil.clamp(
-                                                    current + delta,
-                                                    IntakeLinearConstants.MIN_DISTANCE.in(Meters),
-                                                    IntakeLinearConstants.MAX_DISTANCE.in(Meters));
-
-                                    startProfile(profiler, goal);
+                                    Distance goal =
+                                            Meters.of(
+                                                    MathUtil.clamp(
+                                                            current + Inches.of(inches).in(Meters),
+                                                            IntakeLinearConstants.MIN_DISTANCE.in(
+                                                                    Meters),
+                                                            IntakeLinearConstants.MAX_DISTANCE.in(
+                                                                    Meters)));
+                                    intakeLinearIO.runLinearPosition(
+                                            goal, PIDSlot.SLOT_0, cruiseVelocity, acceleration);
                                 }),
                         runRoller
                                 ? runRoller(
@@ -191,15 +170,21 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         Commands.waitUntil(
                                 () ->
                                         MathUtil.isNear(
-                                                goalState.position,
+                                                intakeLinearIO.getGoalLinearPosition().in(Meters),
                                                 intakeLinearIO.getLinearPosition().in(Meters),
                                                 toleranceMeters)))
                 .withName(name);
     }
 
+    /**
+     * Moves the intake to an absolute position in inches using Motion Magic with the given cruise
+     * velocity and acceleration, optionally running the roller, and waits until within
+     * toleranceMeters of the goal.
+     */
     private Command moveToInches(
             double inches,
-            TrapezoidProfile profiler,
+            LinearVelocity cruiseVelocity,
+            LinearAcceleration acceleration,
             boolean runRoller,
             double rollerScale,
             double toleranceMeters,
@@ -208,13 +193,16 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.sequence(
                         this.runOnce(
                                 () -> {
-                                    double goal =
-                                            MathUtil.clamp(
-                                                    Inches.of(inches).in(Meters),
-                                                    IntakeLinearConstants.MIN_DISTANCE.in(Meters),
-                                                    IntakeLinearConstants.MAX_DISTANCE.in(Meters));
-
-                                    startProfile(profiler, goal);
+                                    Distance goal =
+                                            Meters.of(
+                                                    MathUtil.clamp(
+                                                            Inches.of(inches).in(Meters),
+                                                            IntakeLinearConstants.MIN_DISTANCE.in(
+                                                                    Meters),
+                                                            IntakeLinearConstants.MAX_DISTANCE.in(
+                                                                    Meters)));
+                                    intakeLinearIO.runLinearPosition(
+                                            goal, PIDSlot.SLOT_0, cruiseVelocity, acceleration);
                                 }),
                         runRoller
                                 ? runRoller(
@@ -225,7 +213,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         Commands.waitUntil(
                                 () ->
                                         MathUtil.isNear(
-                                                goalState.position,
+                                                intakeLinearIO.getGoalLinearPosition().in(Meters),
                                                 intakeLinearIO.getLinearPosition().in(Meters),
                                                 toleranceMeters)))
                 .withName(name);
@@ -260,8 +248,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.sequence(
                         runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
                         moveToPosition(
-                                fastMotionProfiler,
-                                IntakeLinearConstants.MAX_DISTANCE.in(Meters),
+                                IntakeLinearConstants.MAX_DISTANCE,
+                                IntakeLinearConstants.CRUISE_VELOCITY,
+                                IntakeLinearConstants.MAX_ACCELERATION,
                                 "Extend Linear"))
                 .withName("Intake");
     }
@@ -271,8 +260,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.sequence(
                         runRoller(() -> RotationsPerSecond.of(ROLLER_AUTO_INTAKE_RPS.get())),
                         moveToPosition(
-                                fastMotionProfiler,
-                                IntakeLinearConstants.MAX_DISTANCE.in(Meters),
+                                IntakeLinearConstants.MAX_DISTANCE,
+                                IntakeLinearConstants.CRUISE_VELOCITY,
+                                IntakeLinearConstants.MAX_ACCELERATION,
                                 "Extend Linear"))
                 .withName("Auto Intake");
     }
@@ -281,8 +271,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.sequence(
                         runRoller(RotationsPerSecond::zero),
                         moveToPosition(
-                                fastMotionProfiler,
-                                IntakeLinearConstants.MAX_DISTANCE.in(Meters),
+                                IntakeLinearConstants.MAX_DISTANCE,
+                                IntakeLinearConstants.CRUISE_VELOCITY,
+                                IntakeLinearConstants.MAX_ACCELERATION,
                                 "Extend Linear"))
                 .withName("Extend Intake");
     }
@@ -291,9 +282,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
         return Commands.sequence(
                         runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
                         moveToPosition(
-                                fastMotionProfiler,
-                                IntakeLinearConstants.MIN_DISTANCE.in(Meters)
-                                        + Inches.of(2.0).in(Meters),
+                                IntakeLinearConstants.MIN_DISTANCE.plus(Inches.of(2.0)),
+                                IntakeLinearConstants.CRUISE_VELOCITY,
+                                IntakeLinearConstants.MAX_ACCELERATION,
                                 "Retract Linear"),
                         Commands.waitUntil(isRetracted),
                         stopRoller())
@@ -302,14 +293,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     public Command slowRetract(LinearVelocity retractSpeed) {
         return Commands.sequence(
-                Commands.runOnce(
-                        () ->
-                                slowMotionProfiler =
-                                        createProfiler(retractSpeed.in(MetersPerSecond))),
                 runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get()).times(0.6)),
                 moveToPosition(
-                        slowMotionProfiler,
-                        IntakeLinearConstants.MIN_DISTANCE.in(Meters) + Inches.of(2.0).in(Meters),
+                        IntakeLinearConstants.MIN_DISTANCE.plus(Inches.of(2.0)),
+                        retractSpeed,
+                        IntakeLinearConstants.MAX_ACCELERATION,
                         "Slow Retract"),
                 Commands.waitUntil(isRetracted),
                 stopRoller());
@@ -336,7 +324,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                 isCycleComplete),
                         moveByInches(
                                         -6,
-                                        shuffleMotionProfiler,
+                                        shuffleVelocity,
+                                        IntakeLinearConstants.MAX_ACCELERATION,
                                         true,
                                         0.6,
                                         Inches.of(0.5).in(Meters),
@@ -344,7 +333,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                 .withTimeout(0.5),
                         moveByInches(
                                         3.0,
-                                        shuffleMotionProfiler,
+                                        shuffleVelocity,
+                                        IntakeLinearConstants.MAX_ACCELERATION,
                                         false,
                                         0.0,
                                         Inches.of(0.5).in(Meters),
@@ -365,7 +355,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         // Ensure intake is retracted
                         moveToInches(
                                         IntakeLinearConstants.MIN_DISTANCE.in(Inches),
-                                        shuffleMotionProfiler,
+                                        shuffleVelocity,
+                                        IntakeLinearConstants.MAX_ACCELERATION,
                                         true,
                                         0.6,
                                         Inches.of(0.5).in(Meters),
@@ -373,7 +364,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                 .withTimeout(1),
                         moveByInches(
                                         3.15,
-                                        shuffleMotionProfiler,
+                                        shuffleVelocity,
+                                        IntakeLinearConstants.MAX_ACCELERATION,
                                         false,
                                         0.0,
                                         Inches.of(0.5).in(Meters),
@@ -389,39 +381,12 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     public Command homeLinear() {
         return Commands.sequence(
-                        Commands.runOnce(() -> runProfile = false),
-                        this.runOnce(() -> intakeLinearIO.runDutyCycle(0.25, true)),
-                        this.idle())
-                .finallyDo(
-                        () -> {
-                            intakeLinearIO.setEncoderPosition(Rotations.of(3.7));
-                            runProfile = true;
-                        });
+                        this.runOnce(() -> intakeLinearIO.runDutyCycle(0.25, true)), this.idle())
+                .finallyDo(() -> intakeLinearIO.setEncoderPosition(Rotations.of(3.7)));
     }
 
     @Override
     public void periodic() {
-
-        if (SLOW_MPS.hasChanged(hashCode())) {
-            slowMotionProfiler =
-                    new TrapezoidProfile(
-                            new Constraints(
-                                    SLOW_MPS.get(),
-                                    IntakeLinearConstants.MAX_ACCELERATION.in(
-                                            MetersPerSecondPerSecond)));
-        }
-
-        double now = Timer.getTimestamp();
-        double delta = now - lastTimestamp;
-        lastTimestamp = now;
-
-        setpointState = activeProfiler.calculate(delta, setpointState, goalState);
-
-        if (runProfile) {
-            intakeLinearIO.runUnprofiledLinearPosition(
-                    Meters.of(setpointState.position), PIDSlot.SLOT_0);
-        }
-
         LoggerHelper.recordCurrentCommand(this.getName(), this);
         intakeLinearIO.periodic();
         intakeRollerIO.periodic();

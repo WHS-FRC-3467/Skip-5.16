@@ -82,6 +82,16 @@ public abstract class LinearMechanism<T extends MotorIO> extends Mechanism<T> {
         return Optional.of(toDistance(inputs.goalPosition));
     }
 
+    /**
+     * Gets the current goal linear position of the mechanism, as set by the last position control
+     * request. Returns {@link Distance#zero()} if not in position control mode.
+     *
+     * @return Goal linear position
+     */
+    public Distance getGoalLinearPosition() {
+        return getGoalDistance().orElse(Meters.zero());
+    }
+
     // Checks if mechanism is near a goal position within a specified tolerance
     public boolean nearGoal(Distance goalPosition, Distance tolerance) {
         return MathUtil.isNear(
