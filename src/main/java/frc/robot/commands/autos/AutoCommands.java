@@ -85,7 +85,7 @@ public class AutoCommands {
                                     CommandScheduler.getInstance()
                                             .schedule(shooter.setHoodAngle(Rotations.zero()));
                                 }),
-                DriveCommands.autoAimTowardsTarget(drive));
+                DriveCommands.staticAimTowardsTarget(drive));
     }
 
     /**

@@ -519,6 +519,16 @@ public class RobotState {
     }
 
     /**
+     * Returns 2D distance from robot to target.
+     *
+     * @return the distance to the target
+     */
+    public Distance getDistanceToTarget(Translation2d robotTranslation) {
+        Translation2d targetTranslation = getTarget().getAllianceTranslation().toTranslation2d();
+        return Meters.of(robotTranslation.getDistance(targetTranslation));
+    }
+
+    /**
      * Returns the angle from the robot to the current target.
      *
      * @return the angle to the target
@@ -528,6 +538,20 @@ public class RobotState {
                 .getAllianceTranslation()
                 .toTranslation2d()
                 .minus(getEstimatedPose().getTranslation())
+                .getAngle();
+    }
+
+    /**
+     * Returns the angle from the robot to the current target.
+     *
+     * @param robotTranslation the robot's translation
+     * @return the angle to the target
+     */
+    public Rotation2d getAngleToTarget(Translation2d robotTranslation) {
+        return getTarget()
+                .getAllianceTranslation()
+                .toTranslation2d()
+                .minus(robotTranslation)
                 .getAngle();
     }
 }
