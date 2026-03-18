@@ -226,21 +226,31 @@ public class RobotContainer {
                 .povDown()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
-        // Driver X: Hub Shot & Midline Feed (No-Vision Fallback)
+        // Driver X: Hub Shot (No-Vision Fallback)
         controller
                 .x()
                 .whileTrue(
-                        Commands.either(
-                                Commands.parallel(
-                                        DriveCommands.stopWithX(drive),
-                                        shooter.spinUpShooterToHubDistance(),
-                                        Commands.parallel(indexer.shoot(), tower.shoot())),
-                                Commands.parallel(
-                                        shooter.spinUpShooterMidlineFeed(),
-                                        Commands.sequence(
-                                            Commands.waitUntil(shooter.atMidlineFeedSetpoints).withTimeout(0.75),
-                                            Commands.parallel(indexer.shoot(), tower.shoot()))),
-                                () -> (robotState.getTarget() == RobotState.Target.HUB)))
+                        Commands.parallel(
+                                DriveCommands.stopWithX(drive),
+                                shooter.spinUpShooterToHubDistance(),
+                                Commands.parallel(indexer.shoot(), tower.shoot())))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stopAndStow(),
+                                indexer.stopCommand(),
+                                tower.stopCommand(),
+                                intake.extendIntake(),
+                                shooter.retractHood()));
+
+        // Driver Y: Midline Feed/Pass (No-Vision Fallback)
+        controller
+                .y()
+                .whileTrue(
+                        Commands.parallel(
+                                shooter.spinUpShooterMidlineFeed(),
+                                Commands.sequence(
+                                    Commands.waitUntil(shooter.atMidlineFeedSetpoints).withTimeout(0.75),
+                                    Commands.parallel(indexer.shoot(), tower.shoot()))))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(),

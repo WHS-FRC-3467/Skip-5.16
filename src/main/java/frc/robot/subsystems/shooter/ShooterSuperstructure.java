@@ -129,9 +129,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     this.getName() + "/atMidlineFeedSetpoints",
                     () -> {
                         // Distance between robot and hub centers
-                        // Assume the Robot is pressed against the Hub. Hardcoded as part of no
-                        // vision fallback.
-                        double dist = FieldConstants.FIELD_WIDTH / 2;
+                        // Assume the Robot is on the midline,
+                        // angled roughly perpendicular to the midline.
+                        double dist = FieldConstants.FIELD_WIDTH / 2 - (FieldConstants.LinesVertical.NEUTRAL_ZONE_NEAR / 2.0);
                         return isFlywheelAt(RotationsPerSecond.of(feedFlywheelMap.get(dist)))
                                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
                     });
