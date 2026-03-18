@@ -157,6 +157,21 @@ public interface MotorIO extends AutoCloseable {
     public default void runPosition(Angle position, PIDSlot slot) {}
 
     /**
+     * Runs the motor to a specific position with dynamic Motion Magic cruise velocity and
+     * acceleration. Updates the motor configuration before issuing the control request.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     * @param cruiseVelocity Motion Magic cruise velocity.
+     * @param acceleration Motion Magic acceleration.
+     */
+    public default void runPosition(
+            Angle position,
+            PIDSlot slot,
+            AngularVelocity cruiseVelocity,
+            AngularAcceleration acceleration) {}
+
+    /**
      * Runs the motor to a specific position without a motion profile.
      *
      * @param position Target position.
@@ -173,6 +188,23 @@ public interface MotorIO extends AutoCloseable {
      */
     public default void runVelocity(
             AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {}
+
+    /**
+     * Runs the motor at a target velocity with dynamic Motion Magic cruise velocity and
+     * acceleration. Updates the motor configuration before issuing the control request.
+     *
+     * @param velocity Desired velocity.
+     * @param acceleration Max acceleration.
+     * @param slot PID slot index.
+     * @param cruiseVelocity Motion Magic cruise velocity.
+     * @param motionMagicAcceleration Motion Magic acceleration.
+     */
+    public default void runVelocity(
+            AngularVelocity velocity,
+            AngularAcceleration acceleration,
+            PIDSlot slot,
+            AngularVelocity cruiseVelocity,
+            AngularAcceleration motionMagicAcceleration) {}
 
     /**
      * Sets the position of the motor's internal encoder

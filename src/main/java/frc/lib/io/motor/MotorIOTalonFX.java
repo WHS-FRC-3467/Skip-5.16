@@ -17,6 +17,7 @@ package frc.lib.io.motor;
 
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
@@ -391,6 +392,38 @@ public class MotorIOTalonFX implements MotorIO {
     }
 
     /**
+     * Runs the motor to a specific position with dynamic Motion Magic cruise velocity and
+     * acceleration. Flashes an updated TalonFX configuration before issuing the control request.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     * @param cruiseVelocity Motion Magic cruise velocity.
+     * @param acceleration Motion Magic acceleration.
+     */
+    @Override
+    public void runPosition(
+            Angle position,
+            PIDSlot slot,
+            AngularVelocity cruiseVelocity,
+            AngularAcceleration acceleration) {
+        currentConfig.MotionMagic.MotionMagicCruiseVelocity = cruiseVelocity.in(RotationsPerSecond);
+        currentConfig.MotionMagic.MotionMagicAcceleration =
+                acceleration.in(RotationsPerSecondPerSecond);
+
+        updateThread
+                .ctreCheckErrorAndRetry(
+                        () -> motor.getConfigurator().apply(currentConfig.MotionMagic))
+                .exceptionally(
+                        ex -> {
+                            LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                            return null;
+                        });
+
+        this.goalPosition = position;
+        motor.setControl(positionControl.withPosition(position).withSlot(slot.getNum()));
+    }
+
+    /**
      * Runs the motor to a specific position without a motion profile.
      *
      * @param position Target position.
@@ -412,6 +445,43 @@ public class MotorIOTalonFX implements MotorIO {
     @Override
     public void runVelocity(
             AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {
+        motor.setControl(
+                velocityControl
+                        .withVelocity(velocity)
+                        .withAcceleration(acceleration)
+                        .withSlot(slot.getNum()));
+    }
+
+    /**
+     * Runs the motor at a target velocity with dynamic Motion Magic cruise velocity and
+     * acceleration. Flashes an updated TalonFX configuration before issuing the control request.
+     *
+     * @param velocity Desired velocity.
+     * @param acceleration Max acceleration.
+     * @param slot PID slot index.
+     * @param cruiseVelocity Motion Magic cruise velocity.
+     * @param motionMagicAcceleration Motion Magic acceleration.
+     */
+    @Override
+    public void runVelocity(
+            AngularVelocity velocity,
+            AngularAcceleration acceleration,
+            PIDSlot slot,
+            AngularVelocity cruiseVelocity,
+            AngularAcceleration motionMagicAcceleration) {
+        currentConfig.MotionMagic.MotionMagicCruiseVelocity = cruiseVelocity.in(RotationsPerSecond);
+        currentConfig.MotionMagic.MotionMagicAcceleration =
+                motionMagicAcceleration.in(RotationsPerSecondPerSecond);
+
+        updateThread
+                .ctreCheckErrorAndRetry(
+                        () -> motor.getConfigurator().apply(currentConfig.MotionMagic))
+                .exceptionally(
+                        ex -> {
+                            LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                            return null;
+                        });
+
         motor.setControl(
                 velocityControl
                         .withVelocity(velocity)
