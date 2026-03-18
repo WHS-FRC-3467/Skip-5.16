@@ -150,16 +150,6 @@ public class PoseEstimator {
     }
 
     /**
-     * Sets a validator for odometry-integrated poses before they are committed.
-     *
-     * @param validator predicate that returns {@code true} for acceptable poses
-     */
-    public void setOdometryPoseValidator(Predicate<Pose2d> validator) {
-        odometryPoseValidator = validator == null ? pose -> true : validator;
-        refreshPoseValidators();
-    }
-
-    /**
      * Adds a new odometry observation to the pose estimator, ignores everything except gyro, and
      * updates the estimated pose.
      *
@@ -373,16 +363,6 @@ public class PoseEstimator {
 
         odometryStdDevMultiplierLinear = 1.0;
         odometryStdDevMultiplierAngular = 1.0;
-    }
-
-    /**
-     * Sets a validator for fused vision poses before they are committed.
-     *
-     * @param validator predicate that returns {@code true} for acceptable poses
-     */
-    public void setVisionPoseValidator(Predicate<Pose2d> validator) {
-        visionPoseValidator = validator == null ? pose -> true : validator;
-        refreshPoseValidators();
     }
 
     /**
