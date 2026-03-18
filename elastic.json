@@ -86,7 +86,7 @@
             "properties": {
               "topic": "/SmartDashboard/Auto Preview",
               "period": 0.06,
-              "field_game": "Reefscape",
+              "field_game": "Rebuilt",
               "robot_width": 0.85,
               "robot_length": 0.85,
               "show_other_objects": true,
@@ -171,45 +171,17 @@
             }
           },
           {
-            "title": "Auto Delay",
+            "title": "Delay",
             "x": 1350.0,
             "y": 400.0,
             "width": 150.0,
             "height": 150.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/Auto Delay",
+              "topic": "/SmartDashboard/TunableNumbers/Auto/Delay",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
-            }
-          },
-          {
-            "title": "Increment Auto Delay 0.5 sec",
-            "x": 900.0,
-            "y": 550.0,
-            "width": 300.0,
-            "height": 150.0,
-            "type": "Command",
-            "properties": {
-              "topic": "/SmartDashboard/Increment Auto Delay 0.5 sec",
-              "period": 0.06,
-              "show_type": true,
-              "maximize_button_space": false
-            }
-          },
-          {
-            "title": "Decrement Auto Delay 0.1 sec",
-            "x": 1200.0,
-            "y": 550.0,
-            "width": 300.0,
-            "height": 150.0,
-            "type": "Command",
-            "properties": {
-              "topic": "/SmartDashboard/Decrement Auto Delay 0.1 sec",
-              "period": 0.06,
-              "show_type": true,
-              "maximize_button_space": false
             }
           }
         ]
