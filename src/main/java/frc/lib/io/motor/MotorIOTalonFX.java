@@ -79,6 +79,8 @@ public class MotorIOTalonFX implements MotorIO {
     protected final PositionTorqueCurrentFOC unprofiledPositionControl =
             new PositionTorqueCurrentFOC(0);
     protected final VelocityTorqueCurrentFOC velocityControl = new VelocityTorqueCurrentFOC(0);
+    protected final MotionMagicVelocityTorqueCurrentFOC mmVelocityControl =
+            new MotionMagicVelocityTorqueCurrentFOC(0);
 
     private final CANUpdateThread updateThread = new CANUpdateThread();
     private final Alert[] followerOnWrongBusAlert;
@@ -87,6 +89,10 @@ public class MotorIOTalonFX implements MotorIO {
 
     private volatile TalonFXConfiguration currentConfig;
     protected volatile Angle goalPosition = Rotations.of(0.0);
+
+    // Caches for last-applied dynamic Motion Magic parameters (NaN = never applied)
+    private double lastAppliedMmCruiseVelocity = Double.NaN;
+    private double lastAppliedMmAcceleration = Double.NaN;
 
     /**
      * Constructs and initializes a TalonFX motor.
@@ -392,8 +398,9 @@ public class MotorIOTalonFX implements MotorIO {
     }
 
     /**
-     * Runs the motor to a specific position with dynamic Motion Magic cruise velocity and
-     * acceleration. Flashes an updated TalonFX configuration before issuing the control request.
+     * Runs the motor to a specific position using a Motion Magic request with dynamic cruise
+     * velocity and acceleration. Config is applied synchronously only when the values change to
+     * avoid unnecessary CAN bus traffic.
      *
      * @param position Target position.
      * @param slot PID slot index.
@@ -406,18 +413,20 @@ public class MotorIOTalonFX implements MotorIO {
             PIDSlot slot,
             AngularVelocity cruiseVelocity,
             AngularAcceleration acceleration) {
-        currentConfig.MotionMagic.MotionMagicCruiseVelocity = cruiseVelocity.in(RotationsPerSecond);
-        currentConfig.MotionMagic.MotionMagicAcceleration =
-                acceleration.in(RotationsPerSecondPerSecond);
+        double newCruise = cruiseVelocity.in(RotationsPerSecond);
+        double newAccel = acceleration.in(RotationsPerSecondPerSecond);
 
-        updateThread
-                .ctreCheckErrorAndRetry(
-                        () -> motor.getConfigurator().apply(currentConfig.MotionMagic))
-                .exceptionally(
-                        ex -> {
-                            LOGGER.log(Level.SEVERE, ex.toString(), ex);
-                            return null;
-                        });
+        if (newCruise != lastAppliedMmCruiseVelocity || newAccel != lastAppliedMmAcceleration) {
+            currentConfig.MotionMagic.MotionMagicCruiseVelocity = newCruise;
+            currentConfig.MotionMagic.MotionMagicAcceleration = newAccel;
+            var status = motor.getConfigurator().apply(currentConfig.MotionMagic, 0.05);
+            if (status.isOK()) {
+                lastAppliedMmCruiseVelocity = newCruise;
+                lastAppliedMmAcceleration = newAccel;
+            } else {
+                LOGGER.log(Level.WARNING, "Failed to apply MotionMagic config: " + status);
+            }
+        }
 
         this.goalPosition = position;
         motor.setControl(positionControl.withPosition(position).withSlot(slot.getNum()));
@@ -453,37 +462,35 @@ public class MotorIOTalonFX implements MotorIO {
     }
 
     /**
-     * Runs the motor at a target velocity with dynamic Motion Magic cruise velocity and
-     * acceleration. Flashes an updated TalonFX configuration before issuing the control request.
+     * Runs the motor at a target velocity using a Motion Magic velocity request that ramps to the
+     * target velocity using the provided Motion Magic acceleration. Config is applied synchronously
+     * only when the acceleration value changes to avoid unnecessary CAN bus traffic.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max acceleration.
+     * @param acceleration Max feed-forward acceleration.
      * @param slot PID slot index.
-     * @param cruiseVelocity Motion Magic cruise velocity.
-     * @param motionMagicAcceleration Motion Magic acceleration.
+     * @param motionMagicAcceleration Motion Magic acceleration used to ramp to target velocity.
      */
     @Override
     public void runVelocity(
             AngularVelocity velocity,
             AngularAcceleration acceleration,
             PIDSlot slot,
-            AngularVelocity cruiseVelocity,
             AngularAcceleration motionMagicAcceleration) {
-        currentConfig.MotionMagic.MotionMagicCruiseVelocity = cruiseVelocity.in(RotationsPerSecond);
-        currentConfig.MotionMagic.MotionMagicAcceleration =
-                motionMagicAcceleration.in(RotationsPerSecondPerSecond);
+        double newAccel = motionMagicAcceleration.in(RotationsPerSecondPerSecond);
 
-        updateThread
-                .ctreCheckErrorAndRetry(
-                        () -> motor.getConfigurator().apply(currentConfig.MotionMagic))
-                .exceptionally(
-                        ex -> {
-                            LOGGER.log(Level.SEVERE, ex.toString(), ex);
-                            return null;
-                        });
+        if (newAccel != lastAppliedMmAcceleration) {
+            currentConfig.MotionMagic.MotionMagicAcceleration = newAccel;
+            var status = motor.getConfigurator().apply(currentConfig.MotionMagic, 0.05);
+            if (status.isOK()) {
+                lastAppliedMmAcceleration = newAccel;
+            } else {
+                LOGGER.log(Level.WARNING, "Failed to apply MotionMagic config: " + status);
+            }
+        }
 
         motor.setControl(
-                velocityControl
+                mmVelocityControl
                         .withVelocity(velocity)
                         .withAcceleration(acceleration)
                         .withSlot(slot.getNum()));

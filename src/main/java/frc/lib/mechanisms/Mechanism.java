@@ -287,22 +287,20 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
-     * Runs the mechanism at a target velocity with dynamic Motion Magic cruise velocity and
-     * acceleration.
+     * Runs the mechanism at a target velocity using a Motion Magic velocity request that ramps to
+     * the target velocity using the provided Motion Magic acceleration.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max acceleration.
+     * @param acceleration Max feed-forward acceleration.
      * @param slot PID slot index.
-     * @param cruiseVelocity Motion Magic cruise velocity.
-     * @param motionMagicAcceleration Motion Magic acceleration.
+     * @param motionMagicAcceleration Motion Magic acceleration used to ramp to target velocity.
      */
     public void runVelocity(
             AngularVelocity velocity,
             AngularAcceleration acceleration,
             PIDSlot slot,
-            AngularVelocity cruiseVelocity,
             AngularAcceleration motionMagicAcceleration) {
-        io.runVelocity(velocity, acceleration, slot, cruiseVelocity, motionMagicAcceleration);
+        io.runVelocity(velocity, acceleration, slot, motionMagicAcceleration);
     }
 
     /**
@@ -474,22 +472,21 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
-     * Runs the mechanism at a target linear velocity with dynamic Motion Magic cruise velocity and
-     * acceleration. All parameters are provided in linear units and converted to angular units
-     * using the configured radius.
+     * Runs the mechanism at a target linear velocity using a Motion Magic velocity request that
+     * ramps to the target velocity using the provided Motion Magic acceleration. All parameters are
+     * provided in linear units and converted to angular units using the configured radius.
      *
      * @param velocity Desired linear velocity
-     * @param acceleration Maximum linear acceleration
+     * @param acceleration Maximum linear feed-forward acceleration
      * @param slot PID slot to use
-     * @param cruiseVelocity Motion Magic cruise velocity in linear units
-     * @param motionMagicAcceleration Motion Magic acceleration in linear units
+     * @param motionMagicAcceleration Motion Magic acceleration in linear units used to ramp to
+     *     target velocity
      * @throws IllegalStateException if {@link #withRadius} was never called
      */
     public void runLinearVelocity(
             LinearVelocity velocity,
             LinearAcceleration acceleration,
             PIDSlot slot,
-            LinearVelocity cruiseVelocity,
             LinearAcceleration motionMagicAcceleration) {
         requireRadius();
         AngularVelocity angularVelocity =
@@ -497,17 +494,10 @@ public abstract class Mechanism<T extends MotorIO> {
         AngularAcceleration angularAcceleration =
                 RadiansPerSecondPerSecond.of(
                         acceleration.in(MetersPerSecondPerSecond) / radiusMeters);
-        AngularVelocity angularCruiseVelocity =
-                RadiansPerSecond.of(cruiseVelocity.in(MetersPerSecond) / radiusMeters);
         AngularAcceleration angularMotionMagicAcceleration =
                 RadiansPerSecondPerSecond.of(
                         motionMagicAcceleration.in(MetersPerSecondPerSecond) / radiusMeters);
-        runVelocity(
-                angularVelocity,
-                angularAcceleration,
-                slot,
-                angularCruiseVelocity,
-                angularMotionMagicAcceleration);
+        runVelocity(angularVelocity, angularAcceleration, slot, angularMotionMagicAcceleration);
     }
 
     /**

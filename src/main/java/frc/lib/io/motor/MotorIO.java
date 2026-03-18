@@ -157,13 +157,13 @@ public interface MotorIO extends AutoCloseable {
     public default void runPosition(Angle position, PIDSlot slot) {}
 
     /**
-     * Runs the motor to a specific position with dynamic Motion Magic cruise velocity and
-     * acceleration. Updates the motor configuration before issuing the control request.
+     * Runs the motor to a specific position using a dynamic Motion Magic request that embeds cruise
+     * velocity and acceleration directly in the control request, requiring no config update.
      *
      * @param position Target position.
      * @param slot PID slot index.
-     * @param cruiseVelocity Motion Magic cruise velocity.
-     * @param acceleration Motion Magic acceleration.
+     * @param cruiseVelocity Motion Magic cruise velocity embedded in the request.
+     * @param acceleration Motion Magic acceleration embedded in the request.
      */
     public default void runPosition(
             Angle position,
@@ -190,20 +190,18 @@ public interface MotorIO extends AutoCloseable {
             AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {}
 
     /**
-     * Runs the motor at a target velocity with dynamic Motion Magic cruise velocity and
-     * acceleration. Updates the motor configuration before issuing the control request.
+     * Runs the motor at a target velocity using a Motion Magic velocity request that ramps to the
+     * target velocity using the provided Motion Magic acceleration.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max acceleration.
+     * @param acceleration Max feed-forward acceleration.
      * @param slot PID slot index.
-     * @param cruiseVelocity Motion Magic cruise velocity.
-     * @param motionMagicAcceleration Motion Magic acceleration.
+     * @param motionMagicAcceleration Motion Magic acceleration used to ramp to target velocity.
      */
     public default void runVelocity(
             AngularVelocity velocity,
             AngularAcceleration acceleration,
             PIDSlot slot,
-            AngularVelocity cruiseVelocity,
             AngularAcceleration motionMagicAcceleration) {}
 
     /**
