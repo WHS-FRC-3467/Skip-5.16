@@ -15,11 +15,12 @@
 package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -29,7 +30,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.lib.io.motor.MotorIO.PIDSlot;
-import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
@@ -41,7 +41,7 @@ import frc.lib.util.LoggerHelper;
  * mechanism for velocity control.
  */
 public class IndexerSuperstructure extends SubsystemBase {
-    private final DistanceControlledMechanism<FlywheelMechanism<?>> floorIO;
+    private final FlywheelMechanism<?> floorIO;
     private final FlywheelMechanism<?> centerIO;
 
     private static final LoggedTunableNumber FLOOR_SHOOT_RPS =
@@ -112,9 +112,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @param floorIO The flywheel mechanism for controlling the indexer floor motors
      * @param centerIO The flywheel mechanism for controlling the indexer centering motors
      */
-    public IndexerSuperstructure(
-            DistanceControlledMechanism<FlywheelMechanism<?>> floorIO,
-            FlywheelMechanism<?> centerIO) {
+    public IndexerSuperstructure(FlywheelMechanism<?> floorIO, FlywheelMechanism<?> centerIO) {
         this.floorIO = floorIO;
         this.centerIO = centerIO;
         tuningModeEnabled.whileTrue(tuningModeCommand);
@@ -250,9 +248,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return The linear velocity in meters per second.
      */
     public LinearVelocity getFloorLinearVelocity() {
-        return MetersPerSecond.of(
-                floorIO.getVelocity().in(RadiansPerSecond)
-                        * IndexerFloorConstants.RADIUS.in(Meters));
+        return floorIO.getLinearVelocity();
     }
 
     /**
@@ -261,9 +257,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return The linear velocity in meters per second.
      */
     public LinearVelocity getCenteringLinearVelocity() {
-        return MetersPerSecond.of(
-                centerIO.getVelocity().in(RadiansPerSecond)
-                        * IndexerCenterConstants.RADIUS.in(Meters));
+        return centerIO.getLinearVelocity();
     }
 
     /**
@@ -274,14 +268,17 @@ public class IndexerSuperstructure extends SubsystemBase {
      *     second)
      */
     public void setLinearVelocity(LinearVelocity floorVelocity, LinearVelocity centeringVelocity) {
-        floorIO.runVelocity(
-                RadiansPerSecond.of(floorVelocity.in(MetersPerSecond)),
-                IndexerFloorConstants.MAX_ACCELERATION,
-                PIDSlot.SLOT_0);
-        centerIO.runVelocity(
-                RadiansPerSecond.of(centeringVelocity.in(MetersPerSecond)),
-                IndexerCenterConstants.MAX_ACCELERATION,
-                PIDSlot.SLOT_0);
+        // Convert the angular acceleration constants to linear acceleration using each wheel radius
+        LinearAcceleration floorLinearAccel =
+                MetersPerSecondPerSecond.of(
+                        IndexerFloorConstants.MAX_ACCELERATION.in(RadiansPerSecondPerSecond)
+                                * IndexerFloorConstants.RADIUS.in(Meters));
+        LinearAcceleration centerLinearAccel =
+                MetersPerSecondPerSecond.of(
+                        IndexerCenterConstants.MAX_ACCELERATION.in(RadiansPerSecondPerSecond)
+                                * IndexerCenterConstants.RADIUS.in(Meters));
+        floorIO.runLinearVelocity(floorVelocity, floorLinearAccel, PIDSlot.SLOT_0);
+        centerIO.runLinearVelocity(centeringVelocity, centerLinearAccel, PIDSlot.SLOT_0);
     }
 
     /** Closes the indexer mechanism and releases resources. */

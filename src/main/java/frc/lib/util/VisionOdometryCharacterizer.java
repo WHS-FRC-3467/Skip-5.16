@@ -263,7 +263,7 @@ public class VisionOdometryCharacterizer {
         }
         // Assume vision is "ground truth" only if it is a high confidence measurement (multiple
         // tags, close range)
-        if (observation.avgTagDistance() > 2.75 || observation.numTagsUsed() < 3) {
+        if (observation.avgTagDistance() > 5.0 || observation.numTagsUsed() < 3) {
             return false;
         }
         return true;
@@ -333,6 +333,8 @@ public class VisionOdometryCharacterizer {
         Logger.recordOutput(prefix + "VisionSigmaX", getVisionStdDevX());
         Logger.recordOutput(prefix + "VisionSigmaY", getVisionStdDevY());
         Logger.recordOutput(prefix + "VisionSigmaTheta", getVisionStdDevTheta());
+        Logger.recordOutput(prefix + "VisionSamples", getVisionSampleSize());
+        Logger.recordOutput(prefix + "OdoSamples", getOdoSampleSize());
         Logger.recordOutput(prefix + "VisionAvgDistance", meanVisDistance);
         Logger.recordOutput(prefix + "VisionAvgNumTags", meanNumVisTags);
         Logger.recordOutput(prefix + "VisionBiasX", meanVisX);
