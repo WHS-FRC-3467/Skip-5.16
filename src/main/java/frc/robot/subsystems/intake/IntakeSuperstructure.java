@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
 
 import frc.lib.io.motor.MotorIO.PIDSlot;
-import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.util.LoggedTrigger;
@@ -48,7 +47,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private static final LoggedTunableNumber SLOW_MPS =
             new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowMPS", 0.05);
 
-    private final DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO;
+    private final LinearMechanism<?> intakeLinearIO;
     private final FlywheelMechanism<?> intakeRollerIO;
 
     private final LoggedTrigger isExtended;
@@ -85,8 +84,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private boolean runProfile = true;
 
     public IntakeSuperstructure(
-            DistanceControlledMechanism<LinearMechanism<?>> intakeLinearIO,
-            FlywheelMechanism<?> intakeRollerIO) {
+            LinearMechanism<?> intakeLinearIO, FlywheelMechanism<?> intakeRollerIO) {
 
         this.intakeLinearIO = intakeLinearIO;
         this.intakeRollerIO = intakeRollerIO;

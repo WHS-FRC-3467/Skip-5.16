@@ -26,7 +26,6 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
-import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
@@ -113,7 +112,7 @@ public class FlywheelConstants {
      *
      * @return configured left flywheel mechanism
      */
-    public static DistanceControlledMechanism<FlywheelMechanism<?>> getLeft() {
+    public static FlywheelMechanism<?> getLeft() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -146,7 +145,8 @@ public class FlywheelConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return new DistanceControlledMechanism<>(mechanism, FLYWHEEL_RADIUS);
+        mechanism.withRadius(FLYWHEEL_RADIUS);
+        return mechanism;
     }
 
     /**
@@ -155,7 +155,7 @@ public class FlywheelConstants {
      *
      * @return configured right flywheel mechanism
      */
-    public static DistanceControlledMechanism<FlywheelMechanism<?>> getRight() {
+    public static FlywheelMechanism<?> getRight() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -188,6 +188,7 @@ public class FlywheelConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return new DistanceControlledMechanism<>(mechanism, FLYWHEEL_RADIUS);
+        mechanism.withRadius(FLYWHEEL_RADIUS);
+        return mechanism;
     }
 }

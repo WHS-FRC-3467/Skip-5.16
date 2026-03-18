@@ -36,7 +36,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.io.motor.MotorIO.PIDSlot;
-import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.lib.util.LoggedTrigger;
@@ -96,8 +95,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final RobotState robotState = RobotState.getInstance();
 
     private final RotaryMechanism<?, ?> hoodIO;
-    private final DistanceControlledMechanism<FlywheelMechanism<?>> leftFlywheelIO;
-    private final DistanceControlledMechanism<FlywheelMechanism<?>> rightFlywheelIO;
+    private final FlywheelMechanism<?> leftFlywheelIO;
+    private final FlywheelMechanism<?> rightFlywheelIO;
 
     private final Debouncer readyToShootDebounder = new Debouncer(0.1, DebounceType.kFalling);
 
@@ -227,8 +226,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     public ShooterSuperstructure(
             RotaryMechanism<?, ?> hoodIO,
-            DistanceControlledMechanism<FlywheelMechanism<?>> leftFlywheelIO,
-            DistanceControlledMechanism<FlywheelMechanism<?>> rightFlywheelIO) {
+            FlywheelMechanism<?> leftFlywheelIO,
+            FlywheelMechanism<?> rightFlywheelIO) {
         this.hoodIO = hoodIO;
         this.leftFlywheelIO = leftFlywheelIO;
         this.rightFlywheelIO = rightFlywheelIO;
