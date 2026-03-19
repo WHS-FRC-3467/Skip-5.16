@@ -136,6 +136,7 @@ public class AutoCommands {
      * @param drive the drive subsystem
      * @param path the primary path to follow
      * @param tunnelPath the tunnel path used for fallback pathing
+     * @param onRetry a command to run when falling back to retry pathing
      * @return a command that safely follows the path with automatic fallback
      */
     public static Command safeFollowPath(
