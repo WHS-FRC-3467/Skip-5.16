@@ -101,7 +101,7 @@ public class NeutralAuto extends AutoRoutine {
                                             () ->
                                                     AutoCommands.safeFollowPath(
                                                             drive,
-                                                            pathPlannerPaths.get(1),
+                                                            pathPlannerPaths.get(2),
                                                             pathPlannerPaths.get(3),
                                                             intake.retractIntake()),
                                             Set.of(drive)),
