@@ -96,11 +96,6 @@ public class RobotState {
                                                     .getDegrees())
                                     < SHOOT_TOLERANCE_DEGREES.get());
 
-    @Getter
-    @AutoLogOutput(key = "Drive/CanShoot")
-    public final Trigger canShoot =
-            facingTarget.and(() -> getLinearVelocity().lt(MetersPerSecond.of(0.2)));
-
     /**
      * Whether or not the robot is entering the trench in {@code MAX_HOOD_RETRACT_TIME}. For use to
      * check whether we need to force the hood to retract to prevent decapitation.
