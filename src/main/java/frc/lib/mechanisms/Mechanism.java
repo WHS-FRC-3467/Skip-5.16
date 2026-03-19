@@ -278,12 +278,10 @@ public abstract class Mechanism<T extends MotorIO> {
      * Runs the mechanism at a target velocity.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max acceleration.
      * @param slot PID slot index.
      */
-    public void runVelocity(
-            AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {
-        io.runVelocity(velocity, acceleration, slot);
+    public void runVelocity(AngularVelocity velocity, PIDSlot slot) {
+        io.runVelocity(velocity, slot);
     }
 
     /**
@@ -291,16 +289,12 @@ public abstract class Mechanism<T extends MotorIO> {
      * the target velocity using the provided Motion Magic acceleration.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max feed-forward acceleration.
+     * @param acceleration Motion Magic acceleration used to ramp to target velocity.
      * @param slot PID slot index.
-     * @param motionMagicAcceleration Motion Magic acceleration used to ramp to target velocity.
      */
     public void runVelocity(
-            AngularVelocity velocity,
-            AngularAcceleration acceleration,
-            PIDSlot slot,
-            AngularAcceleration motionMagicAcceleration) {
-        io.runVelocity(velocity, acceleration, slot, motionMagicAcceleration);
+            AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {
+        io.runVelocity(velocity, acceleration, slot);
     }
 
     /**
@@ -456,19 +450,14 @@ public abstract class Mechanism<T extends MotorIO> {
      * Runs the mechanism at a target linear velocity with acceleration limiting.
      *
      * @param velocity Desired linear velocity
-     * @param acceleration Maximum linear acceleration
      * @param slot PID slot to use
      * @throws IllegalStateException if {@link #withRadius} was never called
      */
-    public void runLinearVelocity(
-            LinearVelocity velocity, LinearAcceleration acceleration, PIDSlot slot) {
+    public void runLinearVelocity(LinearVelocity velocity, PIDSlot slot) {
         requireRadius();
         AngularVelocity angularVelocity =
                 RadiansPerSecond.of(velocity.in(MetersPerSecond) / radiusMeters);
-        AngularAcceleration angularAcceleration =
-                RadiansPerSecondPerSecond.of(
-                        acceleration.in(MetersPerSecondPerSecond) / radiusMeters);
-        runVelocity(angularVelocity, angularAcceleration, slot);
+        runVelocity(angularVelocity, slot);
     }
 
     /**
@@ -477,27 +466,19 @@ public abstract class Mechanism<T extends MotorIO> {
      * provided in linear units and converted to angular units using the configured radius.
      *
      * @param velocity Desired linear velocity
-     * @param acceleration Maximum linear feed-forward acceleration
      * @param slot PID slot to use
-     * @param motionMagicAcceleration Motion Magic acceleration in linear units used to ramp to
-     *     target velocity
+     * @param acceleration Motion Magic acceleration in linear units used to ramp to target velocity
      * @throws IllegalStateException if {@link #withRadius} was never called
      */
     public void runLinearVelocity(
-            LinearVelocity velocity,
-            LinearAcceleration acceleration,
-            PIDSlot slot,
-            LinearAcceleration motionMagicAcceleration) {
+            LinearVelocity velocity, PIDSlot slot, LinearAcceleration acceleration) {
         requireRadius();
         AngularVelocity angularVelocity =
                 RadiansPerSecond.of(velocity.in(MetersPerSecond) / radiusMeters);
-        AngularAcceleration angularAcceleration =
+        AngularAcceleration angularacceleration =
                 RadiansPerSecondPerSecond.of(
                         acceleration.in(MetersPerSecondPerSecond) / radiusMeters);
-        AngularAcceleration angularMotionMagicAcceleration =
-                RadiansPerSecondPerSecond.of(
-                        motionMagicAcceleration.in(MetersPerSecondPerSecond) / radiusMeters);
-        runVelocity(angularVelocity, angularAcceleration, slot, angularMotionMagicAcceleration);
+        runVelocity(angularVelocity, angularacceleration, slot);
     }
 
     /**

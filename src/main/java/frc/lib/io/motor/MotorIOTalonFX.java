@@ -22,8 +22,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -450,17 +450,11 @@ public class MotorIOTalonFX implements MotorIO {
      * Runs the motor at a target velocity.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max acceleration.
      * @param slot PID slot index.
      */
     @Override
-    public void runVelocity(
-            AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {
-        motor.setControl(
-                velocityControl
-                        .withVelocity(velocity)
-                        .withAcceleration(acceleration)
-                        .withSlot(slot.getNum()));
+    public void runVelocity(AngularVelocity velocity, PIDSlot slot) {
+        motor.setControl(velocityControl.withVelocity(velocity).withSlot(slot.getNum()));
     }
 
     /**
@@ -469,17 +463,13 @@ public class MotorIOTalonFX implements MotorIO {
      * only when the acceleration value changes to avoid unnecessary CAN bus traffic.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max feed-forward acceleration.
+     * @param acceleration Motion Magic acceleration used to ramp to target velocity.
      * @param slot PID slot index.
-     * @param motionMagicAcceleration Motion Magic acceleration used to ramp to target velocity.
      */
     @Override
     public void runVelocity(
-            AngularVelocity velocity,
-            AngularAcceleration acceleration,
-            PIDSlot slot,
-            AngularAcceleration motionMagicAcceleration) {
-        double newAccel = motionMagicAcceleration.in(RotationsPerSecondPerSecond);
+            AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {
+        double newAccel = acceleration.in(RotationsPerSecondPerSecond);
 
         if (newAccel != lastAppliedMmAcceleration) {
             currentConfig.MotionMagic.MotionMagicAcceleration = newAccel;
@@ -491,11 +481,7 @@ public class MotorIOTalonFX implements MotorIO {
             }
         }
 
-        motor.setControl(
-                mmVelocityControl
-                        .withVelocity(velocity)
-                        .withAcceleration(acceleration)
-                        .withSlot(slot.getNum()));
+        motor.setControl(mmVelocityControl.withVelocity(velocity).withSlot(slot.getNum()));
     }
 
     @Override

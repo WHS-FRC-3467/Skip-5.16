@@ -195,26 +195,20 @@ public interface MotorIO extends AutoCloseable {
      * Runs the motor at a target velocity.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max acceleration.
      * @param slot PID slot index.
      */
-    public default void runVelocity(
-            AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {}
+    public default void runVelocity(AngularVelocity velocity, PIDSlot slot) {}
 
     /**
      * Runs the motor at a target velocity using a Motion Magic velocity request that ramps to the
      * target velocity using the provided Motion Magic acceleration.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max feed-forward acceleration.
+     * @param acceleration Motion Magic acceleration used to ramp to target velocity.
      * @param slot PID slot index.
-     * @param motionMagicAcceleration Motion Magic acceleration used to ramp to target velocity.
      */
     public default void runVelocity(
-            AngularVelocity velocity,
-            AngularAcceleration acceleration,
-            PIDSlot slot,
-            AngularAcceleration motionMagicAcceleration) {}
+            AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {}
 
     /**
      * Sets the position of the motor's internal encoder

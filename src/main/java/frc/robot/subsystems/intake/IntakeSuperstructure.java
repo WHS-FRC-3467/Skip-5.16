@@ -220,12 +220,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     }
 
     private Command runRoller(Supplier<AngularVelocity> angularVelocity) {
-        return this.runOnce(
-                        () ->
-                                intakeRollerIO.runVelocity(
-                                        angularVelocity.get(),
-                                        IntakeRollerConstants.MAX_ACCELERATION,
-                                        PIDSlot.SLOT_0))
+        return this.runOnce(() -> intakeRollerIO.runVelocity(angularVelocity.get(), PIDSlot.SLOT_0))
                 .withName("Run Roller");
     }
 
@@ -238,7 +233,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         () ->
                                 intakeRollerIO.runVelocity(
                                         RotationsPerSecond.of(ROLLER_EJECT_RPS.get()),
-                                        IntakeRollerConstants.MAX_ACCELERATION,
                                         PIDSlot.SLOT_0),
                         intakeRollerIO::runBrake)
                 .withName("Eject Roller");

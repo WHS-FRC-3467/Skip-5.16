@@ -109,7 +109,7 @@ public class Tower extends SubsystemBase {
     }
 
     private void runVelocity(AngularVelocity velocity) {
-        io.runVelocity(velocity, TowerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        io.runVelocity(velocity, PIDSlot.SLOT_0);
     }
 
     /**
