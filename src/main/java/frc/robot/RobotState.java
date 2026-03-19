@@ -521,6 +521,7 @@ public class RobotState {
     /**
      * Returns 2D distance from robot to target.
      *
+     * @param robotTranslation the robot's translation
      * @return the distance to the target
      */
     public Distance getDistanceToTarget(Translation2d robotTranslation) {
