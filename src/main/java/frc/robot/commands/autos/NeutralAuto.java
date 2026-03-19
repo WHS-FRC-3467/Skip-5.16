@@ -29,6 +29,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 
 import java.util.List;
+import java.util.Set;
 
 public class NeutralAuto extends AutoRoutine {
 
@@ -59,7 +60,9 @@ public class NeutralAuto extends AutoRoutine {
                 && !pathPlannerPaths.contains(null)) {
             loadCommands(
                     AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
-                    // Commands.waitSeconds(3.0),
+                    // Delay if necessary
+                    Commands.defer(
+                            () -> Commands.waitSeconds(AutoCommands.getAutoDelay()), Set.of()),
                     // Sweep neutral zone while intaking
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
