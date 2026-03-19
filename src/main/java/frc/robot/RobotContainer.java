@@ -52,7 +52,6 @@ import frc.robot.subsystems.intake.IntakeLinearConstants;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
 import frc.robot.subsystems.leds.LEDs;
-import frc.robot.subsystems.leds.LEDsConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
@@ -107,7 +106,7 @@ public class RobotContainer {
         tower = TowerConstants.get();
         VisionConstants.create();
         // VisionOdometryCharacterizer.enable();
-        // leds = LEDsConstants.get();
+         leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
         if (RobotBase.isSimulation()) {
