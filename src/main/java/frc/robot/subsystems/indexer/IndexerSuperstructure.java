@@ -14,13 +14,9 @@
  */
 package frc.robot.subsystems.indexer;
 
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -126,9 +122,8 @@ public class IndexerSuperstructure extends SubsystemBase {
     }
 
     private void runVelocity(AngularVelocity floorVelocity, AngularVelocity centeringVelocity) {
-        floorIO.runVelocity(floorVelocity, IndexerFloorConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
-        centerIO.runVelocity(
-                centeringVelocity, IndexerCenterConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        floorIO.runVelocity(floorVelocity, PIDSlot.SLOT_0);
+        centerIO.runVelocity(centeringVelocity, PIDSlot.SLOT_0);
     }
 
     /**
@@ -268,17 +263,8 @@ public class IndexerSuperstructure extends SubsystemBase {
      *     second)
      */
     public void setLinearVelocity(LinearVelocity floorVelocity, LinearVelocity centeringVelocity) {
-        // Convert the angular acceleration constants to linear acceleration using each wheel radius
-        LinearAcceleration floorLinearAccel =
-                MetersPerSecondPerSecond.of(
-                        IndexerFloorConstants.MAX_ACCELERATION.in(RadiansPerSecondPerSecond)
-                                * IndexerFloorConstants.RADIUS.in(Meters));
-        LinearAcceleration centerLinearAccel =
-                MetersPerSecondPerSecond.of(
-                        IndexerCenterConstants.MAX_ACCELERATION.in(RadiansPerSecondPerSecond)
-                                * IndexerCenterConstants.RADIUS.in(Meters));
-        floorIO.runLinearVelocity(floorVelocity, floorLinearAccel, PIDSlot.SLOT_0);
-        centerIO.runLinearVelocity(centeringVelocity, centerLinearAccel, PIDSlot.SLOT_0);
+        floorIO.runLinearVelocity(floorVelocity, PIDSlot.SLOT_0);
+        centerIO.runLinearVelocity(centeringVelocity, PIDSlot.SLOT_0);
     }
 
     /** Closes the indexer mechanism and releases resources. */
