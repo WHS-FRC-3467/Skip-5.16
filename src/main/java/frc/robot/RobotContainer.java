@@ -137,10 +137,16 @@ public class RobotContainer {
                 "AntiNashoba-Right", new AntiNashoba(drive, intake, indexer, tower, shooter, true));
 
         // Depot Autos
+        //      autoChooser.addOption(
+        //           "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
+        //    autoChooser.addOption(
+        //         "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
+
         autoChooser.addOption(
-                "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
+                "Aggressive-Depot",
+                new DepotShootAuto(drive, intake, indexer, tower, shooter, false));
         autoChooser.addOption(
-                "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
+                "Safe-Depot", new DepotShootAuto(drive, intake, indexer, tower, shooter, true));
 
         autoChooser.onChange(
                 auto -> {
