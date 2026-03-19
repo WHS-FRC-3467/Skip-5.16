@@ -92,6 +92,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         feedFlywheelMap.put(20.0, 60.0);
     }
 
+    private static final double MIDLINE_FEED_DISTANCE_METERS =
+            FieldConstants.FIELD_LENGTH / 2.0
+                    - (FieldConstants.LinesVertical.NEUTRAL_ZONE_NEAR / 2.0);
+    private static final Angle FEED_HOOD_ANGLE = Degrees.of(24.0);
+
     private final RobotState robotState = RobotState.getInstance();
 
     private final RotaryMechanism<?, ?> hoodIO;
@@ -128,12 +133,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new LoggedTrigger(
                     this.getName() + "/atMidlineFeedSetpoints",
                     () -> {
-                        // Distance between robot and hub centers
-                        // Assume the Robot is on the midline,
-                        // angled roughly perpendicular to the midline.
-                        double dist = FieldConstants.FIELD_WIDTH / 2 - (FieldConstants.LinesVertical.NEUTRAL_ZONE_NEAR / 2.0);
-                        return isFlywheelAt(RotationsPerSecond.of(feedFlywheelMap.get(dist)))
-                                && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+                        return isFlywheelAt(
+                                        RotationsPerSecond.of(
+                                                feedFlywheelMap.get(MIDLINE_FEED_DISTANCE_METERS)))
+                                && isHoodAt(FEED_HOOD_ANGLE);
                     });
 
     private final LoggedTunableBoolean tuningMode =
@@ -366,7 +369,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             return Degrees.of(hoodAngleMap.get(robotState.getDistanceToTarget().in(Meters)));
         }
 
-        return Degrees.of(24.0);
+        return FEED_HOOD_ANGLE;
     }
 
     // Gets ball trajectory exit angle relative to horizontal, accounting for hood angle and
@@ -402,6 +405,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     /**
      * Spin up shooter to HUB distance
+     *
      * @return a Command to prepare for the hub shot
      */
     public Command spinUpShooterToHubDistance() {
@@ -415,16 +419,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 .withName("Spin-Up Shooter to Distance");
     }
 
-    /** 
+    /**
      * Prepare to feed from the midline!
+     *
      * @return a Command to spin up for a midline feed
      */
     public Command spinUpShooterMidlineFeed() {
-        double distance = FieldConstants.FIELD_LENGTH / 2;
         return Commands.run(
                         () -> {
-                            spinFlywheel(RotationsPerSecond.of(feedFlywheelMap.get(distance)));
-                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance)));
+                            spinFlywheel(
+                                    RotationsPerSecond.of(
+                                            feedFlywheelMap.get(MIDLINE_FEED_DISTANCE_METERS)));
+                            setHoodPosition(FEED_HOOD_ANGLE);
                         },
                         this)
                 .withName("Spin-Up Shooter to FEED Distance");

@@ -37,7 +37,6 @@ import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
 import frc.robot.Constants.PathConstants;
-import frc.robot.FieldConstants.Hub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
@@ -249,8 +248,9 @@ public class RobotContainer {
                         Commands.parallel(
                                 shooter.spinUpShooterMidlineFeed(),
                                 Commands.sequence(
-                                    Commands.waitUntil(shooter.atMidlineFeedSetpoints).withTimeout(0.75),
-                                    Commands.parallel(indexer.shoot(), tower.shoot()))))
+                                        Commands.waitUntil(shooter.atMidlineFeedSetpoints)
+                                                .withTimeout(0.75),
+                                        Commands.parallel(indexer.shoot(), tower.shoot()))))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(),
