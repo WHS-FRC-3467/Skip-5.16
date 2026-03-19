@@ -248,8 +248,7 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
-     * Runs the mechanism to a specific position with dynamic Motion Magic cruise velocity and
-     * acceleration.
+     * Runs the mechanism to a specific position with Motion Magic cruise velocity and acceleration.
      *
      * @param position Target position.
      * @param slot PID slot index.
@@ -408,7 +407,7 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
-     * Runs the mechanism to a target linear position with dynamic Motion Magic cruise velocity and
+     * Runs the mechanism to a target linear position with Motion Magic cruise velocity and
      * acceleration. Cruise velocity and acceleration are provided in linear units and converted to
      * angular units using the configured radius.
      *

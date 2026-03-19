@@ -91,7 +91,7 @@ public class MotorIOTalonFX implements MotorIO {
     private volatile TalonFXConfiguration currentConfig;
     protected volatile Angle goalPosition = Rotations.of(0.0);
 
-    // Caches for last-applied dynamic Motion Magic parameters (NaN = never applied)
+    // Caches for last-applied Motion Magic parameters (NaN = never applied)
     private double lastAppliedMmCruiseVelocity = Double.NaN;
     private double lastAppliedMmAcceleration = Double.NaN;
 
@@ -399,9 +399,9 @@ public class MotorIOTalonFX implements MotorIO {
     }
 
     /**
-     * Runs the motor to a specific position using a Motion Magic request with dynamic cruise
-     * velocity and acceleration. Config is applied synchronously only when the values change to
-     * avoid unnecessary CAN bus traffic.
+     * Runs the motor to a specific position using a Motion Magic request with cruise velocity and
+     * acceleration. Config is applied synchronously only when the values change to avoid
+     * unnecessary CAN bus traffic.
      *
      * @param position Target position.
      * @param slot PID slot index.
