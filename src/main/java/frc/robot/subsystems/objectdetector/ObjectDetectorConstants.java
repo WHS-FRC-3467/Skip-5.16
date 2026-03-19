@@ -57,22 +57,20 @@ public class ObjectDetectorConstants {
     private static final RobotState robotState = RobotState.getInstance();
     // Object detection camera #0
     // Extrinsics
-    // Transform sign convention: +X -> towards other alliance's station, +Y -> towards center of
-    // field from starting starboard edge, +theta -> right-hand rule.
     public static final String CAMERA0_NAME = "Detection Camera #0";
     public static final Transform3d CAMERA0_TRANSFORM =
             new Transform3d(
                     Units.Inches.of(8),
-                    Units.Inches.of(0),
+                    Units.Inches.of(8),
                     Units.Inches.of(30),
                     new Rotation3d(
-                            Units.Degrees.of(0.0), Units.Degrees.of(0.0), Units.Degrees.of(0.0)));
+                            Units.Degrees.of(0.0), Units.Degrees.of(20.0), Units.Degrees.of(0.0)));
 
     // Intrinsics
     public static final int CAMERA0_RESOLUTION_WIDTH = 1600;
     public static final int CAMERA0_RESOLUTION_HEIGHT = 1304;
-    // from Thrifty docs
-    public static final Angle CAMERA0_FOV = Degrees.of(55);
+
+    public static final Angle CAMERA0_FOV = Degrees.of(55.0);
 
     // ThriftyCam Default Calibrations
     public static final Matrix<N3, N3> CAMERA0_MATRIX =
@@ -129,7 +127,7 @@ public class ObjectDetectorConstants {
     public static final double OBJECT0_HEIGHT_METERS = 0.150114;
 
     // Dynamic supplier for moving sim targets
-    // Only publish FUEL to OBject Detection VisionSystemSim that are roughly within 8m of the
+    // Only publish FUEL to Object Detection VisionSystemSim that are roughly within 8m of the
     // camera & its FOV -- publish nearest values first
     public static Supplier<VisionTargetSim[]> visionTargetSimSupplier =
             () -> {

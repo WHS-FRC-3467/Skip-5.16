@@ -16,14 +16,17 @@
 package frc.robot.subsystems.objectdetector;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.devices.ObjectDetection;
 import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
+import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 
 import lombok.Getter;
@@ -49,6 +52,12 @@ public class ObjectDetector extends SubsystemBase {
     @Getter private List<Optional<ObjectDetectionObservation>> latestObjectObservation;
     @Getter private Optional<ObjectDetectionObservation> latestBigContourObservation;
     @Getter private Optional<ObjectDetectionObservation> latestLowContourObservation;
+
+    // Blue left canonical ROI in robot coordinates for object detection
+    private static final Distance ROI_X_START = Meters.of(0);
+    private static final Distance ROI_X_END = Meters.of(4.63);
+    private static final Distance ROI_Y_START = Meters.of(-0.61);
+    private static final Distance ROI_Y_END = Meters.of(2.44);
 
     /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
@@ -124,9 +133,37 @@ public class ObjectDetector extends SubsystemBase {
         }
     }
 
+    /**
+     * Ascertain whether a detected object's pose is within the robot local coordinates defined
+     * above.
+     */
+    private boolean isObjectWithinROI(Optional<ObjectDetectionObservation> observation) {
+        if (observation.isEmpty() || observation.get().objectPose().isEmpty()) {
+            return false;
+        }
+        Translation2d translation =
+                robotState
+                        .getEstimatedPose()
+                        .minus(observation.get().objectPose().get())
+                        .getTranslation()
+                        .unaryMinus();
+        // If robot is on right side, flip blue left canonical ROI across the robot-local X-axis to get correct
+        // region in robot coordinates
+        boolean isRightSide = robotState.getEstimatedPose().getTranslation().getY()
+                < FieldConstants.FIELD_WIDTH / 2.0;
+        if (isRightSide) {
+            translation = new Translation2d(translation.getX(), -translation.getY());
+        }
+
+        return translation.getX() >= ROI_X_START.in(Meters)
+                && translation.getX() <= ROI_X_END.in(Meters)
+                && translation.getY() >= ROI_Y_START.in(Meters)
+                && translation.getY() <= ROI_Y_END.in(Meters);
+    }
+
     @Override
     public void periodic() {
-        // Update the inputs data structure associated with this object detection camera with latest
+        // Update the inputs data structure associated with this Object Detection camera with latest
         // readings
         objectDetection.periodic();
         // Now that inputs are updated, re-populate observations with new data
@@ -139,6 +176,8 @@ public class ObjectDetector extends SubsystemBase {
             // Generate latest Contour observations
             latestBigContourObservation = generateContourObservation(ContourSelectionMode.LARGEST);
             latestLowContourObservation = generateContourObservation(ContourSelectionMode.LOWEST);
+            // Filter out observations that are outside of the defined ROI
+
         } else {
             // Prevent stale data from persisting
             latestObjectObservation = List.of();
