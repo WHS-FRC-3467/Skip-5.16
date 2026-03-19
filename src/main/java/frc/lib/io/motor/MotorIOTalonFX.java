@@ -94,6 +94,8 @@ public class MotorIOTalonFX implements MotorIO {
     // Caches for last-applied Motion Magic parameters (NaN = never applied)
     private double lastAppliedMmCruiseVelocity = Double.NaN;
     private double lastAppliedMmAcceleration = Double.NaN;
+    private double lastRequestedMmCruiseVelocity = Double.NaN;
+    private double lastRequestedMmAcceleration = Double.NaN;
 
     /**
      * Constructs and initializes a TalonFX motor.
@@ -109,6 +111,10 @@ public class MotorIOTalonFX implements MotorIO {
             Device.CAN main,
             TalonFXFollower... followerData) {
         currentConfig = config;
+        lastAppliedMmCruiseVelocity = config.MotionMagic.MotionMagicCruiseVelocity;
+        lastAppliedMmAcceleration = config.MotionMagic.MotionMagicAcceleration;
+        lastRequestedMmCruiseVelocity = lastAppliedMmCruiseVelocity;
+        lastRequestedMmAcceleration = lastAppliedMmAcceleration;
 
         motor = new TalonFX(main.id(), new CANBus(main.bus()));
         updateThread
@@ -400,8 +406,7 @@ public class MotorIOTalonFX implements MotorIO {
 
     /**
      * Runs the motor to a specific position using a Motion Magic request with cruise velocity and
-     * acceleration. Config is applied synchronously only when the values change to avoid
-     * unnecessary CAN bus traffic.
+     * acceleration.
      *
      * @param position Target position.
      * @param slot PID slot index.
@@ -417,18 +422,7 @@ public class MotorIOTalonFX implements MotorIO {
         double newCruise = cruiseVelocity.in(RotationsPerSecond);
         double newAccel = acceleration.in(RotationsPerSecondPerSecond);
 
-        if (newCruise != lastAppliedMmCruiseVelocity || newAccel != lastAppliedMmAcceleration) {
-            MotionMagicConfigs mmConfig = new MotionMagicConfigs();
-            mmConfig.MotionMagicCruiseVelocity = newCruise;
-            mmConfig.MotionMagicAcceleration = newAccel;
-            var status = motor.getConfigurator().apply(mmConfig, 0.05);
-            if (status.isOK()) {
-                lastAppliedMmCruiseVelocity = newCruise;
-                lastAppliedMmAcceleration = newAccel;
-            } else {
-                LOGGER.log(Level.WARNING, "Failed to apply MotionMagic config: " + status);
-            }
-        }
+        queueMotionMagicConfigUpdate(newCruise, newAccel);
 
         this.goalPosition = position;
         motor.setControl(positionControl.withPosition(position).withSlot(slot.getNum()));
@@ -459,8 +453,7 @@ public class MotorIOTalonFX implements MotorIO {
 
     /**
      * Runs the motor at a target velocity using a Motion Magic velocity request that ramps to the
-     * target velocity using the provided Motion Magic acceleration. Config is applied synchronously
-     * only when the acceleration value changes to avoid unnecessary CAN bus traffic.
+     * target velocity using the provided Motion Magic acceleration.
      *
      * @param velocity Desired velocity.
      * @param acceleration Motion Magic acceleration used to ramp to target velocity.
@@ -471,15 +464,7 @@ public class MotorIOTalonFX implements MotorIO {
             AngularVelocity velocity, AngularAcceleration acceleration, PIDSlot slot) {
         double newAccel = acceleration.in(RotationsPerSecondPerSecond);
 
-        if (newAccel != lastAppliedMmAcceleration) {
-            currentConfig.MotionMagic.MotionMagicAcceleration = newAccel;
-            var status = motor.getConfigurator().apply(currentConfig.MotionMagic, 0.05);
-            if (status.isOK()) {
-                lastAppliedMmAcceleration = newAccel;
-            } else {
-                LOGGER.log(Level.WARNING, "Failed to apply MotionMagic config: " + status);
-            }
-        }
+        queueMotionMagicConfigUpdate(lastRequestedMmCruiseVelocity, newAccel);
 
         motor.setControl(mmVelocityControl.withVelocity(velocity).withSlot(slot.getNum()));
     }
@@ -487,6 +472,38 @@ public class MotorIOTalonFX implements MotorIO {
     @Override
     public void setEncoderPosition(Angle position) {
         motor.setPosition(position);
+    }
+
+    private void queueMotionMagicConfigUpdate(double cruiseVelocity, double acceleration) {
+        if (cruiseVelocity == lastRequestedMmCruiseVelocity
+                && acceleration == lastRequestedMmAcceleration) {
+            return;
+        }
+
+        lastRequestedMmCruiseVelocity = cruiseVelocity;
+        lastRequestedMmAcceleration = acceleration;
+        currentConfig.MotionMagic.MotionMagicCruiseVelocity = cruiseVelocity;
+        currentConfig.MotionMagic.MotionMagicAcceleration = acceleration;
+
+        MotionMagicConfigs mmConfig = new MotionMagicConfigs();
+        mmConfig.MotionMagicCruiseVelocity = cruiseVelocity;
+        mmConfig.MotionMagicAcceleration = acceleration;
+
+        updateThread
+                .ctreCheckErrorAndRetry(() -> motor.getConfigurator().apply(mmConfig, 0.05))
+                .thenRun(
+                        () -> {
+                            lastAppliedMmCruiseVelocity = cruiseVelocity;
+                            lastAppliedMmAcceleration = acceleration;
+                        })
+                .exceptionally(
+                        ex -> {
+                            LOGGER.log(
+                                    Level.WARNING,
+                                    "Failed to apply MotionMagic config asynchronously",
+                                    ex);
+                            return null;
+                        });
     }
 
     private void setPIDSlot0(PID pid) {
