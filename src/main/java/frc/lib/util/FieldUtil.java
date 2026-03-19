@@ -111,6 +111,17 @@ public class FieldUtil {
                 && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
     }
 
+    /**
+     * Determines if a pose is on the left side of the field from the blue alliance perspective.
+     *
+     * @return True if the pose is on the left side of the field from the blue alliance perspective,
+     *     false otherwise.
+     */
+    public static boolean isBlueLeft(Pose2d pose) {
+        return pose.getY() > FieldConstants.FIELD_WIDTH / 2.0;
+    }
+}
+
     // /**
     // * Whether or not a pose needs to be flipped
     // *
@@ -160,4 +171,3 @@ public class FieldUtil {
     // && translation.getY() >= margin.in(Meters)
     // && translation.getY() <= FieldConstants.FIELD_WIDTH - margin.in(Meters);
     // }
-}
