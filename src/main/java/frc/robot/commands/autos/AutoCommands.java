@@ -264,13 +264,19 @@ public class AutoCommands {
                                                 goalPose, DriveConstants.PATH_CONSTRAINTS),
                                         pathFindThenFollow(tunnelPath),
                                         () ->
-                                                robotState
-                                                        .getEstimatedPose()
+                                                FieldUtil
+                                                        .apply(
+                                                                robotState
+                                                                        .getEstimatedPose()
+                                                                        .getTranslation())
                                                         .getMeasureX()
                                                         .lt(
-                                                                tunnelPath
-                                                                        .getPathPoses()
-                                                                        .get(0)
+                                                                FieldUtil
+                                                                        .apply(
+                                                                                tunnelPath
+                                                                                        .getPathPoses()
+                                                                                        .get(0)
+                                                                                        .getTranslation())
                                                                         .getMeasureX()))
                                 .until(pathErrorExceeded))
                 .until(successCondition)
