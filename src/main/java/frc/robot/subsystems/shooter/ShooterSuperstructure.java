@@ -343,11 +343,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private AngularVelocity getDesiredFlywheelVelocity() {
+        boolean shouldFeedNow = shouldFeed.getAsBoolean();
         InterpolatingDoubleTreeMap flywheelMap =
-                shouldFeed.getAsBoolean() ? feedFlywheelMap : hubFlywheelMap;
+                shouldFeedNow ? feedFlywheelMap : hubFlywheelMap;
 
         Pose2d pose = robotState.getEstimatedPose();
-        if (shouldFeed.getAsBoolean()) {
+        if (shouldFeedNow) {
             Twist2d twist = robotState.getFieldRelativeVelocity().toTwist2d(3.0);
             pose = pose.exp(twist);
         }
@@ -363,7 +364,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private Angle getDesiredHoodAngle() {
-        if (!shouldFeed.getAsBoolean()) {
+        boolean shouldFeedNow = shouldFeed.getAsBoolean();
+        if (!shouldFeedNow) {
             return Degrees.of(hoodAngleMap.get(robotState.getDistanceToTarget().in(Meters)));
         }
 
