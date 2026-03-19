@@ -73,6 +73,9 @@ import org.littletonrobotics.junction.Logger;
 public class RobotContainer {
     private final RobotState robotState = RobotState.getInstance();
 
+    /** Shared lookahead horizon (seconds) used for drive aiming and shooting feed logic. */
+    private static final double FEED_LOOKAHEAD_SECONDS = 3.0;
+
     // Subsystems
     public final Drive drive;
     final ShooterSuperstructure shooter;
@@ -191,7 +194,7 @@ public class RobotContainer {
                                                 drive,
                                                 () -> -controller.getLeftY(),
                                                 () -> -controller.getLeftX(),
-                                                () -> 3.0),
+                                                () -> FEED_LOOKAHEAD_SECONDS),
                                         DriveCommands.staticAimTowardsTarget(drive),
                                         shooter.shouldFeed),
                                 shooter.spinUpShooter(),
