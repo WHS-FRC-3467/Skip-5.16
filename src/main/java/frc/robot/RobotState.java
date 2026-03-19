@@ -104,7 +104,7 @@ public class RobotState {
                         Pose2d futurePose =
                                 getEstimatedPose()
                                         .exp(
-                                                getFieldRelativeVelocity()
+                                                getRobotRelativeVelocity()
                                                         .toTwist2d(MAX_HOOD_RETRACT_TIME.get()));
 
                         // Normalize to alliance frame
@@ -189,7 +189,7 @@ public class RobotState {
                     LINEAR_ODOMETRY_STD_DEV,
                     ANGULAR_ODOMETRY_STD_DEV);
 
-    @Setter private ChassisSpeeds velocity = new ChassisSpeeds();
+    @Getter @Setter private ChassisSpeeds robotRelativeVelocity = new ChassisSpeeds();
 
     /**
      * Returns the robot's odometry-only pose (without vision corrections).
@@ -261,9 +261,9 @@ public class RobotState {
      */
     public ChassisSpeeds getFieldRelativeVelocity() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(
-                velocity.vxMetersPerSecond,
-                velocity.vyMetersPerSecond,
-                velocity.omegaRadiansPerSecond,
+                robotRelativeVelocity.vxMetersPerSecond,
+                robotRelativeVelocity.vyMetersPerSecond,
+                robotRelativeVelocity.omegaRadiansPerSecond,
                 getEstimatedPose().getRotation());
     }
 

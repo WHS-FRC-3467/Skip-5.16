@@ -272,7 +272,7 @@ public class DriveCommands {
                 () -> {
                     Twist2d twist =
                             robotState
-                                    .getFieldRelativeVelocity()
+                                    .getRobotRelativeVelocity()
                                     .toTwist2d(lookAhead.getAsDouble());
                     Pose2d pose = robotState.getEstimatedPose().exp(twist);
                     return robotState.getAngleToTarget(pose.getTranslation());

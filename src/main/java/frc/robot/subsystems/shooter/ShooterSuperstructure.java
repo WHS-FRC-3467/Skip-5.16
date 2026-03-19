@@ -344,12 +344,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private AngularVelocity getDesiredFlywheelVelocity() {
         boolean shouldFeedNow = shouldFeed.getAsBoolean();
-        InterpolatingDoubleTreeMap flywheelMap =
-                shouldFeedNow ? feedFlywheelMap : hubFlywheelMap;
+        InterpolatingDoubleTreeMap flywheelMap = shouldFeedNow ? feedFlywheelMap : hubFlywheelMap;
 
         Pose2d pose = robotState.getEstimatedPose();
         if (shouldFeedNow) {
-            Twist2d twist = robotState.getFieldRelativeVelocity().toTwist2d(3.0);
+            Twist2d twist = robotState.getRobotRelativeVelocity().toTwist2d(3.0);
             pose = pose.exp(twist);
         }
 

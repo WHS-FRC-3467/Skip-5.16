@@ -384,7 +384,7 @@ public class Drive extends SubsystemBase {
         }
 
         // Update RobotState velocity
-        robotState.setVelocity(getChassisSpeeds());
+        robotState.setRobotRelativeVelocity(getChassisSpeeds());
         robotState.setDrivetrainAngled(isAngled());
 
         Logger.recordOutput(
