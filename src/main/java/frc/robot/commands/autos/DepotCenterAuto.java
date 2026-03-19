@@ -17,6 +17,8 @@ package frc.robot.commands.autos;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.lib.util.AutoRoutine;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
@@ -25,6 +27,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Auto routine that utilizes AutoSegment command sequences to drive to the DEPOT, collect FUEL from
@@ -58,6 +61,9 @@ public class DepotCenterAuto extends AutoRoutine {
             loadCommands(
                     // Reset odometry
                     AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
+                    // Delay if necessary
+                    Commands.defer(
+                            () -> Commands.waitSeconds(AutoCommands.getAutoDelay()), Set.of()),
                     // Drive to depot and start intake, then run through depot while intaking FUEL
                     AutoBuilder.followPath(pathPlannerPaths.get(0)),
                     // // Drive to shooting location and shoot all FUEL
