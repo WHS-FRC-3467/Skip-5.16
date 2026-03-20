@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -249,6 +250,36 @@ public class DriveCommands {
     }
 
     /**
+     * Field relative drive command using joystick for linear control and PID for angular control.
+     * Always faces the current target in RobotState {@code lookAhead} seconds in the future
+     *
+     * @param drive the drive subsystem
+     * @param xSupplier supplier for x-axis joystick input
+     * @param ySupplier supplier for y-axis joystick input
+     * @param lookAhead seconds to look ahead in the future
+     * @return the joystick drive facing target command
+     */
+    public static Command joystickDriveFacingFutureTarget(
+            Drive drive,
+            DoubleSupplier xSupplier,
+            DoubleSupplier ySupplier,
+            DoubleSupplier lookAhead) {
+        RobotState robotState = RobotState.getInstance();
+        return joystickDriveAtAngle(
+                drive,
+                xSupplier,
+                ySupplier,
+                () -> {
+                    Twist2d twist =
+                            robotState
+                                    .getRobotRelativeVelocity()
+                                    .toTwist2d(lookAhead.getAsDouble());
+                    Pose2d pose = robotState.getEstimatedPose().exp(twist);
+                    return robotState.getAngleToTarget(pose.getTranslation());
+                });
+    }
+
+    /**
      * Stationary control command that prohibits motion while it aims towards the target, then holds
      * the wheels in an X pattern once the robot is aligned with the target heading.
      *
@@ -256,13 +287,6 @@ public class DriveCommands {
      * @return the static aim towards target command
      */
     public static Command staticAimTowardsTarget(Drive drive) {
-        RobotState robotState = RobotState.getInstance();
-        return Commands.repeatingSequence(
-                joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget));
-    }
-
-    // This will need to get updated. This is not the most optimal set of code - Wilk
-    public static Command autoAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
         return joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget);
     }
