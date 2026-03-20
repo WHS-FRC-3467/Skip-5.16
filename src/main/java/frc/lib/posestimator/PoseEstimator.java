@@ -60,7 +60,6 @@ public class PoseEstimator {
         ACCEPTED,
         MISSING_ODOMETRY_SAMPLE,
         BELOW_MIN_N_SIGMA,
-        ABOVE_MAX_N_SIGMA,
         POSE_VALIDATOR_REJECTED
     }
 
@@ -80,8 +79,6 @@ public class PoseEstimator {
     // Vision gating: ignore noise and reject large outliers.
     private static final double VISION_MIN_N_SIGMA_LINEAR = 0.6;
     private static final double VISION_MIN_N_SIGMA_ANGULAR = 0.6;
-    private static final double VISION_MAX_N_SIGMA_LINEAR = 6.0;
-    private static final double VISION_MAX_N_SIGMA_ANGULAR = 6.0;
 
     private final SwerveOdometry odometry;
 
@@ -325,18 +322,6 @@ public class PoseEstimator {
                     oldPose,
                     false,
                     VisionObservationReason.BELOW_MIN_N_SIGMA,
-                    translationNSigma,
-                    rotationNSigma);
-            return;
-        }
-
-        if (translationNSigma > VISION_MAX_N_SIGMA_LINEAR
-                || rotationNSigma > VISION_MAX_N_SIGMA_ANGULAR) {
-            logVisionObservation(
-                    observation,
-                    oldPose,
-                    false,
-                    VisionObservationReason.ABOVE_MAX_N_SIGMA,
                     translationNSigma,
                     rotationNSigma);
             return;
