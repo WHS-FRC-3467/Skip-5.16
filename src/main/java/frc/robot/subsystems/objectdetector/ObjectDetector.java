@@ -202,17 +202,17 @@ public class ObjectDetector extends SubsystemBase {
         // Now that inputs are updated, re-populate observations with new data
         if (objectDetection.getTargets().length > 0) {
             // Generate latest ML Object observations
+            // Currently factored to only generate observations for targets whose full poses are
+            // within the dynamically-updated ROI at the time of detection. Primarily for use in
+            // autos with a momentary / stationary decision point.
             latestObjectObservation =
                     Arrays.stream(objectDetection.getTargets())
                             .map(this::generateObjectObservation)
+                            .filter(this::isObjectWithinROI)
                             .toList();
             // Generate latest Contour observations
             latestBigContourObservation = generateContourObservation(ContourSelectionMode.LARGEST);
             latestLowContourObservation = generateContourObservation(ContourSelectionMode.LOWEST);
-            // Filter out observations that are outside of the defined ROI
-            latestObjectObservation =
-                    latestObjectObservation.stream().filter(this::isObjectWithinROI).toList();
-
         } else {
             // Prevent stale data from persisting
             latestObjectObservation = List.of();
