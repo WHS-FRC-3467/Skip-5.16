@@ -51,15 +51,9 @@ public class PoseEstimator {
             double linearStdDev,
             double angularStdDev) {}
 
-    private enum ObservationStatus {
-        ACCEPTED,
-        REJECTED
-    }
-
     private enum OdometryObservationReason {
-        VALIDATOR_PASSED,
-        ODOMETRY_POSE_VALIDATOR_REJECTED,
-        VISION_POSE_VALIDATOR_REJECTED
+        ACCEPTED,
+        POSE_VALIDATOR_REJECTED
     }
 
     private enum VisionObservationReason {
@@ -67,8 +61,7 @@ public class PoseEstimator {
         MISSING_ODOMETRY_SAMPLE,
         BELOW_MIN_N_SIGMA,
         ABOVE_MAX_N_SIGMA,
-        ODOMETRY_POSE_VALIDATOR_REJECTED,
-        VISION_POSE_VALIDATOR_REJECTED
+        POSE_VALIDATOR_REJECTED
     }
 
     private static final double DEFAULT_ODOMETRY_BUFFER_SIZE_SECONDS = 2;
@@ -98,9 +91,7 @@ public class PoseEstimator {
     private double odometryStdDevMultiplierLinear = 1.0;
     private double odometryStdDevMultiplierAngular = 1.0;
 
-    private Predicate<Pose2d> odometryPoseValidator = pose -> true;
-    private Predicate<Pose2d> visionPoseValidator = pose -> true;
-    private Predicate<Pose2d> fusedPoseValidator = pose -> true;
+    private Predicate<Pose2d> poseValidator = pose -> true;
 
     @Getter private Pose2d estimatedPose = Pose2d.kZero;
 
@@ -133,7 +124,7 @@ public class PoseEstimator {
                 };
 
         odometry = new SwerveOdometry(kinematics, moduleTranslations, odometryBufferSize);
-        refreshPoseValidators();
+        refreshOdometryPoseValidator();
     }
 
     public PoseEstimator(
@@ -266,7 +257,7 @@ public class PoseEstimator {
             logVisionObservation(
                     observation,
                     null,
-                    ObservationStatus.REJECTED,
+                    false,
                     VisionObservationReason.MISSING_ODOMETRY_SAMPLE,
                     Double.NaN,
                     Double.NaN);
@@ -332,7 +323,7 @@ public class PoseEstimator {
             logVisionObservation(
                     observation,
                     oldPose,
-                    ObservationStatus.REJECTED,
+                    false,
                     VisionObservationReason.BELOW_MIN_N_SIGMA,
                     translationNSigma,
                     rotationNSigma);
@@ -344,7 +335,7 @@ public class PoseEstimator {
             logVisionObservation(
                     observation,
                     oldPose,
-                    ObservationStatus.REJECTED,
+                    false,
                     VisionObservationReason.ABOVE_MAX_N_SIGMA,
                     translationNSigma,
                     rotationNSigma);
@@ -386,13 +377,12 @@ public class PoseEstimator {
                         .transformBy(
                                 poseDeltaThenToNow); // Bring back to present time (latency comp)
 
-        VisionObservationReason validationReason = getVisionValidationReason(candidatePose);
-        if (validationReason != VisionObservationReason.ACCEPTED) {
+        if (!poseValidator.test(candidatePose)) {
             logVisionObservation(
                     observation,
                     candidatePose,
-                    ObservationStatus.REJECTED,
-                    validationReason,
+                    false,
+                    VisionObservationReason.POSE_VALIDATOR_REJECTED,
                     translationNSigma,
                     rotationNSigma);
             return;
@@ -402,7 +392,7 @@ public class PoseEstimator {
         logVisionObservation(
                 observation,
                 candidatePose,
-                ObservationStatus.ACCEPTED,
+                true,
                 VisionObservationReason.ACCEPTED,
                 translationNSigma,
                 rotationNSigma);
@@ -432,45 +422,22 @@ public class PoseEstimator {
      * @return this
      */
     public PoseEstimator withPoseValidator(Predicate<Pose2d> validator) {
-        Predicate<Pose2d> resolved = validator == null ? pose -> true : validator;
-        odometryPoseValidator = resolved;
-        visionPoseValidator = resolved;
-        refreshPoseValidators();
+        poseValidator = validator;
+        refreshOdometryPoseValidator();
         return this;
     }
 
-    private void refreshPoseValidators() {
-        fusedPoseValidator =
-                pose ->
-                        getOdometryValidationReason(pose)
-                                == OdometryObservationReason.VALIDATOR_PASSED;
+    private void refreshOdometryPoseValidator() {
         odometry.setPoseValidator(
                 pose -> {
-                    OdometryObservationReason reason = getOdometryValidationReason(pose);
-                    boolean accepted = reason == OdometryObservationReason.VALIDATOR_PASSED;
+                    boolean accepted = poseValidator.test(pose);
+                    OdometryObservationReason reason =
+                            accepted
+                                    ? OdometryObservationReason.ACCEPTED
+                                    : OdometryObservationReason.POSE_VALIDATOR_REJECTED;
                     logOdometryObservation(pose, accepted, reason);
                     return accepted;
                 });
-    }
-
-    private OdometryObservationReason getOdometryValidationReason(Pose2d pose) {
-        if (!odometryPoseValidator.test(pose)) {
-            return OdometryObservationReason.ODOMETRY_POSE_VALIDATOR_REJECTED;
-        }
-        if (!visionPoseValidator.test(pose)) {
-            return OdometryObservationReason.VISION_POSE_VALIDATOR_REJECTED;
-        }
-        return OdometryObservationReason.VALIDATOR_PASSED;
-    }
-
-    private VisionObservationReason getVisionValidationReason(Pose2d pose) {
-        if (!odometryPoseValidator.test(pose)) {
-            return VisionObservationReason.ODOMETRY_POSE_VALIDATOR_REJECTED;
-        }
-        if (!visionPoseValidator.test(pose)) {
-            return VisionObservationReason.VISION_POSE_VALIDATOR_REJECTED;
-        }
-        return VisionObservationReason.ACCEPTED;
     }
 
     private void logOdometryObservation(
@@ -489,11 +456,10 @@ public class PoseEstimator {
     private void logVisionObservation(
             VisionPoseObservation observation,
             Pose2d candidatePose,
-            ObservationStatus status,
+            boolean accepted,
             VisionObservationReason reason,
             double translationNSigma,
             double rotationNSigma) {
-        boolean accepted = status == ObservationStatus.ACCEPTED;
         Logger.recordOutput(LOG_PREFIX + "Vision/Accepted", accepted);
         Logger.recordOutput(LOG_PREFIX + "Vision/Reason", reason.name());
         Logger.recordOutput(LOG_PREFIX + "Vision/ObservationPose", observation.robotPose());

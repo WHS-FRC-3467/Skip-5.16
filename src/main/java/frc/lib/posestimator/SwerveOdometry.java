@@ -188,15 +188,7 @@ public class SwerveOdometry {
             candidatePose = new Pose2d(candidatePose.getTranslation(), angle.plus(gyroOffset));
         }
 
-        if (poseValidator.test(candidatePose)) {
-            odometryPose = candidatePose;
-        } else if (observation.gyroAngle().isPresent()) {
-            // Keep translation stable but allow heading to track the gyro.
-            odometryPose =
-                    new Pose2d(
-                            odometryPose.getTranslation(),
-                            observation.gyroAngle().get().plus(gyroOffset));
-        }
+        odometryPose = resolveValidatedPose(candidatePose, observation.gyroAngle());
 
         // Store pose for later interpolation (e.g., vision sync)
         odometryBuffer.addSample(timestampSeconds, odometryPose);
@@ -232,6 +224,17 @@ public class SwerveOdometry {
      */
     public void setPoseValidator(Predicate<Pose2d> poseValidator) {
         this.poseValidator = poseValidator == null ? pose -> true : poseValidator;
+    }
+
+    private Pose2d resolveValidatedPose(Pose2d candidatePose, Optional<Rotation2d> gyroAngle) {
+        if (poseValidator.test(candidatePose)) {
+            return candidatePose;
+        }
+        if (gyroAngle.isPresent()) {
+            // Keep translation stable but allow heading to track the gyro.
+            return new Pose2d(odometryPose.getTranslation(), gyroAngle.get().plus(gyroOffset));
+        }
+        return odometryPose;
     }
 
     private Twist2d computeTwist(
