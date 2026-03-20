@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
+import frc.robot.RobotState.FieldRegion;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -263,7 +264,9 @@ public class AutoCommands {
                                         pathFindThenFollow(tunnelPath),
                                         AutoBuilder.pathfindToPoseFlipped(
                                                 goalPose, DriveConstants.PATH_CONSTRAINTS),
-                                        robotState.isInNeutralZone)
+                                        () ->
+                                                robotState.getFieldRegion()
+                                                        == FieldRegion.NEUTRAL_ZONE)
                                 .until(pathErrorExceeded))
                 .until(successCondition)
                 .finallyDo(() -> Logger.recordOutput("AutoCommands/RetryPathingStatus", "DONE"));
