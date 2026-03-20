@@ -34,11 +34,15 @@ import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
+import org.littletonrobotics.junction.Logger;
+
 import java.util.Optional;
 import java.util.function.Predicate;
 
 @Accessors(fluent = true)
 public class PoseEstimator {
+    private static final String LOG_PREFIX = "PoseEstimator/";
+
     public static record VisionPoseObservation(
             double timestampSeconds,
             Pose2d robotPose,
@@ -46,6 +50,26 @@ public class PoseEstimator {
             int numTagsUsed,
             double linearStdDev,
             double angularStdDev) {}
+
+    private enum ObservationStatus {
+        ACCEPTED,
+        REJECTED
+    }
+
+    private enum OdometryObservationReason {
+        VALIDATOR_PASSED,
+        ODOMETRY_POSE_VALIDATOR_REJECTED,
+        VISION_POSE_VALIDATOR_REJECTED
+    }
+
+    private enum VisionObservationReason {
+        ACCEPTED,
+        MISSING_ODOMETRY_SAMPLE,
+        BELOW_MIN_N_SIGMA,
+        ABOVE_MAX_N_SIGMA,
+        ODOMETRY_POSE_VALIDATOR_REJECTED,
+        VISION_POSE_VALIDATOR_REJECTED
+    }
 
     private static final double DEFAULT_ODOMETRY_BUFFER_SIZE_SECONDS = 2;
 
@@ -239,6 +263,13 @@ public class PoseEstimator {
         Transform2d poseDeltaThenToNow =
                 getPoseDeltaThenToNow(observation.timestampSeconds).orElse(null);
         if (poseDeltaThenToNow == null) {
+            logVisionObservation(
+                    observation,
+                    null,
+                    ObservationStatus.REJECTED,
+                    VisionObservationReason.MISSING_ODOMETRY_SAMPLE,
+                    Double.NaN,
+                    Double.NaN);
             return;
         }
 
@@ -298,11 +329,25 @@ public class PoseEstimator {
 
         if (translationNSigma < VISION_MIN_N_SIGMA_LINEAR
                 && rotationNSigma < VISION_MIN_N_SIGMA_ANGULAR) {
+            logVisionObservation(
+                    observation,
+                    oldPose,
+                    ObservationStatus.REJECTED,
+                    VisionObservationReason.BELOW_MIN_N_SIGMA,
+                    translationNSigma,
+                    rotationNSigma);
             return;
         }
 
         if (translationNSigma > VISION_MAX_N_SIGMA_LINEAR
                 || rotationNSigma > VISION_MAX_N_SIGMA_ANGULAR) {
+            logVisionObservation(
+                    observation,
+                    oldPose,
+                    ObservationStatus.REJECTED,
+                    VisionObservationReason.ABOVE_MAX_N_SIGMA,
+                    translationNSigma,
+                    rotationNSigma);
             return;
         }
 
@@ -341,11 +386,26 @@ public class PoseEstimator {
                         .transformBy(
                                 poseDeltaThenToNow); // Bring back to present time (latency comp)
 
-        if (!fusedPoseValidator.test(candidatePose)) {
+        VisionObservationReason validationReason = getVisionValidationReason(candidatePose);
+        if (validationReason != VisionObservationReason.ACCEPTED) {
+            logVisionObservation(
+                    observation,
+                    candidatePose,
+                    ObservationStatus.REJECTED,
+                    validationReason,
+                    translationNSigma,
+                    rotationNSigma);
             return;
         }
 
         estimatedPose = candidatePose;
+        logVisionObservation(
+                observation,
+                candidatePose,
+                ObservationStatus.ACCEPTED,
+                VisionObservationReason.ACCEPTED,
+                translationNSigma,
+                rotationNSigma);
     }
 
     /**
@@ -381,7 +441,82 @@ public class PoseEstimator {
 
     private void refreshPoseValidators() {
         fusedPoseValidator =
-                pose -> odometryPoseValidator.test(pose) && visionPoseValidator.test(pose);
-        odometry.setPoseValidator(fusedPoseValidator);
+                pose ->
+                        getOdometryValidationReason(pose)
+                                == OdometryObservationReason.VALIDATOR_PASSED;
+        odometry.setPoseValidator(
+                pose -> {
+                    OdometryObservationReason reason = getOdometryValidationReason(pose);
+                    boolean accepted = reason == OdometryObservationReason.VALIDATOR_PASSED;
+                    logOdometryObservation(pose, accepted, reason);
+                    return accepted;
+                });
+    }
+
+    private OdometryObservationReason getOdometryValidationReason(Pose2d pose) {
+        if (!odometryPoseValidator.test(pose)) {
+            return OdometryObservationReason.ODOMETRY_POSE_VALIDATOR_REJECTED;
+        }
+        if (!visionPoseValidator.test(pose)) {
+            return OdometryObservationReason.VISION_POSE_VALIDATOR_REJECTED;
+        }
+        return OdometryObservationReason.VALIDATOR_PASSED;
+    }
+
+    private VisionObservationReason getVisionValidationReason(Pose2d pose) {
+        if (!odometryPoseValidator.test(pose)) {
+            return VisionObservationReason.ODOMETRY_POSE_VALIDATOR_REJECTED;
+        }
+        if (!visionPoseValidator.test(pose)) {
+            return VisionObservationReason.VISION_POSE_VALIDATOR_REJECTED;
+        }
+        return VisionObservationReason.ACCEPTED;
+    }
+
+    private void logOdometryObservation(
+            Pose2d candidatePose, boolean accepted, OdometryObservationReason reason) {
+        Logger.recordOutput(LOG_PREFIX + "Odometry/Accepted", accepted);
+        Logger.recordOutput(LOG_PREFIX + "Odometry/Reason", reason.name());
+        Logger.recordOutput(LOG_PREFIX + "Odometry/CandidatePose", candidatePose);
+        Logger.recordOutput(
+                LOG_PREFIX + "Odometry/AcceptedPose",
+                accepted ? new Pose2d[] {candidatePose} : new Pose2d[] {});
+        Logger.recordOutput(
+                LOG_PREFIX + "Odometry/RejectedPose",
+                accepted ? new Pose2d[] {} : new Pose2d[] {candidatePose});
+    }
+
+    private void logVisionObservation(
+            VisionPoseObservation observation,
+            Pose2d candidatePose,
+            ObservationStatus status,
+            VisionObservationReason reason,
+            double translationNSigma,
+            double rotationNSigma) {
+        boolean accepted = status == ObservationStatus.ACCEPTED;
+        Logger.recordOutput(LOG_PREFIX + "Vision/Accepted", accepted);
+        Logger.recordOutput(LOG_PREFIX + "Vision/Reason", reason.name());
+        Logger.recordOutput(LOG_PREFIX + "Vision/ObservationPose", observation.robotPose());
+        Logger.recordOutput(LOG_PREFIX + "Vision/TimestampSeconds", observation.timestampSeconds());
+        Logger.recordOutput(
+                LOG_PREFIX + "Vision/AvgTagDistanceMeters", observation.avgTagDistance());
+        Logger.recordOutput(LOG_PREFIX + "Vision/NumTagsUsed", observation.numTagsUsed());
+        Logger.recordOutput(LOG_PREFIX + "Vision/LinearStdDev", observation.linearStdDev());
+        Logger.recordOutput(LOG_PREFIX + "Vision/AngularStdDev", observation.angularStdDev());
+        Logger.recordOutput(LOG_PREFIX + "Vision/TranslationNSigma", translationNSigma);
+        Logger.recordOutput(LOG_PREFIX + "Vision/RotationNSigma", rotationNSigma);
+        Logger.recordOutput(
+                LOG_PREFIX + "Vision/CandidatePose",
+                candidatePose != null ? candidatePose : Pose2d.kZero);
+        Logger.recordOutput(
+                LOG_PREFIX + "Vision/AcceptedPose",
+                accepted && candidatePose != null ? new Pose2d[] {candidatePose} : new Pose2d[] {});
+        Logger.recordOutput(
+                LOG_PREFIX + "Vision/RejectedPose",
+                !accepted
+                        ? new Pose2d[] {
+                            candidatePose != null ? candidatePose : observation.robotPose()
+                        }
+                        : new Pose2d[] {});
     }
 }
