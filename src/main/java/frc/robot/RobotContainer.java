@@ -55,6 +55,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
@@ -188,6 +189,7 @@ public class RobotContainer {
                         Commands.parallel(
                                 DriveCommands.staticAimTowardsTarget(drive),
                                 shooter.spinUpShooter(),
+                                Commands.waitUntil(HubState.getInstance().getIsTimeToShoot()),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(robotState.facingTarget))
