@@ -240,6 +240,10 @@ public class RobotState {
      * @param observation the vision observation to add
      */
     public void addVisionObservation(VisionPoseObservation observation) {
+        if (DriverStation.isDisabled()) {
+            poseEstimator.resetPose(observation.robotPose());
+            return;
+        }
         poseEstimator.addVisionObservation(observation);
     }
 
