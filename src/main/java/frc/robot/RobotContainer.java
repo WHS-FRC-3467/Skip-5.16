@@ -23,13 +23,13 @@ import static edu.wpi.first.units.Units.Seconds;
 import com.pathplanner.lib.events.EventTrigger;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -37,7 +37,6 @@ import frc.lib.util.AutoRoutine;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
-import frc.lib.util.VisionOdometryCharacterizer;
 import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
@@ -105,6 +104,7 @@ public class RobotContainer {
         indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
+        // VisionOdometryCharacterizer.enable();
         // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
@@ -250,6 +250,7 @@ public class RobotContainer {
                 .x()
                 .whileTrue(
                         Commands.parallel(
+                                DriveCommands.stopWithX(drive),
                                 shooter.spinUpShooterToHubDistance(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
@@ -268,6 +269,17 @@ public class RobotContainer {
         operatorController.x().onTrue(intake.retractIntake());
         operatorController.povUp().onTrue(shooter.trimFlywheelSpeedUp());
         operatorController.povDown().onTrue(shooter.trimFlywheelSpeedDown());
+
+        operatorController
+                .y()
+                .whileTrue(
+                        shooter.spinUpShooter()
+                                .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+        controller
+                .rightTrigger()
+                .negate()
+                .and(operatorController.y().negate())
+                .onTrue(shooter.stopFlywheels());
 
         // robotState.enteringTrench.whileTrue(
         //         shooter.forceHoodAngle(Rotations.zero())
@@ -341,35 +353,21 @@ public class RobotContainer {
 
         // Drivetrain Commands
         SmartDashboard.putData(
-                "Face Target",
-                DriveCommands.joystickDriveFacingTarget(
-                        drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
-        SmartDashboard.putData(
                 "Drive to Start Pose",
                 new DriveToPose(drive, () -> startPose)
                         .withDistanceTolerance(Meters.of(0.04))
                         .withAngularTolerance(Degrees.of(3)));
 
-        SmartDashboard.putData("Drive/Zero", drive.runOnce(() -> drive.runCharacterization(0.0)));
-        SmartDashboard.putData(
-                "Drive/Face Zero",
-                DriveCommands.joystickDriveAtAngle(
-                        drive, () -> 0.0, () -> 0.0, () -> Rotation2d.kZero));
-        SmartDashboard.putData(
-                "Drive/Face 180",
-                DriveCommands.joystickDriveAtAngle(
-                        drive, () -> 0.0, () -> 0.0, () -> Rotation2d.k180deg));
-
         // Diagnostics
-        SmartDashboard.putData(
-                "Enable Vision Odometry Characterization",
-                Commands.runOnce(() -> VisionOdometryCharacterizer.enable()));
-        SmartDashboard.putData(
-                "Disable Vision Odometry Characterization",
-                Commands.runOnce(() -> VisionOdometryCharacterizer.disable()));
-        SmartDashboard.putData(
-                "Reset Vision Odometry Characterization",
-                Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
+        // SmartDashboard.putData(
+        //         "Enable Vision Odometry Characterization",
+        //         Commands.runOnce(() -> VisionOdometryCharacterizer.enable()));
+        // SmartDashboard.putData(
+        //         "Disable Vision Odometry Characterization",
+        //         Commands.runOnce(() -> VisionOdometryCharacterizer.disable()));
+        // SmartDashboard.putData(
+        //         "Reset Vision Odometry Characterization",
+        //         Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
     }
 
     /** Creates and/or binds triggers to LED states */
