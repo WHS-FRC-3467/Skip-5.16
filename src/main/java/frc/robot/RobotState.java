@@ -81,6 +81,23 @@ public class RobotState {
                 getEstimatedPose().getTranslation().getDistance(activeTrajPose.getTranslation()));
     }
 
+    public final LoggedTrigger isInNeutralZone =
+            new LoggedTrigger(
+                    "RobotState/isInNeutralZone",
+                    () ->
+                            getEstimatedPose()
+                                            .getMeasureX()
+                                            .lt(
+                                                    Meters.of(
+                                                            FieldConstants.LinesVertical
+                                                                    .NEUTRAL_ZONE_FAR))
+                                    && getEstimatedPose()
+                                            .getMeasureX()
+                                            .gt(
+                                                    Meters.of(
+                                                            FieldConstants.LinesVertical
+                                                                    .NEUTRAL_ZONE_NEAR)));
+
     @AutoLogOutput(key = "Drive/DrivetrainAngled")
     private final Trigger drivetrainAngledTrigger =
             new Trigger(() -> drivetrainAngled).debounce(0.5, DebounceType.kFalling);

@@ -260,24 +260,10 @@ public class AutoCommands {
                         // already past the tunnel on the alliance side — pathfind directly.
                         // Otherwise, it still needs to travel through the tunnel.
                         Commands.either(
+                                        pathFindThenFollow(tunnelPath),
                                         AutoBuilder.pathfindToPoseFlipped(
                                                 goalPose, DriveConstants.PATH_CONSTRAINTS),
-                                        pathFindThenFollow(tunnelPath),
-                                        () ->
-                                                FieldUtil
-                                                        .apply(
-                                                                robotState
-                                                                        .getEstimatedPose()
-                                                                        .getTranslation())
-                                                        .getMeasureX()
-                                                        .lt(
-                                                                FieldUtil
-                                                                        .apply(
-                                                                                tunnelPath
-                                                                                        .getPathPoses()
-                                                                                        .get(0)
-                                                                                        .getTranslation())
-                                                                        .getMeasureX()))
+                                        robotState.isInNeutralZone)
                                 .until(pathErrorExceeded))
                 .until(successCondition)
                 .finallyDo(() -> Logger.recordOutput("AutoCommands/RetryPathingStatus", "DONE"));
