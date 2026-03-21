@@ -29,6 +29,8 @@ import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 
+import frc.lib.util.CANdlePatterns;
+
 import org.littletonrobotics.junction.Logger;
 
 import java.util.ArrayList;
@@ -39,13 +41,21 @@ import java.util.random.RandomGenerator;
 /** A simulated lights implementation */
 public class LightsIOSim implements LightsIO {
 
+    final LEDPattern rainbow = LEDPattern.rainbow(255, 128);
+    final LEDPattern fire =
+            LEDPattern.gradient(
+                    LEDPattern.GradientType.kContinuous, Color.kOrange, Color.kOrangeRed);
+
     private Map<String, String> requestInfo;
     private AddressableLED led;
     private AddressableLEDBuffer buffer;
     private ArrayList<AddressableLEDBufferView> views;
 
+    private static CANdlePatterns candlePatterns;
+
     /** Translates CTRE LED Commands To WPILIB Sim LED Commands */
     public LightsIOSim(List<LEDSegment> ledSegments) {
+        candlePatterns = new CANdlePatterns(ledSegments.size());
         this.led = new AddressableLED(0);
 
         this.views = new ArrayList<>();
@@ -84,12 +94,41 @@ public class LightsIOSim implements LightsIO {
         }
     }
 
+    Color colorParse() {
+        if (requestInfo.containsKey("Color")) {
+            String colorString = requestInfo.get("Color");
+            String numString = "";
+            int colorOut[] = {0, 0, 0};
+            int colorCount = 0;
+            for (int i = 5; i < colorString.length(); i++) {
+
+                char colorIter = colorString.charAt(i);
+                numString += colorIter;
+                if (colorString.charAt(i + 1) == ',') {
+
+                    colorOut[colorCount] = Integer.valueOf(numString);
+                    numString = "";
+                    colorCount++;
+
+                    i += 2;
+                    if (i == colorString.length() || colorCount >= 3) {
+                        break;
+                    }
+                }
+            }
+            return new Color(colorOut[0], colorOut[1], colorOut[2]);
+
+        } else {
+            return new Color("#C0FFEE");
+        }
+    }
+
     @Override
     public void setAnimation(ControlRequest request) {
 
         this.requestInfo = request.getControlInfo();
 
-        double direction = "Forward".equals(checkAndGet("Direction")) ? 1.0 : -1.0;
+        double direction = "Backward".equals(checkAndGet("Direction")) ? -1.0 : 1.0;
 
         int slot = Integer.valueOf(checkAndGet("Slot"));
         Logger.recordOutput("LEDs/Slot" + slot, requestInfo.toString());
@@ -98,21 +137,14 @@ public class LightsIOSim implements LightsIO {
                 Inches.of(1);
         switch (requestInfo.get("Name")) {
             case "RainbowAnimation": // scrolling rainbow animation
-                final LEDPattern rainbow = LEDPattern.rainbow(255, 128);
-                final LEDPattern scrollingRainbow =
-                        rainbow.scrollAtAbsoluteSpeed(
+                rainbow.scrollAtAbsoluteSpeed(
                                 InchesPerSecond.of(
                                         Double.valueOf(checkAndGet("FrameRate")) * direction),
-                                kLedSpacing);
-                scrollingRainbow.applyTo(views.get(slot));
-                led.setData(this.buffer);
+                                kLedSpacing)
+                        .applyTo(views.get(slot));
                 break;
+
             case "FireAnimation": //  fire like animation
-                final LEDPattern fire =
-                        LEDPattern.gradient(
-                                LEDPattern.GradientType.kContinuous,
-                                Color.kOrange,
-                                Color.kOrangeRed);
                 double random = RandomGenerator.getDefault().nextDouble();
 
                 final LEDPattern fireScroll =
@@ -126,14 +158,29 @@ public class LightsIOSim implements LightsIO {
                                         Milliseconds.of(8));
                 fireScroll.breathe(Seconds.of(3));
                 fireScroll.applyTo(views.get(slot));
-                led.setData(this.buffer);
+                break;
+            case "ColorFlowAnimation":
+                candlePatterns
+                        .scrollFill(
+                                Double.valueOf(checkAndGet("FrameRate")) * direction, colorParse())
+                        .applyTo(views.get(slot));
                 break;
             case "EmptyAnimation":
                 LEDPattern.kOff.applyTo(views.get(slot));
-                led.setData(this.buffer);
+                break;
+            case "LarsonAnimation":
+                candlePatterns
+                        .larsonPatternFix(
+                                Double.valueOf(checkAndGet("FrameRate")) * direction,
+                                colorParse(),
+                                Integer.valueOf(checkAndGet("Size")),
+                                slot,
+                                checkAndGet("BounceMode"))
+                        .applyTo(views.get(slot));
                 break;
             default:
-                break;
+                return;
         }
+        led.setData(this.buffer);
     }
 }
