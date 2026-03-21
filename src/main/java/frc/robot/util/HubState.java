@@ -33,9 +33,10 @@ public class HubState {
     private static final double SECONDS_BEFORE = 5.0;
 
     /**
-     * Estimated time (in seconds) it takes for the fuel to be scored in the hub once it is inside
+     * Average time (in seconds) it takes for the fuel to be scored in the hub once it is inside.
+     * Source: https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-fuel-counter-assessment.pdf
      */
-    private static final double TIME_TO_PROCESS = 2.0;
+    private static final double TIME_TO_PROCESS = 1.32;
 
     @Getter private static final HubState instance = new HubState();
 
@@ -180,12 +181,11 @@ public class HubState {
     private boolean isTimeToShoot() {
         RobotState robotState = RobotState.getInstance();
         if (robotState.getTarget() != RobotState.Target.HUB) {
+            // Don't gate shots if feeding
             return true;
         }
-        // Calculate time to shoot based on robot's pose, and add time for the hub to process the
-        // shot.
-        // Will use velocity and distance (component directed towards the hub) to create theoretical
-        // LUT values.
+        // Calculate time to shoot based on pose,  add time for HUB to process the shot
+        // Use a lookup table to estimate shot time based on distance to target.
         double totalShotTime =
                 hubTrajectoryTimeMap.get(robotState.getDistanceToTarget().in(Meters))
                         + TIME_TO_PROCESS;
@@ -194,6 +194,7 @@ public class HubState {
         double matchTime = DriverStation.getMatchTime();
         // Also need to figure out how long we have after our shift to score
         // don't gate buzzer beating shots until knowing this for sure.
+        // Currently assumes time is counting down - real match
         return isOurHubActive() || (matchTime - totalShotTime < nextSwitchTime(matchTime));
     }
 }
