@@ -18,13 +18,16 @@ package frc.robot.subsystems.leds;
 import com.ctre.phoenix6.configs.CANdleConfiguration;
 import com.ctre.phoenix6.configs.CANdleFeaturesConfigs;
 import com.ctre.phoenix6.configs.LEDConfigs;
+import com.ctre.phoenix6.controls.ColorFlowAnimation;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.EmptyAnimation;
 import com.ctre.phoenix6.controls.FireAnimation;
+import com.ctre.phoenix6.controls.LarsonAnimation;
 import com.ctre.phoenix6.controls.RainbowAnimation;
 import com.ctre.phoenix6.controls.StrobeAnimation;
 import com.ctre.phoenix6.signals.AnimationDirectionValue;
 import com.ctre.phoenix6.signals.Enable5VRailValue;
+import com.ctre.phoenix6.signals.LarsonBounceValue;
 import com.ctre.phoenix6.signals.LossOfSignalBehaviorValue;
 import com.ctre.phoenix6.signals.RGBWColor;
 import com.ctre.phoenix6.signals.StatusLedWhenActiveValue;
@@ -44,8 +47,8 @@ import java.util.List;
 public class LEDsConstants {
     public static final String NAME = "LEDs";
 
-    public static final LEDSegment CANDLE_LEDS = new LEDSegment(0, 7, 0);
-    public static final LEDSegment FRONT_STRIP = new LEDSegment(8, 10, 1);
+    public static final LightsIO.LEDSegment CANDLE_LEDS = new LightsIO.LEDSegment(0, 7, 0);
+    public static final LightsIO.LEDSegment FRONT_STRIP = new LightsIO.LEDSegment(8, 10, 1);
 
     public static final CANdleConfiguration CANDLE_CONFIG =
             new CANdleConfiguration()
@@ -72,7 +75,7 @@ public class LEDsConstants {
             case REAL:
                 return new LEDs(new LightsIOCandle(Ports.lights, CANDLE_CONFIG));
             case SIM:
-                return new LEDs(new LightsIOSim());
+                return new LEDs(new LightsIOSim(List.of(CANDLE_LEDS, FRONT_STRIP)));
             case REPLAY:
                 return new LEDs(new LightsIO() {});
             default:
@@ -80,28 +83,26 @@ public class LEDsConstants {
         }
     }
 
-    public record LEDSegment(int startIndex, int endIndex, int animationSlot) {}
-
     // Animations
 
     // Off
-    public static final ControlRequest candleOff = new EmptyAnimation(CANDLE_LEDS.animationSlot);
+    public static final ControlRequest candleOff = new EmptyAnimation(CANDLE_LEDS.animationSlot());
 
-    public static final ControlRequest frontOff = new EmptyAnimation(FRONT_STRIP.animationSlot);
+    public static final ControlRequest frontOff = new EmptyAnimation(FRONT_STRIP.animationSlot());
 
     public static final List<ControlRequest> offAnimation = List.of(candleOff, frontOff);
 
     // Disabled
     public static final ControlRequest candleDisabled =
-            new RainbowAnimation(CANDLE_LEDS.startIndex, CANDLE_LEDS.endIndex)
-                    .withSlot(CANDLE_LEDS.animationSlot)
+            new RainbowAnimation(CANDLE_LEDS.startIndex(), CANDLE_LEDS.endIndex())
+                    .withSlot(CANDLE_LEDS.animationSlot())
                     .withFrameRate(10)
                     .withBrightness(0.7)
                     .withDirection(AnimationDirectionValue.Forward);
 
     public static final ControlRequest frontDisabled =
-            new RainbowAnimation(FRONT_STRIP.startIndex, FRONT_STRIP.endIndex)
-                    .withSlot(FRONT_STRIP.animationSlot)
+            new RainbowAnimation(FRONT_STRIP.startIndex(), FRONT_STRIP.endIndex())
+                    .withSlot(FRONT_STRIP.animationSlot())
                     .withFrameRate(10)
                     .withBrightness(0.7)
                     .withDirection(AnimationDirectionValue.Forward);
@@ -109,10 +110,48 @@ public class LEDsConstants {
     public static final List<ControlRequest> disabledAnimation =
             List.of(candleDisabled, frontDisabled);
 
+    // ColorFlow
+    public static final ControlRequest candleColorFlow =
+            new ColorFlowAnimation(CANDLE_LEDS.startIndex(), CANDLE_LEDS.endIndex())
+                    .withSlot(CANDLE_LEDS.animationSlot())
+                    .withFrameRate(10)
+                    .withColor(RGBWColor.fromHSV(180, 100, 100))
+                    .withDirection(AnimationDirectionValue.Forward);
+
+    public static final ControlRequest frontColorFlow =
+            new ColorFlowAnimation(FRONT_STRIP.startIndex(), FRONT_STRIP.endIndex())
+                    .withSlot(FRONT_STRIP.animationSlot())
+                    .withFrameRate(10)
+                    .withColor(RGBWColor.fromHSV(180, 100, 100))
+                    .withDirection(AnimationDirectionValue.Forward);
+
+    public static final List<ControlRequest> colorFLowAnimation =
+            List.of(candleColorFlow, frontColorFlow);
+
+    // ColorFlow
+    public static final ControlRequest candleBounce =
+            new LarsonAnimation(CANDLE_LEDS.startIndex(), CANDLE_LEDS.endIndex())
+                    .withSlot(CANDLE_LEDS.animationSlot())
+                    .withFrameRate(10)
+                    .withColor(RGBWColor.fromHSV(180, 100, 100))
+                    .withBounceMode(LarsonBounceValue.Back)
+                    .withSize(3);
+
+    public static final ControlRequest frontBounce =
+            new LarsonAnimation(FRONT_STRIP.startIndex(), FRONT_STRIP.endIndex())
+                    .withSlot(FRONT_STRIP.animationSlot())
+                    .withFrameRate(10)
+                    .withColor(RGBWColor.fromHSV(180, 100, 100))
+                    .withBounceMode(LarsonBounceValue.Back)
+                    .withSize(1);
+
+    public static final List<ControlRequest> colorBounceAnimation =
+            List.of(candleBounce, frontBounce);
+
     // Auto
     public static final ControlRequest candleAuto =
-            new FireAnimation(CANDLE_LEDS.startIndex, CANDLE_LEDS.endIndex)
-                    .withSlot(CANDLE_LEDS.animationSlot)
+            new FireAnimation(CANDLE_LEDS.startIndex(), CANDLE_LEDS.endIndex())
+                    .withSlot(CANDLE_LEDS.animationSlot())
                     .withFrameRate(10)
                     .withBrightness(0.7)
                     .withDirection(AnimationDirectionValue.Forward)
@@ -120,8 +159,8 @@ public class LEDsConstants {
                     .withSparking(1.0);
 
     public static final ControlRequest frontAuto =
-            new FireAnimation(FRONT_STRIP.startIndex, FRONT_STRIP.endIndex)
-                    .withSlot(FRONT_STRIP.animationSlot)
+            new FireAnimation(FRONT_STRIP.startIndex(), FRONT_STRIP.endIndex())
+                    .withSlot(FRONT_STRIP.animationSlot())
                     .withFrameRate(10)
                     .withBrightness(0.7)
                     .withDirection(AnimationDirectionValue.Forward)
@@ -132,8 +171,8 @@ public class LEDsConstants {
 
     // Flashing
     public static final ControlRequest candleFlash =
-            new StrobeAnimation(CANDLE_LEDS.startIndex, CANDLE_LEDS.endIndex)
-                    .withSlot(CANDLE_LEDS.animationSlot)
+            new StrobeAnimation(CANDLE_LEDS.startIndex(), CANDLE_LEDS.endIndex())
+                    .withSlot(CANDLE_LEDS.animationSlot())
                     .withFrameRate(10)
                     .withColor(new RGBWColor(Color.kRed));
 }
