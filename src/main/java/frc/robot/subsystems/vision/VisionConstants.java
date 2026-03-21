@@ -99,7 +99,7 @@ public class VisionConstants {
                     Units.inchesToMeters(9.50),
                     Units.inchesToMeters(17.00),
                     new Rotation3d(
-                            0.0, Units.degreesToRadians(-18.173), Units.degreesToRadians(13.423)));
+                            0.0, Units.degreesToRadians(-18.173), Units.degreesToRadians(-13.423)));
 
     // Intrinsics
     // ThriftyCam Default Calibrations
