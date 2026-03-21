@@ -43,7 +43,7 @@
      "val":7.399277210235596
     },
     "heading":{
-     "exp":"-90 deg",
+     "exp":"TunnelEntrance.heading",
      "val":-1.5707963267948966
     }
    }
