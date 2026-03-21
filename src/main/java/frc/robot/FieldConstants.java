@@ -253,15 +253,8 @@ public class FieldConstants {
         // Distance from the center of the HUB to the center of the robot. Assume that the robot is
         // centered at the center of the tower, with its back to the tower.
         public static final double TOWER_SHOT_DISTANCE =
-                Math.sqrt(
-                        Math.pow(
-                                        (FieldConstants.Hub.WIDTH
-                                                                - Constants.FULL_ROBOT_LENGTH.in(
-                                                                        Meters))
-                                                        / 2.0
-                                                + HUB_TO_TOWER_UPRIGHTS,
-                                        2)
-                                + Math.pow(FIELD_CENTER_TO_TOWER_CENTER_Y, 2));
+                (FieldConstants.Hub.WIDTH - Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0
+                        + HUB_TO_TOWER_UPRIGHTS;
     }
 
     public static class Depot {
