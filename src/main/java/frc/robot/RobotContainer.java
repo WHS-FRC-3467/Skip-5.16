@@ -110,12 +110,12 @@ public class RobotContainer {
         // objectDetector = ObjectDetectorConstants.get();
 
         stopAllShooterAndRetract =
-        Commands.parallel(
-                shooter.stopAndStow(),
-                indexer.stopCommand(),
-                tower.stopCommand(),
-                intake.extendIntake(),
-                shooter.retractHood());
+                Commands.parallel(
+                        shooter.stopAndStow(),
+                        indexer.stopCommand(),
+                        tower.stopCommand(),
+                        intake.extendIntake(),
+                        shooter.retractHood());
 
         if (RobotBase.isSimulation()) {
             RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intake);
@@ -398,52 +398,54 @@ public class RobotContainer {
         /* Starting pose checker for auto */
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
-        try {
-            Pose2d startPose = autoPreviewField.getObject("path").getPoses().get(0);
-            Logger.recordOutput("Auto/StartPose", startPose);
-
-            autoPreviewField.getObject("startPose").setPose(startPose);
-
-            Distance distanceFromStartPose =
-                    Meters.of(
-                            robotState
-                                    .getEstimatedPose()
-                                    .getTranslation()
-                                    .getDistance(startPose.getTranslation()));
-            double degreesFromStartPose =
-                    Math.abs(
-                            robotState
-                                    .getEstimatedPose()
-                                    .getRotation()
-                                    .minus(startPose.getRotation())
-                                    .getDegrees());
-
-            double[] startPoseArray = {
-                startPose.getX(), startPose.getY(), startPose.getRotation().getDegrees()
-            };
-            SmartDashboard.putNumberArray("Start Pose (x, y, degrees)", startPoseArray);
-
-            SmartDashboard.putNumber(
-                    "Auto Pose Check/Inches from Start",
-                    (int) Math.round(distanceFromStartPose.in(Inches) * 100.0) / 100.0);
-            SmartDashboard.putBoolean(
-                    "Auto Pose Check/Robot Position Within Tolerance",
-                    distanceFromStartPose.in(Inches)
-                            < PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches));
-            SmartDashboard.putNumber(
-                    "Auto Pose Check/Degrees from Start",
-                    (int) Math.round(degreesFromStartPose * 100.0) / 100.0);
-            SmartDashboard.putBoolean(
-                    "Auto Pose Check/Robot Rotation Within Tolerance",
-                    degreesFromStartPose
-                            < PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees));
-
-        } catch (Exception e) {
+        var pathObj = autoPreviewField.getObject("path");
+        var poses = pathObj.getPoses();
+        if (poses == null || poses.isEmpty()) {
+            // No path defined; show defaults
             startPose = robotState.getEstimatedPose();
             SmartDashboard.putNumber("Auto Pose Check/Inches from Start", -1);
             SmartDashboard.putBoolean("Auto Pose Check/Robot Position Within Tolerance", false);
             SmartDashboard.putNumber("Auto Pose Check/Degrees from Start", -1);
             SmartDashboard.putBoolean("Auto Pose Check/Robot Rotation Within Tolerance", false);
+            return;
         }
+
+        Pose2d startPoseLocal = poses.get(0);
+        Logger.recordOutput("Auto/StartPose", startPoseLocal);
+        autoPreviewField.getObject("startPose").setPose(startPoseLocal);
+
+        Distance distanceFromStartPose =
+                Meters.of(
+                        robotState
+                                .getEstimatedPose()
+                                .getTranslation()
+                                .getDistance(startPoseLocal.getTranslation()));
+        double degreesFromStartPose =
+                Math.abs(
+                        robotState
+                                .getEstimatedPose()
+                                .getRotation()
+                                .minus(startPoseLocal.getRotation())
+                                .getDegrees());
+
+        double[] startPoseArray = {
+            startPoseLocal.getX(), startPoseLocal.getY(), startPoseLocal.getRotation().getDegrees()
+        };
+        SmartDashboard.putNumberArray("Start Pose (x, y, degrees)", startPoseArray);
+
+        SmartDashboard.putNumber(
+                "Auto Pose Check/Inches from Start",
+                (int) Math.round(distanceFromStartPose.in(Inches) * 100.0) / 100.0);
+        SmartDashboard.putBoolean(
+                "Auto Pose Check/Robot Position Within Tolerance",
+                distanceFromStartPose.in(Inches)
+                        < PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches));
+        SmartDashboard.putNumber(
+                "Auto Pose Check/Degrees from Start",
+                (int) Math.round(degreesFromStartPose * 100.0) / 100.0);
+        SmartDashboard.putBoolean(
+                "Auto Pose Check/Robot Rotation Within Tolerance",
+                degreesFromStartPose
+                        < PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees));
     }
 }

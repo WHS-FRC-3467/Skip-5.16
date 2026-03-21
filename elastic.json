@@ -144,7 +144,7 @@
             "height": 400.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Auto Pose Check/Robot Position within 2.9999999999999996 inches",
+              "topic": "/SmartDashboard/Auto Pose Check/Robot Position Within Tolerance",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -161,7 +161,7 @@
             "height": 400.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Auto Pose Check/Robot Rotation within 5.0 degrees",
+              "topic": "/SmartDashboard/Auto Pose Check/Robot Rotation Within Tolerance",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
