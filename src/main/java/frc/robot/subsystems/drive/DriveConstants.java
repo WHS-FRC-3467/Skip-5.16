@@ -7,6 +7,7 @@ import com.ctre.phoenix6.hardware.*;
 import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
+import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
@@ -382,4 +383,16 @@ public class DriveConstants {
      * is on an incline or bump.
      */
     public static final Angle ANGLED_TOLERANCE = Degrees.of(3.0);
+
+    public static final PathConstraints PATH_CONSTRAINTS =
+            new PathConstraints(
+                    2.0,
+                    2.0,
+                    RotationsPerSecond.of(2).in(RadiansPerSecond),
+                    RotationsPerSecondPerSecond.of(2).in(RadiansPerSecondPerSecond),
+                    12.0,
+                    false);
+
+    public static final Distance ALLOWABLE_PATH_ERROR = Inches.of(12.0);
+    public static final Distance ALLOWABLE_SHOT_POSE_ERROR = Inches.of(6.0);
 }

@@ -18,6 +18,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import com.pathplanner.lib.events.EventTrigger;
 
@@ -337,6 +338,10 @@ public class RobotContainer {
                 ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
 
         SmartDashboard.putData(
+                "Debug/SetOdometryToTestPose",
+                Commands.runOnce(() -> robotState.resetPose(new Pose2d(8, 5, Rotation2d.k180deg))));
+
+        SmartDashboard.putData(
                 "Fountain",
                 Commands.sequence(
                                 Commands.sequence(
@@ -359,6 +364,26 @@ public class RobotContainer {
                 new DriveToPose(drive, () -> startPose)
                         .withDistanceTolerance(Meters.of(0.04))
                         .withAngularTolerance(Degrees.of(3)));
+
+        SmartDashboard.putData("Drive/Zero", drive.runOnce(() -> drive.runCharacterization(0.0)));
+        SmartDashboard.putData(
+                "Drive/Face Zero",
+                DriveCommands.joystickDriveAtAngle(
+                        drive, () -> 0.0, () -> 0.0, () -> Rotation2d.kZero));
+        SmartDashboard.putData(
+                "Drive/Face 180",
+                DriveCommands.joystickDriveAtAngle(
+                        drive, () -> 0.0, () -> 0.0, () -> Rotation2d.k180deg));
+
+        SmartDashboard.putData(
+                "Pathfind to Start",
+                DriveCommands.pathFindToPose(
+                        drive,
+                        () -> robotState.getEstimatedPose(),
+                        () -> startPose,
+                        DriveConstants.PATH_CONSTRAINTS,
+                        MetersPerSecond.of(0),
+                        Inches.of(5)));
 
         // Diagnostics
         // SmartDashboard.putData(
@@ -406,7 +431,7 @@ public class RobotContainer {
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
         try {
-            Pose2d startPose = autoPreviewField.getObject("path").getPoses().get(0);
+            startPose = autoPreviewField.getObject("path").getPoses().get(0);
             Logger.recordOutput("Auto/StartPose", startPose);
 
             autoPreviewField.getObject("startPose").setPose(startPose);

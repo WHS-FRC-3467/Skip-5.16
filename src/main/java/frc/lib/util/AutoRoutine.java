@@ -49,7 +49,7 @@ public abstract class AutoRoutine extends SequentialCommandGroup {
         pathPlannerPaths.addAll(loaded);
     }
 
-    private PathPlannerPath loadPath(String pathName, boolean shouldMirror, boolean isChoreo) {
+    public PathPlannerPath loadPath(String pathName, boolean shouldMirror, boolean isChoreo) {
         PathPlannerPath path;
         try {
             if (isChoreo) {

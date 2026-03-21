@@ -15,8 +15,6 @@
 
 package frc.robot.commands.autos;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -45,10 +43,18 @@ public class NeutralAuto extends AutoRoutine {
         List<ChoreoTraj> expectedPaths;
         if (isSafe) {
             expectedPaths =
-                    List.of(ChoreoTraj.NeutralSafe1, ChoreoTraj.NeutralSafe2, ChoreoTraj.Neutral2);
+                    List.of(
+                            ChoreoTraj.NeutralSafe1,
+                            ChoreoTraj.NeutralSafe2,
+                            ChoreoTraj.Neutral2,
+                            ChoreoTraj.TunnelPath);
         } else {
             expectedPaths =
-                    List.of(ChoreoTraj.Neutral1, ChoreoTraj.NeutralSafe2, ChoreoTraj.Neutral2);
+                    List.of(
+                            ChoreoTraj.Neutral1,
+                            ChoreoTraj.NeutralSafe2,
+                            ChoreoTraj.Neutral2,
+                            ChoreoTraj.TunnelPath);
         }
 
         // Load the named paths
@@ -64,21 +70,44 @@ public class NeutralAuto extends AutoRoutine {
                     Commands.defer(
                             () -> Commands.waitSeconds(AutoCommands.getAutoDelay()), Set.of()),
                     // Sweep neutral zone while intaking
-                    AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
-                    // Run back under the trench and shoot
-                    // Initialize intake and hood to starting positions for teleop
+                    Commands.defer(
+                            () ->
+                                    AutoCommands.safeFollowPath(
+                                            drive,
+                                            pathPlannerPaths.get(0),
+                                            pathPlannerPaths.get(3),
+                                            intake.retractIntake()),
+                            Set.of(drive)),
+                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 3.0),
                     Commands.repeatingSequence(
+                                    // Run back under the trench and shoot
+                                    // Initialize intake and hood to starting positions for teleop
                                     AutoCommands.stowHood(shooter),
                                     intake.retractIntake().asProxy().withTimeout(0.5),
                                     // Drive to the neutral zone
-                                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
+                                    Commands.defer(
+                                            () ->
+                                                    AutoCommands.safeFollowPath(
+                                                            drive,
+                                                            pathPlannerPaths.get(1),
+                                                            pathPlannerPaths.get(3),
+                                                            intake.retractIntake()),
+                                            Set.of(drive)),
                                     AutoCommands.shootCommand(
                                             drive, intake, indexer, tower, shooter, 10),
+                                    // Run back under the trench and shoot
+                                    // Initialize intake and hood to starting positions for teleop
                                     AutoCommands.stowHood(shooter),
                                     intake.retractIntake().asProxy().withTimeout(0.5),
                                     // Drive to the neutral zone
-                                    AutoBuilder.followPath(pathPlannerPaths.get(2)),
+                                    Commands.defer(
+                                            () ->
+                                                    AutoCommands.safeFollowPath(
+                                                            drive,
+                                                            pathPlannerPaths.get(2),
+                                                            pathPlannerPaths.get(3),
+                                                            intake.retractIntake()),
+                                            Set.of(drive)),
                                     AutoCommands.shootCommand(
                                             drive, intake, indexer, tower, shooter, 10))
                             .finallyDo(

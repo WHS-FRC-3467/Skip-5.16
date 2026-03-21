@@ -23,7 +23,7 @@ public record ChoreoTraj(
             new ChoreoTraj(
                     "Neutral1",
                     OptionalInt.empty(),
-                    5.3315,
+                    5.33159,
                     new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
     public static final ChoreoTraj Neutral1Nashoba =
@@ -68,6 +68,13 @@ public record ChoreoTraj(
                     6.35491,
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
+    public static final ChoreoTraj TunnelPath =
+            new ChoreoTraj(
+                    "TunnelPath",
+                    OptionalInt.empty(),
+                    1.17086,
+                    new Pose2d(5.65, 7.39928, Rotation2d.fromRadians(-1.5708)),
+                    new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
 
     /**
      * A map between trajectory names and their corresponding data. This allows for trajectory data
@@ -81,7 +88,8 @@ public record ChoreoTraj(
                     Map.entry("NeutralSafe1", NeutralSafe1),
                     Map.entry("NeutralSafe1Nashoba", NeutralSafe1Nashoba),
                     Map.entry("NeutralSafe1_copy1", NeutralSafe1_copy1),
-                    Map.entry("NeutralSafe2", NeutralSafe2));
+                    Map.entry("NeutralSafe2", NeutralSafe2),
+                    Map.entry("TunnelPath", TunnelPath));
 
     /**
      * Looks up the ChoreoTraj segment of the given overall ChoreoTraj. WARNING: will raise an
