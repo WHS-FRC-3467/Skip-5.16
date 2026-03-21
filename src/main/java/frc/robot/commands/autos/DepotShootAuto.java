@@ -44,7 +44,6 @@ public class DepotShootAuto extends AutoRoutine {
                     List.of(
                             ChoreoTraj.NeutralSafe1,
                             ChoreoTraj.Depot1,
-                            ChoreoTraj.Depot2,
                             ChoreoTraj.NeutralSafe2,
                             ChoreoTraj.Neutral2);
         } else {
@@ -52,7 +51,6 @@ public class DepotShootAuto extends AutoRoutine {
                     List.of(
                             ChoreoTraj.Neutral1,
                             ChoreoTraj.Depot1,
-                            ChoreoTraj.Depot2,
                             ChoreoTraj.NeutralSafe2,
                             ChoreoTraj.Neutral2);
         }
@@ -76,18 +74,18 @@ public class DepotShootAuto extends AutoRoutine {
                     AutoBuilder.followPath(pathPlannerPaths.get(1)),
                     AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
                     AutoCommands.stowHood(shooter),
-                    AutoBuilder.followPath(pathPlannerPaths.get(2)),
+                  
                     Commands.repeatingSequence(
                                     AutoCommands.stowHood(shooter),
                                     intake.retractIntake().asProxy().withTimeout(0.5),
                                     // Drive to the neutral zone
-                                    AutoBuilder.followPath(pathPlannerPaths.get(3)),
+                                    AutoBuilder.followPath(pathPlannerPaths.get(2)),
                                     AutoCommands.shootCommand(
                                             drive, intake, indexer, tower, shooter, 10),
                                     AutoCommands.stowHood(shooter),
                                     intake.retractIntake().asProxy().withTimeout(0.5),
                                     // Drive to the neutral zone
-                                    AutoBuilder.followPath(pathPlannerPaths.get(4)),
+                                    AutoBuilder.followPath(pathPlannerPaths.get(3)),
                                     AutoCommands.shootCommand(
                                             drive, intake, indexer, tower, shooter, 10))
                             .finallyDo(
