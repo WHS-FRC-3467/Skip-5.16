@@ -82,6 +82,9 @@ public class RobotContainer {
     // private final LEDs leds;
     // private final ObjectDetector objectDetector;
 
+    // Reusable composite command to stop/stow/eject used in multiple bindings
+    private final Command stopAllShooterAndRetract;
+
     // Controller
     private final CommandXboxControllerExtended controller =
             new CommandXboxControllerExtended(0).withDeadband(0.1);
@@ -105,6 +108,14 @@ public class RobotContainer {
         // VisionOdometryCharacterizer.enable();
         // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
+
+        stopAllShooterAndRetract =
+        Commands.parallel(
+                shooter.stopAndStow(),
+                indexer.stopCommand(),
+                tower.stopCommand(),
+                intake.extendIntake(),
+                shooter.retractHood());
 
         if (RobotBase.isSimulation()) {
             RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intake);
@@ -192,13 +203,7 @@ public class RobotContainer {
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(robotState.facingTarget))
                                         .repeatedly()))
-                .onFalse(
-                        Commands.parallel(
-                                shooter.stopAndStow(),
-                                indexer.stopCommand(),
-                                tower.stopCommand(),
-                                intake.extendIntake(),
-                                shooter.retractHood()));
+                .onFalse(stopAllShooterAndRetract);
 
         // Tap Right Bumper while Right Trigger held: Manually cycle intake
         controller
@@ -233,13 +238,7 @@ public class RobotContainer {
                                 DriveCommands.stopWithX(drive),
                                 shooter.spinUpShooterToHubDistance(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
-                .onFalse(
-                        Commands.parallel(
-                                shooter.stopAndStow(),
-                                indexer.stopCommand(),
-                                tower.stopCommand(),
-                                intake.extendIntake(),
-                                shooter.retractHood()));
+                .onFalse(stopAllShooterAndRetract);
 
         // Driver Y: Midline Feed/Pass (No-Vision Fallback)
         controller
@@ -251,13 +250,7 @@ public class RobotContainer {
                                         Commands.waitUntil(shooter.atMidlineFeedSetpoints)
                                                 .withTimeout(0.75),
                                         Commands.parallel(indexer.shoot(), tower.shoot()))))
-                .onFalse(
-                        Commands.parallel(
-                                shooter.stopAndStow(),
-                                indexer.stopCommand(),
-                                tower.stopCommand(),
-                                intake.extendIntake(),
-                                shooter.retractHood()));
+                .onFalse(stopAllShooterAndRetract);
 
         controller
                 .start()
