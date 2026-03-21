@@ -240,6 +240,8 @@ public class FieldConstants {
                         AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(31).get().getY()
                                 - INNDER_OPENING_WIDTH / 2
                                 - Units.inchesToMeters(0.75));
+
+        public static final double HUB_TO_TOWER_UPRIGHTS = Units.inchesToMeters(115.05);
     }
 
     public static class Depot {

@@ -414,6 +414,22 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
+     * Spin up shooter to a fixed distance, i.e. against the HUB, TRENCH, or TOWER. PRECONDITION:
+     * ASSUMES THAT THE HOOD IS SAFE.
+     *
+     * @return a Command to prepare for the fixed shot
+     */
+    public Command spinUpShooterToFixedDistance(double distance) {
+        return Commands.run(
+                        () -> {
+                            spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance)));
+                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance)));
+                        },
+                        this)
+                .withName("Spin-Up Shooter to Distance");
+    }
+
+    /**
      * Prepare to feed from the midline!
      *
      * @return a Command to spin up for a midline feed

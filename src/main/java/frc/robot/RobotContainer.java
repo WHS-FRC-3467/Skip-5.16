@@ -231,7 +231,10 @@ public class RobotContainer {
                 .whileTrue(
                         Commands.parallel(
                                 DriveCommands.stopWithX(drive),
-                                shooter.spinUpShooterToHubDistance(),
+                                shooter.spinUpShooterToFixedDistance(
+                                        (FieldConstants.Hub.WIDTH
+                                                        + Constants.FULL_ROBOT_LENGTH.in(Meters))
+                                                / 2.0),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
                         Commands.parallel(
@@ -259,6 +262,26 @@ public class RobotContainer {
                                 intake.extendIntake(),
                                 shooter.retractHood()));
 
+        // Driver A: Shot From Back of Robot Against Tower (No-Vision Fallback)
+        controller
+                .a()
+                .whileTrue(
+                        Commands.parallel(
+                                DriveCommands.stopWithX(drive),
+                                shooter.spinUpShooterToFixedDistance(
+                                        FieldConstants.Tower.HUB_TO_TOWER_UPRIGHTS
+                                                + (FieldConstants.Hub.WIDTH
+                                                                + Constants.FULL_ROBOT_LENGTH.in(
+                                                                        Meters))
+                                                        / 2.0),
+                                Commands.parallel(indexer.shoot(), tower.shoot())))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stopAndStow(),
+                                indexer.stopCommand(),
+                                tower.stopCommand(),
+                                intake.extendIntake(),
+                                shooter.retractHood()));
         controller
                 .start()
                 .and(controller.back())
