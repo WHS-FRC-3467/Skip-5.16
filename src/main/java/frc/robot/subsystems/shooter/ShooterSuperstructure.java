@@ -36,7 +36,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.io.motor.MotorIO.PIDSlot;
-import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
 import frc.lib.util.LoggedTrigger;
@@ -44,6 +43,7 @@ import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
 import frc.robot.RobotState.Target;
@@ -92,11 +92,16 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         feedFlywheelMap.put(20.0, 60.0);
     }
 
+    private static final double MIDLINE_FEED_DISTANCE_METERS =
+            FieldConstants.FIELD_LENGTH / 2.0
+                    - (FieldConstants.LinesVertical.NEUTRAL_ZONE_NEAR / 2.0);
+    private static final Angle FEED_HOOD_ANGLE = Degrees.of(24.0);
+
     private final RobotState robotState = RobotState.getInstance();
 
     private final RotaryMechanism<?, ?> hoodIO;
-    private final DistanceControlledMechanism<FlywheelMechanism<?>> leftFlywheelIO;
-    private final DistanceControlledMechanism<FlywheelMechanism<?>> rightFlywheelIO;
+    private final FlywheelMechanism<?> leftFlywheelIO;
+    private final FlywheelMechanism<?> rightFlywheelIO;
 
     private final Debouncer readyToShootDebounder = new Debouncer(0.1, DebounceType.kFalling);
 
@@ -122,6 +127,16 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         double dist = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
                         return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
                                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+                    });
+
+    public final LoggedTrigger atMidlineFeedSetpoints =
+            new LoggedTrigger(
+                    this.getName() + "/atMidlineFeedSetpoints",
+                    () -> {
+                        return isFlywheelAt(
+                                        RotationsPerSecond.of(
+                                                feedFlywheelMap.get(MIDLINE_FEED_DISTANCE_METERS)))
+                                && isHoodAt(FEED_HOOD_ANGLE);
                     });
 
     private final LoggedTunableBoolean tuningMode =
@@ -214,8 +229,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      */
     public ShooterSuperstructure(
             RotaryMechanism<?, ?> hoodIO,
-            DistanceControlledMechanism<FlywheelMechanism<?>> leftFlywheelIO,
-            DistanceControlledMechanism<FlywheelMechanism<?>> rightFlywheelIO) {
+            FlywheelMechanism<?> leftFlywheelIO,
+            FlywheelMechanism<?> rightFlywheelIO) {
         this.hoodIO = hoodIO;
         this.leftFlywheelIO = leftFlywheelIO;
         this.rightFlywheelIO = rightFlywheelIO;
@@ -224,14 +239,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private void spinFlywheel(AngularVelocity velocity) {
-        leftFlywheelIO.runVelocity(
-                velocity.plus(getFlywheelTrim()),
-                FlywheelConstants.MAX_ACCELERATION,
-                PIDSlot.SLOT_0);
-        rightFlywheelIO.runVelocity(
-                velocity.plus(getFlywheelTrim()),
-                FlywheelConstants.MAX_ACCELERATION,
-                PIDSlot.SLOT_0);
+        leftFlywheelIO.runVelocity(velocity.plus(getFlywheelTrim()), PIDSlot.SLOT_0);
+        rightFlywheelIO.runVelocity(velocity.plus(getFlywheelTrim()), PIDSlot.SLOT_0);
     }
 
     private boolean isFlywheelAt(AngularVelocity velocity) {
@@ -354,7 +363,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             return Degrees.of(hoodAngleMap.get(robotState.getDistanceToTarget().in(Meters)));
         }
 
-        return Degrees.of(24.0);
+        return FEED_HOOD_ANGLE;
     }
 
     // Gets ball trajectory exit angle relative to horizontal, accounting for hood angle and
@@ -388,8 +397,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 .withName("Spin-Up Shooter to Distance");
     }
 
-    public Command spinUpShooterToHubDistance() {
-        double distance = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
+    /**
+     * Spin up shooter to a fixed distance, i.e. against the HUB, TRENCH, or TOWER. PRECONDITION:
+     * ASSUMES THAT THE HOOD IS SAFE. Primarily for use in no-vision teleop.
+     *
+     * @return a Command to prepare for the fixed shot
+     */
+    public Command spinUpShooterToFixedDistance(double distance) {
         return Commands.run(
                         () -> {
                             spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance)));
@@ -397,6 +411,23 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         },
                         this)
                 .withName("Spin-Up Shooter to Distance");
+    }
+
+    /**
+     * Prepare to feed from the midline!
+     *
+     * @return a Command to spin up for a midline feed
+     */
+    public Command spinUpShooterMidlineFeed() {
+        return Commands.run(
+                        () -> {
+                            spinFlywheel(
+                                    RotationsPerSecond.of(
+                                            feedFlywheelMap.get(MIDLINE_FEED_DISTANCE_METERS)));
+                            setHoodPosition(FEED_HOOD_ANGLE);
+                        },
+                        this)
+                .withName("Spin-Up Shooter to FEED Distance");
     }
 
     /**

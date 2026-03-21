@@ -237,7 +237,8 @@ public class RobotContainer {
                 .whileTrue(
                         Commands.parallel(
                                 DriveCommands.stopWithX(drive),
-                                shooter.spinUpShooterToHubDistance(),
+                                shooter.spinUpShooterToFixedDistance(
+                                        FieldConstants.Hub.HUB_SHOT_DISTANCE),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
                         Commands.parallel(
@@ -247,6 +248,40 @@ public class RobotContainer {
                                 intake.extendIntake(),
                                 shooter.retractHood()));
 
+        // Driver Y: Midline Feed/Pass (No-Vision Fallback)
+        controller
+                .y()
+                .whileTrue(
+                        Commands.parallel(
+                                shooter.spinUpShooterMidlineFeed(),
+                                Commands.sequence(
+                                        Commands.waitUntil(shooter.atMidlineFeedSetpoints)
+                                                .withTimeout(0.75),
+                                        Commands.parallel(indexer.shoot(), tower.shoot()))))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stopAndStow(),
+                                indexer.stopCommand(),
+                                tower.stopCommand(),
+                                intake.extendIntake(),
+                                shooter.retractHood()));
+
+        // Driver A: Shot From Back of Robot Against Tower (No-Vision Fallback)
+        controller
+                .a()
+                .whileTrue(
+                        Commands.parallel(
+                                DriveCommands.stopWithX(drive),
+                                shooter.spinUpShooterToFixedDistance(
+                                        FieldConstants.Tower.TOWER_SHOT_DISTANCE),
+                                Commands.parallel(indexer.shoot(), tower.shoot())))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stopAndStow(),
+                                indexer.stopCommand(),
+                                tower.stopCommand(),
+                                intake.extendIntake(),
+                                shooter.retractHood()));
         controller
                 .start()
                 .and(controller.back())
