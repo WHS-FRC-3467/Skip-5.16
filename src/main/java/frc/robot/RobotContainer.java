@@ -93,6 +93,7 @@ public class RobotContainer {
     private final LoggedDashboardChooser<AutoRoutine> autoChooser;
     public final Field2d autoPreviewField = new Field2d();
     private Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
+    private boolean gateShots = false;
 
     /** The container for the robot. Contains subsystems, IO devices, and commands. */
     public RobotContainer() {
@@ -189,7 +190,7 @@ public class RobotContainer {
                         Commands.parallel(
                                 DriveCommands.staticAimTowardsTarget(drive),
                                 shooter.spinUpShooter(),
-                                Commands.waitUntil(HubState.getInstance().getIsTimeToShoot()),
+                                Commands.waitUntil(HubState.getInstance().getIsTimeToShoot().or(() -> !gateShots)),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
                                         .onlyWhile(
                                                 shooter.readyToShoot.and(robotState.facingTarget))
@@ -234,6 +235,7 @@ public class RobotContainer {
                         Commands.parallel(
                                 DriveCommands.stopWithX(drive),
                                 shooter.spinUpShooterToHubDistance(),
+                                Commands.waitUntil(HubState.getInstance().getIsTimeToShoot().or(() -> !gateShots)),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
                         Commands.parallel(
@@ -293,6 +295,11 @@ public class RobotContainer {
                 .negate()
                 .and(operatorController.y().negate())
                 .onTrue(shooter.stopFlywheels());
+
+        // Operator RIGHT BUMPER: GATE SHOTS BY HUB SHIFT
+        operatorController.rightBumper()
+                .onTrue(Commands.runOnce(() -> gateShots = true))
+                .onFalse(Commands.runOnce(() -> gateShots = false));
 
         // robotState.enteringTrench.whileTrue(
         //         shooter.forceHoodAngle(Rotations.zero())
