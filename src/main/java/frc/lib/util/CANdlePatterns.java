@@ -101,14 +101,7 @@ public class CANdlePatterns {
                         writer.setLED(i, color);
                     }
                     continue;
-                } else if (i < size && bounceMode == "Back") {
-                    if (reversed.get(buffer)) {
-                        writer.setLED(bufLen - 2 - i, color);
-                    } else {
-                        writer.setLED(i, color);
-                    }
-                    continue;
-                }
+                }  
 
                 if (reversed.get(buffer)) {
                     writer.setLED(bufLen - 2 - i, Color.kBlack);
