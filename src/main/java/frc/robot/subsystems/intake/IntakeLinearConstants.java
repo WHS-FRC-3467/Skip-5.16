@@ -100,7 +100,6 @@ public class IntakeLinearConstants {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = false;
-        config.CurrentLimits.StatorCurrentLimitEnable = false;
 
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;

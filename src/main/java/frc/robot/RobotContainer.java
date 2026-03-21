@@ -243,6 +243,24 @@ public class RobotContainer {
                                 intake.extendIntake(),
                                 shooter.retractHood()));
 
+        // Driver Y: Midline Feed/Pass (No-Vision Fallback)
+        controller
+                .y()
+                .whileTrue(
+                        Commands.parallel(
+                                shooter.spinUpShooterMidlineFeed(),
+                                Commands.sequence(
+                                        Commands.waitUntil(shooter.atMidlineFeedSetpoints)
+                                                .withTimeout(0.75),
+                                        Commands.parallel(indexer.shoot(), tower.shoot()))))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stopAndStow(),
+                                indexer.stopCommand(),
+                                tower.stopCommand(),
+                                intake.extendIntake(),
+                                shooter.retractHood()));
+
         controller
                 .start()
                 .and(controller.back())
