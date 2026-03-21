@@ -171,7 +171,7 @@ public class RobotContainer {
 
     /**
      * Configures button bindings for the Xbox controller. Maps controller inputs to robot commands
-     * for teleop control.`
+     * for teleop control.
      */
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
@@ -222,15 +222,6 @@ public class RobotContainer {
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
 
-        // A: Trench Align
-        controller
-                .a()
-                .whileTrue(
-                        DriveCommands.joystickDriveAtAngle(
-                                drive,
-                                () -> -controller.slewLeftY(),
-                                () -> -controller.slewLeftX(),
-                                robotState::getTunnelAssistHeading));
 
         controller.rightBumper().onTrue(intake.retractIntake());
         controller
@@ -269,6 +260,7 @@ public class RobotContainer {
         operatorController.x().onTrue(intake.retractIntake());
         operatorController.povUp().onTrue(shooter.trimFlywheelSpeedUp());
         operatorController.povDown().onTrue(shooter.trimFlywheelSpeedDown());
+        operatorController.leftBumper().onTrue( robotState.toggleLowPowerMode());
 
         operatorController
                 .y()
