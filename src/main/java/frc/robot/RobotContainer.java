@@ -109,7 +109,6 @@ public class RobotContainer {
         if (RobotBase.isSimulation()) {
             RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intake);
         }
-
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
 
@@ -170,16 +169,17 @@ public class RobotContainer {
 
     /**
      * Configures button bindings for the Xbox controller. Maps controller inputs to robot commands
-     * for teleop control.`
+     * for teleop control.
      */
     private void configureButtonBindings() {
         // Default command, normal field-relative drive
+
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> -controller.getLeftY(),
-                        () -> -controller.getLeftX(),
-                        () -> -controller.getRightX()));
+                        () -> -controller.slewLeftY(),
+                        () -> -controller.slewLeftX(),
+                        () -> -controller.slewRightX() * 0.75));
 
         // Right Trigger: Shoot/Pass
         controller
@@ -216,6 +216,11 @@ public class RobotContainer {
 
         // Left Trigger: Intake
         controller.leftTrigger().onTrue(intake.intake()).onFalse(intake.stopRoller());
+
+        controller.rightBumper().onTrue(intake.retractIntake());
+        controller
+                .rightBumper()
+                .onFalse(Commands.sequence(Commands.waitSeconds(0.25), intake.extendIntake()));
 
         // D-Pad Up: Force Intake Linear Slide Back
         controller.leftBumper().onTrue(intake.retractIntake());
@@ -297,6 +302,7 @@ public class RobotContainer {
         operatorController.x().onTrue(intake.retractIntake());
         operatorController.povUp().onTrue(shooter.trimFlywheelSpeedUp());
         operatorController.povDown().onTrue(shooter.trimFlywheelSpeedDown());
+        operatorController.leftBumper().onTrue(robotState.toggleLowPowerMode());
 
         operatorController
                 .y()
