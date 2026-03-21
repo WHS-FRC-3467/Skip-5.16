@@ -7,6 +7,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -139,6 +140,10 @@ public class FieldConstants {
                 AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(18).get().toPose2d();
         public static final Pose2d LEFT_FACE =
                 AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(21).get().toPose2d();
+
+        // The distance between the center of the HUB and that of the ROBOT when against the Hub
+        public static final double HUB_SHOT_DISTANCE =
+                (FieldConstants.Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
     }
 
     /** Left Bump related constants */
@@ -245,6 +250,18 @@ public class FieldConstants {
         public static final double HUB_TO_TOWER_UPRIGHTS = Units.inchesToMeters(115.05);
         // Distance from the Y coordinate of the field center to the Y coordinate of the tower cent.
         public static final double FIELD_CENTER_TO_TOWER_CENTER_Y = Units.inchesToMeters(11.38);
+        // Distance from the center of the HUB to the center of the robot. Assume that the robot is
+        // centered at the center of the tower, with its back to the tower.
+        public static final double TOWER_SHOT_DISTANCE =
+                Math.sqrt(
+                        Math.pow(
+                                        (FieldConstants.Hub.WIDTH
+                                                                - Constants.FULL_ROBOT_LENGTH.in(
+                                                                        Meters))
+                                                        / 2.0
+                                                + HUB_TO_TOWER_UPRIGHTS,
+                                        2)
+                                + Math.pow(FIELD_CENTER_TO_TOWER_CENTER_Y, 2));
     }
 
     public static class Depot {
