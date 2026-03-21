@@ -40,7 +40,7 @@ public final class Constants {
     public static final Mode simMode = Mode.SIM;
     public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
-    public static final boolean tuningMode = false;
+    public static final boolean tuningMode = true;
 
     public static enum Mode {
         /** Running on a real robot. */
@@ -110,11 +110,11 @@ public final class Constants {
     public static final Distance BUMPER_HEIGHT = Inches.of(4.0);
     public static final Transform3d LEFT_SHOOTER_EXIT_TRANSFORM =
             new Transform3d(
-                    Inches.of(-7.346), Inches.of(3.84), Inches.of(22), new Rotation3d(0, 0, 0));
+                    Inches.of(7.346), Inches.of(-3.84), Inches.of(22), new Rotation3d(0, 0, 0));
 
     public static final Transform3d RIGHT_SHOOTER_EXIT_TRANSFORM =
             new Transform3d(
-                    Inches.of(-7.346), Inches.of(-3.84), Inches.of(22), new Rotation3d(0, 0, 0));
+                    Inches.of(7.346), Inches.of(3.84), Inches.of(22), new Rotation3d(0, 0, 0));
     // public static final Set<Integer> FILTERED_TAGS = Set.of(1, 12, 22, 23, 28, 17, 7, 6);
     public static final Set<Integer> FILTERED_TAGS = Set.of();
 }

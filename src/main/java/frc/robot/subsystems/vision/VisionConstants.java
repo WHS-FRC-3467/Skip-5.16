@@ -72,34 +72,34 @@ public class VisionConstants {
 
     public static final Transform3d FRONT_TRANSFORM =
             new Transform3d(
-                    Units.inchesToMeters(-7.5),
-                    Units.inchesToMeters(12.00),
+                    Units.inchesToMeters(7.5),
+                    Units.inchesToMeters(-12.00),
                     Units.inchesToMeters(19.95),
                     new Rotation3d(
                             0.0,
                             Units.degreesToRadians(-31.973),
-                            Units.degreesToRadians(-8.965230)));
+                            Units.degreesToRadians(171.03477)));
     public static final Transform3d LEFT_TRANSFORM =
             new Transform3d(
-                    Units.inchesToMeters(-8.00),
-                    Units.inchesToMeters(11.75),
-                    Units.inchesToMeters(17.0),
-                    new Rotation3d(
-                            0.0, Units.degreesToRadians(-18.173), Units.degreesToRadians(90.00)));
-    public static final Transform3d RIGHT_TRANSFORM =
-            new Transform3d(
-                    Units.inchesToMeters(-8.00),
+                    Units.inchesToMeters(8.00),
                     Units.inchesToMeters(-11.75),
                     Units.inchesToMeters(17.0),
                     new Rotation3d(
                             0.0, Units.degreesToRadians(-18.173), Units.degreesToRadians(-90.00)));
+    public static final Transform3d RIGHT_TRANSFORM =
+            new Transform3d(
+                    Units.inchesToMeters(8.00),
+                    Units.inchesToMeters(11.75),
+                    Units.inchesToMeters(17.0),
+                    new Rotation3d(
+                            0.0, Units.degreesToRadians(-18.173), Units.degreesToRadians(90.00)));
     public static final Transform3d BACK_TRANSFORM =
             new Transform3d(
-                    Units.inchesToMeters(-12.00),
-                    Units.inchesToMeters(-9.50),
+                    Units.inchesToMeters(12.00),
+                    Units.inchesToMeters(9.50),
                     Units.inchesToMeters(17.00),
                     new Rotation3d(
-                            0.0, Units.degreesToRadians(-18.173), Units.degreesToRadians(166.577)));
+                            0.0, Units.degreesToRadians(-18.173), Units.degreesToRadians(13.423)));
 
     // Intrinsics
     // ThriftyCam Default Calibrations

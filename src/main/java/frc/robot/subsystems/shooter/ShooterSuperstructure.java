@@ -398,20 +398,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Statically spins the flywheel and actuates the hood to the proper values for a TRENCH SHOT.
-     * ONLY valid for TRENCH shots in the CURRENT ALLIANCE ZONE. If called in the trench or neutral
-     * zone, will spin flywheel to proper speed and raise the hood. Perpetual command -- never spins
-     * down. Therefore, to end, this should be interrupted by a parent command group or timed-out.
-     * Primarily for use in teleop.
+     * Spin up shooter to a fixed distance, i.e. against the HUB, TRENCH, or TOWER. PRECONDITION:
+     * ASSUMES THAT THE HOOD IS SAFE. Primarily for use in no-vision teleop.
      *
-     * @return Static non-updating TRENCH only shooter spin-up command.
+     * @return a Command to prepare for the fixed shot
      */
-    public Command spinUpShooterToTrenchDistance() {
-        // Distance
-        double distance =
-                FieldConstants.FIELD_WIDTH
-                        - FieldConstants.LeftTrench.OPENING_WIDTH
-                        + Constants.FULL_ROBOT_LENGTH.in(Meters) / 2.0;
+    public Command spinUpShooterToFixedDistance(double distance) {
         return Commands.run(
                         () -> {
                             spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance)));
