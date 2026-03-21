@@ -33,13 +33,6 @@ public record ChoreoTraj(
                     6.47113,
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
-    public static final ChoreoTraj Depot1 =
-            new ChoreoTraj(
-                    "Depot1",
-                    OptionalInt.empty(),
-                    3.49421,
-                    new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
-                    new Pose2d(2.21211, 5.28646, Rotation2d.fromRadians(-0.47117)));
     public static final ChoreoTraj NeutralSafe2 =
             new ChoreoTraj(
                     "NeutralSafe2",
@@ -47,12 +40,26 @@ public record ChoreoTraj(
                     6.35491,
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
+    public static final ChoreoTraj Depot1 =
+            new ChoreoTraj(
+                    "Depot1",
+                    OptionalInt.empty(),
+                    3.49421,
+                    new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
+                    new Pose2d(2.21211, 5.28646, Rotation2d.fromRadians(-0.47117)));
     public static final ChoreoTraj Neutral1Nashoba =
             new ChoreoTraj(
                     "Neutral1Nashoba",
                     OptionalInt.empty(),
                     5.07241,
                     new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
+                    new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
+    public static final ChoreoTraj Depot2 =
+            new ChoreoTraj(
+                    "Depot2",
+                    OptionalInt.empty(),
+                    1.36397,
+                    new Pose2d(2.21211, 5.28646, Rotation2d.fromRadians(-0.47117)),
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
     public static final ChoreoTraj Neutral1 =
             new ChoreoTraj(
@@ -68,13 +75,6 @@ public record ChoreoTraj(
                     5.40971,
                     new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
-    public static final ChoreoTraj Depot2 =
-            new ChoreoTraj(
-                    "Depot2",
-                    OptionalInt.empty(),
-                    1.36397,
-                    new Pose2d(2.21211, 5.28646, Rotation2d.fromRadians(-0.47117)),
-                    new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
 
     /**
      * A map between trajectory names and their corresponding data. This allows for trajectory data
@@ -84,12 +84,12 @@ public record ChoreoTraj(
             Map.ofEntries(
                     Map.entry("NeutralSafe1Nashoba", NeutralSafe1Nashoba),
                     Map.entry("Neutral2", Neutral2),
-                    Map.entry("Depot1", Depot1),
                     Map.entry("NeutralSafe2", NeutralSafe2),
+                    Map.entry("Depot1", Depot1),
                     Map.entry("Neutral1Nashoba", Neutral1Nashoba),
+                    Map.entry("Depot2", Depot2),
                     Map.entry("Neutral1", Neutral1),
-                    Map.entry("NeutralSafe1", NeutralSafe1),
-                    Map.entry("Depot2", Depot2));
+                    Map.entry("NeutralSafe1", NeutralSafe1));
 
     /**
      * Looks up the ChoreoTraj segment of the given overall ChoreoTraj. WARNING: will raise an
