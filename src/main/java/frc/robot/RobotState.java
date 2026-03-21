@@ -59,8 +59,8 @@ public class RobotState {
     private static final LoggedTunableNumber MAX_HOOD_RETRACT_TIME =
             new LoggedTunableNumber("RobotState/MaxHoodRetractTime", 0.2);
 
-    private static final double LINEAR_ODOMETRY_STD_DEV = 0.01;
-    private static final double ANGULAR_ODOMETRY_STD_DEV = 0.01;
+    private static final double LINEAR_ODOMETRY_STD_DEV = 0.3;
+    private static final double ANGULAR_ODOMETRY_STD_DEV = 0.15;
 
     @Getter(lazy = true)
     private static final RobotState instance = new RobotState();
@@ -197,12 +197,13 @@ public class RobotState {
 
     private final PoseEstimator poseEstimator =
             new PoseEstimator(
-                    new SwerveDriveKinematics(
-                            Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new)),
-                    Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new),
-                    Seconds.of(2),
-                    LINEAR_ODOMETRY_STD_DEV,
-                    ANGULAR_ODOMETRY_STD_DEV);
+                            new SwerveDriveKinematics(
+                                    Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new)),
+                            Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new),
+                            Seconds.of(2),
+                            LINEAR_ODOMETRY_STD_DEV,
+                            ANGULAR_ODOMETRY_STD_DEV)
+                    .withPoseValidator(this::isPoseWithinField);
 
     @Setter private ChassisSpeeds velocity = new ChassisSpeeds();
 
@@ -234,28 +235,36 @@ public class RobotState {
     public void addOdometryObservation(OdometryObservation observation) {
         if (DriverStation.isDisabled()) return;
 
-        if (drivetrainAngledTrigger.getAsBoolean()) {
-            poseEstimator.addGyroObservation(observation);
-            return;
-        }
-
         poseEstimator.addOdometryObservation(observation);
     }
 
     /**
-     * Adds a new vision observation to the pose estimator. Vision observations are ignored when the
-     * drivetrain is tilted (e.g., going over a bump).
+     * Returns true if the pose lies within the field perimeter (0..length, 0..width).
+     *
+     * @param pose pose to validate
+     * @return true if the pose is inside the field boundaries
+     */
+    public boolean isPoseWithinField(Pose2d pose) {
+        double x = pose.getX();
+        double y = pose.getY();
+        double halfLength = Constants.FULL_ROBOT_LENGTH.in(Meters) / 2.0;
+        double halfWidth = Constants.FULL_ROBOT_WIDTH.in(Meters) / 2.0;
+        return x >= halfLength
+                && x <= FieldConstants.FIELD_LENGTH - halfLength
+                && y >= halfWidth
+                && y <= FieldConstants.FIELD_WIDTH - halfWidth;
+    }
+
+    /**
+     * Adds a new vision observation to the pose estimator.
      *
      * @param observation the vision observation to add
      */
     public void addVisionObservation(VisionPoseObservation observation) {
-        // Only add vision observation if robot is not angled (i.e. when going over a bump)
-
-        if (DriverStation.isDisabled() || drivetrainAngledTrigger.getAsBoolean()) {
-            resetPose(observation.robotPose());
+        if (DriverStation.isDisabled()) {
+            poseEstimator.resetPose(observation.robotPose());
             return;
         }
-
         poseEstimator.addVisionObservation(observation);
     }
 
