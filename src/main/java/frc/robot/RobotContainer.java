@@ -232,7 +232,7 @@ public class RobotContainer {
                         Commands.parallel(
                                 DriveCommands.stopWithX(drive),
                                 shooter.spinUpShooterToFixedDistance(
-                                        FieldConstants.Hub.HUB_SHOT_DISTANCE),
+                                        FieldConstants.TRENCH_SHOT_DISTANCE),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
                         Commands.parallel(
