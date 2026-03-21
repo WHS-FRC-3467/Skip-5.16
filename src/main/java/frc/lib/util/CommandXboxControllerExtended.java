@@ -25,7 +25,9 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
 import frc.robot.RobotState;
+
 import java.util.List;
 
 /**
@@ -51,6 +53,7 @@ public class CommandXboxControllerExtended extends CommandXboxController {
     private double deadband = 0.0;
     private boolean applyCurve = false;
     private static final double RATE_LIMIT = 1.0;
+
     /**
      * Constructs an extended Xbox controller with additional functionality.
      *
@@ -117,19 +120,16 @@ public class CommandXboxControllerExtended extends CommandXboxController {
         return MathUtil.applyDeadband(joystickInput, deadband);
     }
 
-   
     private final List<SlewRateLimiter> filter =
             List.of(
                     new SlewRateLimiter(RATE_LIMIT),
                     new SlewRateLimiter(RATE_LIMIT),
                     new SlewRateLimiter(RATE_LIMIT),
                     new SlewRateLimiter(RATE_LIMIT));
-    
-    
-   private double slewModifier(double joystickInput, int index) {
-        
-        
-        if (RobotState.getInstance().LOW_POWER_MODE.getAsBoolean()) {
+
+    private double slewModifier(double joystickInput, int index) {
+
+        if (RobotState.getInstance().LOW_POWER_MODE) {
             return filter.get(index).calculate(joystickInput);
 
         } else {

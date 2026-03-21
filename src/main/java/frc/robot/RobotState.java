@@ -39,7 +39,6 @@ import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTrigger;
-import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.subsystems.drive.Drive;
 
@@ -60,8 +59,9 @@ public class RobotState {
             new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 5.0);
     private static final LoggedTunableNumber MAX_HOOD_RETRACT_TIME =
             new LoggedTunableNumber("RobotState/MaxHoodRetractTime", 0.2);
-    
+
     public boolean LOW_POWER_MODE = false;
+
     public Command toggleLowPowerMode() {
         return Commands.runOnce(() -> LOW_POWER_MODE = !LOW_POWER_MODE);
     }
