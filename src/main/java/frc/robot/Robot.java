@@ -27,6 +27,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
+import frc.robot.commands.autos.AutoCommands;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.Elastic;
 import frc.robot.util.HubState;
@@ -154,6 +156,7 @@ public class Robot extends LoggedRobot {
         fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
         // Update auto tab
         robotContainer.checkStartPose();
+        SmartDashboard.putNumber("Auto Delay", AutoCommands.getAutoDelay());
     }
 
     /** This function is called once when the robot is disabled. */

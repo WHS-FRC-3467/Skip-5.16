@@ -86,7 +86,7 @@
             "properties": {
               "topic": "/SmartDashboard/Auto Preview",
               "period": 0.06,
-              "field_game": "Reefscape",
+              "field_game": "Rebuilt",
               "robot_width": 0.85,
               "robot_length": 0.85,
               "show_other_objects": true,
@@ -101,7 +101,7 @@
             "title": "Auto Choices",
             "x": 900.0,
             "y": 400.0,
-            "width": 600.0,
+            "width": 450.0,
             "height": 150.0,
             "type": "ComboBox Chooser",
             "properties": {
@@ -168,6 +168,20 @@
               "false_color": 4294198070,
               "true_icon": "Checkmark",
               "false_icon": "Exclamation Point"
+            }
+          },
+          {
+            "title": "Delay",
+            "x": 1350.0,
+            "y": 400.0,
+            "width": 150.0,
+            "height": 150.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/TunableNumbers/Auto/Delay",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
             }
           }
         ]
