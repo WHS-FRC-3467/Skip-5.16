@@ -398,22 +398,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Spin up shooter to HUB distance
-     *
-     * @return a Command to prepare for the hub shot
-     */
-    public Command spinUpShooterToHubDistance() {
-        double distance = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
-        return Commands.run(
-                        () -> {
-                            spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance)));
-                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance)));
-                        },
-                        this)
-                .withName("Spin-Up Shooter to Distance");
-    }
-
-    /**
      * Spin up shooter to a fixed distance, i.e. against the HUB, TRENCH, or TOWER. PRECONDITION:
      * ASSUMES THAT THE HOOD IS SAFE.
      *

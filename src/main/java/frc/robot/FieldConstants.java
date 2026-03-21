@@ -241,7 +241,10 @@ public class FieldConstants {
                                 - INNDER_OPENING_WIDTH / 2
                                 - Units.inchesToMeters(0.75));
 
+        // Distance from the alliance side wall of the HUB to the uprights of the TOWER ladder.
         public static final double HUB_TO_TOWER_UPRIGHTS = Units.inchesToMeters(115.05);
+        // Distance from the Y coordinate of the field center to the Y coordinate of the tower cent.
+        public static final double FIELD_CENTER_TO_TOWER_CENTER_Y = Units.inchesToMeters(11.38);
     }
 
     public static class Depot {

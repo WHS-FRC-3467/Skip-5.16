@@ -271,7 +271,7 @@ public class RobotContainer {
                                 shooter.spinUpShooterToFixedDistance(
                                         FieldConstants.Tower.HUB_TO_TOWER_UPRIGHTS
                                                 + (FieldConstants.Hub.WIDTH
-                                                                + Constants.FULL_ROBOT_LENGTH.in(
+                                                                - Constants.FULL_ROBOT_LENGTH.in(
                                                                         Meters))
                                                         / 2.0),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
