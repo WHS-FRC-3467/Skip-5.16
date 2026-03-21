@@ -184,6 +184,7 @@ public class VisionSubsystem extends SubsystemBase {
             AprilTagCamera camera = cameras[c];
             PhotonPoseEstimator poseEstimator = poseEstimators[c];
             String cameraLogPrefix = LOG_PREFIX + camera.getProperties().name() + "/";
+            boolean isReplay = Constants.simMode == Constants.Mode.REPLAY;
 
             PhotonPipelineResult[] results = camera.getUnreadResults().orElse(null);
             if (results == null) {
@@ -204,12 +205,16 @@ public class VisionSubsystem extends SubsystemBase {
                 if (result.targets.size() == 1
                         && Constants.FILTERED_TAGS.contains(
                                 result.targets.get(0).getFiducialId())) {
-                    rejectedResults.add(result);
+                    if (isReplay) {
+                        rejectedResults.add(result);
+                    }
                     continue;
                 }
 
                 if (!preFilter(result)) {
-                    rejectedResults.add(result);
+                    if (isReplay) {
+                        rejectedResults.add(result);
+                    }
                     continue;
                 }
 
@@ -225,7 +230,9 @@ public class VisionSubsystem extends SubsystemBase {
                 }
 
                 if (estPose.isEmpty()) {
-                    rejectedResults.add(result);
+                    if (isReplay) {
+                        rejectedResults.add(result);
+                    }
                     continue;
                 }
 
@@ -236,8 +243,10 @@ public class VisionSubsystem extends SubsystemBase {
                                 getAvgDistanceMeters(estPose.get().targetsUsed));
 
                 if (!postFilter(poseRecord.pose())) {
-                    rejectedResults.add(result);
-                    rejectedPoses.add(poseRecord.pose().toPose2d());
+                    if (isReplay) {
+                        rejectedResults.add(result);
+                        rejectedPoses.add(poseRecord.pose().toPose2d());
+                    }
                     continue;
                 }
 
@@ -260,7 +269,6 @@ public class VisionSubsystem extends SubsystemBase {
             }
 
             Set<Integer> tagsAccepted = new HashSet<>();
-            Set<Integer> tagsRejected = new HashSet<>();
 
             Logger.recordOutput(
                     cameraLogPrefix + "/Results/AcceptedLength", acceptedResults.size());
@@ -272,29 +280,10 @@ public class VisionSubsystem extends SubsystemBase {
             }
 
             Logger.recordOutput(
-                    cameraLogPrefix + "/Results/RejectedLength", rejectedResults.size());
-            for (int i = 0; i < rejectedResults.size(); i++) {
-                Logger.recordOutput(
-                        cameraLogPrefix + "/Results/Rejected/" + i, rejectedResults.get(i));
-
-                tagsRejected.addAll(getTagsUsed(rejectedResults.get(i).targets));
-            }
-
-            Logger.recordOutput(
                     cameraLogPrefix + "/Poses/Accepted", acceptedPoses.toArray(Pose2d[]::new));
-
-            Logger.recordOutput(
-                    cameraLogPrefix + "/Poses/Rejected", rejectedPoses.toArray(Pose2d[]::new));
 
             List<Pose3d> tagPosesAccepted =
                     tagsAccepted.stream()
-                            .map(this::getTagPose)
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .toList();
-
-            List<Pose3d> tagPosesRejected =
-                    tagsRejected.stream()
                             .map(this::getTagPose)
                             .filter(Optional::isPresent)
                             .map(Optional::get)
@@ -304,9 +293,31 @@ public class VisionSubsystem extends SubsystemBase {
                     cameraLogPrefix + "/TagPoses/Accepted",
                     tagPosesAccepted.toArray(Pose3d[]::new));
 
-            Logger.recordOutput(
-                    cameraLogPrefix + "/TagPoses/Rejected",
-                    tagPosesRejected.toArray(Pose3d[]::new));
+            if (isReplay) {
+                Set<Integer> tagsRejected = new HashSet<>();
+                Logger.recordOutput(
+                        cameraLogPrefix + "/Results/RejectedLength", rejectedResults.size());
+                for (int i = 0; i < rejectedResults.size(); i++) {
+                    Logger.recordOutput(
+                            cameraLogPrefix + "/Results/Rejected/" + i, rejectedResults.get(i));
+
+                    tagsRejected.addAll(getTagsUsed(rejectedResults.get(i).targets));
+                }
+                Logger.recordOutput(
+                        cameraLogPrefix + "/Poses/Rejected", rejectedPoses.toArray(Pose2d[]::new));
+
+                // compute rejected tag poses only when replaying
+                List<Pose3d> tagPosesRejected =
+                        tagsRejected.stream()
+                                .map(this::getTagPose)
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                                .toList();
+
+                Logger.recordOutput(
+                        cameraLogPrefix + "/TagPoses/Rejected",
+                        tagPosesRejected.toArray(Pose3d[]::new));
+            }
         }
 
         // VisionOdometryCharacterizer.printResults();
