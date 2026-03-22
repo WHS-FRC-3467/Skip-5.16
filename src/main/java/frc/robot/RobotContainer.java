@@ -140,10 +140,16 @@ public class RobotContainer {
                 "AntiNashoba-Right", new AntiNashoba(drive, intake, indexer, tower, shooter, true));
 
         // Depot Autos
+        //      autoChooser.addOption(
+        //           "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
+        //    autoChooser.addOption(
+        //         "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
+
         autoChooser.addOption(
-                "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
+                "Aggressive-Depot",
+                new DepotShootAuto(drive, intake, indexer, tower, shooter, false));
         autoChooser.addOption(
-                "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
+                "Safe-Depot", new DepotShootAuto(drive, intake, indexer, tower, shooter, true));
 
         autoChooser.onChange(
                 auto -> {
@@ -241,7 +247,8 @@ public class RobotContainer {
                 .whileTrue(
                         Commands.parallel(
                                 DriveCommands.stopWithX(drive),
-                                shooter.spinUpShooterToHubDistance(),
+                                shooter.spinUpShooterToFixedDistance(
+                                        FieldConstants.Hub.HUB_SHOT_DISTANCE),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
                         Commands.parallel(
@@ -269,6 +276,22 @@ public class RobotContainer {
                                 intake.extendIntake(),
                                 shooter.retractHood()));
 
+        // Driver A: Shot From Back of Robot Against Tower (No-Vision Fallback)
+        controller
+                .a()
+                .whileTrue(
+                        Commands.parallel(
+                                DriveCommands.stopWithX(drive),
+                                shooter.spinUpShooterToFixedDistance(
+                                        FieldConstants.Tower.TOWER_SHOT_DISTANCE),
+                                Commands.parallel(indexer.shoot(), tower.shoot())))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stopAndStow(),
+                                indexer.stopCommand(),
+                                tower.stopCommand(),
+                                intake.extendIntake(),
+                                shooter.retractHood()));
         controller
                 .start()
                 .and(controller.back())

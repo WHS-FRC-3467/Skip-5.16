@@ -35,6 +35,7 @@ import frc.lib.mechanisms.rotary.RotaryMechanism.RotaryMechCharacteristics;
 import frc.lib.util.PID;
 import frc.robot.Constants;
 import frc.robot.Ports;
+import frc.robot.Robot;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -98,8 +99,10 @@ public class HoodConstants {
         config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
         config.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
-        config.CurrentLimits.StatorCurrentLimitEnable = false;
-        config.CurrentLimits.StatorCurrentLimit = 120.0;
+        if (Robot.isReal()) {
+            config.TorqueCurrent.PeakForwardTorqueCurrent = 80.0;
+            config.TorqueCurrent.PeakReverseTorqueCurrent = -80.0;
+        }
 
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
