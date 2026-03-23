@@ -27,7 +27,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -356,10 +355,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         boolean shouldFeedNow = shouldFeed.getAsBoolean();
         InterpolatingDoubleTreeMap flywheelMap = shouldFeedNow ? feedFlywheelMap : hubFlywheelMap;
 
-        Pose2d pose = robotState.getEstimatedPose();
+        Pose2d pose;
         if (shouldFeedNow) {
-            Twist2d twist = robotState.getRobotRelativeVelocity().toTwist2d(3.0);
-            pose = pose.exp(twist);
+            pose = robotState.getFuturePose(robotState.feedLookaheadSeconds.get());
+        } else {
+            pose = robotState.getEstimatedPose();
         }
 
         return RotationsPerSecond.of(
@@ -642,6 +642,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
         Logger.recordOutput(
                 getName() + "/FlywheelTrimRPS", getFlywheelTrim().in(RotationsPerSecond));
+
+        Logger.recordOutput(
+                "test", robotState.getFuturePose(robotState.feedLookaheadSeconds.get()));
     }
 
     /** Closes all underlying mechanisms and releases resources. */
