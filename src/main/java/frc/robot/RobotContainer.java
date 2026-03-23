@@ -158,6 +158,8 @@ public class RobotContainer {
                     pathPoses[0] = FieldUtil.apply(auto.getStartingPose());
 
                     autoPreviewField.getObject("path").setPoses(pathPoses);
+
+                    auto.command();
                 });
 
         autoChooser.addOption(
