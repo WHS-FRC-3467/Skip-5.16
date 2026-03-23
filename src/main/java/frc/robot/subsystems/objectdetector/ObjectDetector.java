@@ -58,27 +58,27 @@ public class ObjectDetector extends SubsystemBase {
 
     /**
      * Bottom left coordinate of a rectangular bounding box for the Object Detection ROI in the blue
-     * (left) alliance frame. Automaticaly alliance-corrected (i.e. it reflects the provided ROI to
-     * generate the same driver station relative ROI on red). Additionally, an optional left/right
-     * mirror is provided by {@link #shouldMirror} for use in autos.
+     * (left) alliance frame. Automaticaly alliance corrected (i.e. the ROI is reflected such that
+     * red 1 and blue 1 have the same driver station relative detection zone). Additionally, an optional
+     * left/right mirror is provided by {@link #shouldMirror} for use in autos.
      */
     @Getter @Setter
     private static Translation2d bottomLeftCorner =
-            new Translation2d(Meters.of(3.22), Meters.of(6.49)); // x = 5.22, y = 6.49
+            new Translation2d(Meters.of(4.22), Meters.of(3.49)); // x = 5.22, y = 6.49
 
     /**
      * Bottom left coordinate of a rectangular bounding box for the Object Detection ROI in the blue
-     * (left) alliance frame. Automaticaly alliance-corrected (i.e. it reflects the provided ROI to
-     * generate the same driver station relative ROI on red). Additionally, an optional left/right
-     * mirror is provided by {@link #shouldMirror} for use in autos.
+     * (left) alliance frame. Automaticaly alliance corrected (i.e. the ROI is reflected such that
+     * red 1 and blue 1 have the same driver station relative detection zone). Additionally, an optional
+     * left/right mirror is provided by {@link #shouldMirror} for use in autos.
      */
     @Getter @Setter
     private static Translation2d topRightCorner =
-            new Translation2d(Meters.of(4.28), Meters.of(1.58)); // x = 8.28, y = 1.58
+            new Translation2d(Meters.of(6.28), Meters.of(1.58)); // x = 8.28, y = 1.58
 
     /**
-     * Field informing the Object Detector whether it should reflect its ROI to the other side of
-     * the current alliance.
+     * Parameter informing the Object Detector whether it should reflect its ROI to the other side
+     * of the current alliance. Primarily for use in autos.
      */
     @Getter @Setter private static boolean shouldMirror = false;
 
@@ -122,8 +122,8 @@ public class ObjectDetector extends SubsystemBase {
     }
 
     /**
-     * Corrects the ROI for current alliance frame and applies optional left/right mirroring based
-     * on {@link #shouldMirror}.
+     * Corrects the canonical blue-left ROI for the current alliance frame and applies optional
+     * left/right mirroring based on {@link #shouldMirror}.
      */
     private List<Translation2d> getCorrectedROI() {
         Translation2d swappedBottomLeft = FieldUtil.apply(bottomLeftCorner);
