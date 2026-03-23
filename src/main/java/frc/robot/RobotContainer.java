@@ -165,7 +165,6 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
-        configureLEDTriggers();
     }
 
     /**
@@ -259,6 +258,7 @@ public class RobotContainer {
                                 intake.extendIntake(),
                                 shooter.retractHood()));
 
+        // Driver Start and Back: Gyro heading reset
         controller
                 .start()
                 .and(controller.back())
@@ -271,16 +271,27 @@ public class RobotContainer {
                                                                 .getEstimatedPose()
                                                                 .getTranslation(),
                                                         Rotation2d.kZero))));
+
+        // Operator A: Home Hood and Intake
         operatorController
                 .a()
                 .whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));
+
+        // Operator B: Eject
         operatorController
                 .b()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
+
+        // Operator X: Retract Intake
         operatorController.x().onTrue(intake.retractIntake());
+
+        // Operator POV Up: Trim shot power up
         operatorController.povUp().onTrue(shooter.trimFlywheelSpeedUp());
+
+        // Operator POV Down: Trim shot power down
         operatorController.povDown().onTrue(shooter.trimFlywheelSpeedDown());
 
+        // Operator Y: Manual Spinup
         operatorController
                 .y()
                 .whileTrue(
@@ -292,11 +303,7 @@ public class RobotContainer {
                 .and(operatorController.y().negate())
                 .onTrue(shooter.stopFlywheels());
 
-        // robotState.enteringTrench.whileTrue(
-        //         shooter.forceHoodAngle(Rotations.zero())
-        //                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
-        //                 .onlyIf(isAutonomous.negate()));
-
+        // Auto Command Trigger Bindings
         new EventTrigger("RetractIntake").onTrue(intake.retractIntake());
         new EventTrigger("ExtendIntake").onTrue(intake.autoIntake());
         new EventTrigger("Spinup").onTrue(shooter.spinUpShooterToHubDistance(Meters.of(3.555)));
@@ -359,32 +366,6 @@ public class RobotContainer {
                 new DriveToPose(drive, () -> startPose)
                         .withDistanceTolerance(Meters.of(0.04))
                         .withAngularTolerance(Degrees.of(3)));
-
-        // Diagnostics
-        // SmartDashboard.putData(
-        //         "Enable Vision Odometry Characterization",
-        //         Commands.runOnce(() -> VisionOdometryCharacterizer.enable()));
-        // SmartDashboard.putData(
-        //         "Disable Vision Odometry Characterization",
-        //         Commands.runOnce(() -> VisionOdometryCharacterizer.disable()));
-        // SmartDashboard.putData(
-        //         "Reset Vision Odometry Characterization",
-        //         Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
-    }
-
-    /** Creates and/or binds triggers to LED states */
-    private void configureLEDTriggers() {
-        // isAutonomous
-        //         .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_AUTO))
-        //         .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_AUTO));
-
-        // shooter.readyToShoot
-        //         .onTrue(leds.scheduleStateCommand(LEDs.State.READY_TO_SHOOT))
-        //         .onFalse(leds.unscheduleStateCommand(LEDs.State.READY_TO_SHOOT));
-
-        // new Trigger(() -> intake.isIntaking())
-        //         .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_INTAKE))
-        //         .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_INTAKE));
     }
 
     /**
