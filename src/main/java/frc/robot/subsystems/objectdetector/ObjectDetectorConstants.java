@@ -169,7 +169,7 @@ public class ObjectDetectorConstants {
                                                 pose.getTranslation()
                                                         .toTranslation2d()
                                                         .getDistance(cameraPose.getTranslation())))
-                        .limit(15)
+                        .limit(30)
                         .map(
                                 pose ->
                                         new VisionTargetSim(

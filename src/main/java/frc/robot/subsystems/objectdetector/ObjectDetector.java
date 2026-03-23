@@ -21,6 +21,7 @@ import static edu.wpi.first.units.Units.Meters;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.devices.ObjectDetection;
@@ -28,6 +29,7 @@ import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.lib.util.FieldUtil;
+import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 
@@ -58,29 +60,43 @@ public class ObjectDetector extends SubsystemBase {
 
     /**
      * Bottom left coordinate of a rectangular bounding box for the Object Detection ROI in the blue
-     * (left) alliance frame. Automaticaly alliance corrected (i.e. the ROI is reflected such that
-     * red 1 and blue 1 have the same driver station relative detection zone). Additionally, an optional
-     * left/right mirror is provided by {@link #shouldMirror} for use in autos.
+     * (left) alliance frame. This ROI is automaticaly alliance corrected (e.g. the zone would be
+     * reflected such that red 1 and blue 1 have the same driver station relative detection zone)
+     * and an optional left/right mirror is provided by {@link #shouldMirror} for use in autos.
      */
-    @Getter @Setter
+    @Getter
     private static Translation2d bottomLeftCorner =
-            new Translation2d(Meters.of(4.22), Meters.of(3.49)); // x = 5.22, y = 6.49
+            new Translation2d(Meters.of(5.22), Meters.of(6.49));
 
     /**
-     * Bottom left coordinate of a rectangular bounding box for the Object Detection ROI in the blue
-     * (left) alliance frame. Automaticaly alliance corrected (i.e. the ROI is reflected such that
-     * red 1 and blue 1 have the same driver station relative detection zone). Additionally, an optional
-     * left/right mirror is provided by {@link #shouldMirror} for use in autos.
+     * Top right coordinate of a rectangular bounding box for the Object Detection ROI in the blue
+     * (left) alliance frame. This ROI is automaticaly alliance corrected (e.g. the zone would be
+     * reflected such that red 1 and blue 1 have the same driver station relative detection zone)
+     * and an optional left/right mirror is provided by {@link #shouldMirror} for use in autos.
      */
-    @Getter @Setter
+    @Getter
     private static Translation2d topRightCorner =
-            new Translation2d(Meters.of(6.28), Meters.of(1.58)); // x = 8.28, y = 1.58
+            new Translation2d(Meters.of(8.28), Meters.of(1.58));
 
     /**
      * Parameter informing the Object Detector whether it should reflect its ROI to the other side
      * of the current alliance. Primarily for use in autos.
      */
     @Getter @Setter private static boolean shouldMirror = false;
+
+    /**
+     * Represents a lane target (i.e. spatial histogram argument) within the Object Detector's ROI.
+     *
+     * @param x the field-relative x coordinate of the lane (center) within the ROI with the highest
+     *     count of detected objects.
+     * @param count the number of detected objects within that lane.
+     */
+    private static record LaneTarget(double x, int count) {}
+
+    /** The Object Detector's best guess at the argmax of the spatial histogram within its ROI. */
+    @Getter private static Optional<LaneTarget> bestLaneTarget = Optional.empty();
+
+    private static final Distance LANE_WIDTH = Constants.FULL_ROBOT_WIDTH.times(0.75);
 
     /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
@@ -174,6 +190,43 @@ public class ObjectDetector extends SubsystemBase {
                 && objectPose.getY() <= maxY;
     }
 
+    /** Generate a spatial histogram within the Object Detector's ROI and determine the argmax. */
+    private Optional<LaneTarget> computeBestLaneTarget(
+            List<Optional<ObjectDetectionObservation>> observations,
+            Translation2d cornerA,
+            Translation2d cornerB) {
+        if (observations.isEmpty()) return Optional.empty();
+
+        double minX = Math.min(cornerA.getMeasureX().in(Meters), cornerB.getMeasureX().in(Meters));
+        double maxX = Math.max(cornerA.getMeasureX().in(Meters), cornerB.getMeasureX().in(Meters));
+
+        int laneCount = (int) Math.ceil((maxX - minX) / LANE_WIDTH.in(Meters));
+        if (laneCount <= 0) return Optional.empty();
+
+        int[] histogram = new int[laneCount];
+
+        for (Optional<ObjectDetectionObservation> obs : observations) {
+            if (obs.isEmpty() || obs.get().objectPose().isEmpty()) continue;
+            double x = obs.get().objectPose().get().getX();
+
+            int index = (int) ((x - minX) / LANE_WIDTH.in(Meters));
+            if (index >= 0 && index < laneCount) histogram[index]++;
+        }
+
+        int bestIndex = -1;
+        int bestCount = 0;
+        for (int i = 0; i < histogram.length; i++) {
+            if (histogram[i] > bestCount) {
+                bestCount = histogram[i];
+                bestIndex = i;
+            }
+        }
+        if (bestIndex == -1 || bestCount == 0) return Optional.empty();
+        double bestX = minX + (bestIndex + 0.5) * LANE_WIDTH.in(Meters);
+
+        return Optional.of(new LaneTarget(bestX, bestCount));
+    }
+
     // Private helper for logging Object Detection values. -1 for stale values.
     private void logObjectObservation(List<Optional<ObjectDetectionObservation>> observation) {
         String prefix = "Detection/ML:";
@@ -232,14 +285,48 @@ public class ObjectDetector extends SubsystemBase {
                 });
     }
 
+    // Private helper for visualizing best lane.
+    private void logBestLaneTarget(
+            Optional<LaneTarget> laneTarget, List<Translation2d> mirroredCorners) {
+        if (laneTarget.isPresent()) {
+            double xLane = laneTarget.get().x();
+            double x1 = xLane + LANE_WIDTH.in(Meters) / 2.0;
+            double x2 = xLane - LANE_WIDTH.in(Meters) / 2.0;
+            double y1 = mirroredCorners.get(0).getY();
+            double y2 = mirroredCorners.get(1).getY();
+
+            Translation2d a = new Translation2d(Math.max(x1, x2), Math.max(y1, y2));
+            Translation2d b = new Translation2d(Math.min(x1, x2), Math.max(y1, y2));
+            Translation2d c = new Translation2d(Math.min(x1, x2), Math.min(y1, y2));
+            Translation2d d = new Translation2d(Math.max(x1, x2), Math.min(y1, y2));
+
+            Logger.recordOutput(
+                    "Detection/BestLane",
+                    new Pose2d[] {
+                        new Pose2d(a, Rotation2d.kZero),
+                        new Pose2d(b, Rotation2d.kZero),
+                        new Pose2d(c, Rotation2d.kZero),
+                        new Pose2d(d, Rotation2d.kZero),
+                        new Pose2d(a, Rotation2d.kZero)
+                    });
+            Logger.recordOutput("Detection/Best Lane Target X", xLane);
+            Logger.recordOutput("Detection/Best Lane Target Count", laneTarget.get().count());
+        } else {
+            Logger.recordOutput("Detection/Best Lane Target X", -1);
+            Logger.recordOutput("Detection/Best Lane Target Count", -1);
+        }
+    }
+
     @Override
     public void periodic() {
         // Update the inputs data structure associated with this Object Detection camera with latest
         // readings
         objectDetection.periodic();
-        // Calculate corrected ROI corners based on current alliance and starting position
+        // Calculate corrected ROI corners based on current alliance and starting position. The ROI
+        // acts as an interest cache for detected objects such that lanes needn't be reduced from
+        // the full FOV each evaluation, reducing hysteresis and overhead
         List<Translation2d> correctedCorners = getCorrectedROI();
-        // Now that inputs are updated, re-populate observations with new data
+        // Now that inputs are updated, re-populate observation fields with new data
         if (objectDetection.getTargets().length > 0) {
             // Generate latest ML Object observations within the corrected ROI
             latestObjectObservation =
@@ -252,6 +339,13 @@ public class ObjectDetector extends SubsystemBase {
                                                     correctedCorners.get(0),
                                                     correctedCorners.get(1)))
                             .toList();
+            // Estimate the argmax of the Object Detector's spatial histogram (i.e. ROI) for lane
+            // correction in autos
+            bestLaneTarget =
+                    computeBestLaneTarget(
+                            latestObjectObservation,
+                            correctedCorners.get(0),
+                            correctedCorners.get(1));
             // Generate latest Contour observations
             latestBigContourObservation = generateContourObservation(ContourSelectionMode.LARGEST);
             latestLowContourObservation = generateContourObservation(ContourSelectionMode.LOWEST);
@@ -266,5 +360,6 @@ public class ObjectDetector extends SubsystemBase {
         logContourObservation(latestBigContourObservation, ContourSelectionMode.LARGEST);
         logContourObservation(latestLowContourObservation, ContourSelectionMode.LOWEST);
         logROI(correctedCorners);
+        logBestLaneTarget(bestLaneTarget, correctedCorners);
     }
 }
