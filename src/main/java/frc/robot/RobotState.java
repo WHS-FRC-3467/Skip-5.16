@@ -66,7 +66,7 @@ public class RobotState {
     private static final RobotState instance = new RobotState();
 
     public final LoggedTunableNumber feedLookaheadSeconds =
-            new LoggedTunableNumber("RobotState/FeedLookaheadSeconds", 3.0);
+            new LoggedTunableNumber("RobotState/FeedLookaheadSeconds", 1.0);
 
     @Getter
     @AutoLogOutput(key = "Drive/FacingTarget")
