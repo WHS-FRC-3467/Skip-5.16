@@ -19,6 +19,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -56,19 +57,30 @@ public class ObjectDetector extends SubsystemBase {
     @Getter private Optional<ObjectDetectionObservation> latestLowContourObservation;
 
     /**
-     * First coordinate of rectangular bounding box for object detection ROI in BLUE-RIGHT alliance
-     * frame, automatically mirrored to current alliance frame and starting location.
+     * Bottom left coordinate of a rectangular bounding box for the Object Detection ROI in the blue
+     * (left) alliance frame. Automaticaly alliance-corrected (i.e. it reflects the provided ROI to
+     * generate the same driver station relative ROI on red). Additionally, an optional left/right
+     * mirror is provided by {@link #shouldMirror} for use in autos.
      */
     @Getter @Setter
-    private static Translation2d bottomRightROI =
-            new Translation2d(Meters.of(5.22), Meters.of(1.58));
+    private static Translation2d bottomLeftCorner =
+            new Translation2d(Meters.of(3.22), Meters.of(6.49)); // x = 5.22, y = 6.49
 
     /**
-     * Second coordinate of rectangular bounding box for object detection ROI in BLUE-RIGHT alliance
-     * frame, automatically mirrored to current alliance frame and starting location.
+     * Bottom left coordinate of a rectangular bounding box for the Object Detection ROI in the blue
+     * (left) alliance frame. Automaticaly alliance-corrected (i.e. it reflects the provided ROI to
+     * generate the same driver station relative ROI on red). Additionally, an optional left/right
+     * mirror is provided by {@link #shouldMirror} for use in autos.
      */
     @Getter @Setter
-    private static Translation2d topLeftROI = new Translation2d(Meters.of(8.28), Meters.of(6.49));
+    private static Translation2d topRightCorner =
+            new Translation2d(Meters.of(4.28), Meters.of(1.58)); // x = 8.28, y = 1.58
+
+    /**
+     * Field informing the Object Detector whether it should reflect its ROI to the other side of
+     * the current alliance.
+     */
+    @Getter @Setter private static boolean shouldMirror = false;
 
     /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
@@ -109,6 +121,59 @@ public class ObjectDetector extends SubsystemBase {
         return observation;
     }
 
+    /**
+     * Corrects the ROI for current alliance frame and applies optional left/right mirroring based
+     * on {@link #shouldMirror}.
+     */
+    private List<Translation2d> getCorrectedROI() {
+        Translation2d swappedBottomLeft = FieldUtil.apply(bottomLeftCorner);
+        Translation2d swappedTopRight = FieldUtil.apply(topRightCorner);
+        return List.of(
+                getMirroredPoint(swappedBottomLeft, shouldMirror),
+                getMirroredPoint(swappedTopRight, shouldMirror));
+    }
+
+    /** Mirrors an ROI point about the horizontal midline of the field (Y = FIELD_WIDTH / 2). */
+    private Translation2d getMirroredPoint(Translation2d point, boolean flipY) {
+        double y = point.getMeasureY().in(Meters);
+        if (flipY) y = FieldConstants.FIELD_WIDTH - point.getMeasureY().in(Meters);
+        return new Translation2d(point.getMeasureX(), Meters.of(y));
+    }
+
+    /** Ascertain whether a detected object's pose is within the corrected ROI. */
+    private boolean isObjectWithinROI(
+            Optional<ObjectDetectionObservation> observation,
+            Translation2d correctedCornerOne,
+            Translation2d correctedCornerTwo) {
+        if (observation.isEmpty() || observation.get().objectPose().isEmpty()) {
+            return false;
+        }
+        Pose2d objectPose = observation.get().objectPose().get();
+
+        // Order coordinates for ROI boundary check
+        double minX =
+                Math.min(
+                        correctedCornerOne.getMeasureX().in(Meters),
+                        correctedCornerTwo.getMeasureX().in(Meters));
+        double maxX =
+                Math.max(
+                        correctedCornerOne.getMeasureX().in(Meters),
+                        correctedCornerTwo.getMeasureX().in(Meters));
+        double minY =
+                Math.min(
+                        correctedCornerOne.getMeasureY().in(Meters),
+                        correctedCornerTwo.getMeasureY().in(Meters));
+        double maxY =
+                Math.max(
+                        correctedCornerOne.getMeasureY().in(Meters),
+                        correctedCornerTwo.getMeasureY().in(Meters));
+
+        return objectPose.getX() >= minX
+                && objectPose.getX() <= maxX
+                && objectPose.getY() >= minY
+                && objectPose.getY() <= maxY;
+    }
+
     // Private helper for logging Object Detection values. -1 for stale values.
     private void logObjectObservation(List<Optional<ObjectDetectionObservation>> observation) {
         String prefix = "Detection/ML:";
@@ -144,54 +209,27 @@ public class ObjectDetector extends SubsystemBase {
         }
     }
 
-    /**
-     * Ascertain whether a detected object's pose is within the ROI defined above, mirrored to be in
-     * current alliance frame.
-     */
-    private boolean isObjectWithinROI(Optional<ObjectDetectionObservation> observation) {
-        if (observation.isEmpty() || observation.get().objectPose().isEmpty()) {
-            return false;
-        }
-        Pose2d objectPose = observation.get().objectPose().get();
-        // Mirror ROI if necessary based on current alliance and starting position
-        boolean flipX = FieldUtil.shouldFlip();
-        boolean flipY = FieldUtil.isBlueLeft(robotState.getEstimatedPose());
-        Translation2d mirroredBottomRight = getMirroredROI(bottomRightROI, flipX, flipY);
-        Translation2d mirroredTopLeft = getMirroredROI(topLeftROI, flipX, flipY);
-        // Order coordinates for ROI boundary check
-        double minX =
-                Math.min(
-                        mirroredBottomRight.getMeasureX().in(Meters),
-                        mirroredTopLeft.getMeasureX().in(Meters));
-        double maxX =
-                Math.max(
-                        mirroredBottomRight.getMeasureX().in(Meters),
-                        mirroredTopLeft.getMeasureX().in(Meters));
-        double minY =
-                Math.min(
-                        mirroredBottomRight.getMeasureY().in(Meters),
-                        mirroredTopLeft.getMeasureY().in(Meters));
-        double maxY =
-                Math.max(
-                        mirroredBottomRight.getMeasureY().in(Meters),
-                        mirroredTopLeft.getMeasureY().in(Meters));
+    // Private helper for visualizing ROI corners.
+    private void logROI(List<Translation2d> mirroredCorners) {
+        double x1 = mirroredCorners.get(0).getX();
+        double x2 = mirroredCorners.get(1).getX();
+        double y1 = mirroredCorners.get(0).getY();
+        double y2 = mirroredCorners.get(1).getY();
 
-        return objectPose.getX() >= minX
-                && objectPose.getX() <= maxX
-                && objectPose.getY() >= minY
-                && objectPose.getY() <= maxY;
-    }
+        Translation2d a = new Translation2d(Math.max(x1, x2), Math.max(y1, y2));
+        Translation2d b = new Translation2d(Math.min(x1, x2), Math.max(y1, y2));
+        Translation2d c = new Translation2d(Math.min(x1, x2), Math.min(y1, y2));
+        Translation2d d = new Translation2d(Math.max(x1, x2), Math.min(y1, y2));
 
-    /**
-     * Updates an ROI corner transform, mirroring the blue-right canonical convention if red and/or
-     * left.
-     */
-    private Translation2d getMirroredROI(Translation2d point, boolean flipX, boolean flipY) {
-        double x = point.getMeasureX().in(Meters);
-        double y = point.getMeasureY().in(Meters);
-        if (flipX) x = FieldConstants.FIELD_LENGTH - x;
-        if (flipY) y = FieldConstants.FIELD_WIDTH - y;
-        return new Translation2d(Meters.of(x), Meters.of(y));
+        Logger.recordOutput(
+                "Detection/ROI",
+                new Pose2d[] {
+                    new Pose2d(a, Rotation2d.kZero),
+                    new Pose2d(b, Rotation2d.kZero),
+                    new Pose2d(c, Rotation2d.kZero),
+                    new Pose2d(d, Rotation2d.kZero),
+                    new Pose2d(a, Rotation2d.kZero)
+                });
     }
 
     @Override
@@ -199,16 +237,20 @@ public class ObjectDetector extends SubsystemBase {
         // Update the inputs data structure associated with this Object Detection camera with latest
         // readings
         objectDetection.periodic();
+        // Calculate corrected ROI corners based on current alliance and starting position
+        List<Translation2d> correctedCorners = getCorrectedROI();
         // Now that inputs are updated, re-populate observations with new data
         if (objectDetection.getTargets().length > 0) {
-            // Generate latest ML Object observations
-            // Currently factored to only generate observations for targets whose full poses are
-            // within the dynamically-updated ROI at the time of detection. Primarily for use in
-            // autos with a momentary / stationary decision point.
+            // Generate latest ML Object observations within the corrected ROI
             latestObjectObservation =
                     Arrays.stream(objectDetection.getTargets())
                             .map(this::generateObjectObservation)
-                            .filter(this::isObjectWithinROI)
+                            .filter(
+                                    obs ->
+                                            isObjectWithinROI(
+                                                    obs,
+                                                    correctedCorners.get(0),
+                                                    correctedCorners.get(1)))
                             .toList();
             // Generate latest Contour observations
             latestBigContourObservation = generateContourObservation(ContourSelectionMode.LARGEST);
@@ -223,5 +265,6 @@ public class ObjectDetector extends SubsystemBase {
         logObjectObservation(latestObjectObservation);
         logContourObservation(latestBigContourObservation, ContourSelectionMode.LARGEST);
         logContourObservation(latestLowContourObservation, ContourSelectionMode.LOWEST);
+        logROI(correctedCorners);
     }
 }
