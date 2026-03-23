@@ -40,7 +40,7 @@ public final class Constants {
     public static final Mode simMode = Mode.SIM;
     public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
-    public static final boolean tuningMode = false;
+    public static final boolean tuningMode = true;
 
     public static enum Mode {
         /** Running on a real robot. */
@@ -96,7 +96,7 @@ public final class Constants {
         public static final Distance PATHGENERATION_DRIVE_TOLERANCE = Inches.of(3.0);
         public static final Angle PATHGENERATION_ROT_TOLERANCE = Degrees.of(5.0);
         // Tune the maxAcceleration, maxAngularVelocityRadPerSec, and
-        // maxAngularAccelerationRacPerSecSq constraints for pathfinding
+        // maxAngularAccelerationRadPerSecSq constraints for pathfinding.
         public static final PathConstraints ON_THE_FLY_PATH_CONSTRAINTS =
                 new PathConstraints(
                         DriveConstants.kSpeedAt12Volts.magnitude(),

@@ -1,92 +1,115 @@
-/*
- * Copyright (C) 2026 Windham Windup
- *
- * This program is free software: you can redistribute it and/or modify it under the terms of the
- * GNU General Public License as published by the Free Software Foundation, either version 3 of the
- * License, or any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with this program. If
- * not, see <https://www.gnu.org/licenses/>.
- */
-
 package frc.robot.commands.autos;
 
-import com.pathplanner.lib.auto.AutoBuilder;
+import choreo.auto.AutoRoutine;
+import choreo.auto.AutoTrajectory;
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
-import frc.lib.util.AutoRoutine;
+import frc.robot.commands.autos.utils.AutoCommands;
+import frc.robot.commands.autos.utils.AutoContext;
+import frc.robot.commands.autos.utils.AutoOption;
+import frc.robot.commands.autos.utils.AutoUtil;
 import frc.robot.generated.ChoreoTraj;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.IndexerSuperstructure;
-import frc.robot.subsystems.intake.IntakeSuperstructure;
-import frc.robot.subsystems.shooter.ShooterSuperstructure;
-import frc.robot.subsystems.tower.Tower;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Set;
 
-public class NeutralAuto extends AutoRoutine {
-
-    public NeutralAuto(
-            Drive drive,
-            IntakeSuperstructure intake,
-            IndexerSuperstructure indexer,
-            Tower tower,
-            ShooterSuperstructure shooter,
-            boolean shouldMirror,
-            boolean isSafe) {
-        // Choose path names based on start position
-        List<ChoreoTraj> expectedPaths;
-        if (isSafe) {
-            expectedPaths =
-                    List.of(ChoreoTraj.NeutralSafe1, ChoreoTraj.NeutralSafe2, ChoreoTraj.Neutral2);
-        } else {
-            expectedPaths =
-                    List.of(ChoreoTraj.Neutral1, ChoreoTraj.NeutralSafe2, ChoreoTraj.Neutral2);
-        }
-
-        // Load the named paths
-        this.loadAllPaths(expectedPaths.stream().map(p -> p.name()).toList(), shouldMirror, true);
-
-        // Defensive check: ensure we loaded exactly the expected number of paths and none are null
-        if (!pathPlannerPaths.isEmpty()
-                && pathPlannerPaths.size() == expectedPaths.size()
-                && !pathPlannerPaths.contains(null)) {
-            loadCommands(
-                    AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
-                    // Delay if necessary
-                    Commands.defer(
-                            () -> Commands.waitSeconds(AutoCommands.getAutoDelay()), Set.of()),
-                    // Sweep neutral zone while intaking
-                    AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
-                    // Run back under the trench and shoot
-                    // Initialize intake and hood to starting positions for teleop
-                    Commands.repeatingSequence(
-                                    AutoCommands.stowHood(shooter),
-                                    intake.retractIntake().asProxy().withTimeout(0.5),
-                                    // Drive to the neutral zone
-                                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                                    AutoCommands.shootCommand(
-                                            drive, intake, indexer, tower, shooter, 10),
-                                    AutoCommands.stowHood(shooter),
-                                    intake.retractIntake().asProxy().withTimeout(0.5),
-                                    // Drive to the neutral zone
-                                    AutoBuilder.followPath(pathPlannerPaths.get(2)),
-                                    AutoCommands.shootCommand(
-                                            drive, intake, indexer, tower, shooter, 10))
-                            .finallyDo(
-                                    () ->
-                                            CommandScheduler.getInstance()
-                                                    .schedule(
-                                                            intake.stopRoller()
-                                                                    .ignoringDisable(true))));
-        }
+/** Native Choreo routine for the neutral-zone multi-piece autonomous variants. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class NeutralAuto {
+    /**
+     * Builds the selected neutral auto variant.
+     *
+     * @param shouldMirror Whether to mirror the route for the opposite starting side
+     * @param isSafe Whether to use the safer first segment instead of the aggressive one
+     */
+    public static AutoOption create(AutoContext ctx, boolean shouldMirror, boolean isSafe) {
+        List<String> names =
+                isSafe
+                        ? List.of(
+                                ChoreoTraj.NeutralSafe1.name(),
+                                ChoreoTraj.NeutralSafe2.name(),
+                                ChoreoTraj.Neutral2.name())
+                        : List.of(
+                                ChoreoTraj.Neutral1.name(),
+                                ChoreoTraj.NeutralSafe2.name(),
+                                ChoreoTraj.Neutral2.name());
+        List<Trajectory<SwerveSample>> trajectories =
+                AutoUtil.loadTrajectories(names, shouldMirror);
+        return AutoUtil.trajectoryOption(
+                trajectories,
+                () -> {
+                    AutoRoutine routine =
+                            ctx.autoFactory()
+                                    .newRoutine(
+                                            "Neutral"
+                                                    + (isSafe ? "Safe" : "Aggressive")
+                                                    + (shouldMirror ? "Right" : "Left"));
+                    AutoTrajectory first = routine.trajectory(trajectories.get(0));
+                    AutoTrajectory second = routine.trajectory(trajectories.get(1));
+                    AutoTrajectory third = routine.trajectory(trajectories.get(2));
+                    AutoUtil.bindEvents(ctx, first, second, third);
+                    routine.active()
+                            .onTrue(
+                                    Commands.sequence(
+                                            Commands.runOnce(
+                                                    ctx.drive()::resetTrajectoryControllers),
+                                            first.resetOdometry(),
+                                            Commands.defer(
+                                                    () ->
+                                                            Commands.waitSeconds(
+                                                                    AutoCommands.getAutoDelay()),
+                                                    Set.of()),
+                                            first.cmd(),
+                                            AutoCommands.shootCommand(
+                                                    ctx.drive(),
+                                                    ctx.intake(),
+                                                    ctx.indexer(),
+                                                    ctx.tower(),
+                                                    ctx.shooter(),
+                                                    2.5),
+                                            Commands.repeatingSequence(
+                                                            AutoCommands.stowHood(ctx.shooter()),
+                                                            ctx.intake()
+                                                                    .retractIntake()
+                                                                    .asProxy()
+                                                                    .withTimeout(0.5),
+                                                            second.cmd(),
+                                                            AutoCommands.shootCommand(
+                                                                    ctx.drive(),
+                                                                    ctx.intake(),
+                                                                    ctx.indexer(),
+                                                                    ctx.tower(),
+                                                                    ctx.shooter(),
+                                                                    10),
+                                                            AutoCommands.stowHood(ctx.shooter()),
+                                                            ctx.intake()
+                                                                    .retractIntake()
+                                                                    .asProxy()
+                                                                    .withTimeout(0.5),
+                                                            third.cmd(),
+                                                            AutoCommands.shootCommand(
+                                                                    ctx.drive(),
+                                                                    ctx.intake(),
+                                                                    ctx.indexer(),
+                                                                    ctx.tower(),
+                                                                    ctx.shooter(),
+                                                                    10))
+                                                    .finallyDo(
+                                                            () ->
+                                                                    CommandScheduler.getInstance()
+                                                                            .schedule(
+                                                                                    ctx.intake()
+                                                                                            .stopRoller()
+                                                                                            .ignoringDisable(
+                                                                                                    true)))));
+                    return routine;
+                });
     }
 }
