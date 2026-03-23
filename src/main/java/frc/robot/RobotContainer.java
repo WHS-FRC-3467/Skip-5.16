@@ -18,7 +18,6 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -150,6 +149,8 @@ public class RobotContainer {
                     pathPoses[0] = FieldUtil.apply(auto.startingPose());
 
                     autoPreviewField.getObject("path").setPoses(pathPoses);
+
+                    auto.command();
                 });
 
         autoChooser.addOption(
@@ -161,7 +162,6 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
         initializeDashboard();
-        configureLEDTriggers();
     }
 
     /**
@@ -182,11 +182,19 @@ public class RobotContainer {
                 .rightTrigger()
                 .whileTrue(
                         Commands.parallel(
-                                DriveCommands.staticAimTowardsTarget(drive),
+                                Commands.either(
+                                        DriveCommands.joystickDriveFacingFutureTarget(
+                                                drive,
+                                                () -> -controller.getLeftY() * 0.4,
+                                                () -> -controller.getLeftX() * 0.4,
+                                                robotState.feedLookaheadSeconds),
+                                        DriveCommands.staticAimTowardsTarget(drive),
+                                        shooter.shouldFeed),
                                 shooter.spinUpShooter(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
                                         .onlyWhile(
-                                                shooter.readyToShoot.and(robotState.facingTarget))
+                                                shooter.readyToShoot.and(
+                                                        robotState.facingFeedTarget))
                                         .repeatedly()))
                 .onFalse(
                         Commands.parallel(
@@ -284,16 +292,27 @@ public class RobotContainer {
                                                                 .getEstimatedPose()
                                                                 .getTranslation(),
                                                         Rotation2d.kZero))));
+
+        // Operator A: Home Hood and Intake
         operatorController
                 .a()
                 .whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));
+
+        // Operator B: Eject
         operatorController
                 .b()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
+
+        // Operator X: Retract Intake
         operatorController.x().onTrue(intake.retractIntake());
+
+        // Operator POV Up: Trim shot power up
         operatorController.povUp().onTrue(shooter.trimFlywheelSpeedUp());
+
+        // Operator POV Down: Trim shot power down
         operatorController.povDown().onTrue(shooter.trimFlywheelSpeedDown());
 
+        // Operator Y: Manual Spinup
         operatorController
                 .y()
                 .whileTrue(
@@ -304,12 +323,6 @@ public class RobotContainer {
                 .negate()
                 .and(operatorController.y().negate())
                 .onTrue(shooter.stopFlywheels());
-
-        // robotState.enteringTrench.whileTrue(
-        //         shooter.forceHoodAngle(Rotations.zero())
-        //                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
-        //                 .onlyIf(isAutonomous.negate()));
-
     }
 
     /**
@@ -373,52 +386,6 @@ public class RobotContainer {
                 new DriveToPose(drive, () -> startPose)
                         .withDistanceTolerance(Meters.of(0.04))
                         .withAngularTolerance(Degrees.of(3)));
-
-        SmartDashboard.putData("Drive/Zero", drive.runOnce(() -> drive.runCharacterization(0.0)));
-        SmartDashboard.putData(
-                "Drive/Face Zero",
-                DriveCommands.joystickDriveAtAngle(
-                        drive, () -> 0.0, () -> 0.0, () -> Rotation2d.kZero));
-        SmartDashboard.putData(
-                "Drive/Face 180",
-                DriveCommands.joystickDriveAtAngle(
-                        drive, () -> 0.0, () -> 0.0, () -> Rotation2d.k180deg));
-
-        SmartDashboard.putData(
-                "Pathfind to Start",
-                DriveCommands.pathFindToPose(
-                        drive,
-                        () -> robotState.getEstimatedPose(),
-                        () -> startPose,
-                        DriveConstants.PATH_CONSTRAINTS,
-                        MetersPerSecond.of(0),
-                        Inches.of(5)));
-
-        // Diagnostics
-        // SmartDashboard.putData(
-        //         "Enable Vision Odometry Characterization",
-        //         Commands.runOnce(() -> VisionOdometryCharacterizer.enable()));
-        // SmartDashboard.putData(
-        //         "Disable Vision Odometry Characterization",
-        //         Commands.runOnce(() -> VisionOdometryCharacterizer.disable()));
-        // SmartDashboard.putData(
-        //         "Reset Vision Odometry Characterization",
-        //         Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
-    }
-
-    /** Creates and/or binds triggers to LED states */
-    private void configureLEDTriggers() {
-        // isAutonomous
-        //         .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_AUTO))
-        //         .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_AUTO));
-
-        // shooter.readyToShoot
-        //         .onTrue(leds.scheduleStateCommand(LEDs.State.READY_TO_SHOOT))
-        //         .onFalse(leds.unscheduleStateCommand(LEDs.State.READY_TO_SHOOT));
-
-        // new Trigger(() -> intake.isIntaking())
-        //         .onTrue(leds.scheduleStateCommand(LEDs.State.RUNNING_INTAKE))
-        //         .onFalse(leds.unscheduleStateCommand(LEDs.State.RUNNING_INTAKE));
     }
 
     /**

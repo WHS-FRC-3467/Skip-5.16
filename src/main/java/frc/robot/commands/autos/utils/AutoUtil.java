@@ -75,7 +75,11 @@ public final class AutoUtil {
             return names.stream().map(name -> loadTrajectory(name, shouldMirror)).toList();
         } catch (RuntimeException e) {
             DriverStation.reportError(
-                    "Failed to load Choreo trajectory for auto.", e.getStackTrace());
+                    "Failed to load Choreo trajectory for auto. Names: "
+                            + names
+                            + ", shouldMirror="
+                            + shouldMirror,
+                    e.getStackTrace());
             return List.of();
         }
     }

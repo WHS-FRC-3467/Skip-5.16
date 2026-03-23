@@ -72,9 +72,9 @@ public class DriveCommands {
     @Getter private static final double ANGLE_MAX_VELOCITY = 8.3;
     @Getter private static final double ANGLE_MAX_ACCELERATION = 20.0;
     private static final LoggedTunableNumber ANGLE_KP =
-            new LoggedTunableNumber("Drive/AngleP", 10.0);
+            new LoggedTunableNumber("Drive/AngleP", 8.0);
     private static final LoggedTunableNumber ANGLE_KD =
-            new LoggedTunableNumber("Drive/AngleD", 0.5);
+            new LoggedTunableNumber("Drive/AngleD", 0.2);
     private static final LoggedTunableNumber ANGLE_TOLERANCE_ROTATIONS =
             new LoggedTunableNumber("Drive/AngleToleranceRotations", 0.005);
     private static final double FF_START_DELAY = 2.0; // Secs
@@ -257,6 +257,32 @@ public class DriveCommands {
     }
 
     /**
+     * Field relative drive command using joystick for linear control and PID for angular control.
+     * Always faces the current target in RobotState {@code lookAhead} seconds in the future
+     *
+     * @param drive the drive subsystem
+     * @param xSupplier supplier for x-axis joystick input
+     * @param ySupplier supplier for y-axis joystick input
+     * @param lookAhead seconds to look ahead in the future
+     * @return the joystick drive facing target command
+     */
+    public static Command joystickDriveFacingFutureTarget(
+            Drive drive,
+            DoubleSupplier xSupplier,
+            DoubleSupplier ySupplier,
+            DoubleSupplier lookAhead) {
+        RobotState robotState = RobotState.getInstance();
+        return joystickDriveAtAngle(
+                drive,
+                xSupplier,
+                ySupplier,
+                () -> {
+                    Pose2d pose = robotState.getFuturePose(lookAhead.getAsDouble());
+                    return robotState.getAngleToTarget(pose.getTranslation());
+                });
+    }
+
+    /**
      * Stationary control command that prohibits motion while it aims towards the target, then holds
      * the wheels in an X pattern once the robot is aligned with the target heading.
      *
@@ -264,13 +290,6 @@ public class DriveCommands {
      * @return the static aim towards target command
      */
     public static Command staticAimTowardsTarget(Drive drive) {
-        RobotState robotState = RobotState.getInstance();
-        return Commands.repeatingSequence(
-                joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget));
-    }
-
-    // This will need to get updated. This is not the most optimal set of code - Wilk
-    public static Command autoAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
         return joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget);
     }
