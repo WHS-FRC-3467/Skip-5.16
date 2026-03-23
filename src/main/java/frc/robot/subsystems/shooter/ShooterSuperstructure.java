@@ -207,7 +207,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             RobotBase.isSimulation()
                     ? new LoggedTrigger(
                             getName() + "/hopperEmpty",
-                            () -> RobotSim.getInstance().getFuelSim().getHeldFuel() == 0)
+                            () ->
+                                    hopperEmptyDebouncer.calculate(
+                                            RobotSim.getInstance().getFuelSim().getHeldFuel() == 0))
                     : new LoggedTrigger(
                             getName() + "/hopperEmpty",
                             () ->
@@ -404,12 +406,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Spin up shooter to HUB distance
+     * Spin up shooter to a fixed distance, i.e. against the HUB, TRENCH, or TOWER. PRECONDITION:
+     * ASSUMES THAT THE HOOD IS SAFE. Primarily for use in no-vision teleop.
      *
-     * @return a Command to prepare for the hub shot
+     * @return a Command to prepare for the fixed shot
      */
-    public Command spinUpShooterToHubDistance() {
-        double distance = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
+    public Command spinUpShooterToFixedDistance(double distance) {
         return Commands.run(
                         () -> {
                             spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance)));

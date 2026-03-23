@@ -1,4 +1,3 @@
-// spotless:off
 package frc.robot.generated;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -75,6 +74,13 @@ public record ChoreoTraj(
                     1.17086,
                     new Pose2d(5.65, 7.39928, Rotation2d.fromRadians(-1.5708)),
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
+    public static final ChoreoTraj Depot1 =
+            new ChoreoTraj(
+                    "Depot1",
+                    OptionalInt.empty(),
+                    3.96128,
+                    new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
+                    new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
 
     /**
      * A map between trajectory names and their corresponding data. This allows for trajectory data
@@ -89,7 +95,8 @@ public record ChoreoTraj(
                     Map.entry("NeutralSafe1Nashoba", NeutralSafe1Nashoba),
                     Map.entry("NeutralSafe1_copy1", NeutralSafe1_copy1),
                     Map.entry("NeutralSafe2", NeutralSafe2),
-                    Map.entry("TunnelPath", TunnelPath));
+                    Map.entry("TunnelPath", TunnelPath),
+                    Map.entry("Depot1", Depot1));
 
     /**
      * Looks up the ChoreoTraj segment of the given overall ChoreoTraj. WARNING: will raise an
@@ -104,4 +111,3 @@ public record ChoreoTraj(
         return traj;
     }
 }
-// spotless:on
