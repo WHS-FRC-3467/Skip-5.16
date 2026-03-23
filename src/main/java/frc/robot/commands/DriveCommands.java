@@ -261,7 +261,6 @@ public class DriveCommands {
                 joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget));
     }
 
-    // This will need to get updated. This is not the most optimal set of code - Wilk
     public static Command autoAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
         return joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget);
