@@ -74,7 +74,6 @@ public class DepotShootAuto extends AutoRoutine {
                     AutoBuilder.followPath(pathPlannerPaths.get(1)),
                     AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
                     AutoCommands.stowHood(shooter),
-                  
                     Commands.repeatingSequence(
                                     AutoCommands.stowHood(shooter),
                                     intake.retractIntake().asProxy().withTimeout(0.5),
