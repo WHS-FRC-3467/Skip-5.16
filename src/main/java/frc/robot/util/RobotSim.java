@@ -33,12 +33,9 @@ public class RobotSim {
     @Getter(lazy = true)
     private static final RobotSim instance = new RobotSim();
 
-    /**
-     * A fudge factor (multiplier) for the velocity of launched fuel in simulation vs the velocity
-     * of the flywheels
-     */
-    private static final LoggedTunableNumber LAUNCH_VELOCITY_FUDGE =
-            new LoggedTunableNumber("Sim/LaunchVelocityFudge", 0.72);
+    /** A fudge factor to account for mechanical losses on the real robot */
+    private static final LoggedTunableNumber BALL_VELOCITY_FUDGE =
+            new LoggedTunableNumber("Sim/BallVelocityFudge", 0.68);
 
     private final RobotState robotState = RobotState.getInstance();
 
@@ -55,7 +52,7 @@ public class RobotSim {
                 new Trigger(
                         () ->
                                 (shooter.readyToShoot.getAsBoolean()
-                                        && (indexer.getFloorSpeed() > 0.1)
+                                        && (indexer.getFloorSpeed() < 0.1)
                                         && (fuelSim.getHeldFuel() > 0)));
 
         shootSimFuel.whileTrue(
@@ -63,9 +60,9 @@ public class RobotSim {
                         Commands.waitSeconds(.1),
                         Commands.runOnce(
                                 () -> {
-                                    LinearVelocity launchVelocity =
+                                    LinearVelocity ballVelocity =
                                             shooter.getAverageLinearVelocity()
-                                                    .times(LAUNCH_VELOCITY_FUDGE.get());
+                                                    .times(BALL_VELOCITY_FUDGE.get());
 
                                     fuelSim.spawnFuel(
                                             new Pose3d(robotState.getEstimatedPose())
@@ -77,15 +74,11 @@ public class RobotSim {
                                                                     Rotation3d.kZero))
                                                     .getTranslation(),
                                             fuelSim.launchVel(
-                                                    launchVelocity,
+                                                    ballVelocity,
                                                     Degrees.of(75.0)
                                                             .minus(shooter.getHoodAngle())));
-
-                                    // Only shoot out of one shooter if there is one ball
-                                    if (fuelSim.getHeldFuel() == 1) {
-                                        fuelSim.fillHopperBy(-1);
-                                        return;
-                                    }
+                                    fuelSim.fillHopperBy(-1);
+                                    if (fuelSim.getHeldFuel() == 0) return;
 
                                     fuelSim.spawnFuel(
                                             new Pose3d(robotState.getEstimatedPose())
@@ -97,11 +90,10 @@ public class RobotSim {
                                                                     Rotation3d.kZero))
                                                     .getTranslation(),
                                             fuelSim.launchVel(
-                                                    launchVelocity,
+                                                    ballVelocity,
                                                     Degrees.of(75.0)
                                                             .minus(shooter.getHoodAngle())));
-
-                                    fuelSim.fillHopperBy(-2);
+                                    fuelSim.fillHopperBy(-1);
                                 })));
 
         Trigger intakeSimFuel = new Trigger(intake::isIntaking);

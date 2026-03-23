@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-import frc.robot.commands.autos.AutoCommands;
+import frc.robot.commands.autos.utils.AutoCommands;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.Elastic;
 import frc.robot.util.HubState;
@@ -207,12 +207,9 @@ public class Robot extends LoggedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        // This makes sure that the autonomous stops running when
-        // teleop starts running. If you want the autonomous to
-        // continue until interrupted by another command, remove
-        // this line or comment it out.
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
+            autonomousCommand = null;
         }
 
         // Switch to Teleop tab in Elastic Dashboard
@@ -237,7 +234,7 @@ public class Robot extends LoggedRobot {
     /** This function is called once when test mode is enabled. */
     @Override
     public void testInit() {
-        // Cancels all running commands at the start of test mode.
+        autonomousCommand = null;
         CommandScheduler.getInstance().cancelAll();
     }
 
