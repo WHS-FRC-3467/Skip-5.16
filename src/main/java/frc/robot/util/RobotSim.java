@@ -93,6 +93,7 @@ public class RobotSim {
                                                     ballVelocity,
                                                     Degrees.of(75.0)
                                                             .minus(shooter.getHoodAngle())));
+                                    fuelSim.fillHopperBy(-1);
                                 })));
 
         Trigger intakeSimFuel = new Trigger(intake::isIntaking);
