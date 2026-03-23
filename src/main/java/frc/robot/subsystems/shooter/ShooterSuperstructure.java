@@ -32,6 +32,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -47,6 +48,7 @@ import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
+import frc.robot.util.RobotSim;
 
 import lombok.Getter;
 
@@ -202,13 +204,19 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // staticShotState as a proxy for a shot
     private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
     public final LoggedTrigger hopperEmpty =
-            new LoggedTrigger(
-                    getName() + "/hopperEmpty",
-                    () ->
-                            hopperEmptyDebouncer.calculate(
-                                    staticShotState.getAsBoolean()
-                                            && !leftBallTrigger.getAsBoolean()
-                                            && !rightBallTrigger.getAsBoolean()));
+            RobotBase.isSimulation()
+                    ? new LoggedTrigger(
+                            getName() + "/hopperEmpty",
+                            () ->
+                                    hopperEmptyDebouncer.calculate(
+                                            RobotSim.getInstance().getFuelSim().getHeldFuel() == 0))
+                    : new LoggedTrigger(
+                            getName() + "/hopperEmpty",
+                            () ->
+                                    hopperEmptyDebouncer.calculate(
+                                            staticShotState.getAsBoolean()
+                                                    && !leftBallTrigger.getAsBoolean()
+                                                    && !rightBallTrigger.getAsBoolean()));
 
     public final LoggedTrigger shouldFeed =
             new LoggedTrigger(

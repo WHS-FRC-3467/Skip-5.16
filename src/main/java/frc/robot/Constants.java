@@ -96,7 +96,7 @@ public final class Constants {
         public static final Distance PATHGENERATION_DRIVE_TOLERANCE = Inches.of(3.0);
         public static final Angle PATHGENERATION_ROT_TOLERANCE = Degrees.of(5.0);
         // Tune the maxAcceleration, maxAngularVelocityRadPerSec, and
-        // maxAngularAccelerationRacPerSecSq constraints for pathfinding
+        // maxAngularAccelerationRadPerSecSq constraints for pathfinding.
         public static final PathConstraints ON_THE_FLY_PATH_CONSTRAINTS =
                 new PathConstraints(
                         DriveConstants.kSpeedAt12Volts.magnitude(),
