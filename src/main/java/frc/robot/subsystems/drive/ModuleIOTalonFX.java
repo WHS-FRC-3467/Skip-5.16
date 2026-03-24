@@ -239,8 +239,18 @@ public class ModuleIOTalonFX implements ModuleIO {
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
         if (RobotState.getInstance().LOW_POWER_MODE) {
-            driveConfig.CurrentLimits.SupplyCurrentLimit = 0.5;
-            driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+            updateThread.ctreCheckErrorAndRetry(
+                            () -> {
+                                driveConfig.CurrentLimits.SupplyCurrentLimit = 10;
+                                driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+                                return driveTalon.getConfigurator().apply(driveConfig);
+                            })
+                    .exceptionally(
+                            ex -> {
+                                LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                                return null;
+                            });
+    
         }
         // Refresh all signals
         var driveStatus =
