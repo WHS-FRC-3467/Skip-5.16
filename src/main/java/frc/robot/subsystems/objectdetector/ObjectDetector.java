@@ -52,7 +52,7 @@ public class ObjectDetector extends SubsystemBase {
     private final RobotState robotState = RobotState.getInstance();
     private final ObjectDetection objectDetection;
     private int maxDetectionsSize = 0;
-    private static final Translation2d INVALID_TRANSLATION = new Translation2d(-1, -1);
+    private static final Translation2d INVALID_TRANSLATION = new Translation2d(-1.0, -1.0);
 
     @Getter private List<Optional<ObjectDetectionObservation>> latestObjectObservation;
     @Getter private Optional<ObjectDetectionObservation> latestBigContourObservation;
@@ -60,7 +60,7 @@ public class ObjectDetector extends SubsystemBase {
 
     /**
      * Bottom left coordinate of the rectangular bounding box representing the Object Detection ROI
-     * (i.e. spatial histogram) in the blue left alliance frame. This ROI is automaticaly alliance
+     * (i.e. spatial histogram) in the blue left alliance frame. This ROI is automatically alliance
      * corrected (e.g. the zone would be reflected such that red 1 and blue 1 have the same driver
      * station relative detection zone) and an optional left/right mirror is provided by {@link
      * #shouldMirror} for use in autos.
@@ -71,7 +71,7 @@ public class ObjectDetector extends SubsystemBase {
 
     /**
      * Top right coordinate of a rectangular bounding box representing the Object Detection ROI
-     * (i.e. spatial histogram) in the blue left alliance frame. This ROI is automaticaly alliance
+     * (i.e. spatial histogram) in the blue left alliance frame. This ROI is automatically alliance
      * corrected (e.g. the zone would be reflected such that red 1 and blue 1 have the same driver
      * station relative detection zone) and an optional left/right mirror is provided by {@link
      * #shouldMirror} for use in autos.
