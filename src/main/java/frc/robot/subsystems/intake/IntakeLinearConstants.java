@@ -42,7 +42,6 @@ import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFXSim;
-import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.linear.LinearMechanism;
 import frc.lib.mechanisms.linear.LinearMechanism.LinearMechCharacteristics;
 import frc.lib.mechanisms.linear.LinearMechanismReal;
@@ -101,7 +100,6 @@ public class IntakeLinearConstants {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = false;
-        config.CurrentLimits.StatorCurrentLimitEnable = false;
 
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
@@ -146,7 +144,7 @@ public class IntakeLinearConstants {
      *
      * @return A configured LinearMechanism instance
      */
-    public static DistanceControlledMechanism<LinearMechanism<?>> getMechanism() {
+    public static LinearMechanism<?> getMechanism() {
         LinearMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -174,8 +172,7 @@ public class IntakeLinearConstants {
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
         mechanism.enableTunablePID(PIDSlot.SLOT_1, SLOT1_PID);
-
-        return new DistanceControlledMechanism<LinearMechanism<?>>(mechanism, DRUM_RADIUS)
-                .withKey("IntakeSuperstructure/Linear");
+        mechanism.withRadius(DRUM_RADIUS);
+        return mechanism;
     }
 }

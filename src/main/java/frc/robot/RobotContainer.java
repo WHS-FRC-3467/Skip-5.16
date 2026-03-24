@@ -18,13 +18,12 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.events.EventTrigger;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -58,7 +57,6 @@ import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
@@ -190,14 +188,11 @@ public class RobotContainer {
                 .rightTrigger()
                 .whileTrue(
                         Commands.parallel(
-                                DriveCommands.joystickDriveAtAngle(
-                                        drive,
-                                        () -> -controller.getLeftY(),
-                                        () -> -controller.getLeftX(),
-                                        robotState::getAngleToTarget),
+                                DriveCommands.staticAimTowardsTarget(drive),
                                 shooter.spinUpShooter(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
-                                        .onlyWhile(shooter.readyToShoot.and(robotState.canShoot))
+                                        .onlyWhile(
+                                                shooter.readyToShoot.and(robotState.facingTarget))
                                         .repeatedly()))
                 .onFalse(
                         Commands.parallel(
@@ -238,7 +233,8 @@ public class RobotContainer {
                 .whileTrue(
                         Commands.parallel(
                                 DriveCommands.stopWithX(drive),
-                                shooter.spinUpShooterToHubDistance(),
+                                shooter.spinUpShooterToFixedDistance(
+                                        FieldConstants.Hub.HUB_SHOT_DISTANCE),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
                         Commands.parallel(
@@ -247,6 +243,53 @@ public class RobotContainer {
                                 tower.stopCommand(),
                                 intake.extendIntake(),
                                 shooter.retractHood()));
+
+        // Driver Y: Midline Feed/Pass (No-Vision Fallback)
+        controller
+                .y()
+                .whileTrue(
+                        Commands.parallel(
+                                shooter.spinUpShooterMidlineFeed(),
+                                Commands.sequence(
+                                        Commands.waitUntil(shooter.atMidlineFeedSetpoints)
+                                                .withTimeout(0.75),
+                                        Commands.parallel(indexer.shoot(), tower.shoot()))))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stopAndStow(),
+                                indexer.stopCommand(),
+                                tower.stopCommand(),
+                                intake.extendIntake(),
+                                shooter.retractHood()));
+
+        // Driver A: Shot From Back of Robot Against Tower (No-Vision Fallback)
+        controller
+                .a()
+                .whileTrue(
+                        Commands.parallel(
+                                DriveCommands.stopWithX(drive),
+                                shooter.spinUpShooterToFixedDistance(
+                                        FieldConstants.Tower.TOWER_SHOT_DISTANCE),
+                                Commands.parallel(indexer.shoot(), tower.shoot())))
+                .onFalse(
+                        Commands.parallel(
+                                shooter.stopAndStow(),
+                                indexer.stopCommand(),
+                                tower.stopCommand(),
+                                intake.extendIntake(),
+                                shooter.retractHood()));
+        controller
+                .start()
+                .and(controller.back())
+                .onTrue(
+                        Commands.runOnce(
+                                () ->
+                                        robotState.resetPose(
+                                                new Pose2d(
+                                                        robotState
+                                                                .getEstimatedPose()
+                                                                .getTranslation(),
+                                                        Rotation2d.kZero))));
         operatorController
                 .a()
                 .whileTrue(Commands.parallel(intake.homeLinear(), shooter.homeHood()));
@@ -276,15 +319,6 @@ public class RobotContainer {
         new EventTrigger("RetractIntake").onTrue(intake.retractIntake());
         new EventTrigger("ExtendIntake").onTrue(intake.autoIntake());
         new EventTrigger("Spinup").onTrue(shooter.spinUpShooterToHubDistance(Meters.of(3.555)));
-
-        HubState.getInstance()
-                .getHubChange()
-                .whileTrue(
-                        Commands.repeatingSequence(
-                                controller.rumbleForTime(
-                                        RumbleType.kBothRumble, 1.0, Seconds.of(0.5)),
-                                Commands.waitSeconds(0.5)))
-                .onFalse(controller.rumble(RumbleType.kBothRumble, 0.0));
     }
 
     /**

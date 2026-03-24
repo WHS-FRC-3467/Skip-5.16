@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.lib.io.motor.MotorIO.PIDSlot;
-import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
@@ -58,7 +57,7 @@ public class Tower extends SubsystemBase {
     private static final LoggedTunableNumber TUNING_MODE_SPEED_RPS =
             new LoggedTunableNumber(TowerConstants.NAME + "/Tuning/SpeedRPS", 0.0);
 
-    private final DistanceControlledMechanism<FlywheelMechanism<?>> io;
+    private final FlywheelMechanism<?> io;
 
     private final Command tuningModeCommand =
             Commands.sequence(
@@ -89,7 +88,7 @@ public class Tower extends SubsystemBase {
      *
      * @param io the flywheel mechanism IO implementation for the tower
      */
-    public Tower(DistanceControlledMechanism<FlywheelMechanism<?>> io) {
+    public Tower(FlywheelMechanism<?> io) {
         this.io = io;
         TUNING_MODE_ENABLED.whileTrue(tuningModeCommand);
     }
@@ -110,7 +109,7 @@ public class Tower extends SubsystemBase {
     }
 
     private void runVelocity(AngularVelocity velocity) {
-        io.runVelocity(velocity, TowerConstants.MAX_ACCELERATION, PIDSlot.SLOT_0);
+        io.runVelocity(velocity, PIDSlot.SLOT_0);
     }
 
     /**
