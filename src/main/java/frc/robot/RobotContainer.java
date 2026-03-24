@@ -33,7 +33,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
-import frc.robot.Constants.PathConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
@@ -77,7 +76,6 @@ public class RobotContainer {
     private final IntakeSuperstructure intake;
     private final IndexerSuperstructure indexer;
     private final Tower tower;
-    // private final LEDs leds;
     // private final ObjectDetector objectDetector;
 
     // Controller
@@ -101,7 +99,6 @@ public class RobotContainer {
         tower = TowerConstants.get();
         VisionConstants.create();
         // VisionOdometryCharacterizer.enable();
-        // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
         if (RobotBase.isSimulation()) {
@@ -445,14 +442,14 @@ public class RobotContainer {
             SmartDashboard.putBoolean(
                     "Auto Pose Check/Robot Position Within Tolerance",
                     distanceFromStartPose.in(Inches)
-                            < PathConstants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches));
+                            < Constants.STARTING_POSE_DRIVE_TOLERANCE.in(Inches));
             SmartDashboard.putNumber(
                     "Auto Pose Check/Degrees from Start",
                     (int) Math.round(degreesFromStartPose * 100.0) / 100.0);
             SmartDashboard.putBoolean(
                     "Auto Pose Check/Robot Rotation Within Tolerance",
                     degreesFromStartPose
-                            < PathConstants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees));
+                            < Constants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees));
 
         } catch (Exception e) {
             startPose = robotState.getEstimatedPose();
