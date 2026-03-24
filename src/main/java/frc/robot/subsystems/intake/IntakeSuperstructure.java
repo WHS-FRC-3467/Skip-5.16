@@ -49,7 +49,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private final LoggedTrigger isExtended;
     private final LoggedTrigger isRetracted;
     private final LoggedTrigger isCycleComplete;
-    private final LoggedTrigger isFullyRetracted; // Prep for hub shot
 
     private final LinearVelocity shuffleVelocity = MetersPerSecond.of(0.8);
 
@@ -92,15 +91,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                                 + Inches.of(1.5).in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
                                         Inches.of(2.0).in(Meters)));
-        isFullyRetracted =
-                new LoggedTrigger(
-                        "IntakeSuperstructure/IsFullyRetracted",
-                        () ->
-                                MathUtil.isNear(
-                                        IntakeLinearConstants.MIN_DISTANCE.in(Meters)
-                                                + Inches.of(0.5).in(Meters),
-                                        intakeLinearIO.getLinearPosition().in(Meters),
-                                        IntakeLinearConstants.TOLERANCE.in(Meters)));
     }
 
     /** Returns true if the intake roller is running and the intake is extended. */

@@ -23,6 +23,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -39,6 +40,7 @@ import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTrigger;
+import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.subsystems.drive.Drive;
 
@@ -72,6 +74,23 @@ public class RobotState {
     @Getter(lazy = true)
     private static final RobotState instance = new RobotState();
 
+    public final LoggedTunableNumber feedLookaheadSeconds =
+            new LoggedTunableNumber("RobotState/FeedLookaheadSeconds", 1.0);
+
+    @AutoLogOutput(key = "Drive/ActiveTrajectoryPose")
+    @Getter
+    @Setter
+    private Pose2d activeTrajPose = new Pose2d();
+
+    public LoggedTunableBoolean forcePathFind =
+            new LoggedTunableBoolean("RobotState/ForcePathFind", false);
+
+    @AutoLogOutput(key = "Drive/ActiveTrajectoryError")
+    public Distance getActiveTrajectoryError() {
+        return Meters.of(
+                getEstimatedPose().getTranslation().getDistance(activeTrajPose.getTranslation()));
+    }
+
     @Getter
     @AutoLogOutput(key = "Drive/FacingTarget")
     public final Trigger facingTarget =
@@ -82,6 +101,20 @@ public class RobotState {
                                                     .minus(getEstimatedPose().getRotation())
                                                     .getDegrees())
                                     < SHOOT_TOLERANCE_DEGREES.get());
+
+    @Getter
+    @AutoLogOutput(key = "Drive/FacingFeedTarget")
+    public final Trigger facingFeedTarget =
+            new Trigger(
+                    () -> {
+                        Translation2d futureTranslation =
+                                getFuturePose(feedLookaheadSeconds.get()).getTranslation();
+                        return Math.abs(
+                                        getAngleToTarget(futureTranslation)
+                                                .minus(getEstimatedPose().getRotation())
+                                                .getDegrees())
+                                < SHOOT_TOLERANCE_DEGREES.get();
+                    });
 
     /**
      * Whether or not the robot is entering the trench in {@code MAX_HOOD_RETRACT_TIME}. For use to
@@ -103,11 +136,7 @@ public class RobotState {
                         boolean inMotion = linearVelocityMPS > 0.02 || angularVelocityRadsPS > 0.03;
 
                         // Predict future pose
-                        Pose2d futurePose =
-                                getEstimatedPose()
-                                        .exp(
-                                                getFieldRelativeVelocity()
-                                                        .toTwist2d(MAX_HOOD_RETRACT_TIME.get()));
+                        Pose2d futurePose = getFuturePose(MAX_HOOD_RETRACT_TIME.get());
 
                         // Normalize to alliance frame
                         Pose2d pose = FieldUtil.apply(futurePose);
@@ -192,7 +221,7 @@ public class RobotState {
                             ANGULAR_ODOMETRY_STD_DEV)
                     .withPoseValidator(this::isPoseWithinField);
 
-    @Setter private ChassisSpeeds velocity = new ChassisSpeeds();
+    @Getter @Setter private ChassisSpeeds robotRelativeVelocity = new ChassisSpeeds();
 
     /**
      * Returns the robot's odometry-only pose (without vision corrections).
@@ -272,9 +301,9 @@ public class RobotState {
      */
     public ChassisSpeeds getFieldRelativeVelocity() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(
-                velocity.vxMetersPerSecond,
-                velocity.vyMetersPerSecond,
-                velocity.omegaRadiansPerSecond,
+                robotRelativeVelocity.vxMetersPerSecond,
+                robotRelativeVelocity.vyMetersPerSecond,
+                robotRelativeVelocity.omegaRadiansPerSecond,
                 getEstimatedPose().getRotation());
     }
 
@@ -324,7 +353,7 @@ public class RobotState {
      */
     public FieldRegion getFieldRegion(Pose2d currentPose) {
         // Pose in blue-side field frame (i.e., "alliance side" is always the current alliance).
-        Pose2d pose = FieldUtil.apply(getEstimatedPose());
+        Pose2d pose = FieldUtil.apply(currentPose);
         double x = pose.getX();
         double y = pose.getY();
 
@@ -372,6 +401,7 @@ public class RobotState {
      *
      * @return The field region the robot is in
      */
+    @AutoLogOutput(key = "RobotState/FieldRegion")
     public FieldRegion getFieldRegion() {
         return getFieldRegion(getEstimatedPose());
     }
@@ -530,6 +560,17 @@ public class RobotState {
     }
 
     /**
+     * Returns 2D distance from robot to target.
+     *
+     * @param robotTranslation the robot's translation
+     * @return the distance to the target
+     */
+    public Distance getDistanceToTarget(Translation2d robotTranslation) {
+        Translation2d targetTranslation = getTarget().getAllianceTranslation().toTranslation2d();
+        return Meters.of(robotTranslation.getDistance(targetTranslation));
+    }
+
+    /**
      * Returns the angle from the robot to the current target.
      *
      * @return the angle to the target
@@ -540,5 +581,34 @@ public class RobotState {
                 .toTranslation2d()
                 .minus(getEstimatedPose().getTranslation())
                 .getAngle();
+    }
+
+    /**
+     * Returns the angle from the robot to the current target.
+     *
+     * @param robotTranslation the robot's translation
+     * @return the angle to the target
+     */
+    public Rotation2d getAngleToTarget(Translation2d robotTranslation) {
+        return getTarget()
+                .getAllianceTranslation()
+                .toTranslation2d()
+                .minus(robotTranslation)
+                .getAngle();
+    }
+
+    /**
+     * Returns the robot's estimated position {@code seconds} in the future
+     *
+     * @param seconds amount of time to predict
+     * @return the robot's estimated position {@code seconds} in the future
+     */
+    public Pose2d getFuturePose(double seconds) {
+        Transform2d velocity =
+                new Transform2d(
+                        robotRelativeVelocity.vxMetersPerSecond,
+                        robotRelativeVelocity.vyMetersPerSecond,
+                        Rotation2d.fromRadians(robotRelativeVelocity.omegaRadiansPerSecond));
+        return getEstimatedPose().plus(velocity.times(feedLookaheadSeconds.get()));
     }
 }

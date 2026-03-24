@@ -18,6 +18,7 @@ package frc.lib.devices;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -77,6 +78,8 @@ public class AprilTagCamera {
     private final VisionIOInputs inputs;
 
     private final Alert mismatchedIntrinsicsAlert;
+    private final Alert disconnectAlert;
+    private final Debouncer disconnectDebouncer = new Debouncer(0.25);
 
     /** The camera's properties, including intrinsics and transform relative to the robot. */
     @Getter private final CameraProperties properties;
@@ -95,8 +98,11 @@ public class AprilTagCamera {
                 new Alert(
                         "Camera "
                                 + properties.name()
-                                + "'s supplied intrinsics in code do not match intrinsics from replayed inputs! Defaulting to inputs!",
+                                + "'s supplied intrinsics in code do not match intrinsics from"
+                                + " replayed inputs! Defaulting to inputs!",
                         AlertType.kWarning);
+        disconnectAlert =
+                new Alert("Camera " + properties.name() + " is Disconnected!", AlertType.kError);
 
         this.io = io;
         inputs = new VisionIOInputs(properties.cameraMatrix(), properties.distCoeffs());
@@ -152,7 +158,9 @@ public class AprilTagCamera {
         io.updateInputs(inputs);
         Logger.processInputs(properties.name(), inputs);
 
-        if (!inputs.connected) return Optional.empty();
+        boolean disconnected = !inputs.connected;
+        disconnectAlert.set(disconnectDebouncer.calculate(disconnected));
+        if (disconnected) return Optional.empty();
 
         return Optional.of(inputs.results);
     }
