@@ -28,10 +28,6 @@ public class Ports {
     /*
      * LIST OF CHANNEL AND CAN IDS
      */
-
-    // Don't use the rio for drivetrain:
-    // - It has slower odometry
-    // - We assign CAN ID 0 to the pigeon
     public static final CANBus DRIVETRAIN_BUS = new CANBus("Drivetrain");
 
     public static final Device.CAN lights = new CAN(7, "Drivetrain");
@@ -50,12 +46,10 @@ public class Ports {
     public static final Device.CAN towerLaserCAN2 = new CAN(23, "rio");
 
     public static final Device.CAN indexerFloor = new CAN(25, "rio");
-    // TODO: Ensure ID is correct
+
     public static final Device.CAN indexerFloorFollower = new CAN(26, "rio");
     public static final Device.CAN indexerCentering = new CAN(24, "rio");
 
     public static final Device.CAN intakeLinear = new CAN(27, "rio");
     public static final Device.CAN intakeRoller = new CAN(28, "rio");
-
-    public static final Device.CAN climber = new CAN(30, "rio"); // placeholder
 }
