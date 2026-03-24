@@ -59,24 +59,26 @@ public class ObjectDetector extends SubsystemBase {
     @Getter private Optional<ObjectDetectionObservation> latestLowContourObservation;
 
     /**
-     * Bottom left coordinate of a rectangular bounding box for the Object Detection ROI in the blue
-     * (left) alliance frame. This ROI is automaticaly alliance corrected (e.g. the zone would be
-     * reflected such that red 1 and blue 1 have the same driver station relative detection zone)
-     * and an optional left/right mirror is provided by {@link #shouldMirror} for use in autos.
+     * Bottom left coordinate of the rectangular bounding box representing the Object Detection ROI
+     * (i.e. spatial histogram) in the blue left alliance frame. This ROI is automaticaly alliance
+     * corrected (e.g. the zone would be reflected such that red 1 and blue 1 have the same driver
+     * station relative detection zone) and an optional left/right mirror is provided by {@link
+     * #shouldMirror} for use in autos.
      */
     @Getter @Setter
     private static Translation2d bottomLeftCorner =
             new Translation2d(Meters.of(5.22), Meters.of(6.49));
 
     /**
-     * Top right coordinate of a rectangular bounding box for the Object Detection ROI in the blue
-     * (left) alliance frame. This ROI is automaticaly alliance corrected (e.g. the zone would be
-     * reflected such that red 1 and blue 1 have the same driver station relative detection zone)
-     * and an optional left/right mirror is provided by {@link #shouldMirror} for use in autos.
+     * Top right coordinate of a rectangular bounding box representing the Object Detection ROI
+     * (i.e. spatial histogram) in the blue left alliance frame. This ROI is automaticaly alliance
+     * corrected (e.g. the zone would be reflected such that red 1 and blue 1 have the same driver
+     * station relative detection zone) and an optional left/right mirror is provided by {@link
+     * #shouldMirror} for use in autos.
      */
     @Getter @Setter
     private static Translation2d topRightCorner =
-            new Translation2d(Meters.of(8.28), Meters.of(1.58));
+            new Translation2d(Meters.of(8.28), Meters.of(3.50));
 
     /**
      * Parameter informing the Object Detector whether it should reflect its ROI to the other side
@@ -87,8 +89,7 @@ public class ObjectDetector extends SubsystemBase {
     /**
      * Represents a lane target (i.e. spatial histogram argument) within the Object Detector's ROI.
      *
-     * @param x the field-relative x coordinate of the lane (center) within the ROI with the highest
-     *     count of detected objects.
+     * @param x the field-relative x coordinate of the lane center.
      * @param count the number of detected objects within that lane.
      */
     private static record LaneTarget(double x, int count) {}
@@ -106,7 +107,7 @@ public class ObjectDetector extends SubsystemBase {
     private static int stableIndex = -1;
 
     private static int stableCount = 0;
-    private static final int HYSTERESIS_MARGIN = 1;
+    private static final int HYSTERESIS_MARGIN = 0;
 
     /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
@@ -351,7 +352,7 @@ public class ObjectDetector extends SubsystemBase {
         objectDetection.periodic();
         // Calculate corrected ROI corners based on current alliance and starting position. The ROI
         // acts as an interest cache for detected objects such that lanes needn't be reduced from
-        // the full FOV each evaluation, reducing hysteresis and overhead
+        // the full FOV each evaluation, increasing stability and reducing overhead
         List<Translation2d> correctedCorners = getCorrectedROI();
         // Now that inputs are updated, re-populate observation fields with new data
         if (objectDetection.getTargets().length > 0) {
