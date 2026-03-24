@@ -28,7 +28,7 @@ public interface LightsIO {
     public default void setAnimation(ControlRequest request) {}
 
     /** Updates the Animation Without Wasting CPU Time */
-    public default void updateLedsSim() {}
+    public default void periodic() {}
 
     public record LEDSegment(int startIndex, int endIndex, int animationSlot) {}
 }

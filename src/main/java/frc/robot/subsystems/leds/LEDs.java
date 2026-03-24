@@ -46,10 +46,10 @@ public class LEDs extends SubsystemBase {
         // list of states with their respective priorities, ie if both RUNNING_AUTO and
         // RUNNING_INTAKE are true it will set to RUNNING_AUTO
 
-        RUNNING_AUTO(0, LEDsConstants.offAnimation),
-        READY_TO_SHOOT(1, LEDsConstants.offAnimation),
-        RUNNING_INTAKE(2, LEDsConstants.offAnimation),
-        NONE(3, LEDsConstants.offAnimation);
+        RUNNING_AUTO(0, LEDsConstants.colorBounceAnimation),
+        READY_TO_SHOOT(1, LEDsConstants.colorBounceAnimation),
+        RUNNING_INTAKE(2, LEDsConstants.colorBounceAnimation),
+        NONE(3, LEDsConstants.colorBounceAnimation);
 
         // Lower priority first
         private final int priority;
@@ -114,7 +114,7 @@ public class LEDs extends SubsystemBase {
         if (updateCurrentState()) {
             lights.setAnimations(currentState.getAnimation());
         } else {
-            lights.updateLedsSim();
+            lights.periodic();
         }
     }
 

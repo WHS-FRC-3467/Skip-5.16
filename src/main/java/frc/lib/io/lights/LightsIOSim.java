@@ -34,6 +34,7 @@ import frc.lib.util.CANdlePatterns;
 import org.littletonrobotics.junction.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.random.RandomGenerator;
@@ -56,12 +57,12 @@ public class LightsIOSim implements LightsIO {
         this.led = new AddressableLED(0);
 
         this.views = new ArrayList<>();
-        int largestEndIndex = 2; // starts at 2 because minimum end index is 2
-        for (LEDSegment ledSegment : ledSegments) { // pads the ledSegments to find the largest end index
-            if (ledSegment.endIndex() > largestEndIndex) {
-                largestEndIndex = ledSegment.endIndex();
-            }
-        }
+
+        int largestEndIndex =
+                ledSegments.stream()
+                        .mapToInt(LEDSegment::endIndex)
+                        .max()
+                        .orElse(2); // pads segments to find largets end index
 
         this.buffer = new AddressableLEDBuffer(largestEndIndex + 1); // ctre to wpilib offset
         for (LEDSegment ledSegment : ledSegments) {
@@ -73,7 +74,7 @@ public class LightsIOSim implements LightsIO {
     }
 
     @Override
-    public void updateLedsSim() {
+    public void periodic() {
         led.setData(this.buffer);
     }
 
@@ -92,7 +93,9 @@ public class LightsIOSim implements LightsIO {
     }
 
     /**
-     * Gets the color string from the request info and parses it to the R,G,B values of the WPIlib colors
+     * Gets the color string from the request info and parses it to the R,G,B values of the WPIlib
+     * colors
+     *
      * @return Parsed Color
      */
     Color colorParse() {
@@ -111,9 +114,7 @@ public class LightsIOSim implements LightsIO {
     }
 
     @Override
-    /**
-     * translates CTRE animation requests into wpilib animations
-     */
+    /** translates CTRE animation requests into wpilib animations */
     public void setAnimation(ControlRequest request) {
 
         this.requestInfo = request.getControlInfo();
@@ -126,56 +127,36 @@ public class LightsIOSim implements LightsIO {
         final Distance kLedSpacing = // do not set to double, LEDPattern casts the input as an int
                 Inches.of(1);
         switch (requestInfo.get("Name")) {
-            case "RainbowAnimation": // scrolling rainbow animation
-                rainbow.scrollAtAbsoluteSpeed(
-                                InchesPerSecond.of(
-                                        Double.valueOf(checkAndGet("FrameRate")) * direction),
-                                kLedSpacing)
-                        .applyTo(views.get(slot));
-                break;
-
-            case "FireAnimation":
-                candlePatterns
-                        .fireScroll(
-                                Double.valueOf(checkAndGet("FrameRate")) * (direction / 0.5),
-                                kLedSpacing)
-                        .applyTo(views.get(slot));
-                break;
-            case "ColorFlowAnimation":
-                candlePatterns
-                        .scrollFill(
-                                Double.valueOf(checkAndGet("FrameRate")) * direction, colorParse())
-                        .applyTo(views.get(slot));
-                break;
-            case "EmptyAnimation":
-                LEDPattern.kOff.applyTo(views.get(slot));
-                break;
-            case "LarsonAnimation":
-                candlePatterns
-                        .larsonPattern(
-                                Double.valueOf(checkAndGet("FrameRate")) * direction,
-                                colorParse(),
-                                Integer.valueOf(checkAndGet("Size")),
-                                slot,
-                                checkAndGet("BounceMode"))
-                        .applyTo(views.get(slot));
-                break;
-            case "SingleFadeAnimation":
-                LEDPattern.solid(colorParse()).breathe(Seconds.of(1.0)).applyTo(views.get(slot));
-                break;
-            case "SolidColor":
-                LEDPattern.solid(colorParse()).applyTo(views.get(slot));
-                break;
-            case "StrobeAnimation":
-                LEDPattern.solid(colorParse()).blink(Milliseconds.of(5.0)).applyTo(views.get(slot));
-                break;
-            case "TwinkleAnimation":
-                LEDPattern.solid(colorParse())
-                        .blink(Seconds.of(RandomGenerator.getDefault().nextDouble()))
-                        .applyTo(views.get(slot));
-                break;
-            default:
-                return;
+            case "RainbowAnimation" -> rainbow.scrollAtAbsoluteSpeed(
+                                    InchesPerSecond.of(
+                                            Double.valueOf(checkAndGet("FrameRate")) * direction),
+                                    kLedSpacing)
+                            .applyTo(views.get(slot));
+            case "FireAnimation" -> candlePatterns
+                            .fireScroll(
+                                    Double.valueOf(checkAndGet("FrameRate")) * (direction / 0.5),
+                                    kLedSpacing)
+                            .applyTo(views.get(slot));
+            case "ColorFlowAnimation" -> candlePatterns
+                            .scrollFill(
+                                    Double.valueOf(checkAndGet("FrameRate")) * direction, colorParse())
+                            .applyTo(views.get(slot));
+            case "EmptyAnimation" -> LEDPattern.kOff.applyTo(views.get(slot));
+            case "LarsonAnimation" -> candlePatterns
+                            .larsonPattern(
+                                    Double.valueOf(checkAndGet("FrameRate")) * direction,
+                                    colorParse(),
+                                    Integer.valueOf(checkAndGet("Size")),
+                                    slot,
+                                    checkAndGet("BounceMode"))
+                            .applyTo(views.get(slot));
+            case "SingleFadeAnimation" -> LEDPattern.solid(colorParse()).breathe(Seconds.of(1.0)).applyTo(views.get(slot));
+            case "SolidColor" -> LEDPattern.solid(colorParse()).applyTo(views.get(slot));
+            case "StrobeAnimation" -> LEDPattern.solid(colorParse()).blink(Milliseconds.of(5.0)).applyTo(views.get(slot));
+            case "TwinkleAnimation" -> LEDPattern.solid(colorParse())
+                            .blink(Seconds.of(RandomGenerator.getDefault().nextDouble()))
+                            .applyTo(views.get(slot));
+            default -> {}
         }
         led.setData(this.buffer);
     }

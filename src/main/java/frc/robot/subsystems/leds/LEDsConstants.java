@@ -124,7 +124,7 @@ public class LEDsConstants {
                     .withColor(RGBWColor.fromHSV(180, 100, 100))
                     .withDirection(AnimationDirectionValue.Forward);
 
-    public static final List<ControlRequest> colorFLowAnimation =
+    public static final List<ControlRequest> colorFlowAnimation =
             List.of(candleColorFlow, frontColorFlow);
 
     public static final ControlRequest candleBounce =
