@@ -38,10 +38,9 @@ public class Ports {
 
     public static final Device.CAN pdh = new CAN(40, "rio");
 
-    public static final Device.CAN leftFlywheelMain = new CAN(18, "rio");
-    public static final Device.CAN leftFlywheelFollower = new CAN(16, "rio");
-    public static final Device.CAN rightFlywheelMain = new CAN(21, "rio");
-    public static final Device.CAN rightFlywheelFollower = new CAN(22, "rio");
+    public static final Device.CAN flywheelMain = new CAN(18, "rio");
+    public static final Device.CAN flywheelFollower = new CAN(16, "rio");
+    
 
     public static final Device.CAN hood = new CAN(19, "rio");
 
