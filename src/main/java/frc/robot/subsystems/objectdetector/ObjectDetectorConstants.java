@@ -70,7 +70,7 @@ public class ObjectDetectorConstants {
     public static final int CAMERA0_RESOLUTION_WIDTH = 1600;
     public static final int CAMERA0_RESOLUTION_HEIGHT = 1304;
 
-    public static final Angle CAMERA0_FOV = Degrees.of(55.0);
+    public static final Angle CAMERA0_FOV = Degrees.of(80.0);
 
     // ThriftyCam Default Calibrations
     public static final Matrix<N3, N3> CAMERA0_MATRIX =
@@ -147,7 +147,7 @@ public class ObjectDetectorConstants {
                                         pose.getTranslation()
                                                         .toTranslation2d()
                                                         .getDistance(cameraPose.getTranslation())
-                                                < 8.0)
+                                                < 10.0)
                         .filter(
                                 pose -> {
                                     var fieldRel =

@@ -100,16 +100,6 @@ public class ObjectDetector extends SubsystemBase {
     private static final Distance LANE_WIDTH = Constants.FULL_ROBOT_WIDTH.times(0.75);
 
     /**
-     * Fields for simple hystersis control of bestLaneTarget. These parameters represent a stable
-     * estimate of the spatial histogram's argmax and are only updated as meaningfully better lanes
-     * are detected in order to prevent jitter.
-     */
-    private static int stableIndex = -1;
-
-    private static int stableCount = 0;
-    private static final int HYSTERESIS_MARGIN = 0;
-
-    /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
      * Object Detection device that can periodically update its inputs field.
      *
@@ -233,26 +223,10 @@ public class ObjectDetector extends SubsystemBase {
                 bestIndex = i;
             }
         }
+        if (bestIndex == -1 || bestCount == 0) return Optional.empty();
+        double bestX = minX + (bestIndex + 0.5) * LANE_WIDTH.in(Meters);
 
-        // Simple hysteresis control
-        // If calculated best lane isn't current target lane ("stable lane"), only switch if it's
-        // significantly better to prevent jitter
-        int currentStableCount =
-                (stableIndex >= 0 && stableIndex < histogram.length) ? histogram[stableIndex] : 0;
-
-        if (bestIndex != stableIndex) {
-            if (bestCount > currentStableCount + HYSTERESIS_MARGIN) {
-                stableIndex = bestIndex;
-            }
-        }
-
-        // Always update count to current value of the stable lane
-        stableCount =
-                (stableIndex >= 0 && stableIndex < histogram.length) ? histogram[stableIndex] : 0;
-        if (stableIndex == -1 || stableCount == 0) return Optional.empty();
-        double stableX = minX + (stableIndex + 0.5) * LANE_WIDTH.in(Meters);
-
-        return Optional.of(new LaneTarget(stableX, stableCount));
+        return Optional.of(new LaneTarget(bestX, bestCount));
     }
 
     // Private helper for logging Object Detection values. -1 for stale values.
@@ -314,10 +288,9 @@ public class ObjectDetector extends SubsystemBase {
     }
 
     // Private helper for visualizing target lane.
-    private void logBestLaneTarget(
-            Optional<LaneTarget> laneTarget, List<Translation2d> mirroredCorners) {
-        if (laneTarget.isPresent()) {
-            double xLane = laneTarget.get().x();
+    private void logBestLaneTarget(List<Translation2d> mirroredCorners) {
+        if (bestLaneTarget.isPresent()) {
+            double xLane = bestLaneTarget.get().x();
             double x1 = xLane + LANE_WIDTH.in(Meters) / 2.0;
             double x2 = xLane - LANE_WIDTH.in(Meters) / 2.0;
             double y1 = mirroredCorners.get(0).getY();
@@ -338,9 +311,9 @@ public class ObjectDetector extends SubsystemBase {
                         new Pose2d(a, Rotation2d.kZero)
                     });
             Logger.recordOutput("Detection/Best Lane Target X", xLane);
-            Logger.recordOutput("Detection/Best Lane Target Count", laneTarget.get().count());
+            Logger.recordOutput("Detection/Best Lane Target Count", bestLaneTarget.get().count());
         } else {
-            Logger.recordOutput("Detection/Best Lane Target X", -1);
+            Logger.recordOutput("Detection/Best Lane Target X", -1.0);
             Logger.recordOutput("Detection/Best Lane Target Count", -1);
         }
     }
@@ -388,6 +361,6 @@ public class ObjectDetector extends SubsystemBase {
         logContourObservation(latestBigContourObservation, ContourSelectionMode.LARGEST);
         logContourObservation(latestLowContourObservation, ContourSelectionMode.LOWEST);
         logROI(correctedCorners);
-        logBestLaneTarget(bestLaneTarget, correctedCorners);
+        logBestLaneTarget(correctedCorners);
     }
 }
