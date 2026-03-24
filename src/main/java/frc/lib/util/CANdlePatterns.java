@@ -33,8 +33,8 @@ import java.util.random.RandomGenerator;
 public class CANdlePatterns {
 
     // used only in larson animation
-    private static List<Boolean> reversed;
-    private static List<Boolean> ableToReverse;
+    private List<Boolean> reversed;
+    private List<Boolean> ableToReverse;
 
     public CANdlePatterns(int buffers) {
         reversed = new ArrayList<>(Collections.nCopies(buffers, false));
