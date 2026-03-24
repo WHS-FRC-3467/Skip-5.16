@@ -26,11 +26,13 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -46,7 +48,7 @@ import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
-import frc.robot.RobotState.Target;
+import frc.robot.util.RobotSim;
 
 import lombok.Getter;
 
@@ -202,13 +204,28 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // staticShotState as a proxy for a shot
     private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
     public final LoggedTrigger hopperEmpty =
+            RobotBase.isSimulation()
+                    ? new LoggedTrigger(
+                            getName() + "/hopperEmpty",
+                            () ->
+                                    hopperEmptyDebouncer.calculate(
+                                            RobotSim.getInstance().getFuelSim().getHeldFuel() == 0))
+                    : new LoggedTrigger(
+                            getName() + "/hopperEmpty",
+                            () ->
+                                    hopperEmptyDebouncer.calculate(
+                                            staticShotState.getAsBoolean()
+                                                    && !leftBallTrigger.getAsBoolean()
+                                                    && !rightBallTrigger.getAsBoolean()));
+
+    public final LoggedTrigger shouldFeed =
             new LoggedTrigger(
-                    getName() + "/hopperEmpty",
+                    getName() + "/ShouldFeed",
                     () ->
-                            hopperEmptyDebouncer.calculate(
-                                    staticShotState.getAsBoolean()
-                                            && !leftBallTrigger.getAsBoolean()
-                                            && !rightBallTrigger.getAsBoolean()));
+                            switch (robotState.getTarget()) {
+                                case HUB -> false;
+                                case FEED_LEFT, FEED_RIGHT -> true;
+                            });
 
     /**
      * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
@@ -343,13 +360,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private AngularVelocity getDesiredFlywheelVelocity() {
-        InterpolatingDoubleTreeMap flywheelMap =
-                switch (robotState.getTarget()) {
-                    case HUB -> hubFlywheelMap;
-                    case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
-                };
+        boolean shouldFeedNow = shouldFeed.getAsBoolean();
+        InterpolatingDoubleTreeMap flywheelMap = shouldFeedNow ? feedFlywheelMap : hubFlywheelMap;
 
-        return RotationsPerSecond.of(flywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
+        Pose2d pose;
+        if (shouldFeedNow) {
+            pose = robotState.getFuturePose(robotState.feedLookaheadSeconds.get());
+        } else {
+            pose = robotState.getEstimatedPose();
+        }
+
+        return RotationsPerSecond.of(
+                flywheelMap.get(robotState.getDistanceToTarget(pose.getTranslation()).in(Meters)));
     }
 
     private LinearVelocity getDesiredFlywheelLinearVelocity() {
@@ -359,7 +381,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private Angle getDesiredHoodAngle() {
-        if (robotState.getTarget() == Target.HUB) {
+        boolean shouldFeedNow = shouldFeed.getAsBoolean();
+        if (!shouldFeedNow) {
             return Degrees.of(hoodAngleMap.get(robotState.getDistanceToTarget().in(Meters)));
         }
 
