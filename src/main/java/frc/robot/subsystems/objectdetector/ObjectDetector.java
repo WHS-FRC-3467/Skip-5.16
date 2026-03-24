@@ -64,7 +64,7 @@ public class ObjectDetector extends SubsystemBase {
      * reflected such that red 1 and blue 1 have the same driver station relative detection zone)
      * and an optional left/right mirror is provided by {@link #shouldMirror} for use in autos.
      */
-    @Getter
+    @Getter @Setter
     private static Translation2d bottomLeftCorner =
             new Translation2d(Meters.of(5.22), Meters.of(6.49));
 
@@ -74,7 +74,7 @@ public class ObjectDetector extends SubsystemBase {
      * reflected such that red 1 and blue 1 have the same driver station relative detection zone)
      * and an optional left/right mirror is provided by {@link #shouldMirror} for use in autos.
      */
-    @Getter
+    @Getter @Setter
     private static Translation2d topRightCorner =
             new Translation2d(Meters.of(8.28), Meters.of(1.58));
 
@@ -97,6 +97,16 @@ public class ObjectDetector extends SubsystemBase {
     @Getter private static Optional<LaneTarget> bestLaneTarget = Optional.empty();
 
     private static final Distance LANE_WIDTH = Constants.FULL_ROBOT_WIDTH.times(0.75);
+
+    /**
+     * Fields for simple hystersis control of bestLaneTarget. These parameters represent a stable
+     * estimate of the spatial histogram's argmax and are only updated as meaningfully better lanes
+     * are detected in order to prevent jitter.
+     */
+    private static int stableIndex = -1;
+
+    private static int stableCount = 0;
+    private static final int HYSTERESIS_MARGIN = 1;
 
     /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
@@ -213,6 +223,7 @@ public class ObjectDetector extends SubsystemBase {
             if (index >= 0 && index < laneCount) histogram[index]++;
         }
 
+        // Generate current best lane index and count from histogram
         int bestIndex = -1;
         int bestCount = 0;
         for (int i = 0; i < histogram.length; i++) {
@@ -221,10 +232,26 @@ public class ObjectDetector extends SubsystemBase {
                 bestIndex = i;
             }
         }
-        if (bestIndex == -1 || bestCount == 0) return Optional.empty();
-        double bestX = minX + (bestIndex + 0.5) * LANE_WIDTH.in(Meters);
 
-        return Optional.of(new LaneTarget(bestX, bestCount));
+        // Simple hysteresis control
+        // If calculated best lane isn't current target lane ("stable lane"), only switch if it's
+        // significantly better to prevent jitter
+        int currentStableCount =
+                (stableIndex >= 0 && stableIndex < histogram.length) ? histogram[stableIndex] : 0;
+
+        if (bestIndex != stableIndex) {
+            if (bestCount > currentStableCount + HYSTERESIS_MARGIN) {
+                stableIndex = bestIndex;
+            }
+        }
+
+        // Always update count to current value of the stable lane
+        stableCount =
+                (stableIndex >= 0 && stableIndex < histogram.length) ? histogram[stableIndex] : 0;
+        if (stableIndex == -1 || stableCount == 0) return Optional.empty();
+        double stableX = minX + (stableIndex + 0.5) * LANE_WIDTH.in(Meters);
+
+        return Optional.of(new LaneTarget(stableX, stableCount));
     }
 
     // Private helper for logging Object Detection values. -1 for stale values.
@@ -285,7 +312,7 @@ public class ObjectDetector extends SubsystemBase {
                 });
     }
 
-    // Private helper for visualizing best lane.
+    // Private helper for visualizing target lane.
     private void logBestLaneTarget(
             Optional<LaneTarget> laneTarget, List<Translation2d> mirroredCorners) {
         if (laneTarget.isPresent()) {
