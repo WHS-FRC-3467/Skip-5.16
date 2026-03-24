@@ -45,6 +45,7 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.lib.util.CANUpdateThread;
 import frc.lib.util.PID;
 import frc.robot.Ports;
+import frc.robot.RobotState;
 
 import java.util.Queue;
 import java.util.logging.Level;
@@ -237,6 +238,10 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
+        if (RobotState.getInstance().LOW_POWER_MODE) {
+            driveConfig.CurrentLimits.SupplyCurrentLimit = 0.5;
+            driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        }
         // Refresh all signals
         var driveStatus =
                 BaseStatusSignal.refreshAll(

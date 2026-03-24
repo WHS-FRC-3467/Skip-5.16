@@ -33,7 +33,6 @@ import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -464,10 +463,6 @@ public class Drive extends SubsystemBase {
                         * -1);
     }
 
-    private final SlewRateLimiter[] limits = {
-        new SlewRateLimiter(1.0), new SlewRateLimiter(1.0), new SlewRateLimiter(1.0)
-    };
-
     /**
      * Runs the drive at the desired velocity.
      *
@@ -475,13 +470,8 @@ public class Drive extends SubsystemBase {
      */
     public void runVelocity(ChassisSpeeds speeds) {
         // Calculate module setpoints
-        ChassisSpeeds limitedSpeeds =
-                new ChassisSpeeds(
-                        limits[0].calculate(speeds.vxMetersPerSecond),
-                        limits[1].calculate(speeds.vyMetersPerSecond),
-                        limits[2].calculate(speeds.omegaRadiansPerSecond));
         ChassisSpeeds discreteSpeeds =
-                ChassisSpeeds.discretize(robotState.LOW_POWER_MODE ? limitedSpeeds : speeds, 0.02);
+                ChassisSpeeds.discretize( speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, DriveConstants.kSpeedAt12Volts);
 
