@@ -13,7 +13,7 @@
  * not, see <https://www.gnu.org/licenses/>.
  */
 
-package frc.robot.util;
+package frc.lib.util;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
