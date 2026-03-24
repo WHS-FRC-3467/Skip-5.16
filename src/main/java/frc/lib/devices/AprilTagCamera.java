@@ -77,6 +77,7 @@ public class AprilTagCamera {
     private final VisionIOInputs inputs;
 
     private final Alert mismatchedIntrinsicsAlert;
+    private final Alert disconnectAlert;
 
     /** The camera's properties, including intrinsics and transform relative to the robot. */
     @Getter private final CameraProperties properties;
@@ -95,8 +96,11 @@ public class AprilTagCamera {
                 new Alert(
                         "Camera "
                                 + properties.name()
-                                + "'s supplied intrinsics in code do not match intrinsics from replayed inputs! Defaulting to inputs!",
+                                + "'s supplied intrinsics in code do not match intrinsics from"
+                                + " replayed inputs! Defaulting to inputs!",
                         AlertType.kWarning);
+        disconnectAlert =
+                new Alert("Camera " + properties.name() + "is Disconnected!", AlertType.kError);
 
         this.io = io;
         inputs = new VisionIOInputs(properties.cameraMatrix(), properties.distCoeffs());
@@ -152,7 +156,12 @@ public class AprilTagCamera {
         io.updateInputs(inputs);
         Logger.processInputs(properties.name(), inputs);
 
-        if (!inputs.connected) return Optional.empty();
+        if (!inputs.connected) {
+            disconnectAlert.set(true);
+            return Optional.empty();
+        } else {
+            disconnectAlert.set(false);
+        }
 
         return Optional.of(inputs.results);
     }
