@@ -46,12 +46,6 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-/**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
- */
 public class Robot extends LoggedRobot {
     private final RobotState robotState = RobotState.getInstance();
 
@@ -115,10 +109,10 @@ public class Robot extends LoggedRobot {
                     || constants.SteerMotorType != SteerMotorArrangement.TalonFX_Integrated) {
                 throw new RuntimeException(
                         "You are using an unsupported swerve configuration, which this template"
-                                + " does not support without manual customization. The 2025 release of"
-                                + " Phoenix supports some swerve configurations which were not"
-                                + " available during 2025 beta testing, preventing any development and"
-                                + " support from the AdvantageKit developers.");
+                            + " does not support without manual customization. The 2025 release of"
+                            + " Phoenix supports some swerve configurations which were not"
+                            + " available during 2025 beta testing, preventing any development and"
+                            + " support from the AdvantageKit developers.");
             }
         }
 
@@ -135,11 +129,7 @@ public class Robot extends LoggedRobot {
         Pathfinding.setPathfinder(new LocalADStarAK());
         CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
         // Log first 8 character of robot serial
-        Logger.recordOutput(
-                "Robot Serial",
-                Robot.isReal()
-                        ? Constants.RobotConstants.serial.subSequence(0, 8).toString()
-                        : Constants.RobotConstants.serial);
+        Logger.recordOutput("Robot Serial", System.getenv("serialnum"));
 
         SmartDashboard.putData("Robot Pose Field Map", fieldMap);
 
