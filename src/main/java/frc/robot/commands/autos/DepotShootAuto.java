@@ -18,93 +18,66 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Set;
 
-/** Native Choreo routine for the neutral-zone multi-piece autonomous variants. */
+/** Native Choreo routine for the depot-side multi-piece autonomous variants. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class NeutralAuto {
-    /**
-     * Builds the selected neutral auto variant.
-     *
-     * @param shouldMirror Whether to mirror the route for the opposite starting side
-     * @param isSafe Whether to use the safer first segment instead of the aggressive one
-     */
-    public static AutoOption create(AutoContext ctx, boolean shouldMirror, boolean isSafe) {
+public final class DepotShootAuto {
+    /** Builds the safe or aggressive depot autonomous routine. */
+    public static AutoOption create(AutoContext ctx, boolean isSafe) {
         List<String> names =
                 isSafe
                         ? List.of(
                                 ChoreoTraj.NeutralSafe1.name(),
+                                ChoreoTraj.Depot1.name(),
                                 ChoreoTraj.NeutralSafe2.name(),
                                 ChoreoTraj.Neutral2.name())
                         : List.of(
                                 ChoreoTraj.Neutral1.name(),
+                                ChoreoTraj.Depot1.name(),
                                 ChoreoTraj.NeutralSafe2.name(),
                                 ChoreoTraj.Neutral2.name());
-        List<Trajectory<SwerveSample>> trajectories =
-                AutoUtil.loadTrajectories(names, shouldMirror);
-        Trajectory<SwerveSample> tunnelTrajectory =
-                AutoUtil.loadTrajectories(List.of(ChoreoTraj.TunnelPath.name()), shouldMirror)
-                        .stream()
-                        .findFirst()
-                        .orElseThrow();
-
+        List<Trajectory<SwerveSample>> trajectories = AutoUtil.loadTrajectories(names, false);
         return AutoUtil.trajectoryOption(
                 trajectories,
                 () -> {
                     AutoRoutine routine =
                             ctx.autoFactory()
-                                    .newRoutine(
-                                            "Neutral"
-                                                    + (isSafe ? "Safe" : "Aggressive")
-                                                    + (shouldMirror ? "Right" : "Left"));
+                                    .newRoutine("Depot" + (isSafe ? "Safe" : "Aggressive"));
                     AutoTrajectory first = routine.trajectory(trajectories.get(0));
                     AutoTrajectory second = routine.trajectory(trajectories.get(1));
                     AutoTrajectory third = routine.trajectory(trajectories.get(2));
-                    AutoTrajectory tunnel = routine.trajectory(tunnelTrajectory);
-                    AutoUtil.bindEvents(ctx, first, second, third);
+                    AutoTrajectory fourth = routine.trajectory(trajectories.get(3));
+                    AutoUtil.bindEvents(ctx, first, second, third, fourth);
                     routine.active()
                             .onTrue(
                                     Commands.sequence(
                                             Commands.runOnce(
                                                     ctx.drive()::resetTrajectoryControllers),
                                             first.resetOdometry(),
-                                            Commands.defer(
-                                                    () ->
-                                                            Commands.waitSeconds(
-                                                                    AutoCommands.getAutoDelay()),
-                                                    Set.of()),
-                                            Commands.defer(
-                                                    () ->
-                                                            AutoCommands.safeFollowTrajectory(
-                                                                    ctx.drive(),
-                                                                    first,
-                                                                    tunnel,
-                                                                    ctx.intake().retractIntake()),
-                                                    Set.of(ctx.drive())),
+                                            first.cmd(),
                                             AutoCommands.shootCommand(
                                                     ctx.drive(),
                                                     ctx.intake(),
                                                     ctx.indexer(),
                                                     ctx.tower(),
                                                     ctx.shooter(),
-                                                    3.0),
+                                                    2.5),
+                                            second.cmd(),
+                                            AutoCommands.shootCommand(
+                                                    ctx.drive(),
+                                                    ctx.intake(),
+                                                    ctx.indexer(),
+                                                    ctx.tower(),
+                                                    ctx.shooter(),
+                                                    2.5),
+                                            AutoCommands.stowHood(ctx.shooter()),
                                             Commands.repeatingSequence(
                                                             AutoCommands.stowHood(ctx.shooter()),
                                                             ctx.intake()
                                                                     .retractIntake()
                                                                     .asProxy()
                                                                     .withTimeout(0.5),
-                                                            Commands.defer(
-                                                                    () ->
-                                                                            AutoCommands
-                                                                                    .safeFollowTrajectory(
-                                                                                            ctx
-                                                                                                    .drive(),
-                                                                                            second,
-                                                                                            tunnel,
-                                                                                            ctx.intake()
-                                                                                                    .retractIntake()),
-                                                                    Set.of(ctx.drive())),
+                                                            third.cmd(),
                                                             AutoCommands.shootCommand(
                                                                     ctx.drive(),
                                                                     ctx.intake(),
@@ -117,17 +90,7 @@ public final class NeutralAuto {
                                                                     .retractIntake()
                                                                     .asProxy()
                                                                     .withTimeout(0.5),
-                                                            Commands.defer(
-                                                                    () ->
-                                                                            AutoCommands
-                                                                                    .safeFollowTrajectory(
-                                                                                            ctx
-                                                                                                    .drive(),
-                                                                                            third,
-                                                                                            tunnel,
-                                                                                            ctx.intake()
-                                                                                                    .retractIntake()),
-                                                                    Set.of(ctx.drive())),
+                                                            fourth.cmd(),
                                                             AutoCommands.shootCommand(
                                                                     ctx.drive(),
                                                                     ctx.intake(),

@@ -14,6 +14,7 @@
  */
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -27,9 +28,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
+
+import java.util.Set;
 
 /**
  * Subsystem that controls the indexer floor and indexer centering mechanism for moving game pieces
@@ -77,6 +81,17 @@ public class IndexerSuperstructure extends SubsystemBase {
     private final LoggedTunableNumber tuningModeCenterRPS =
             new LoggedTunableNumber(getName() + "/Tuning/CenteringSpeedRPS", 0.0);
 
+    // From logs
+    private final LoggedTunableNumber jamDetectionVelocityError =
+            new LoggedTunableNumber(getName() + "/JamDetection/VelocityErrorThresholdRPS", 15.0);
+    private final LoggedTunableNumber jamDetectionTorqueCurrent =
+            new LoggedTunableNumber(getName() + "/JamDetection/TorqueCurrentThreshold", 65.0);
+    private final LoggedTunableNumber jamDetectionTorqueCurrentResponse =
+            new LoggedTunableNumber(getName() + "/JamDetection/TorqueCurrentResponse", 100.0);
+    private final LoggedTunableNumber jamDetectionResponseLengthSeconds =
+            new LoggedTunableNumber(getName() + "/JamDetection/ResponseLengthSeconds", 0.2);
+    private final LoggedTrigger isJammed;
+
     private final Command tuningModeCommand =
             Commands.sequence(
                             Commands.runOnce(this::cancelCurrentCommandIfAny),
@@ -112,6 +127,23 @@ public class IndexerSuperstructure extends SubsystemBase {
         this.floorIO = floorIO;
         this.centerIO = centerIO;
         tuningModeEnabled.whileTrue(tuningModeCommand);
+
+        isJammed =
+                new LoggedTrigger(
+                                getName() + "/IsJammed",
+                                () -> {
+                                    boolean velocityTripped =
+                                            floorIO.getVelocityError()
+                                                    .gt(
+                                                            RotationsPerSecond.of(
+                                                                    jamDetectionVelocityError
+                                                                            .get()));
+                                    boolean currentTripped =
+                                            floorIO.getTorqueCurrent()
+                                                    .gt(Amps.of(jamDetectionTorqueCurrent.get()));
+                                    return velocityTripped && currentTripped;
+                                })
+                        .debounce(0.1);
     }
 
     @Override
@@ -168,12 +200,25 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return a command that runs the indexer at shooting speed
      */
     public Command shoot() {
-        return this.startEnd(
-                        () ->
-                                runVelocity(
-                                        RotationsPerSecond.of(FLOOR_SHOOT_RPS.get()),
-                                        RotationsPerSecond.of(CENTER_SHOOT_RPS.get())),
-                        () -> stop())
+        return Commands.repeatingSequence(
+                        this.runOnce(
+                                () ->
+                                        runVelocity(
+                                                RotationsPerSecond.of(FLOOR_SHOOT_RPS.get()),
+                                                RotationsPerSecond.of(CENTER_SHOOT_RPS.get()))),
+                        Commands.waitUntil(isJammed),
+                        this.runOnce(
+                                () ->
+                                        floorIO.runCurrent(
+                                                Amps.of(
+                                                        Math.copySign(
+                                                                jamDetectionTorqueCurrentResponse
+                                                                        .get(),
+                                                                -FLOOR_SHOOT_RPS.get())))),
+                        Commands.defer(
+                                () -> Commands.waitSeconds(jamDetectionResponseLengthSeconds.get()),
+                                Set.of()))
+                .finallyDo(this::stop)
                 .withName("Shoot");
     }
 
