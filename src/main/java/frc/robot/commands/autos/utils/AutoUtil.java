@@ -97,7 +97,7 @@ public final class AutoUtil {
                         .getNorm();
 
         for (AutoTrajectory trajectory : trajectories) {
-            trajectory.atTime("ExtendIntake").onTrue(ctx.intake().autoIntake());
+            trajectory.atTime("ExtendIntake").onTrue(ctx.intake().intake());
             trajectory.atTime("RetractIntake").onTrue(ctx.intake().retractIntake());
             trajectory
                     .atTime("Spinup")
