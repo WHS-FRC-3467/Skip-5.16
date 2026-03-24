@@ -102,7 +102,7 @@ public class AprilTagCamera {
                                 + " replayed inputs! Defaulting to inputs!",
                         AlertType.kWarning);
         disconnectAlert =
-                new Alert("Camera " + properties.name() + "is Disconnected!", AlertType.kError);
+                new Alert("Camera " + properties.name() + " is Disconnected!", AlertType.kError);
 
         this.io = io;
         inputs = new VisionIOInputs(properties.cameraMatrix(), properties.distCoeffs());
