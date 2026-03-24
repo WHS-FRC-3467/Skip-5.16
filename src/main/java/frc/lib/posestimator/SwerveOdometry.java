@@ -222,12 +222,15 @@ public class SwerveOdometry {
         double timestampSeconds = observation.timestamp().in(Seconds);
 
         if (pendingPositionReset) {
+            // While awaiting a position reset, still apply gyro heading updates to the pose
             observation
                     .gyroAngle()
                     .ifPresent(
                             angle ->
-                                    gyroOffset =
-                                            odometryPose.getRotation().minus(angle));
+                                    odometryPose =
+                                            new Pose2d(
+                                                    odometryPose.getTranslation(),
+                                                    angle.plus(gyroOffset)));
             odometryBuffer.addSample(timestampSeconds, odometryPose);
             return;
         }
