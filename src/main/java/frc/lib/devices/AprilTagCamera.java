@@ -18,6 +18,7 @@ package frc.lib.devices;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -78,6 +79,7 @@ public class AprilTagCamera {
 
     private final Alert mismatchedIntrinsicsAlert;
     private final Alert disconnectAlert;
+    private final Debouncer disconnectDebouncer = new Debouncer(0.25);
 
     /** The camera's properties, including intrinsics and transform relative to the robot. */
     @Getter private final CameraProperties properties;
@@ -156,12 +158,9 @@ public class AprilTagCamera {
         io.updateInputs(inputs);
         Logger.processInputs(properties.name(), inputs);
 
-        if (!inputs.connected) {
-            disconnectAlert.set(true);
-            return Optional.empty();
-        } else {
-            disconnectAlert.set(false);
-        }
+        boolean disconnected = !inputs.connected;
+        disconnectAlert.set(disconnectDebouncer.calculate(disconnected));
+        if (disconnected) return Optional.empty();
 
         return Optional.of(inputs.results);
     }
