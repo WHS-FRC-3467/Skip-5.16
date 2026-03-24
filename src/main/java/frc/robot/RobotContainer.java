@@ -360,6 +360,10 @@ public class RobotContainer {
                 ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
 
         SmartDashboard.putData(
+                "Debug/SetOdometryToTestPose",
+                Commands.runOnce(() -> robotState.resetPose(new Pose2d(8, 5, Rotation2d.k180deg))));
+
+        SmartDashboard.putData(
                 "Fountain",
                 Commands.sequence(
                                 Commands.sequence(
@@ -404,7 +408,7 @@ public class RobotContainer {
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
         try {
-            Pose2d startPose = autoPreviewField.getObject("path").getPoses().get(0);
+            startPose = autoPreviewField.getObject("path").getPoses().get(0);
             Logger.recordOutput("Auto/StartPose", startPose);
 
             autoPreviewField.getObject("startPose").setPose(startPose);

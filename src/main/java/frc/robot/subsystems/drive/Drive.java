@@ -257,7 +257,6 @@ public class Drive extends SubsystemBase {
 
         // Start odometry thread
         PhoenixOdometryThread.getInstance().start();
-
         configurePathPlanner();
 
         // Configure SysId
@@ -313,7 +312,10 @@ public class Drive extends SubsystemBase {
                         Logger.recordOutput(
                                 "Odometry/Trajectory", activePath.toArray(Pose2d[]::new)));
         PathPlannerLogging.setLogTargetPoseCallback(
-                targetPose -> Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose));
+                targetPose -> {
+                    robotState.setActiveTrajPose(targetPose);
+                    Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+                });
     }
 
     @Override
@@ -536,6 +538,7 @@ public class Drive extends SubsystemBase {
                                         currentPose.getRotation().getRadians(), sample.heading));
 
         runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, currentPose.getRotation()));
+        robotState.setActiveTrajPose(targetPose);
         Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
     }
 
@@ -586,6 +589,7 @@ public class Drive extends SubsystemBase {
                             runVelocity(
                                     ChassisSpeeds.fromFieldRelativeSpeeds(
                                             targetSpeeds, currentPose.getRotation()));
+                            robotState.setActiveTrajPose(targetPose);
                             Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
                         },
                         this::stop,

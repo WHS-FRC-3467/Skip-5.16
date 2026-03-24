@@ -38,6 +38,7 @@ import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTrigger;
+import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.subsystems.drive.Drive;
 
@@ -67,6 +68,20 @@ public class RobotState {
 
     public final LoggedTunableNumber feedLookaheadSeconds =
             new LoggedTunableNumber("RobotState/FeedLookaheadSeconds", 1.0);
+
+    @AutoLogOutput(key = "Drive/ActiveTrajectoryPose")
+    @Getter
+    @Setter
+    private Pose2d activeTrajPose = new Pose2d();
+
+    public LoggedTunableBoolean forcePathFind =
+            new LoggedTunableBoolean("RobotState/ForcePathFind", false);
+
+    @AutoLogOutput(key = "Drive/ActiveTrajectoryError")
+    public Distance getActiveTrajectoryError() {
+        return Meters.of(
+                getEstimatedPose().getTranslation().getDistance(activeTrajPose.getTranslation()));
+    }
 
     @Getter
     @AutoLogOutput(key = "Drive/FacingTarget")
@@ -330,7 +345,7 @@ public class RobotState {
      */
     public FieldRegion getFieldRegion(Pose2d currentPose) {
         // Pose in blue-side field frame (i.e., "alliance side" is always the current alliance).
-        Pose2d pose = FieldUtil.apply(getEstimatedPose());
+        Pose2d pose = FieldUtil.apply(currentPose);
         double x = pose.getX();
         double y = pose.getY();
 
@@ -378,6 +393,7 @@ public class RobotState {
      *
      * @return The field region the robot is in
      */
+    @AutoLogOutput(key = "RobotState/FieldRegion")
     public FieldRegion getFieldRegion() {
         return getFieldRegion(getEstimatedPose());
     }

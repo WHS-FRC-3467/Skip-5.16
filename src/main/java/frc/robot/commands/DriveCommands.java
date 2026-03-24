@@ -15,6 +15,11 @@
 
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Meters;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -25,6 +30,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -41,6 +48,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -467,6 +475,52 @@ public class DriveCommands {
                                                     DriverStation.reportWarning(results, false);
                                                 })))
                 .withName("Wheel Radius Characterization");
+    }
+
+    /**
+     * Pathfinding command that uses the AutoBuilder to generate a path to a target position.
+     *
+     * @param drive the drive subsystem used for pathfinding
+     * @param currentPose supplier for the robot's current pose
+     * @param targetPose the target pose to pathfind to
+     * @param constraints the path constraints to apply
+     * @param goalEndVelocity the goal final velocity
+     * @param tolerance the allowed position tolerance from the target pose
+     * @return the pathfinding command
+     */
+    public static Command pathFindToPose(
+            Drive drive,
+            Supplier<Pose2d> currentPose,
+            Supplier<Pose2d> targetPose,
+            PathConstraints constraints,
+            LinearVelocity goalEndVelocity,
+            Distance tolerance) {
+
+        // Defer command construction so targetPose is evaluated at schedule time, not build time.
+        // This ensures that if startPose (or any other target) is updated after this command is
+        // built, the pathfinder uses the latest value when the command is actually run.
+        return Commands.defer(
+                        () ->
+                                AutoBuilder.pathfindToPose(
+                                                targetPose.get(),
+                                                constraints,
+                                                goalEndVelocity // Goal end velocity in meters/sec
+                                                )
+                                        .raceWith(
+                                                // Interrupt the pathfinding command once the robot
+                                                // gets within the tolerance of the target pose
+                                                Commands.waitUntil(
+                                                        () ->
+                                                                currentPose
+                                                                                .get()
+                                                                                .minus(
+                                                                                        targetPose
+                                                                                                .get())
+                                                                                .getTranslation()
+                                                                                .getNorm()
+                                                                        < tolerance.in(Meters))),
+                        Set.of(drive))
+                .withName("Pathfind to Pose");
     }
 
     private static class WheelRadiusCharacterizationState {

@@ -42,6 +42,12 @@ public final class NeutralAuto {
                                 ChoreoTraj.Neutral2.name());
         List<Trajectory<SwerveSample>> trajectories =
                 AutoUtil.loadTrajectories(names, shouldMirror);
+        Trajectory<SwerveSample> tunnelTrajectory =
+                AutoUtil.loadTrajectories(List.of(ChoreoTraj.TunnelPath.name()), shouldMirror)
+                        .stream()
+                        .findFirst()
+                        .orElseThrow();
+
         return AutoUtil.trajectoryOption(
                 trajectories,
                 () -> {
@@ -54,6 +60,7 @@ public final class NeutralAuto {
                     AutoTrajectory first = routine.trajectory(trajectories.get(0));
                     AutoTrajectory second = routine.trajectory(trajectories.get(1));
                     AutoTrajectory third = routine.trajectory(trajectories.get(2));
+                    AutoTrajectory tunnel = routine.trajectory(tunnelTrajectory);
                     AutoUtil.bindEvents(ctx, first, second, third);
                     routine.active()
                             .onTrue(
@@ -66,21 +73,38 @@ public final class NeutralAuto {
                                                             Commands.waitSeconds(
                                                                     AutoCommands.getAutoDelay()),
                                                     Set.of()),
-                                            first.cmd(),
+                                            Commands.defer(
+                                                    () ->
+                                                            AutoCommands.safeFollowTrajectory(
+                                                                    ctx.drive(),
+                                                                    first,
+                                                                    tunnel,
+                                                                    ctx.intake().retractIntake()),
+                                                    Set.of(ctx.drive())),
                                             AutoCommands.shootCommand(
                                                     ctx.drive(),
                                                     ctx.intake(),
                                                     ctx.indexer(),
                                                     ctx.tower(),
                                                     ctx.shooter(),
-                                                    2.5),
+                                                    3.0),
                                             Commands.repeatingSequence(
                                                             AutoCommands.stowHood(ctx.shooter()),
                                                             ctx.intake()
                                                                     .retractIntake()
                                                                     .asProxy()
                                                                     .withTimeout(0.5),
-                                                            second.cmd(),
+                                                            Commands.defer(
+                                                                    () ->
+                                                                            AutoCommands
+                                                                                    .safeFollowTrajectory(
+                                                                                            ctx
+                                                                                                    .drive(),
+                                                                                            second,
+                                                                                            tunnel,
+                                                                                            ctx.intake()
+                                                                                                    .retractIntake()),
+                                                                    Set.of(ctx.drive())),
                                                             AutoCommands.shootCommand(
                                                                     ctx.drive(),
                                                                     ctx.intake(),
@@ -93,7 +117,17 @@ public final class NeutralAuto {
                                                                     .retractIntake()
                                                                     .asProxy()
                                                                     .withTimeout(0.5),
-                                                            third.cmd(),
+                                                            Commands.defer(
+                                                                    () ->
+                                                                            AutoCommands
+                                                                                    .safeFollowTrajectory(
+                                                                                            ctx
+                                                                                                    .drive(),
+                                                                                            third,
+                                                                                            tunnel,
+                                                                                            ctx.intake()
+                                                                                                    .retractIntake()),
+                                                                    Set.of(ctx.drive())),
                                                             AutoCommands.shootCommand(
                                                                     ctx.drive(),
                                                                     ctx.intake(),
