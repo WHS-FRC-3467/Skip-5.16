@@ -30,8 +30,6 @@ public class Ports {
      */
     public static final CANBus DRIVETRAIN_BUS = new CANBus("Drivetrain");
 
-    public static final Device.CAN lights = new CAN(7, "Drivetrain");
-
     public static final Device.CAN pdh = new CAN(40, "rio");
 
     public static final Device.CAN leftFlywheelMain = new CAN(18, "rio");
@@ -42,11 +40,8 @@ public class Ports {
     public static final Device.CAN hood = new CAN(19, "rio");
 
     public static final Device.CAN tower = new CAN(20, "rio");
-    public static final Device.CAN towerLaserCAN1 = new CAN(17, "rio");
-    public static final Device.CAN towerLaserCAN2 = new CAN(23, "rio");
 
     public static final Device.CAN indexerFloor = new CAN(25, "rio");
-
     public static final Device.CAN indexerFloorFollower = new CAN(26, "rio");
     public static final Device.CAN indexerCentering = new CAN(24, "rio");
 
