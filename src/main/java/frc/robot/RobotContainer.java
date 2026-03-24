@@ -177,9 +177,9 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> -controller.slewLeftY(),
-                        () -> -controller.slewLeftX(),
-                        () -> -controller.slewRightX() * 0.75));
+                        () -> -controller.getLeftX(),
+                        () -> -controller.getLeftX(),
+                        () -> -controller.getRightX() * 0.75));
 
         // Right Trigger: Shoot/Pass
         controller
@@ -393,6 +393,7 @@ public class RobotContainer {
         // SmartDashboard.putData(
         //         "Reset Vision Odometry Characterization",
         //         Commands.runOnce(() -> VisionOdometryCharacterizer.reset()));
+        SmartDashboard.putData(robotState.toggleLowPowerMode());
     }
 
     /** Creates and/or binds triggers to LED states */
