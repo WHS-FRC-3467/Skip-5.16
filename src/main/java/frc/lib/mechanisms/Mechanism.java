@@ -248,6 +248,22 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
+     * Runs the mechanism to a specific position with Motion Magic cruise velocity and acceleration.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     * @param cruiseVelocity Motion Magic cruise velocity.
+     * @param acceleration Motion Magic acceleration.
+     */
+    public void runPosition(
+            Angle position,
+            PIDSlot slot,
+            AngularVelocity cruiseVelocity,
+            AngularAcceleration acceleration) {
+        io.runPosition(position, slot, cruiseVelocity, acceleration);
+    }
+
+    /**
      * Runs the mechanism to a specific position without a motion profile.
      *
      * @param position Target position.
@@ -261,7 +277,18 @@ public abstract class Mechanism<T extends MotorIO> {
      * Runs the mechanism at a target velocity.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max acceleration.
+     * @param slot PID slot index.
+     */
+    public void runVelocity(AngularVelocity velocity, PIDSlot slot) {
+        io.runVelocity(velocity, slot);
+    }
+
+    /**
+     * Runs the mechanism at a target velocity using a Motion Magic velocity request that ramps to
+     * the target velocity using the provided Motion Magic acceleration.
+     *
+     * @param velocity Desired velocity.
+     * @param acceleration Motion Magic acceleration used to ramp to target velocity.
      * @param slot PID slot index.
      */
     public void runVelocity(
@@ -380,6 +407,32 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
+     * Runs the mechanism to a target linear position with Motion Magic cruise velocity and
+     * acceleration. Cruise velocity and acceleration are provided in linear units and converted to
+     * angular units using the configured radius.
+     *
+     * @param position Desired linear position
+     * @param slot PID slot to use
+     * @param cruiseVelocity Motion Magic cruise velocity in linear units
+     * @param acceleration Motion Magic acceleration in linear units
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public void runLinearPosition(
+            Distance position,
+            PIDSlot slot,
+            LinearVelocity cruiseVelocity,
+            LinearAcceleration acceleration) {
+        requireRadius();
+        Angle angle = Radians.of(position.in(Meters) / radiusMeters);
+        AngularVelocity angularCruiseVelocity =
+                RadiansPerSecond.of(cruiseVelocity.in(MetersPerSecond) / radiusMeters);
+        AngularAcceleration angularAcceleration =
+                RadiansPerSecondPerSecond.of(
+                        acceleration.in(MetersPerSecondPerSecond) / radiusMeters);
+        runPosition(angle, slot, angularCruiseVelocity, angularAcceleration);
+    }
+
+    /**
      * Runs the mechanism to a target linear position without a motion profile.
      *
      * @param position Desired linear position
@@ -396,19 +449,35 @@ public abstract class Mechanism<T extends MotorIO> {
      * Runs the mechanism at a target linear velocity with acceleration limiting.
      *
      * @param velocity Desired linear velocity
-     * @param acceleration Maximum linear acceleration
      * @param slot PID slot to use
      * @throws IllegalStateException if {@link #withRadius} was never called
      */
-    public void runLinearVelocity(
-            LinearVelocity velocity, LinearAcceleration acceleration, PIDSlot slot) {
+    public void runLinearVelocity(LinearVelocity velocity, PIDSlot slot) {
         requireRadius();
         AngularVelocity angularVelocity =
                 RadiansPerSecond.of(velocity.in(MetersPerSecond) / radiusMeters);
-        AngularAcceleration angularAcceleration =
+        runVelocity(angularVelocity, slot);
+    }
+
+    /**
+     * Runs the mechanism at a target linear velocity using a Motion Magic velocity request that
+     * ramps to the target velocity using the provided Motion Magic acceleration. All parameters are
+     * provided in linear units and converted to angular units using the configured radius.
+     *
+     * @param velocity Desired linear velocity
+     * @param slot PID slot to use
+     * @param acceleration Motion Magic acceleration in linear units used to ramp to target velocity
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public void runLinearVelocity(
+            LinearVelocity velocity, PIDSlot slot, LinearAcceleration acceleration) {
+        requireRadius();
+        AngularVelocity angularVelocity =
+                RadiansPerSecond.of(velocity.in(MetersPerSecond) / radiusMeters);
+        AngularAcceleration angularacceleration =
                 RadiansPerSecondPerSecond.of(
                         acceleration.in(MetersPerSecondPerSecond) / radiusMeters);
-        runVelocity(angularVelocity, angularAcceleration, slot);
+        runVelocity(angularVelocity, angularacceleration, slot);
     }
 
     /**

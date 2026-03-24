@@ -75,8 +75,10 @@ public class TowerConstants {
         config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
         config.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
-        config.CurrentLimits.StatorCurrentLimitEnable = Robot.isReal();
-        config.CurrentLimits.StatorCurrentLimit = 80.0;
+        if (Robot.isReal()) {
+            config.TorqueCurrent.PeakForwardTorqueCurrent = 80.0;
+            config.TorqueCurrent.PeakReverseTorqueCurrent = -80.0;
+        }
 
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;

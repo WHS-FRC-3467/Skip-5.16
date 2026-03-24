@@ -26,11 +26,13 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -43,13 +45,16 @@ import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
 import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
-import frc.robot.RobotState.Target;
+import frc.robot.util.RobotSim;
 
 import lombok.Getter;
 
 import org.littletonrobotics.junction.Logger;
+
+import java.util.function.Supplier;
 
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
 
@@ -91,6 +96,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         feedFlywheelMap.put(20.0, 60.0);
     }
 
+    private static final double MIDLINE_FEED_DISTANCE_METERS =
+            FieldConstants.FIELD_LENGTH / 2.0
+                    - (FieldConstants.LinesVertical.NEUTRAL_ZONE_NEAR / 2.0);
+    private static final Angle FEED_HOOD_ANGLE = Degrees.of(24.0);
+
     private final RobotState robotState = RobotState.getInstance();
 
     private final RotaryMechanism<?, ?> hoodIO;
@@ -121,6 +131,16 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         double dist = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
                         return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
                                 && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
+                    });
+
+    public final LoggedTrigger atMidlineFeedSetpoints =
+            new LoggedTrigger(
+                    this.getName() + "/atMidlineFeedSetpoints",
+                    () -> {
+                        return isFlywheelAt(
+                                        RotationsPerSecond.of(
+                                                feedFlywheelMap.get(MIDLINE_FEED_DISTANCE_METERS)))
+                                && isHoodAt(FEED_HOOD_ANGLE);
                     });
 
     private final LoggedTunableBoolean tuningMode =
@@ -170,29 +190,22 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                                     && robotState.atStaticShootingState.getAsBoolean());
     // Triggers determining whether a ball has passed through the shooter based on flywheel velocity
     // drops from current setpoint, currently only registering true during static feeding/shooting
-    private final LoggedTrigger leftBallTrigger =
-            new LoggedTrigger(
-                    getName() + "/LeftBallTrigger",
-                    () ->
-                            detectLeftFlywheelDrop(
-                                    MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
-    private final LoggedTrigger rightBallTrigger =
-            new LoggedTrigger(
-                    getName() + "/RightBallTrigger",
-                    () ->
-                            detectRightFlywheelDrop(
-                                    MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
+    private final LoggedTrigger leftBallTrigger;
+    private final LoggedTrigger rightBallTrigger;
+
     // Determines whether the hopper is empty for at least 0.5s while shooting, using
     // staticShotState as a proxy for a shot
     private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
-    public final LoggedTrigger hopperEmpty =
+    public final LoggedTrigger hopperEmpty;
+
+    public final LoggedTrigger shouldFeed =
             new LoggedTrigger(
-                    getName() + "/hopperEmpty",
+                    getName() + "/ShouldFeed",
                     () ->
-                            hopperEmptyDebouncer.calculate(
-                                    staticShotState.getAsBoolean()
-                                            && !leftBallTrigger.getAsBoolean()
-                                            && !rightBallTrigger.getAsBoolean()));
+                            switch (robotState.getTarget()) {
+                                case HUB -> false;
+                                case FEED_LEFT, FEED_RIGHT -> true;
+                            });
 
     /**
      * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
@@ -219,18 +232,61 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         this.leftFlywheelIO = leftFlywheelIO;
         this.rightFlywheelIO = rightFlywheelIO;
 
+        leftBallTrigger =
+                new LoggedTrigger(
+                        getName() + "/LeftBallTrigger",
+                        () ->
+                                detectFlywheelDrop(
+                                        leftFlywheelIO,
+                                        MetersPerSecond.of(
+                                                shotDetectionThresholdMPS.getAsDouble())));
+        rightBallTrigger =
+                new LoggedTrigger(
+                        getName() + "/RightBallTrigger",
+                        () ->
+                                detectFlywheelDrop(
+                                        rightFlywheelIO,
+                                        MetersPerSecond.of(
+                                                shotDetectionThresholdMPS.getAsDouble())));
+
+        hopperEmpty =
+                RobotBase.isSimulation()
+                        ? new LoggedTrigger(
+                                getName() + "/hopperEmpty",
+                                () ->
+                                        hopperEmptyDebouncer.calculate(
+                                                RobotSim.getInstance().getFuelSim().getHeldFuel()
+                                                        == 0))
+                        : new LoggedTrigger(
+                                getName() + "/hopperEmpty",
+                                () ->
+                                        hopperEmptyDebouncer.calculate(
+                                                staticShotState.getAsBoolean()
+                                                        && !leftBallTrigger.getAsBoolean()
+                                                        && !rightBallTrigger.getAsBoolean()));
+
         attachBallTriggers();
     }
 
     private void spinFlywheel(AngularVelocity velocity) {
-        leftFlywheelIO.runVelocity(
-                velocity.plus(getFlywheelTrim()),
-                FlywheelConstants.MAX_ACCELERATION,
-                PIDSlot.SLOT_0);
-        rightFlywheelIO.runVelocity(
-                velocity.plus(getFlywheelTrim()),
-                FlywheelConstants.MAX_ACCELERATION,
-                PIDSlot.SLOT_0);
+        leftFlywheelIO.runVelocity(velocity.plus(getFlywheelTrim()), PIDSlot.SLOT_0);
+        rightFlywheelIO.runVelocity(velocity.plus(getFlywheelTrim()), PIDSlot.SLOT_0);
+    }
+
+    private void coastFlywheels() {
+        leftFlywheelIO.runCoast();
+        rightFlywheelIO.runCoast();
+    }
+
+    private Command spinUpCommand(
+            Supplier<AngularVelocity> flywheelVelocity, Supplier<Angle> hoodAngle, String name) {
+        return Commands.run(
+                        () -> {
+                            spinFlywheel(flywheelVelocity.get());
+                            setHoodPosition(hoodAngle.get());
+                        },
+                        this)
+                .withName(name);
     }
 
     private boolean isFlywheelAt(AngularVelocity velocity) {
@@ -253,33 +309,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * static shot state helps prevent false positives from spurious velocity drops when the
      * flywheel is at low speed or the robot is moving/spinning up.
      *
+     * @param flywheel the flywheel mechanism to evaluate
      * @param drop the magnitude of drop to compare
      */
-    private boolean detectLeftFlywheelDrop(LinearVelocity drop) {
+    private boolean detectFlywheelDrop(FlywheelMechanism<?> flywheel, LinearVelocity drop) {
         LinearVelocity desiredLinearVelocity = getDesiredFlywheelLinearVelocity();
-        LinearVelocity currentLinearVelocity = leftFlywheelIO.getLinearVelocity();
-        return currentLinearVelocity.minus(desiredLinearVelocity).in(MetersPerSecond)
-                        <= -drop.in(MetersPerSecond)
-                && currentLinearVelocity.in(MetersPerSecond)
-                        > FlywheelConstants.TOLERANCE.in(RadiansPerSecond)
-                                * FlywheelConstants.FLYWHEEL_RADIUS.in(Meters)
-                && staticShotState.getAsBoolean();
-    }
-
-    /**
-     * Determines whether right flywheel linear velocity has dropped by at least the specified
-     * velocity from the current flywheel linear velocity setpoint. Currently only applicable during
-     * static feeding/shooting. Primarily for use in autos.
-     *
-     * <p>Gating the check behind having the flywheel be above a certain minimum velocity and the
-     * static shot state helps prevent false positives from spurious velocity drops when the
-     * flywheel is at low speed or the robot is moving/spinning up.
-     *
-     * @param drop the magnitude of drop to compare
-     */
-    private boolean detectRightFlywheelDrop(LinearVelocity drop) {
-        LinearVelocity desiredLinearVelocity = getDesiredFlywheelLinearVelocity();
-        LinearVelocity currentLinearVelocity = rightFlywheelIO.getLinearVelocity();
+        LinearVelocity currentLinearVelocity = flywheel.getLinearVelocity();
         return currentLinearVelocity.minus(desiredLinearVelocity).in(MetersPerSecond)
                         <= -drop.in(MetersPerSecond)
                 && currentLinearVelocity.in(MetersPerSecond)
@@ -333,13 +368,18 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private AngularVelocity getDesiredFlywheelVelocity() {
-        InterpolatingDoubleTreeMap flywheelMap =
-                switch (robotState.getTarget()) {
-                    case HUB -> hubFlywheelMap;
-                    case FEED_LEFT, FEED_RIGHT -> feedFlywheelMap;
-                };
+        boolean shouldFeedNow = shouldFeed.getAsBoolean();
+        InterpolatingDoubleTreeMap flywheelMap = shouldFeedNow ? feedFlywheelMap : hubFlywheelMap;
 
-        return RotationsPerSecond.of(flywheelMap.get(robotState.getDistanceToTarget().in(Meters)));
+        Pose2d pose;
+        if (shouldFeedNow) {
+            pose = robotState.getFuturePose(robotState.feedLookaheadSeconds.get());
+        } else {
+            pose = robotState.getEstimatedPose();
+        }
+
+        return RotationsPerSecond.of(
+                flywheelMap.get(robotState.getDistanceToTarget(pose.getTranslation()).in(Meters)));
     }
 
     private LinearVelocity getDesiredFlywheelLinearVelocity() {
@@ -349,11 +389,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private Angle getDesiredHoodAngle() {
-        if (robotState.getTarget() == Target.HUB) {
+        boolean shouldFeedNow = shouldFeed.getAsBoolean();
+        if (!shouldFeedNow) {
             return Degrees.of(hoodAngleMap.get(robotState.getDistanceToTarget().in(Meters)));
         }
 
-        return Degrees.of(24.0);
+        return FEED_HOOD_ANGLE;
     }
 
     // Gets ball trajectory exit angle relative to horizontal, accounting for hood angle and
@@ -373,47 +414,51 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @return Static non-updating HUB only shooter spin-up command.
      */
     public Command spinUpShooterToHubDistance(Distance distance) {
-        return Commands.run(
-                        () -> {
-                            spinFlywheel(
-                                    RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))));
-                            if (robotState.hoodSafe.getAsBoolean()) {
-                                setHoodPosition(Degrees.of(hoodAngleMap.get(distance.in(Meters))));
-                            } else {
-                                setHoodPosition(Degrees.zero());
-                            }
-                        },
-                        this)
-                .withName("Spin-Up Shooter to Distance");
+        return spinUpCommand(
+                () -> RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))),
+                () ->
+                        robotState.hoodSafe.getAsBoolean()
+                                ? Degrees.of(hoodAngleMap.get(distance.in(Meters)))
+                                : Degrees.zero(),
+                "Spin-Up Shooter to Distance");
     }
 
-    public Command spinUpShooterToHubDistance() {
-        double distance = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
-        return Commands.run(
-                        () -> {
-                            spinFlywheel(RotationsPerSecond.of(hubFlywheelMap.get(distance)));
-                            setHoodPosition(Degrees.of(hoodAngleMap.get(distance)));
-                        },
-                        this)
-                .withName("Spin-Up Shooter to Distance");
+    /**
+     * Spin up shooter to a fixed distance, i.e. against the HUB, TRENCH, or TOWER. PRECONDITION:
+     * ASSUMES THAT THE HOOD IS SAFE. Primarily for use in no-vision teleop.
+     *
+     * @return a Command to prepare for the fixed shot
+     */
+    public Command spinUpShooterToFixedDistance(double distance) {
+        return spinUpCommand(
+                () -> RotationsPerSecond.of(hubFlywheelMap.get(distance)),
+                () -> Degrees.of(hoodAngleMap.get(distance)),
+                "Spin-Up Shooter to Distance");
+    }
+
+    /**
+     * Prepare to feed from the midline.
+     *
+     * @return a Command to spin up for a midline feed
+     */
+    public Command spinUpShooterMidlineFeed() {
+        return spinUpCommand(
+                () -> RotationsPerSecond.of(feedFlywheelMap.get(MIDLINE_FEED_DISTANCE_METERS)),
+                () -> FEED_HOOD_ANGLE,
+                "Spin-Up Shooter to FEED Distance");
     }
 
     /**
      * Dynamically spins the flywheel and actuates the hood to the proper values for ANY target shot
-     * given current field-relative robot pose. Valid for ANY target. Perpetual command -- never
+     * given current field-relative robot pose. Valid for ANY target. Perpetual command that never
      * spins down. Therefore, to end, this should be interrupted by a parent command group or
      * timed-out.
      *
      * @return Dynamically-updating ALL TARGET shooter spin-up command.
      */
     public Command spinUpShooter() {
-        return Commands.run(
-                        () -> {
-                            spinFlywheel(getDesiredFlywheelVelocity());
-                            setHoodPosition(getDesiredHoodAngle());
-                        },
-                        this)
-                .withName("Spin-Up Shooter");
+        return spinUpCommand(
+                this::getDesiredFlywheelVelocity, this::getDesiredHoodAngle, "Spin-Up Shooter");
     }
 
     public Command slowSpinup() {
@@ -464,16 +509,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Creates a command to force the hood to a specific angle.
-     *
-     * @param angle the target angle for the hood
-     * @return command that sets the hood angle
-     */
-    public Command forceHoodAngle(Angle angle) {
-        return this.run(() -> setHoodPosition(angle)).withName("Force Hood Angle");
-    }
-
-    /**
      * Creates a command to set the flywheel velocity (alternate spelling).
      *
      * @param velocity the target angular velocity for both flywheels
@@ -483,25 +518,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Commands.runOnce(() -> spinFlywheel(velocity)).withName("Set Flywheel Speed");
     }
 
-    /**
-     * Creates a command to coast the flywheel. Use after shooting in auto.
-     *
-     * @return command that coasts the flywheel.
-     */
-    public Command coastFlywheel() {
-        return Commands.runOnce(
-                () -> {
-                    leftFlywheelIO.runCoast();
-                    rightFlywheelIO.runCoast();
-                });
-    }
-
     public Command stopFlywheels() {
-        return this.runOnce(
-                () -> {
-                    leftFlywheelIO.runCoast();
-                    rightFlywheelIO.runCoast();
-                });
+        return this.runOnce(this::coastFlywheels);
     }
 
     public Command stopAndStow() {

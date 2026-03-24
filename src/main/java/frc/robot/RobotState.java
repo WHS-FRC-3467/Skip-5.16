@@ -23,6 +23,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -37,6 +38,7 @@ import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedTrigger;
+import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.robot.subsystems.drive.Drive;
 
@@ -58,17 +60,28 @@ public class RobotState {
     private static final LoggedTunableNumber MAX_HOOD_RETRACT_TIME =
             new LoggedTunableNumber("RobotState/MaxHoodRetractTime", 0.2);
 
-    private static final double LINEAR_ODOMETRY_STD_DEV = 0.01;
-    private static final double ANGULAR_ODOMETRY_STD_DEV = 0.01;
+    private static final double LINEAR_ODOMETRY_STD_DEV = 0.3;
+    private static final double ANGULAR_ODOMETRY_STD_DEV = 0.15;
 
     @Getter(lazy = true)
     private static final RobotState instance = new RobotState();
 
-    @Setter @Getter private boolean drivetrainAngled = false;
+    public final LoggedTunableNumber feedLookaheadSeconds =
+            new LoggedTunableNumber("RobotState/FeedLookaheadSeconds", 1.0);
 
-    @AutoLogOutput(key = "Drive/DrivetrainAngled")
-    private final Trigger drivetrainAngledTrigger =
-            new Trigger(() -> drivetrainAngled).debounce(0.5, DebounceType.kFalling);
+    @AutoLogOutput(key = "Drive/ActiveTrajectoryPose")
+    @Getter
+    @Setter
+    private Pose2d activeTrajPose = new Pose2d();
+
+    public LoggedTunableBoolean forcePathFind =
+            new LoggedTunableBoolean("RobotState/ForcePathFind", false);
+
+    @AutoLogOutput(key = "Drive/ActiveTrajectoryError")
+    public Distance getActiveTrajectoryError() {
+        return Meters.of(
+                getEstimatedPose().getTranslation().getDistance(activeTrajPose.getTranslation()));
+    }
 
     @Getter
     @AutoLogOutput(key = "Drive/FacingTarget")
@@ -80,6 +93,20 @@ public class RobotState {
                                                     .minus(getEstimatedPose().getRotation())
                                                     .getDegrees())
                                     < SHOOT_TOLERANCE_DEGREES.get());
+
+    @Getter
+    @AutoLogOutput(key = "Drive/FacingFeedTarget")
+    public final Trigger facingFeedTarget =
+            new Trigger(
+                    () -> {
+                        Translation2d futureTranslation =
+                                getFuturePose(feedLookaheadSeconds.get()).getTranslation();
+                        return Math.abs(
+                                        getAngleToTarget(futureTranslation)
+                                                .minus(getEstimatedPose().getRotation())
+                                                .getDegrees())
+                                < SHOOT_TOLERANCE_DEGREES.get();
+                    });
 
     /**
      * Whether or not the robot is entering the trench in {@code MAX_HOOD_RETRACT_TIME}. For use to
@@ -101,11 +128,7 @@ public class RobotState {
                         boolean inMotion = linearVelocityMPS > 0.02 || angularVelocityRadsPS > 0.03;
 
                         // Predict future pose
-                        Pose2d futurePose =
-                                getEstimatedPose()
-                                        .exp(
-                                                getFieldRelativeVelocity()
-                                                        .toTwist2d(MAX_HOOD_RETRACT_TIME.get()));
+                        Pose2d futurePose = getFuturePose(MAX_HOOD_RETRACT_TIME.get());
 
                         // Normalize to alliance frame
                         Pose2d pose = FieldUtil.apply(futurePose);
@@ -182,14 +205,15 @@ public class RobotState {
 
     private final PoseEstimator poseEstimator =
             new PoseEstimator(
-                    new SwerveDriveKinematics(
-                            Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new)),
-                    Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new),
-                    Seconds.of(2),
-                    LINEAR_ODOMETRY_STD_DEV,
-                    ANGULAR_ODOMETRY_STD_DEV);
+                            new SwerveDriveKinematics(
+                                    Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new)),
+                            Drive.MODULE_TRANSLATIONS.toArray(Translation2d[]::new),
+                            Seconds.of(2),
+                            LINEAR_ODOMETRY_STD_DEV,
+                            ANGULAR_ODOMETRY_STD_DEV)
+                    .withPoseValidator(this::isPoseWithinField);
 
-    @Setter private ChassisSpeeds velocity = new ChassisSpeeds();
+    @Getter @Setter private ChassisSpeeds robotRelativeVelocity = new ChassisSpeeds();
 
     /**
      * Returns the robot's odometry-only pose (without vision corrections).
@@ -219,28 +243,36 @@ public class RobotState {
     public void addOdometryObservation(OdometryObservation observation) {
         if (DriverStation.isDisabled()) return;
 
-        if (drivetrainAngledTrigger.getAsBoolean()) {
-            poseEstimator.addGyroObservation(observation);
-            return;
-        }
-
         poseEstimator.addOdometryObservation(observation);
     }
 
     /**
-     * Adds a new vision observation to the pose estimator. Vision observations are ignored when the
-     * drivetrain is tilted (e.g., going over a bump).
+     * Returns true if the pose lies within the field perimeter (0..length, 0..width).
+     *
+     * @param pose pose to validate
+     * @return true if the pose is inside the field boundaries
+     */
+    public boolean isPoseWithinField(Pose2d pose) {
+        double x = pose.getX();
+        double y = pose.getY();
+        double halfLength = Constants.FULL_ROBOT_LENGTH.in(Meters) / 2.0;
+        double halfWidth = Constants.FULL_ROBOT_WIDTH.in(Meters) / 2.0;
+        return x >= halfLength
+                && x <= FieldConstants.FIELD_LENGTH - halfLength
+                && y >= halfWidth
+                && y <= FieldConstants.FIELD_WIDTH - halfWidth;
+    }
+
+    /**
+     * Adds a new vision observation to the pose estimator.
      *
      * @param observation the vision observation to add
      */
     public void addVisionObservation(VisionPoseObservation observation) {
-        // Only add vision observation if robot is not angled (i.e. when going over a bump)
-
-        if (DriverStation.isDisabled() || drivetrainAngledTrigger.getAsBoolean()) {
-            resetPose(observation.robotPose());
+        if (DriverStation.isDisabled()) {
+            poseEstimator.resetPose(observation.robotPose());
             return;
         }
-
         poseEstimator.addVisionObservation(observation);
     }
 
@@ -261,9 +293,9 @@ public class RobotState {
      */
     public ChassisSpeeds getFieldRelativeVelocity() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(
-                velocity.vxMetersPerSecond,
-                velocity.vyMetersPerSecond,
-                velocity.omegaRadiansPerSecond,
+                robotRelativeVelocity.vxMetersPerSecond,
+                robotRelativeVelocity.vyMetersPerSecond,
+                robotRelativeVelocity.omegaRadiansPerSecond,
                 getEstimatedPose().getRotation());
     }
 
@@ -313,7 +345,7 @@ public class RobotState {
      */
     public FieldRegion getFieldRegion(Pose2d currentPose) {
         // Pose in blue-side field frame (i.e., "alliance side" is always the current alliance).
-        Pose2d pose = FieldUtil.apply(getEstimatedPose());
+        Pose2d pose = FieldUtil.apply(currentPose);
         double x = pose.getX();
         double y = pose.getY();
 
@@ -361,6 +393,7 @@ public class RobotState {
      *
      * @return The field region the robot is in
      */
+    @AutoLogOutput(key = "RobotState/FieldRegion")
     public FieldRegion getFieldRegion() {
         return getFieldRegion(getEstimatedPose());
     }
@@ -519,6 +552,17 @@ public class RobotState {
     }
 
     /**
+     * Returns 2D distance from robot to target.
+     *
+     * @param robotTranslation the robot's translation
+     * @return the distance to the target
+     */
+    public Distance getDistanceToTarget(Translation2d robotTranslation) {
+        Translation2d targetTranslation = getTarget().getAllianceTranslation().toTranslation2d();
+        return Meters.of(robotTranslation.getDistance(targetTranslation));
+    }
+
+    /**
      * Returns the angle from the robot to the current target.
      *
      * @return the angle to the target
@@ -529,5 +573,34 @@ public class RobotState {
                 .toTranslation2d()
                 .minus(getEstimatedPose().getTranslation())
                 .getAngle();
+    }
+
+    /**
+     * Returns the angle from the robot to the current target.
+     *
+     * @param robotTranslation the robot's translation
+     * @return the angle to the target
+     */
+    public Rotation2d getAngleToTarget(Translation2d robotTranslation) {
+        return getTarget()
+                .getAllianceTranslation()
+                .toTranslation2d()
+                .minus(robotTranslation)
+                .getAngle();
+    }
+
+    /**
+     * Returns the robot's estimated position {@code seconds} in the future
+     *
+     * @param seconds amount of time to predict
+     * @return the robot's estimated position {@code seconds} in the future
+     */
+    public Pose2d getFuturePose(double seconds) {
+        Transform2d velocity =
+                new Transform2d(
+                        robotRelativeVelocity.vxMetersPerSecond,
+                        robotRelativeVelocity.vyMetersPerSecond,
+                        Rotation2d.fromRadians(robotRelativeVelocity.omegaRadiansPerSecond));
+        return getEstimatedPose().plus(velocity.times(feedLookaheadSeconds.get()));
     }
 }
