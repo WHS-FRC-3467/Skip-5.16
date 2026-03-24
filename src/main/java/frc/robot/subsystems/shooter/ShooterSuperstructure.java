@@ -650,9 +650,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
         Logger.recordOutput(
                 getName() + "/FlywheelTrimRPS", getFlywheelTrim().in(RotationsPerSecond));
-
-        Logger.recordOutput(
-                "test", robotState.getFuturePose(robotState.feedLookaheadSeconds.get()));
     }
 
     /** Closes all underlying mechanisms and releases resources. */
