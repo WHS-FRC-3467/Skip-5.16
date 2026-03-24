@@ -42,9 +42,6 @@ import java.util.random.RandomGenerator;
 public class LightsIOSim implements LightsIO {
 
     final LEDPattern rainbow = LEDPattern.rainbow(255, 128);
-    final LEDPattern fire =
-            LEDPattern.gradient(
-                    LEDPattern.GradientType.kContinuous, Color.kOrange, Color.kOrangeRed);
 
     private Map<String, String> requestInfo;
     private AddressableLED led;
@@ -96,27 +93,13 @@ public class LightsIOSim implements LightsIO {
 
     Color colorParse() {
         if (requestInfo.containsKey("Color")) {
-            String colorString = requestInfo.get("Color");
-            String numString = "";
-            int colorOut[] = {0, 0, 0};
-            int colorCount = 0;
-            for (int i = 5; i < colorString.length(); i++) {
 
-                char colorIter = colorString.charAt(i);
-                numString += colorIter;
-                if (colorString.charAt(i + 1) == ',') {
-
-                    colorOut[colorCount] = Integer.valueOf(numString);
-                    numString = "";
-                    colorCount++;
-
-                    i += 2;
-                    if (i == colorString.length() || colorCount >= 3) {
-                        break;
-                    }
-                }
-            }
-            return new Color(colorOut[0], colorOut[1], colorOut[2]);
+            String colorString = requestInfo.get("Color").substring(5);
+            String[] colorSplit = colorString.split(", ");
+            return new Color(
+                    Integer.valueOf(colorSplit[0]),
+                    Integer.valueOf(colorSplit[1]),
+                    Integer.valueOf(colorSplit[2]));
 
         } else {
             return new Color("#C0FFEE");
@@ -144,20 +127,12 @@ public class LightsIOSim implements LightsIO {
                         .applyTo(views.get(slot));
                 break;
 
-            case "FireAnimation": //  fire like animation
-                double random = RandomGenerator.getDefault().nextDouble();
-
-                final LEDPattern fireScroll =
-                        fire.scrollAtAbsoluteSpeed(
-                                        InchesPerSecond.of(
-                                                Double.valueOf(checkAndGet("FrameRate"))
-                                                        * (direction / 0.5)),
-                                        kLedSpacing)
-                                .blink(
-                                        Seconds.of((random == 0.0 ? 5.0 : random) * 3),
-                                        Milliseconds.of(8));
-                fireScroll.breathe(Seconds.of(3));
-                fireScroll.applyTo(views.get(slot));
+            case "FireAnimation":
+                candlePatterns
+                        .fireScroll(
+                                Double.valueOf(checkAndGet("FrameRate")) * (direction / 0.5),
+                                kLedSpacing)
+                        .applyTo(views.get(slot));
                 break;
             case "ColorFlowAnimation":
                 candlePatterns
@@ -170,12 +145,26 @@ public class LightsIOSim implements LightsIO {
                 break;
             case "LarsonAnimation":
                 candlePatterns
-                        .larsonPatternFix(
+                        .larsonPattern(
                                 Double.valueOf(checkAndGet("FrameRate")) * direction,
                                 colorParse(),
                                 Integer.valueOf(checkAndGet("Size")),
                                 slot,
                                 checkAndGet("BounceMode"))
+                        .applyTo(views.get(slot));
+                break;
+            case "SingleFadeAnimation":
+                LEDPattern.solid(colorParse()).breathe(Seconds.of(1.0)).applyTo(views.get(slot));
+                break;
+            case "SolidColor":
+                LEDPattern.solid(colorParse()).applyTo(views.get(slot));
+                break;
+            case "StrobeAnimation":
+                LEDPattern.solid(colorParse()).blink(Milliseconds.of(5.0)).applyTo(views.get(slot));
+                break;
+            case "TwinkleAnimation":
+                LEDPattern.solid(colorParse())
+                        .blink(Seconds.of(RandomGenerator.getDefault().nextDouble()))
                         .applyTo(views.get(slot));
                 break;
             default:

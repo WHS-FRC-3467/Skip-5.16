@@ -15,21 +15,22 @@
 package frc.lib.util;
 
 import static edu.wpi.first.units.Units.Hertz;
+import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.Microseconds;
+import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.util.Color;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.random.RandomGenerator;
 
 public class CANdlePatterns {
-
-    private static boolean reverser = false;
-    private static boolean allowedToReverse = false;
 
     private static List<Boolean> reversed;
     private static List<Boolean> ableToReverse;
@@ -60,7 +61,20 @@ public class CANdlePatterns {
         };
     }
 
-    public LEDPattern larsonPatternFix(
+    public LEDPattern fireScroll(double frameRate, Distance ledSpacing) {
+        double random = RandomGenerator.getDefault().nextDouble();
+        LEDPattern fireScroll =
+                LEDPattern.gradient(
+                                LEDPattern.GradientType.kContinuous,
+                                Color.kOrange,
+                                Color.kOrangeRed)
+                        .scrollAtAbsoluteSpeed(InchesPerSecond.of(frameRate), ledSpacing)
+                        .blink(Seconds.of((random == 0.0 ? 5.0 : random) * 3), Milliseconds.of(8));
+        fireScroll.breathe(Seconds.of(3));
+        return fireScroll;
+    }
+
+    public LEDPattern larsonPattern(
             double velocity, Color color, int size, int buffer, String bounceMode) {
 
         return (reader, writer) -> {
@@ -76,6 +90,7 @@ public class CANdlePatterns {
                     wereToBounce = bufLen + size;
                     break;
                 case "Center":
+                    wereToBounce = Math.floor(bufLen / 2);
                     break;
                 default:
                     break;
@@ -93,6 +108,18 @@ public class CANdlePatterns {
 
             for (int i = 0; i < bufLen - 1; i++) {
 
+                if (max > bufLen) {
+                    int inner_max = max - bufLen;
+                    if (i < inner_max) {
+                        if (reversed.get(buffer)) {
+                            writer.setLED(i, color);
+                        } else {
+                            writer.setLED(bufLen - 2 - i, color);
+                        }
+
+                        continue;
+                    }
+                }
                 if (i > max - 1 && i < max + size) {
 
                     if (reversed.get(buffer)) {
@@ -101,13 +128,14 @@ public class CANdlePatterns {
                         writer.setLED(i, color);
                     }
                     continue;
-                }  
+                }
+                if (max < bufLen) {
+                    if (reversed.get(buffer)) {
+                        writer.setLED(bufLen - 2 - i, Color.kBlack);
 
-                if (reversed.get(buffer)) {
-                    writer.setLED(bufLen - 2 - i, Color.kBlack);
-
-                } else {
-                    writer.setLED(i, Color.kBlack);
+                    } else {
+                        writer.setLED(i, Color.kBlack);
+                    }
                 }
             }
 
@@ -116,133 +144,4 @@ public class CANdlePatterns {
             }
         };
     }
-
-    public LEDPattern larsonPattern(double velocity, Color color, int size) {
-        return (reader, writer) -> {
-            long now = RobotController.getTime();
-
-            int bufLen = reader.getLength();
-
-            final double periodMicros =
-                    Hertz.of(velocity).asPeriod().in(Microseconds) * (bufLen - size);
-            double t = (now % (long) periodMicros) / periodMicros;
-            int max = (int) ((bufLen - size) * t);
-
-            int[] list = new int[bufLen - 1];
-            boolean inner_reverse = reverser;
-            if (max == bufLen - size - 1) {
-                inner_reverse = !reverser;
-            }
-            for (int i = 0; i < bufLen - 1; i++) {
-
-                if (i > max - 1 && i < max + size) {
-
-                    if (inner_reverse) {
-                        list[bufLen - 2 - i] = 1;
-                    } else {
-                        list[i] = 1;
-                    }
-                }
-            }
-            System.out.println(Arrays.toString(list));
-
-            if (max == bufLen - size - 1 && allowedToReverse) {
-                System.out.println("switched! " + String.valueOf(max));
-                allowedToReverse = false;
-                reverser = !reverser;
-            }
-            if (max == 0) {
-                allowedToReverse = true;
-            }
-        };
-    }
 }
-
-/*
-
-  mmmm    m
- #"   " mm#mm   mmm    m mm   mmm    mmmm   mmm
- "#mmm    #    #" "#   #"  " "   #  #" "#  #"  #
-     "#   #    #   #   #     m"""#  #   #  #""""
- "mmm#"   "mm  "#m#"   #     "mm"#  "#m"#  "#mm"
-                                     m  #
-                                      ""
-
-bufLen = 8
-size = 3
-
-max = 0
-1110000
-max = 1
-0111000
-max = 2
-0011100
-max = 3
-0001110
-max = 4
-0000111
-max = 5
-1110000
-max = 6
-1110000
-max = 7
-1110000
-
-1110000
-0111000
-
-0001110
-0000111
-1110000
-0000111
-
-
-1
-0001110
-2
-0011100
-3
-0111000
-4
-0000111
-0
-1110000
-
-*/
-
-            /*  if (max - size > 0) {
-
-                if (reverser && max != bufLen - 1) {
-
-                    for (int led = 0; led < max - size; led++) {
-                        writer.setLED(bufLen - 1 - led, Color.kBlack);
-                    }
-                    for (int led = max - size; led < max; led++) {
-
-                        writer.setLED(bufLen - 1 - led, color);
-                    }
-
-                } else {
-                    for (int led = 0; led < max - size; led++) {
-                        writer.setLED(led, Color.kBlack);
-                    }
-                    for (int led = max - size; led < max; led++) {
-                        writer.setLED(led, color);
-                    }
-                }
-
-            } else {
-
-                for (int led = 0; led < max; led++) {
-                    writer.setLED(led, color);
-                }
-            }
-            if (reverser && max != bufLen - 1) {
-                for (int led = max; led < bufLen; led++) {
-                    writer.setLED(bufLen - 1 - led, Color.kBlack);
-                }
-            } else {
-                for (int led = max; led < bufLen; led++) {
-                    writer.setLED(led, Color.kBlack);
-                }
-            } */
