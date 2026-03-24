@@ -48,7 +48,7 @@ public class LightsIOSim implements LightsIO {
     private AddressableLEDBuffer buffer;
     private ArrayList<AddressableLEDBufferView> views;
 
-    private static CANdlePatterns candlePatterns;
+    private static CANdlePatterns candlePatterns; // helper class to contain more complex animations
 
     /** Translates CTRE LED Commands To WPILIB Sim LED Commands */
     public LightsIOSim(List<LEDSegment> ledSegments) {
@@ -56,15 +56,15 @@ public class LightsIOSim implements LightsIO {
         this.led = new AddressableLED(0);
 
         this.views = new ArrayList<>();
-        int largestEndIndex = 2; // must be 2 because that is the minimum end index
-        for (var ledSegment : ledSegments) {
+        int largestEndIndex = 2; // starts at 2 because minimum end index is 2
+        for (LEDSegment ledSegment : ledSegments) { // pads the ledSegments to find the largest end index
             if (ledSegment.endIndex() > largestEndIndex) {
                 largestEndIndex = ledSegment.endIndex();
             }
         }
 
         this.buffer = new AddressableLEDBuffer(largestEndIndex + 1); // ctre to wpilib offset
-        for (var ledSegment : ledSegments) {
+        for (LEDSegment ledSegment : ledSegments) {
             this.views.add(buffer.createView(ledSegment.startIndex(), ledSegment.endIndex()));
         }
         led.setLength(buffer.getLength());
@@ -91,6 +91,10 @@ public class LightsIOSim implements LightsIO {
         }
     }
 
+    /**
+     * Gets the color string from the request info and parses it to the R,G,B values of the WPIlib colors
+     * @return Parsed Color
+     */
     Color colorParse() {
         if (requestInfo.containsKey("Color")) {
 
@@ -107,6 +111,9 @@ public class LightsIOSim implements LightsIO {
     }
 
     @Override
+    /**
+     * translates CTRE animation requests into wpilib animations
+     */
     public void setAnimation(ControlRequest request) {
 
         this.requestInfo = request.getControlInfo();

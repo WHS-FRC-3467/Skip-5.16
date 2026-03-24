@@ -32,6 +32,7 @@ import java.util.random.RandomGenerator;
 
 public class CANdlePatterns {
 
+    // used only in larson animation
     private static List<Boolean> reversed;
     private static List<Boolean> ableToReverse;
 
@@ -40,13 +41,19 @@ public class CANdlePatterns {
         ableToReverse = new ArrayList<>(Collections.nCopies(buffers, false));
     }
 
+    /**
+     * 
+     * @param velocity how long it takes for one LED to be filled
+     * @param color 
+     * @return WPIlib LEDPattern
+     */
     public LEDPattern scrollFill(double velocity, Color color) {
         long now = RobotController.getTime();
 
         return (reader, writer) -> {
             int bufLen = reader.getLength();
 
-            final double periodMicros = Hertz.of(velocity).asPeriod().in(Microseconds) * bufLen;
+            final double periodMicros = Hertz.of(velocity).asPeriod().in(Microseconds) * bufLen; // needs to be multiplied by the length of the buffer because CTRE defines the velocity as the amount of time it takes for one LED to be filled and WPIlib defines this as the amount of time it takes for all the LEDs to be filled
             double t = (now % (long) periodMicros) / periodMicros;
 
             int max = (int) (bufLen * t);
@@ -60,7 +67,12 @@ public class CANdlePatterns {
             }
         };
     }
-
+    /**
+     * fire like LED pattern with randomized flickers
+     * @param frameRate
+     * @param ledSpacing
+     * @return WPIlib LEDPattern
+     */
     public LEDPattern fireScroll(double frameRate, Distance ledSpacing) {
         double random = RandomGenerator.getDefault().nextDouble();
         LEDPattern fireScroll =
@@ -74,6 +86,15 @@ public class CANdlePatterns {
         return fireScroll;
     }
 
+    /**
+     * Moves a "Scanner" back and forth across a buffer, named after Glen A. Larson as the scanner was featured in his shows Knight Rider and Battle Star Galactica
+     * @param velocity The amount of time it takes for a single LED to update, passed in as Hertz
+     * @param color 
+     * @param size Size of the scrolling
+     * @param buffer Which LED Buffer to operate on
+     * @param bounceMode String representation of {@link com.ctre.phoenix6.signals.LarsonBounceValue}
+     * @return WPIlib LEDPattern
+     */
     public LEDPattern larsonPattern(
             double velocity, Color color, int size, int buffer, String bounceMode) {
 
@@ -81,13 +102,13 @@ public class CANdlePatterns {
             long now = RobotController.getTime();
 
             int bufLen = reader.getLength();
-            double wereToBounce = 0;
+            double wereToBounce = 0; // Where the scanner should bounce
             switch (bounceMode) {
                 case "Front":
-                    wereToBounce = bufLen - size;
+                    wereToBounce = bufLen - size; 
                     break;
                 case "Back":
-                    wereToBounce = bufLen + size;
+                    wereToBounce = bufLen + size; 
                     break;
                 case "Center":
                     wereToBounce = Math.floor(bufLen / 2);
@@ -105,7 +126,7 @@ public class CANdlePatterns {
                 reversed.set(buffer, Boolean.valueOf(!reversed.get(buffer)));
                 ableToReverse.set(buffer, Boolean.valueOf(false));
             }
-
+            
             for (int i = 0; i < bufLen - 1; i++) {
 
                 if (max > bufLen) {

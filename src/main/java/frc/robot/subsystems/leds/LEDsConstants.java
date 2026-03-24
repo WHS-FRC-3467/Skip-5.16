@@ -110,7 +110,6 @@ public class LEDsConstants {
     public static final List<ControlRequest> disabledAnimation =
             List.of(candleDisabled, frontDisabled);
 
-    // ColorFlow
     public static final ControlRequest candleColorFlow =
             new ColorFlowAnimation(CANDLE_LEDS.startIndex(), CANDLE_LEDS.endIndex())
                     .withSlot(CANDLE_LEDS.animationSlot())
@@ -128,7 +127,6 @@ public class LEDsConstants {
     public static final List<ControlRequest> colorFLowAnimation =
             List.of(candleColorFlow, frontColorFlow);
 
-    // ColorFlow
     public static final ControlRequest candleBounce =
             new LarsonAnimation(CANDLE_LEDS.startIndex(), CANDLE_LEDS.endIndex())
                     .withSlot(CANDLE_LEDS.animationSlot())
@@ -146,10 +144,7 @@ public class LEDsConstants {
                     .withSize(1);
 
     public static final List<ControlRequest> colorBounceAnimation =
-            List.of(
-                    candleBounce
-                    // , frontBounce
-                    );
+            List.of(candleBounce, frontBounce);
 
     // Auto
     public static final ControlRequest candleAuto =
