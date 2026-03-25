@@ -47,7 +47,7 @@ public class FlywheelConstants {
 
     public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(2);
+    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(4);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.001);
 
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
@@ -67,10 +67,9 @@ public class FlywheelConstants {
      * Creates a TalonFX motor controller configuration for the flywheel mechanism. Configures
      * current limits, voltage limits, neutral mode, gearing ratios, and PID gains.
      *
-     * @param invert whether to invert the motor direction
      * @return configured TalonFXConfiguration for the flywheel motor
      */
-    public static TalonFXConfiguration getFXConfig(boolean invert) {
+    public static TalonFXConfiguration getFXConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.CurrentLimits.SupplyCurrentLimitEnable = false;
@@ -82,8 +81,7 @@ public class FlywheelConstants {
         config.Voltage.PeakReverseVoltage = -12.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        config.MotorOutput.Inverted =
-                invert ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
+        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
 
@@ -107,82 +105,44 @@ public class FlywheelConstants {
     }
 
     /**
-     * Creates and configures the left flywheel mechanism based on the current robot mode. Selects
-     * the appropriate implementation (real, sim, or replay) and enables tunable PID.
+     * Creates and configures the flywheel mechanism based on the current robot mode. Selects the
+     * appropriate implementation (real, sim, or replay) and enables tunable PID.
      *
-     * @return configured left flywheel mechanism
+     * @return configured flywheel mechanism
      */
-    public static FlywheelMechanism<?> getLeft() {
+    public static FlywheelMechanism<?> get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
                 mechanism =
                         new FlywheelMechanismReal(
-                                "Left " + NAME,
+                                NAME,
                                 new MotorIOTalonFX(
-                                        "Left " + NAME,
-                                        getFXConfig(true),
-                                        Ports.leftFlywheelMain,
-                                        new TalonFXFollower(Ports.leftFlywheelFollower, false)));
-                break;
-            case SIM:
-                mechanism =
-                        new FlywheelMechanismSim(
-                                "Left " + NAME,
-                                new MotorIOTalonFXSim(
-                                        "Left " + NAME,
-                                        getFXConfig(true),
-                                        Ports.leftFlywheelMain,
-                                        new TalonFXFollower(Ports.leftFlywheelFollower, false)),
-                                DCMOTOR,
-                                MOI,
-                                TOLERANCE);
-                break;
-            case REPLAY:
-                mechanism = new FlywheelMechanism<>("Left " + NAME, new MotorIO() {}) {};
-                break;
-            default:
-                throw new IllegalStateException("Unrecognized Robot Mode");
-        }
-        mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        mechanism.withRadius(FLYWHEEL_RADIUS);
-        return mechanism;
-    }
+                                        NAME,
+                                        getFXConfig(),
+                                        Ports.flywheelMain,
+                                        new TalonFXFollower(Ports.flywheelFollower0, false),
+                                        new TalonFXFollower(Ports.flywheelFollower1, true),
+                                        new TalonFXFollower(Ports.flywheelFollower2, true)));
 
-    /**
-     * Creates and configures the right flywheel mechanism based on the current robot mode. Selects
-     * the appropriate implementation (real, sim, or replay) and enables tunable PID.
-     *
-     * @return configured right flywheel mechanism
-     */
-    public static FlywheelMechanism<?> getRight() {
-        FlywheelMechanism<?> mechanism;
-        switch (Constants.currentMode) {
-            case REAL:
-                mechanism =
-                        new FlywheelMechanismReal(
-                                "Right " + NAME,
-                                new MotorIOTalonFX(
-                                        "Right " + NAME,
-                                        getFXConfig(false),
-                                        Ports.rightFlywheelMain,
-                                        new TalonFXFollower(Ports.rightFlywheelFollower, false)));
                 break;
             case SIM:
                 mechanism =
                         new FlywheelMechanismSim(
-                                "Right " + NAME,
+                                NAME,
                                 new MotorIOTalonFXSim(
-                                        "Right " + NAME,
-                                        getFXConfig(false),
-                                        Ports.rightFlywheelMain,
-                                        new TalonFXFollower(Ports.rightFlywheelFollower, false)),
+                                        NAME,
+                                        getFXConfig(),
+                                        Ports.flywheelMain,
+                                        new TalonFXFollower(Ports.flywheelFollower0, false),
+                                        new TalonFXFollower(Ports.flywheelFollower1, true),
+                                        new TalonFXFollower(Ports.flywheelFollower2, true)),
                                 DCMOTOR,
                                 MOI,
                                 TOLERANCE);
                 break;
             case REPLAY:
-                mechanism = new FlywheelMechanism<>("Right " + NAME, new MotorIO() {}) {};
+                mechanism = new FlywheelMechanism<>(NAME, new MotorIO() {}) {};
                 break;
             default:
                 throw new IllegalStateException("Unrecognized Robot Mode");
