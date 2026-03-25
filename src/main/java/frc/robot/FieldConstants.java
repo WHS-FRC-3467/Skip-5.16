@@ -212,6 +212,10 @@ public class FieldConstants {
                 new Translation3d(LinesVertical.HUB_CENTER, 0, OPENING_HEIGHT);
     }
 
+    // Distance from Center of Hub Y Coordinate to Y Coordinate of Center of Trench
+    public static final double TRENCH_SHOT_DISTANCE =
+            (FieldConstants.FIELD_WIDTH - FieldConstants.LeftTrench.OPENING_WIDTH) / 2.0;
+
     /** Tower related constants */
     public static class Tower {
         // Dimensions

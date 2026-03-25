@@ -221,14 +221,14 @@ public class RobotContainer {
                 .povDown()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
-        // Driver X: Hub Shot (No-Vision Fallback)
+        // Driver X: Trench Shot (No-Vision Fallback)
         controller
                 .x()
                 .whileTrue(
                         Commands.parallel(
                                 DriveCommands.stopWithX(drive),
                                 shooter.spinUpShooterToFixedDistance(
-                                        FieldConstants.Hub.HUB_SHOT_DISTANCE),
+                                        FieldConstants.TRENCH_SHOT_DISTANCE),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
                         Commands.parallel(
