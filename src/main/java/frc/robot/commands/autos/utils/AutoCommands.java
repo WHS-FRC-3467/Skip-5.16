@@ -92,6 +92,41 @@ public class AutoCommands {
                 DriveCommands.staticAimTowardsTarget(drive));
     }
 
+    public static Command hubShootCommand(
+            Drive drive,
+            IntakeSuperstructure intake,
+            IndexerSuperstructure indexer,
+            Tower tower,
+            ShooterSuperstructure shooter,
+            double timeoutDuration) {
+        return Commands.deadline(
+                Commands.parallel(
+                                shooter.spinUpShooter().asProxy(),
+                                Commands.parallel(
+                                                indexer.shoot()
+                                                        .withInterruptBehavior(
+                                                                InterruptionBehavior
+                                                                        .kCancelIncoming),
+                                                tower.shoot(),
+                                                intake.hubShuffleStep().repeatedly().asProxy())
+                                        .onlyWhile(
+                                                shooter.readyToShoot.and(
+                                                        RobotState.getInstance().facingTarget))
+                                        .repeatedly())
+                        .until(shooter.hopperEmpty)
+                        .withTimeout(timeoutDuration)
+                        .finallyDo(
+                                () -> {
+                                    CommandScheduler.getInstance()
+                                            .schedule(
+                                                    shooter.setFlywheelSpeed(
+                                                            RotationsPerSecond.zero()));
+                                    CommandScheduler.getInstance()
+                                            .schedule(shooter.setHoodAngle(Rotations.zero()));
+                                }),
+                DriveCommands.staticAimTowardsTarget(drive));
+    }
+
     /**
      * Drive to the outpost (via pathCommand), and wait up to 3 seconds for FUEL to be dumped.
      *

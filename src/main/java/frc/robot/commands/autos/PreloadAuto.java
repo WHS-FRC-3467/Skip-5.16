@@ -13,7 +13,7 @@ public final class PreloadAuto {
     public static AutoOption create(AutoContext ctx) {
         return AutoUtil.commandOption(
                 () ->
-                        AutoCommands.shootCommand(
+                        AutoCommands.hubShootCommand(
                                 ctx.drive(),
                                 ctx.intake(),
                                 ctx.indexer(),
