@@ -7,7 +7,6 @@ import choreo.trajectory.Trajectory;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 import frc.robot.commands.autos.utils.AutoCommands;
@@ -82,58 +81,31 @@ public final class DepotShootAuto {
                                                             Set.of()),
                                                     first.spawnCmd()));
 
-                            first.done().onTrue(shootThenFollow(ctx, 2.5, second));
+                            first.done().onTrue(AutoCommands.shootThenFollow(ctx, 2.5, second));
                             AutoCommands.retryTrigger(routine, first)
-                                    .onTrue(recoverThenFollow(ctx, first, tunnel, 2.5, second));
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, first, tunnel, 2.5, second));
 
-                            second.done().onTrue(shootThenFollow(ctx, 2.5, third));
+                            second.done().onTrue(AutoCommands.shootThenFollow(ctx, 2.5, third));
                             AutoCommands.retryTrigger(routine, second)
-                                    .onTrue(recoverThenFollow(ctx, second, tunnel, 2.5, third));
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, second, tunnel, 2.5, third));
 
-                            third.done().onTrue(shootThenFollow(ctx, 10.0, fourth));
+                            third.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, fourth));
                             AutoCommands.retryTrigger(routine, third)
-                                    .onTrue(recoverThenFollow(ctx, third, tunnel, 10.0, fourth));
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, third, tunnel, 10.0, fourth));
 
-                            fourth.done().onTrue(shootThenFollow(ctx, 10.0, third));
+                            fourth.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, third));
                             AutoCommands.retryTrigger(routine, fourth)
-                                    .onTrue(recoverThenFollow(ctx, fourth, tunnel, 10.0, third));
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, fourth, tunnel, 10.0, third));
 
                             return routine;
                         }));
-    }
-
-    private static Command shootThenFollow(
-            AutoContext ctx, double timeoutSeconds, AutoTrajectory next) {
-        return Commands.sequence(
-                shootOnly(ctx, timeoutSeconds),
-                AutoCommands.stowHood(ctx.shooter()),
-                retractIntake(ctx),
-                next.spawnCmd());
-    }
-
-    private static Command recoverThenFollow(
-            AutoContext ctx,
-            AutoTrajectory failedTrajectory,
-            Optional<AutoTrajectory> tunnel,
-            double timeoutSeconds,
-            AutoTrajectory next) {
-        return Commands.sequence(
-                AutoCommands.recoverTrajectory(
-                        ctx.drive(), failedTrajectory, tunnel, retractIntake(ctx)),
-                shootThenFollow(ctx, timeoutSeconds, next));
-    }
-
-    private static Command shootOnly(AutoContext ctx, double timeoutSeconds) {
-        return AutoCommands.shootCommand(
-                ctx.drive(),
-                ctx.intake(),
-                ctx.indexer(),
-                ctx.tower(),
-                ctx.shooter(),
-                timeoutSeconds);
-    }
-
-    private static Command retractIntake(AutoContext ctx) {
-        return ctx.intake().retractIntake().asProxy().withTimeout(0.5);
     }
 }

@@ -122,6 +122,33 @@ public class AutoCommands {
     }
 
     /**
+     * Shoots the currently held note, stows the hood, retracts the intake, then starts the next
+     * trajectory.
+     */
+    public static Command shootThenFollow(
+            AutoContext ctx, double timeoutSeconds, AutoTrajectory next) {
+        return Commands.sequence(
+                shootOnly(ctx, timeoutSeconds),
+                stowHood(ctx.shooter()),
+                retractIntake(ctx),
+                next.spawnCmd());
+    }
+
+    /**
+     * Recovers to the failed trajectory's endpoint, then runs the normal shoot-and-continue flow.
+     */
+    public static Command recoverThenFollow(
+            AutoContext ctx,
+            AutoTrajectory failedTrajectory,
+            Optional<AutoTrajectory> tunnel,
+            double timeoutSeconds,
+            AutoTrajectory next) {
+        return Commands.sequence(
+                recoverTrajectory(ctx.drive(), failedTrajectory, tunnel, retractIntake(ctx)),
+                shootThenFollow(ctx, timeoutSeconds, next));
+    }
+
+    /**
      * Creates a routine-bound trigger that rises once a running trajectory has exceeded the
      * allowable path error for long enough that the auto should fall back to retry pathfinding.
      */
@@ -272,5 +299,19 @@ public class AutoCommands {
                                 .until(pathErrorExceeded))
                 .until(successCondition)
                 .finallyDo(() -> Logger.recordOutput("AutoCommands/RetryPathingStatus", "DONE"));
+    }
+
+    private static Command shootOnly(AutoContext ctx, double timeoutSeconds) {
+        return shootCommand(
+                ctx.drive(),
+                ctx.intake(),
+                ctx.indexer(),
+                ctx.tower(),
+                ctx.shooter(),
+                timeoutSeconds);
+    }
+
+    private static Command retractIntake(AutoContext ctx) {
+        return ctx.intake().retractIntake().asProxy().withTimeout(0.5);
     }
 }
