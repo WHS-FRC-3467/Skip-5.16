@@ -131,7 +131,8 @@ public class RobotContainer {
 
         autoChooser.addOption("Aggressive-Depot", DepotShootAuto.create(ctx, false));
         autoChooser.addOption("Safe-Depot", DepotShootAuto.create(ctx, true));
-        autoChooser.addOption("DelayedBump", DelayedBumpAuto.create(ctx));
+        autoChooser.addOption("Aggressive-DelayedBump", DelayedBumpAuto.create(ctx, false));
+        autoChooser.addOption("Safe-DelayedBump", DelayedBumpAuto.create(ctx, true));
 
         autoChooser.onChange(
                 auto -> {

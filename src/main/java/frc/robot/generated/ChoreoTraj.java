@@ -54,11 +54,11 @@ public record ChoreoTraj(
                     5.07241,
                     new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
-    public static final ChoreoTraj DelayedBump2 =
+    public static final ChoreoTraj DelayedBumpSafe2 =
             new ChoreoTraj(
-                    "DelayedBump2",
+                    "DelayedBumpSafe2",
                     OptionalInt.empty(),
-                    5.66129,
+                    5.66312,
                     new Pose2d(3.18811, 5.34643, Rotation2d.fromRadians(-0.75683)),
                     new Pose2d(3.18811, 5.34643, Rotation2d.fromRadians(-0.75683)));
     public static final ChoreoTraj DelayedBump1 =
@@ -89,6 +89,13 @@ public record ChoreoTraj(
                     5.40971,
                     new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
+    public static final ChoreoTraj DelayedBump2 =
+            new ChoreoTraj(
+                    "DelayedBump2",
+                    OptionalInt.empty(),
+                    6.37027,
+                    new Pose2d(3.18811, 5.34643, Rotation2d.fromRadians(-0.75683)),
+                    new Pose2d(3.18811, 5.34643, Rotation2d.fromRadians(-0.75683)));
 
     /**
      * A map between trajectory names and their corresponding data. This allows for trajectory data
@@ -101,11 +108,12 @@ public record ChoreoTraj(
                     Map.entry("NeutralSafe2", NeutralSafe2),
                     Map.entry("Depot1", Depot1),
                     Map.entry("Neutral1Nashoba", Neutral1Nashoba),
-                    Map.entry("DelayedBump2", DelayedBump2),
+                    Map.entry("DelayedBumpSafe2", DelayedBumpSafe2),
                     Map.entry("DelayedBump1", DelayedBump1),
                     Map.entry("TunnelPath", TunnelPath),
                     Map.entry("Neutral1", Neutral1),
-                    Map.entry("NeutralSafe1", NeutralSafe1));
+                    Map.entry("NeutralSafe1", NeutralSafe1),
+                    Map.entry("DelayedBump2", DelayedBump2));
 
     /**
      * Looks up the ChoreoTraj segment of the given overall ChoreoTraj. WARNING: will raise an

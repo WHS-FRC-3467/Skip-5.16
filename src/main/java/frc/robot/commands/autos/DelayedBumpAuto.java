@@ -37,9 +37,13 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DelayedBumpAuto {
     /** Builds the safe or aggressive depot autonomous routine. */
-    public static AutoOption create(AutoContext ctx) {
+    public static AutoOption create(AutoContext ctx, boolean isSafe) {
         List<String> names =
-                List.of(ChoreoTraj.DelayedBump1.name(), ChoreoTraj.DelayedBump2.name());
+                List.of(
+                        ChoreoTraj.DelayedBump1.name(),
+                        isSafe
+                                ? ChoreoTraj.DelayedBumpSafe2.name()
+                                : ChoreoTraj.DelayedBump2.name());
         List<Trajectory<SwerveSample>> trajectories = AutoUtil.loadTrajectories(names, false);
         return AutoUtil.trajectoryOption(
                 trajectories,
