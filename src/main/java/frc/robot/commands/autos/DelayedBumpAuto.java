@@ -14,35 +14,37 @@
  */
 package frc.robot.commands.autos;
 
-import java.util.List;
-
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
+
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.robot.commands.autos.utils.AutoCommands;
 import frc.robot.commands.autos.utils.AutoContext;
 import frc.robot.commands.autos.utils.AutoOption;
 import frc.robot.commands.autos.utils.AutoUtil;
 import frc.robot.generated.ChoreoTraj;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /** Native Choreo routine for the depot-side multi-piece autonomous variants. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DelayedBumpAuto {
     /** Builds the safe or aggressive depot autonomous routine. */
-    public static AutoOption create(AutoContext ctx, boolean isSafe) {
-        List<String> names = List.of(ChoreoTraj.DelayedBump1.name(), ChoreoTraj.DelayedBump2.name());
+    public static AutoOption create(AutoContext ctx) {
+        List<String> names =
+                List.of(ChoreoTraj.DelayedBump1.name(), ChoreoTraj.DelayedBump2.name());
         List<Trajectory<SwerveSample>> trajectories = AutoUtil.loadTrajectories(names, false);
         return AutoUtil.trajectoryOption(
                 trajectories,
                 () -> {
-                    AutoRoutine routine =
-                            ctx.autoFactory()
-                                    .newRoutine("Delayed Bump");
+                    AutoRoutine routine = ctx.autoFactory().newRoutine("DelayedBump");
                     AutoTrajectory first = routine.trajectory(trajectories.get(0));
                     AutoTrajectory second = routine.trajectory(trajectories.get(1));
                     AutoUtil.bindEvents(ctx, first, second);
@@ -61,15 +63,14 @@ public final class DelayedBumpAuto {
                                                     ctx.shooter(),
                                                     2.5),
                                             Commands.repeatingSequence(
-                                                       second.cmd(),
-                                            AutoCommands.shootCommand(
-                                                    ctx.drive(),
-                                                    ctx.intake(),
-                                                    ctx.indexer(),
-                                                    ctx.tower(),
-                                                    ctx.shooter(),
-                                                    2.5)
-                                            )
+                                                            second.cmd(),
+                                                            AutoCommands.shootCommand(
+                                                                    ctx.drive(),
+                                                                    ctx.intake(),
+                                                                    ctx.indexer(),
+                                                                    ctx.tower(),
+                                                                    ctx.shooter(),
+                                                                    2.5))
                                                     .finallyDo(
                                                             () ->
                                                                     CommandScheduler.getInstance()
@@ -82,4 +83,3 @@ public final class DelayedBumpAuto {
                 });
     }
 }
-
