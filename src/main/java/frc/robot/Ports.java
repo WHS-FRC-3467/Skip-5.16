@@ -40,7 +40,8 @@ public class Ports {
 
     public static final Device.CAN flywheelMain = new CAN(18, "rio");
     public static final Device.CAN flywheelFollower = new CAN(16, "rio");
-    
+    public static final Device.CAN flywheelFollower1 = new CAN(21, "rio");
+    public static final Device.CAN flywheelFollower2 = new CAN(22, "rio");
 
     public static final Device.CAN hood = new CAN(19, "rio");
 

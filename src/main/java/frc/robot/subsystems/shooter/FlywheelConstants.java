@@ -121,7 +121,11 @@ public class FlywheelConstants {
                                         NAME,
                                         getFXConfig(),
                                         Ports.flywheelMain,
-                                        new TalonFXFollower(Ports.flywheelFollower, false)));
+                                        new TalonFXFollower(Ports.flywheelFollower, false),
+                                        new TalonFXFollower(Ports.flywheelFollower1, false),
+                                         new TalonFXFollower(Ports.flywheelFollower2, false)
+                                    
+                                    ));
                 break;
             case SIM:
                 mechanism =
@@ -131,7 +135,10 @@ public class FlywheelConstants {
                                         NAME,
                                         getFXConfig(),
                                         Ports.flywheelMain,
-                                        new TalonFXFollower(Ports.flywheelFollower, false)),
+                                        new TalonFXFollower(Ports.flywheelFollower, false),
+                                        new TalonFXFollower(Ports.flywheelFollower1, false),
+                                         new TalonFXFollower(Ports.flywheelFollower2, false)
+                                        ),
                                 DCMOTOR,
                                 MOI,
                                 TOLERANCE);
