@@ -84,6 +84,13 @@ public record ChoreoTraj(
         new Pose2d(3.18811, 5.34643, Rotation2d.fromRadians(-0.75683)),
         new Pose2d(3.18811, 5.34643, Rotation2d.fromRadians(-0.75683))
     );
+     public static final ChoreoTraj TunnelPath =
+            new ChoreoTraj(
+                    "TunnelPath",
+                    OptionalInt.empty(),
+                    1.17086,
+                    new Pose2d(5.65, 7.39928, Rotation2d.fromRadians(-1.5708)),
+                    new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
 
     /**
      * A map between trajectory names and their corresponding data.
@@ -98,6 +105,7 @@ public record ChoreoTraj(
         Map.entry("Neutral1", Neutral1),
         Map.entry("NeutralSafe1", NeutralSafe1),
         Map.entry("DelayedBump1", DelayedBump1),
+         Map.entry("TunnelPath", TunnelPath),
         Map.entry("DelayedBump2", DelayedBump2)
     );
 
