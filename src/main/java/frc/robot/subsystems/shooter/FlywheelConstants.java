@@ -47,7 +47,7 @@ public class FlywheelConstants {
 
     public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(2);
+    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(4);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.001);
 
     public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
@@ -66,7 +66,7 @@ public class FlywheelConstants {
     /**
      * Creates a TalonFX motor controller configuration for the flywheel mechanism. Configures
      * current limits, voltage limits, neutral mode, gearing ratios, and PID gains.
-     * 
+     *
      * @return configured TalonFXConfiguration for the flywheel motor
      */
     public static TalonFXConfiguration getFXConfig() {
@@ -105,8 +105,8 @@ public class FlywheelConstants {
     }
 
     /**
-     * Creates and configures the flywheel mechanism based on the current robot mode. Selects
-     * the appropriate implementation (real, sim, or replay) and enables tunable PID.
+     * Creates and configures the flywheel mechanism based on the current robot mode. Selects the
+     * appropriate implementation (real, sim, or replay) and enables tunable PID.
      *
      * @return configured flywheel mechanism
      */
@@ -121,11 +121,10 @@ public class FlywheelConstants {
                                         NAME,
                                         getFXConfig(),
                                         Ports.flywheelMain,
-                                        new TalonFXFollower(Ports.flywheelFollower, false),
-                                        new TalonFXFollower(Ports.flywheelFollower1, false),
-                                         new TalonFXFollower(Ports.flywheelFollower2, false)
-                                    
-                                    ));
+                                        new TalonFXFollower(Ports.flywheelFollower0, false),
+                                        new TalonFXFollower(Ports.flywheelFollower1, true),
+                                        new TalonFXFollower(Ports.flywheelFollower2, true)));
+
                 break;
             case SIM:
                 mechanism =
@@ -135,10 +134,9 @@ public class FlywheelConstants {
                                         NAME,
                                         getFXConfig(),
                                         Ports.flywheelMain,
-                                        new TalonFXFollower(Ports.flywheelFollower, false),
-                                        new TalonFXFollower(Ports.flywheelFollower1, false),
-                                         new TalonFXFollower(Ports.flywheelFollower2, false)
-                                        ),
+                                        new TalonFXFollower(Ports.flywheelFollower0, false),
+                                        new TalonFXFollower(Ports.flywheelFollower1, true),
+                                        new TalonFXFollower(Ports.flywheelFollower2, true)),
                                 DCMOTOR,
                                 MOI,
                                 TOLERANCE);
@@ -153,5 +151,4 @@ public class FlywheelConstants {
         mechanism.withRadius(FLYWHEEL_RADIUS);
         return mechanism;
     }
-
 }
