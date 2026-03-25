@@ -113,7 +113,6 @@ public class AutoCommands {
                                                 shooter.readyToShoot.and(
                                                         RobotState.getInstance().facingTarget))
                                         .repeatedly())
-                        .until(shooter.hopperEmpty)
                         .withTimeout(timeoutDuration)
                         .finallyDo(
                                 () -> {
