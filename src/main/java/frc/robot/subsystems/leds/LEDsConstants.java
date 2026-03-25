@@ -132,7 +132,7 @@ public class LEDsConstants {
                     .withSlot(CANDLE_LEDS.animationSlot())
                     .withFrameRate(10)
                     .withColor(RGBWColor.fromHSV(180, 100, 100))
-                    .withBounceMode(LarsonBounceValue.Center)
+                    .withBounceMode(LarsonBounceValue.Back)
                     .withSize(3);
 
     public static final ControlRequest frontBounce =
@@ -140,7 +140,7 @@ public class LEDsConstants {
                     .withSlot(FRONT_STRIP.animationSlot())
                     .withFrameRate(10)
                     .withColor(RGBWColor.fromHSV(180, 100, 100))
-                    .withBounceMode(LarsonBounceValue.Center)
+                    .withBounceMode(LarsonBounceValue.Back)
                     .withSize(1);
 
     public static final List<ControlRequest> colorBounceAnimation =
