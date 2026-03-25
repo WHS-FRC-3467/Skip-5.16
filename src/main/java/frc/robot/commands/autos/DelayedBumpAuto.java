@@ -61,7 +61,7 @@ public final class DelayedBumpAuto {
                                                     ctx.indexer(),
                                                     ctx.tower(),
                                                     ctx.shooter(),
-                                                    2.5),
+                                                    3.0),
                                             Commands.repeatingSequence(
                                                             second.cmd(),
                                                             AutoCommands.shootCommand(
@@ -70,7 +70,7 @@ public final class DelayedBumpAuto {
                                                                     ctx.indexer(),
                                                                     ctx.tower(),
                                                                     ctx.shooter(),
-                                                                    2.5))
+                                                                    5.0))
                                                     .finallyDo(
                                                             () ->
                                                                     CommandScheduler.getInstance()
