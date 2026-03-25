@@ -92,10 +92,10 @@ public class ObjectDetector extends SubsystemBase {
      * @param x the field-relative x coordinate of the lane center.
      * @param count the number of detected objects within that lane.
      */
-    private static record LaneTarget(double x, int count) {}
+    public static record LaneTarget(double x, int count) {}
 
     /** The Object Detector's best guess at the argmax of the spatial histogram within its ROI. */
-    @Getter private static Optional<LaneTarget> bestLaneTarget = Optional.empty();
+    @Getter private Optional<LaneTarget> bestLaneTarget = Optional.empty();
 
     private static final Distance LANE_WIDTH = Constants.FULL_ROBOT_WIDTH.times(0.75);
 
@@ -150,7 +150,10 @@ public class ObjectDetector extends SubsystemBase {
                 getMirroredPoint(swappedTopRight, shouldMirror));
     }
 
-    /** Mirrors an ROI point about the horizontal midline of the field (Y = FIELD_WIDTH / 2). */
+    /**
+     * If prompted, mirrors an ROI point about the horizontal midline of the field (Y = FIELD_WIDTH
+     * / 2).
+     */
     private Translation2d getMirroredPoint(Translation2d point, boolean flipY) {
         double y = point.getMeasureY().in(Meters);
         if (flipY) y = FieldConstants.FIELD_WIDTH - point.getMeasureY().in(Meters);
