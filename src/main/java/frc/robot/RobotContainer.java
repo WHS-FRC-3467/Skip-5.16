@@ -252,13 +252,7 @@ public class RobotContainer {
                                         Commands.waitUntil(shooter.atMidlineFeedSetpoints)
                                                 .withTimeout(0.75),
                                         Commands.parallel(indexer.shoot(), tower.shoot()))))
-                .onFalse(
-                        Commands.parallel(
-                                shooter.stopAndStow(),
-                                indexer.stopCommand(),
-                                tower.stopCommand(),
-                                intake.extendIntake(),
-                                shooter.retractHood()));
+                .onFalse(stopAllShooterAndRetract);
 
         // Driver A: Shot From Back of Robot Against Tower (No-Vision Fallback)
         controller
@@ -269,13 +263,8 @@ public class RobotContainer {
                                 shooter.spinUpShooterToFixedDistance(
                                         FieldConstants.Tower.TOWER_SHOT_DISTANCE),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
-                .onFalse(
-                        Commands.parallel(
-                                shooter.stopAndStow(),
-                                indexer.stopCommand(),
-                                tower.stopCommand(),
-                                intake.extendIntake(),
-                                shooter.retractHood()));
+                .onFalse(stopAllShooterAndRetract);
+
         controller
                 .start()
                 .and(controller.back())
