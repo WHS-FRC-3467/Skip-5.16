@@ -318,39 +318,39 @@ public class VisionConstants {
                 AprilTagLayoutType.OFFICIAL.getLayout());
     }
 
-    private static VisionIOPhotonVision getLeftIOReal() {
-        return new VisionIOPhotonVision(LEFT);
-    }
+    // private static VisionIOPhotonVision getLeftIOReal() {
+    //     return new VisionIOPhotonVision(LEFT);
+    // }
 
-    private static VisionIOPhotonVisionSim getLeftIOSim() {
-        if (visionSim.isEmpty()) {
-            visionSim = Optional.of(new VisionSystemSim("main"));
-            visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());
-        }
+    // private static VisionIOPhotonVisionSim getLeftIOSim() {
+    //     if (visionSim.isEmpty()) {
+    //         visionSim = Optional.of(new VisionSystemSim("main"));
+    //         visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());
+    //     }
 
-        return new VisionIOPhotonVisionSim(
-                LEFT,
-                visionSim.get(),
-                () -> RobotState.getInstance().getOdometryPose(),
-                AprilTagLayoutType.OFFICIAL.getLayout());
-    }
+    //     return new VisionIOPhotonVisionSim(
+    //             LEFT,
+    //             visionSim.get(),
+    //             () -> RobotState.getInstance().getOdometryPose(),
+    //             AprilTagLayoutType.OFFICIAL.getLayout());
+    // }
 
-    private static VisionIOPhotonVision getRightIOReal() {
-        return new VisionIOPhotonVision(RIGHT);
-    }
+    // private static VisionIOPhotonVision getRightIOReal() {
+    //     return new VisionIOPhotonVision(RIGHT);
+    // }
 
-    private static VisionIOPhotonVisionSim getRightIOSim() {
-        if (visionSim.isEmpty()) {
-            visionSim = Optional.of(new VisionSystemSim("main"));
-            visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());
-        }
+    // private static VisionIOPhotonVisionSim getRightIOSim() {
+    //     if (visionSim.isEmpty()) {
+    //         visionSim = Optional.of(new VisionSystemSim("main"));
+    //         visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());
+    //     }
 
-        return new VisionIOPhotonVisionSim(
-                RIGHT,
-                visionSim.get(),
-                () -> RobotState.getInstance().getOdometryPose(),
-                AprilTagLayoutType.OFFICIAL.getLayout());
-    }
+    //     return new VisionIOPhotonVisionSim(
+    //             RIGHT,
+    //             visionSim.get(),
+    //             () -> RobotState.getInstance().getOdometryPose(),
+    //             AprilTagLayoutType.OFFICIAL.getLayout());
+    // }
 
     private static VisionIOPhotonVision getBackIOReal() {
         return new VisionIOPhotonVision(BACK);

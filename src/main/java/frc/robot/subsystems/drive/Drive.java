@@ -17,6 +17,9 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
+
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.SlotConfigs;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -30,6 +33,7 @@ import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -43,7 +47,9 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -104,7 +110,6 @@ public class Drive extends SubsystemBase {
                             DriveConstants.BackRight.LocationX,
                             DriveConstants.BackRight.LocationY));
 
-    // PathPlanner config constants
     private static final double ROBOT_MASS_KG = 63.5;
     private static final double ROBOT_MOI = 8.57;
     private static final double WHEEL_COF = 1.2;
@@ -124,6 +129,19 @@ public class Drive extends SubsystemBase {
                     MODULE_TRANSLATIONS.toArray(Translation2d[]::new));
 
     static final Lock odometryLock = new ReentrantLock();
+
+    private static final LoggedTunableNumber AUTO_TRANSLATION_KP =
+            new LoggedTunableNumber("Drive/AutoTranslationPID/kP", 6.0);
+    private static final LoggedTunableNumber AUTO_TRANSLATION_KI =
+            new LoggedTunableNumber("Drive/AutoTranslationPID/kI", 0.0);
+    private static final LoggedTunableNumber AUTO_TRANSLATION_KD =
+            new LoggedTunableNumber("Drive/AutoTranslationPID/kD", 0.0);
+    private static final LoggedTunableNumber AUTO_THETA_KP =
+            new LoggedTunableNumber("Drive/AutoThetaPID/kP", 8.0);
+    private static final LoggedTunableNumber AUTO_THETA_KI =
+            new LoggedTunableNumber("Drive/AutoThetaPID/kI", 0.0);
+    private static final LoggedTunableNumber AUTO_THETA_KD =
+            new LoggedTunableNumber("Drive/AutoThetaPID/kD", 0.1);
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -179,7 +197,20 @@ public class Drive extends SubsystemBase {
     private final TunablePidConfig driveTunablePID;
     private final TunablePidConfig steerTunablePID;
 
-    public TunablePidConfig makeTunablePID(String prefix, PID defaultPid) {
+    private final PIDController autoXController =
+            new PIDController(
+                    AUTO_TRANSLATION_KP.get(),
+                    AUTO_TRANSLATION_KI.get(),
+                    AUTO_TRANSLATION_KD.get());
+    private final PIDController autoYController =
+            new PIDController(
+                    AUTO_TRANSLATION_KP.get(),
+                    AUTO_TRANSLATION_KI.get(),
+                    AUTO_TRANSLATION_KD.get());
+    private final PIDController autoThetaController =
+            new PIDController(AUTO_THETA_KP.get(), AUTO_THETA_KI.get(), AUTO_THETA_KD.get());
+
+    private TunablePidConfig makeTunablePID(String prefix, PID defaultPid) {
         LoggedTunableNumber kp =
                 new LoggedTunableNumber("Drive/PID/" + prefix + "/kP", defaultPid.P());
         LoggedTunableNumber ki =
@@ -226,32 +257,7 @@ public class Drive extends SubsystemBase {
 
         // Start odometry thread
         PhoenixOdometryThread.getInstance().start();
-
-        // Configure AutoBuilder for PathPlanner
-        if (!AutoBuilder.isConfigured()) {
-            AutoBuilder.configure(
-                    robotState::getEstimatedPose,
-                    robotState::resetPose,
-                    this::getChassisSpeeds,
-                    this::runVelocity,
-                    new PPHolonomicDriveController(
-                            new PIDConstants(6.0, 0.0, 0.1), new PIDConstants(8.0, 0.0, 0.1)),
-                    PP_CONFIG,
-                    () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                    this);
-
-            PathPlannerLogging.setLogActivePathCallback(
-                    (activePath) -> {
-                        Logger.recordOutput(
-                                "Odometry/Trajectory",
-                                activePath.toArray(new Pose2d[activePath.size()]));
-                    });
-
-            PathPlannerLogging.setLogTargetPoseCallback(
-                    (targetPose) -> {
-                        Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-                    });
-        }
+        configurePathPlanner();
 
         // Configure SysId
         sysId =
@@ -273,6 +279,43 @@ public class Drive extends SubsystemBase {
                 makeTunablePID(
                         "Steer",
                         new PID(SlotConfigs.from(DriveConstants.FrontLeft.SteerMotorGains)));
+        autoThetaController.enableContinuousInput(-Math.PI, Math.PI);
+    }
+
+    /**
+     * Configures PathPlanner for ad hoc pathfinding and path following without reconnecting it to
+     * the autonomous chooser or Choreo autos.
+     */
+    private void configurePathPlanner() {
+        if (AutoBuilder.isConfigured()) {
+            return;
+        }
+
+        AutoBuilder.configure(
+                robotState::getEstimatedPose,
+                robotState::resetPose,
+                this::getChassisSpeeds,
+                this::runVelocity,
+                new PPHolonomicDriveController(
+                        new PIDConstants(
+                                AUTO_TRANSLATION_KP.get(),
+                                AUTO_TRANSLATION_KI.get(),
+                                AUTO_TRANSLATION_KD.get()),
+                        new PIDConstants(
+                                AUTO_THETA_KP.get(), AUTO_THETA_KI.get(), AUTO_THETA_KD.get())),
+                PP_CONFIG,
+                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+                this);
+
+        PathPlannerLogging.setLogActivePathCallback(
+                activePath ->
+                        Logger.recordOutput(
+                                "Odometry/Trajectory", activePath.toArray(Pose2d[]::new)));
+        PathPlannerLogging.setLogTargetPoseCallback(
+                targetPose -> {
+                    robotState.setActiveTrajPose(targetPose);
+                    Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+                });
     }
 
     @Override
@@ -347,6 +390,31 @@ public class Drive extends SubsystemBase {
                 steerTunablePID.kg,
                 steerTunablePID.ks);
 
+        LoggedTunableNumber.ifChanged(
+                hashCode(),
+                () -> {
+                    autoXController.setPID(
+                            AUTO_TRANSLATION_KP.get(),
+                            AUTO_TRANSLATION_KI.get(),
+                            AUTO_TRANSLATION_KD.get());
+                    autoYController.setPID(
+                            AUTO_TRANSLATION_KP.get(),
+                            AUTO_TRANSLATION_KI.get(),
+                            AUTO_TRANSLATION_KD.get());
+                },
+                AUTO_TRANSLATION_KP,
+                AUTO_TRANSLATION_KI,
+                AUTO_TRANSLATION_KD);
+
+        LoggedTunableNumber.ifChanged(
+                hashCode(),
+                () ->
+                        autoThetaController.setPID(
+                                AUTO_THETA_KP.get(), AUTO_THETA_KI.get(), AUTO_THETA_KD.get()),
+                AUTO_THETA_KP,
+                AUTO_THETA_KI,
+                AUTO_THETA_KD);
+
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
 
@@ -384,7 +452,7 @@ public class Drive extends SubsystemBase {
         }
 
         // Update RobotState velocity
-        robotState.setVelocity(getChassisSpeeds());
+        robotState.setRobotRelativeVelocity(getChassisSpeeds());
 
         Logger.recordOutput(
                 "Drive/Speed",
@@ -433,6 +501,104 @@ public class Drive extends SubsystemBase {
     /** Stops the drive. */
     public void stop() {
         runVelocity(new ChassisSpeeds());
+    }
+
+    /** Returns a command that follows the supplied Choreo trajectory. */
+    public Command followTrajectory(Trajectory<SwerveSample> trajectory) {
+        return Commands.sequence(
+                        runOnce(
+                                () -> {
+                                    autoXController.reset();
+                                    autoYController.reset();
+                                    autoThetaController.reset();
+                                    Logger.recordOutput(
+                                            "Odometry/Trajectory", trajectory.getPoses());
+                                }),
+                        createTrajectoryFollower(trajectory))
+                .finallyDo(
+                        () -> {
+                            stop();
+                            Logger.recordOutput("Odometry/Trajectory", new Pose2d[] {});
+                            Logger.recordOutput("Odometry/TrajectorySetpoint", new Pose2d());
+                        })
+                .withName("FollowTrajectory_" + trajectory.name());
+    }
+
+    /** Follows a single Choreo sample using the drive's autonomous controllers. */
+    public void followTrajectorySample(SwerveSample sample) {
+        Pose2d currentPose = robotState.getEstimatedPose();
+        Pose2d targetPose = sample.getPose();
+
+        ChassisSpeeds targetSpeeds =
+                new ChassisSpeeds(
+                        sample.vx + autoXController.calculate(currentPose.getX(), sample.x),
+                        sample.vy + autoYController.calculate(currentPose.getY(), sample.y),
+                        sample.omega
+                                + autoThetaController.calculate(
+                                        currentPose.getRotation().getRadians(), sample.heading));
+
+        runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, currentPose.getRotation()));
+        robotState.setActiveTrajPose(targetPose);
+        Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+    }
+
+    /** Resets the internal PID state used for trajectory following. */
+    public void resetTrajectoryControllers() {
+        autoXController.reset();
+        autoYController.reset();
+        autoThetaController.reset();
+    }
+
+    private Command createTrajectoryFollower(Trajectory<SwerveSample> trajectory) {
+        final double[] startTime = new double[1];
+        return Commands.runEnd(
+                        () -> {
+                            if (startTime[0] == 0.0) {
+                                startTime[0] = Timer.getTimestamp();
+                            }
+                            double elapsedTime = Timer.getTimestamp() - startTime[0];
+                            SwerveSample sample =
+                                    trajectory
+                                            .sampleAt(elapsedTime, false)
+                                            .orElseGet(
+                                                    () ->
+                                                            trajectory
+                                                                    .getFinalSample(false)
+                                                                    .orElse(null));
+                            if (sample == null) {
+                                stop();
+                                return;
+                            }
+
+                            Pose2d currentPose = robotState.getEstimatedPose();
+                            Pose2d targetPose = sample.getPose();
+
+                            ChassisSpeeds targetSpeeds =
+                                    new ChassisSpeeds(
+                                            sample.vx
+                                                    + autoXController.calculate(
+                                                            currentPose.getX(), sample.x),
+                                            sample.vy
+                                                    + autoYController.calculate(
+                                                            currentPose.getY(), sample.y),
+                                            sample.omega
+                                                    + autoThetaController.calculate(
+                                                            currentPose.getRotation().getRadians(),
+                                                            sample.heading));
+
+                            runVelocity(
+                                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                                            targetSpeeds, currentPose.getRotation()));
+                            robotState.setActiveTrajPose(targetPose);
+                            Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+                        },
+                        this::stop,
+                        this)
+                .until(
+                        () ->
+                                startTime[0] != 0.0
+                                        && Timer.getTimestamp() - startTime[0]
+                                                > trajectory.getTotalTime());
     }
 
     /**

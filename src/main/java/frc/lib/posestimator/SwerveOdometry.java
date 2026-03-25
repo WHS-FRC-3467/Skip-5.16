@@ -127,6 +127,12 @@ public class SwerveOdometry {
     private Predicate<Pose2d> poseValidator = pose -> true;
 
     /**
+     * True when a pose reset has occurred and the next odometry observation should re-seed
+     * the module position baseline to avoid a spurious jump.
+     */
+    private boolean pendingPositionReset = false;
+
+    /**
      * Constructs a new {@code SwerveOdometry}.
      *
      * @param kinematics the swerve drive kinematics for computing motion deltas
@@ -173,6 +179,19 @@ public class SwerveOdometry {
         double timestampSeconds = observation.timestamp().in(Seconds);
         SwerveModulePosition[] currentPositions = observation.swervePositions();
 
+        if (pendingPositionReset) {
+            lastModulePositions = copyPositions(currentPositions);
+            observation
+                    .gyroAngle()
+                    .ifPresent(
+                            angle ->
+                                    gyroOffset =
+                                            odometryPose.getRotation().minus(angle));
+            odometryBuffer.addSample(timestampSeconds, odometryPose);
+            pendingPositionReset = false;
+            return;
+        }
+
         Twist2d twist =
                 computeTwist(lastModulePositions, currentPositions, observation.badWheels());
 
@@ -201,6 +220,20 @@ public class SwerveOdometry {
      */
     public void addGyroObservation(OdometryObservation observation) {
         double timestampSeconds = observation.timestamp().in(Seconds);
+
+        if (pendingPositionReset) {
+            // While awaiting a position reset, still apply gyro heading updates to the pose
+            observation
+                    .gyroAngle()
+                    .ifPresent(
+                            angle ->
+                                    odometryPose =
+                                            new Pose2d(
+                                                    odometryPose.getTranslation(),
+                                                    angle.plus(gyroOffset)));
+            odometryBuffer.addSample(timestampSeconds, odometryPose);
+            return;
+        }
 
         // If gyro angle is available, correct heading drift
         observation
@@ -325,5 +358,6 @@ public class SwerveOdometry {
         gyroOffset = pose.getRotation().minus(odometryPose.getRotation().minus(gyroOffset));
         odometryPose = pose;
         odometryBuffer.clear();
+        pendingPositionReset = true;
     }
 }

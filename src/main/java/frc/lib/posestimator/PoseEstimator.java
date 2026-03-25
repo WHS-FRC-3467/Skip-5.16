@@ -58,6 +58,7 @@ public class PoseEstimator {
 
     private enum VisionObservationReason {
         ACCEPTED,
+        RESET_LOCKED,
         MISSING_ODOMETRY_SAMPLE,
         BELOW_MIN_N_SIGMA,
         POSE_VALIDATOR_REJECTED
@@ -91,6 +92,8 @@ public class PoseEstimator {
     private Predicate<Pose2d> poseValidator = pose -> true;
 
     @Getter private Pose2d estimatedPose = Pose2d.kZero;
+    private Pose2d odometryPoseAtReset = Pose2d.kZero;
+    private boolean visionLockedToReset = false;
 
     public PoseEstimator(
             SwerveDriveKinematics kinematics,
@@ -159,6 +162,24 @@ public class PoseEstimator {
         Twist2d twist = lastOdometryPose.log(newOdometryPose);
 
         estimatedPose = estimatedPose.exp(twist);
+
+        if (visionLockedToReset) {
+            double translationStdDev = Math.sqrt(Math.max(odometryVariances[0], 0.0));
+            double rotationStdDev = Math.sqrt(Math.max(odometryVariances[2], 0.0));
+            double translationDelta =
+                    newOdometryPose
+                            .getTranslation()
+                            .getDistance(odometryPoseAtReset.getTranslation());
+            double rotationDelta =
+                    Math.abs(
+                            newOdometryPose
+                                    .getRotation()
+                                    .minus(odometryPoseAtReset.getRotation())
+                                    .getRadians());
+            if (translationDelta >= translationStdDev || rotationDelta >= rotationStdDev) {
+                visionLockedToReset = false;
+            }
+        }
     }
 
     /**
@@ -246,6 +267,17 @@ public class PoseEstimator {
      * @param observation The vision pose observation
      */
     public void addVisionObservation(VisionPoseObservation observation) {
+        if (visionLockedToReset) {
+            logVisionObservation(
+                    observation,
+                    null,
+                    false,
+                    VisionObservationReason.RESET_LOCKED,
+                    Double.NaN,
+                    Double.NaN);
+            return;
+        }
+
         // Attempt to get heading. Fails if the odometer has not recorded
         // a measurement near this timestamp
         Transform2d poseDeltaThenToNow =
@@ -395,6 +427,8 @@ public class PoseEstimator {
     public void resetPose(Pose2d pose) {
         odometry.resetPose(pose);
         estimatedPose = pose;
+        odometryPoseAtReset = pose;
+        visionLockedToReset = true;
 
         odometryStdDevMultiplierLinear = 1.0;
         odometryStdDevMultiplierAngular = 1.0;
