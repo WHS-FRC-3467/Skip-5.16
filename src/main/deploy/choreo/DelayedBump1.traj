@@ -173,7 +173,7 @@
   "splits":[0]
  },
  "events":[
-   {"name":"ExtendIntake", "from":{"target":null, "targetTimestamp":null, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
+   {"name":"ExtendIntake", "from":{"target":0, "targetTimestamp":0.5, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
    {"name":"RetractIntake", "from":{"target":3, "targetTimestamp":2.61054, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
    {"name":"Spinup", "from":{"target":3, "targetTimestamp":2.61054, "offset":{"exp":"0 s", "val":0.0}}, "event":null}]
 }
