@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -15,14 +16,16 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.lib.util.AlwaysTunableNumber;
+import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.RobotState.FieldRegion;
 import frc.robot.commands.DriveCommands;
@@ -36,6 +39,8 @@ import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
 
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -68,10 +73,7 @@ public class AutoCommands {
                 Commands.parallel(
                                 shooter.spinUpShooter().asProxy(),
                                 Commands.parallel(
-                                                indexer.shoot()
-                                                        .withInterruptBehavior(
-                                                                InterruptionBehavior
-                                                                        .kCancelIncoming),
+                                                indexer.shoot(),
                                                 tower.shoot(),
                                                 intake.shuffleStep().repeatedly().asProxy())
                                         .onlyWhile(
@@ -120,25 +122,78 @@ public class AutoCommands {
     }
 
     /**
-     * Follows the given Choreo trajectory and falls back to pathfinding if the robot diverges too
-     * far from the active trajectory target. When retrying from the neutral zone, the robot first
-     * pathfinds to the tunnel entrance and then follows the tunnel trajectory back to the shared
-     * shot pose.
-     *
-     * @param drive the drive subsystem
-     * @param trajectory the primary Choreo auto trajectory to follow
-     * @param tunnelTrajectory the Choreo tunnel trajectory used when retrying from the neutral zone
-     * @param onRetry a command to run whenever fallback pathfinding begins
-     * @return a command that safely follows the path with automatic fallback
+     * Shoots the currently held note, stows the hood, retracts the intake, then starts the next
+     * trajectory.
      */
-    public static Command safeFollowTrajectory(
+    public static Command shootThenFollow(
+            AutoContext ctx, double timeoutSeconds, AutoTrajectory next) {
+        return Commands.sequence(
+                shootOnly(ctx, timeoutSeconds),
+                stowHood(ctx.shooter()),
+                retractIntake(ctx),
+                next.spawnCmd());
+    }
+
+    /**
+     * Recovers to the failed trajectory's endpoint, then runs the normal shoot-and-continue flow.
+     */
+    public static Command recoverThenFollow(
+            AutoContext ctx,
+            AutoTrajectory failedTrajectory,
+            Optional<AutoTrajectory> tunnel,
+            double timeoutSeconds,
+            AutoTrajectory next) {
+        return Commands.sequence(
+                recoverTrajectory(ctx.drive(), failedTrajectory, tunnel, retractIntake(ctx)),
+                shootThenFollow(ctx, timeoutSeconds, next));
+    }
+
+    /**
+     * Creates a routine-bound trigger that rises once a running trajectory has exceeded the
+     * allowable path error for long enough that the auto should fall back to retry pathfinding.
+     */
+    public static Trigger retryTrigger(AutoRoutine routine, AutoTrajectory trajectory) {
+        Distance pathErrorTol = DriveConstants.ALLOWABLE_PATH_ERROR;
+        return routine.observe(
+                new BooleanSupplier() {
+                    private final Timer errorCheckDelayTimer = new Timer();
+                    private final Debouncer pathErrorDebouncer = new Debouncer(0.5);
+                    private boolean wasActive = false;
+
+                    @Override
+                    public boolean getAsBoolean() {
+                        boolean isActive = trajectory.active().getAsBoolean();
+
+                        if (isActive && !wasActive) {
+                            errorCheckDelayTimer.restart();
+                        } else if (!isActive && wasActive) {
+                            errorCheckDelayTimer.stop();
+                            errorCheckDelayTimer.reset();
+                            pathErrorDebouncer.calculate(false);
+                        }
+
+                        wasActive = isActive;
+
+                        return isActive
+                                && errorCheckDelayTimer.hasElapsed(2.0)
+                                && (pathErrorDebouncer.calculate(
+                                                robotState
+                                                        .getActiveTrajectoryError()
+                                                        .gte(pathErrorTol))
+                                        || robotState.forcePathFind.get());
+                    }
+                });
+    }
+
+    /**
+     * Reaches the supplied trajectory's final pose via the retry pathfinding flow used when an
+     * active Choreo trajectory has to be abandoned.
+     */
+    public static Command recoverTrajectory(
             Drive drive,
             AutoTrajectory trajectory,
-            AutoTrajectory tunnelTrajectory,
+            Optional<AutoTrajectory> tunnelTrajectory,
             Command onRetry) {
-        Distance pathErrorTol = DriveConstants.ALLOWABLE_PATH_ERROR;
-        Timer errorCheckDelayTimer = new Timer();
-        Debouncer pathErrorDebouncer = new Debouncer(0.5);
         Debouncer goalPoseDebouncer = new Debouncer(0.25);
         Pose2d goalPose = trajectory.getFinalPose().orElse(new Pose2d());
 
@@ -151,22 +206,11 @@ public class AutoCommands {
                                                 .getDistance(goalPose.getTranslation())
                                         < DriveConstants.ALLOWABLE_SHOT_POSE_ERROR.in(Meters));
 
-        return trajectory
-                .cmd()
-                .beforeStarting(
+        return Commands.runOnce(
                         () -> {
-                            errorCheckDelayTimer.restart();
                             robotState.setActiveTrajPose(goalPose);
                             Logger.recordOutput("Auto/GoalPose", goalPose);
                         })
-                .until(
-                        () ->
-                                errorCheckDelayTimer.hasElapsed(2.0)
-                                        && (pathErrorDebouncer.calculate(
-                                                        robotState
-                                                                .getActiveTrajectoryError()
-                                                                .gte(pathErrorTol))
-                                                || robotState.forcePathFind.get()))
                 .andThen(
                         Commands.either(
                                 Commands.none(),
@@ -180,11 +224,33 @@ public class AutoCommands {
                 .finallyDo(() -> Logger.recordOutput("Auto/GoalPose", new Pose2d()));
     }
 
-    private static Command pathFindThenFollow(AutoTrajectory tunnelTrajectory) {
-        Pose2d startPose = tunnelTrajectory.getInitialPose().orElseThrow();
-        return Commands.sequence(
-                AutoBuilder.pathfindToPose(startPose, DriveConstants.PATH_CONSTRAINTS),
-                tunnelTrajectory.cmd());
+    private static Command pathFindThenFollow(
+            Drive drive, Pose2d goalPose, AutoTrajectory tunnelTrajectory) {
+        return Commands.defer(
+                () ->
+                        tunnelTrajectory
+                                .getRawTrajectory()
+                                .getInitialPose(false)
+                                .map(FieldUtil::apply)
+                                .map(
+                                        startPose ->
+                                                Commands.sequence(
+                                                        AutoBuilder.pathfindToPose(
+                                                                startPose,
+                                                                DriveConstants.PATH_CONSTRAINTS,
+                                                                2.0),
+                                                        tunnelTrajectory.cmd()))
+                                .orElseGet(
+                                        () -> {
+                                            DriverStation.reportWarning(
+                                                    "Retry tunnel trajectory is missing an initial"
+                                                            + " pose. Falling back to a direct"
+                                                            + " pathfind.",
+                                                    false);
+                                            return AutoBuilder.pathfindToPose(
+                                                    goalPose, DriveConstants.PATH_CONSTRAINTS);
+                                        }),
+                Set.of(drive));
     }
 
     /**
@@ -195,7 +261,7 @@ public class AutoCommands {
     private static Command retryPathing(
             Drive drive,
             Pose2d goalPose,
-            AutoTrajectory tunnelTrajectory,
+            Optional<AutoTrajectory> tunnelTrajectory,
             BooleanSupplier successCondition,
             Command onRetry) {
         Distance pathErrorTol = Meters.of(0.4572); // 18 inches
@@ -214,14 +280,41 @@ public class AutoCommands {
                                         Logger.recordOutput(
                                                 "AutoCommands/RetryPathingStatus", "RETRY")),
                         Commands.either(
-                                        pathFindThenFollow(tunnelTrajectory),
+                                        tunnelTrajectory
+                                                .map(
+                                                        trajectory ->
+                                                                pathFindThenFollow(
+                                                                        drive,
+                                                                        goalPose,
+                                                                        trajectory))
+                                                .orElseGet(
+                                                        () ->
+                                                                AutoBuilder.pathfindToPose(
+                                                                        goalPose,
+                                                                        DriveConstants
+                                                                                .PATH_CONSTRAINTS)),
                                         AutoBuilder.pathfindToPose(
                                                 goalPose, DriveConstants.PATH_CONSTRAINTS),
                                         () ->
                                                 robotState.getFieldRegion()
-                                                        == FieldRegion.NEUTRAL_ZONE)
+                                                                == FieldRegion.NEUTRAL_ZONE
+                                                        && tunnelTrajectory.isPresent())
                                 .until(pathErrorExceeded))
                 .until(successCondition)
                 .finallyDo(() -> Logger.recordOutput("AutoCommands/RetryPathingStatus", "DONE"));
+    }
+
+    private static Command shootOnly(AutoContext ctx, double timeoutSeconds) {
+        return shootCommand(
+                ctx.drive(),
+                ctx.intake(),
+                ctx.indexer(),
+                ctx.tower(),
+                ctx.shooter(),
+                timeoutSeconds);
+    }
+
+    private static Command retractIntake(AutoContext ctx) {
+        return ctx.intake().retractIntake().asProxy().withTimeout(0.5);
     }
 }

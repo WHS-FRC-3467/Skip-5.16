@@ -5,7 +5,8 @@ import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 import frc.robot.commands.autos.utils.AutoCommands;
@@ -18,12 +19,17 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /** Native Choreo routine for the depot-side multi-piece autonomous variants. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DepotShootAuto {
+    private static final Alert TRAJECTORIES_MISSING =
+            new Alert("Depot Auto Trajectories Missing, Auto(s) Unavailable", AlertType.kError);
+
     /** Builds the safe or aggressive depot autonomous routine. */
-    public static AutoOption create(AutoContext ctx, boolean isSafe) {
+    public static Optional<AutoOption> create(AutoContext ctx, boolean isSafe) {
         List<String> names =
                 isSafe
                         ? List.of(
@@ -36,77 +42,70 @@ public final class DepotShootAuto {
                                 ChoreoTraj.Depot1.name(),
                                 ChoreoTraj.NeutralSafe2.name(),
                                 ChoreoTraj.Neutral2.name());
-        List<Trajectory<SwerveSample>> trajectories = AutoUtil.loadTrajectories(names, false);
-        return AutoUtil.trajectoryOption(
-                trajectories,
-                () -> {
-                    AutoRoutine routine =
-                            ctx.autoFactory()
-                                    .newRoutine("Depot" + (isSafe ? "Safe" : "Aggressive"));
-                    AutoTrajectory first = routine.trajectory(trajectories.get(0));
-                    AutoTrajectory second = routine.trajectory(trajectories.get(1));
-                    AutoTrajectory third = routine.trajectory(trajectories.get(2));
-                    AutoTrajectory fourth = routine.trajectory(trajectories.get(3));
-                    AutoUtil.bindEvents(ctx, first, second, third, fourth);
-                    routine.active()
-                            .onTrue(
-                                    Commands.sequence(
-                                            Commands.runOnce(
-                                                    ctx.drive()::resetTrajectoryControllers),
-                                            first.resetOdometry(),
-                                            first.cmd(),
-                                            AutoCommands.shootCommand(
-                                                    ctx.drive(),
-                                                    ctx.intake(),
-                                                    ctx.indexer(),
-                                                    ctx.tower(),
-                                                    ctx.shooter(),
-                                                    2.5),
-                                            second.cmd(),
-                                            AutoCommands.shootCommand(
-                                                    ctx.drive(),
-                                                    ctx.intake(),
-                                                    ctx.indexer(),
-                                                    ctx.tower(),
-                                                    ctx.shooter(),
-                                                    2.5),
-                                            AutoCommands.stowHood(ctx.shooter()),
-                                            Commands.repeatingSequence(
-                                                            AutoCommands.stowHood(ctx.shooter()),
-                                                            ctx.intake()
-                                                                    .retractIntake()
-                                                                    .asProxy()
-                                                                    .withTimeout(0.5),
-                                                            third.cmd(),
-                                                            AutoCommands.shootCommand(
-                                                                    ctx.drive(),
-                                                                    ctx.intake(),
-                                                                    ctx.indexer(),
-                                                                    ctx.tower(),
-                                                                    ctx.shooter(),
-                                                                    10),
-                                                            AutoCommands.stowHood(ctx.shooter()),
-                                                            ctx.intake()
-                                                                    .retractIntake()
-                                                                    .asProxy()
-                                                                    .withTimeout(0.5),
-                                                            fourth.cmd(),
-                                                            AutoCommands.shootCommand(
-                                                                    ctx.drive(),
-                                                                    ctx.intake(),
-                                                                    ctx.indexer(),
-                                                                    ctx.tower(),
-                                                                    ctx.shooter(),
-                                                                    10))
-                                                    .finallyDo(
+        List<Trajectory<SwerveSample>> trajectories =
+                AutoUtil.loadTrajectories(names, false).orElse(null);
+        if (trajectories == null) {
+            TRAJECTORIES_MISSING.set(true);
+            return Optional.empty();
+        }
+
+        Optional<Trajectory<SwerveSample>> tunnelTrajectory =
+                AutoUtil.loadTrajectory(ChoreoTraj.TunnelPath.name(), false);
+
+        return Optional.of(
+                AutoUtil.trajectoryOption(
+                        trajectories,
+                        () -> {
+                            AutoRoutine routine =
+                                    ctx.autoFactory()
+                                            .newRoutine("Depot" + (isSafe ? "Safe" : "Aggressive"));
+                            AutoTrajectory first = routine.trajectory(trajectories.get(0));
+                            AutoTrajectory second = routine.trajectory(trajectories.get(1));
+                            AutoTrajectory third = routine.trajectory(trajectories.get(2));
+                            AutoTrajectory fourth = routine.trajectory(trajectories.get(3));
+                            Optional<AutoTrajectory> tunnel =
+                                    tunnelTrajectory.map(routine::trajectory);
+                            AutoUtil.bindEvents(ctx, first, second, third, fourth);
+                            routine.active()
+                                    .onTrue(
+                                            Commands.sequence(
+                                                    Commands.runOnce(
+                                                            ctx.drive()
+                                                                    ::resetTrajectoryControllers),
+                                                    first.resetOdometry(),
+                                                    Commands.defer(
                                                             () ->
-                                                                    CommandScheduler.getInstance()
-                                                                            .schedule(
-                                                                                    ctx.intake()
-                                                                                            .stopRoller()
-                                                                                            .ignoringDisable(
-                                                                                                    true)))));
-                    return routine;
-                });
+                                                                    Commands.waitSeconds(
+                                                                            AutoCommands
+                                                                                    .getAutoDelay()),
+                                                            Set.of()),
+                                                    first.spawnCmd()));
+
+                            first.done().onTrue(AutoCommands.shootThenFollow(ctx, 2.5, second));
+                            AutoCommands.retryTrigger(routine, first)
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, first, tunnel, 2.5, second));
+
+                            second.done().onTrue(AutoCommands.shootThenFollow(ctx, 2.5, third));
+                            AutoCommands.retryTrigger(routine, second)
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, second, tunnel, 2.5, third));
+
+                            third.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, fourth));
+                            AutoCommands.retryTrigger(routine, third)
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, third, tunnel, 10.0, fourth));
+
+                            fourth.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, third));
+                            AutoCommands.retryTrigger(routine, fourth)
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, fourth, tunnel, 10.0, third));
+
+                            return routine;
+                        }));
     }
 }
