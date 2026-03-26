@@ -46,7 +46,8 @@ public class HubState {
 
     @Getter
     private final LoggedTrigger enablingSoon =
-            new LoggedTrigger("Hub/About To Turn On (" + SECONDS_BEFORE + "s)", this::enablingSoon);
+            new LoggedTrigger(
+                    "Hub/About To Turn On (" + SECONDS_BEFORE + "s)", this::isEnablingSoon);
 
     public static double[] getHubChangeTimes() {
         return Arrays.copyOf(HUB_CHANGE_TIMES, HUB_CHANGE_TIMES.length);
@@ -108,7 +109,7 @@ public class HubState {
         return shiftIndex % 2 == 0 ? firstActiveAlliance : opposite(firstActiveAlliance);
     }
 
-    private boolean enablingSoon() {
+    private boolean isEnablingSoon() {
         double matchTime = DriverStation.getMatchTime();
         if (!isCloseToSwitching(matchTime)) return false;
 
