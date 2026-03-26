@@ -224,14 +224,15 @@ public class AutoCommands {
                 .finallyDo(() -> Logger.recordOutput("Auto/GoalPose", new Pose2d()));
     }
 
-    private static Command pathFindThenFollow(Pose2d goalPose, AutoTrajectory tunnelTrajectory) {
+    private static Command pathFindThenFollow(
+            Drive drive, Pose2d goalPose, AutoTrajectory tunnelTrajectory) {
         return Commands.defer(
                 () ->
                         tunnelTrajectory
                                 .getRawTrajectory()
                                 .getInitialPose(false)
                                 .map(FieldUtil::apply)
-                                .<Command>map(
+                                .map(
                                         startPose ->
                                                 Commands.sequence(
                                                         AutoBuilder.pathfindToPose(
@@ -249,7 +250,7 @@ public class AutoCommands {
                                             return AutoBuilder.pathfindToPose(
                                                     goalPose, DriveConstants.PATH_CONSTRAINTS);
                                         }),
-                Set.of());
+                Set.of(drive));
     }
 
     /**
@@ -283,7 +284,9 @@ public class AutoCommands {
                                                 .<Command>map(
                                                         trajectory ->
                                                                 pathFindThenFollow(
-                                                                        goalPose, trajectory))
+                                                                        drive,
+                                                                        goalPose,
+                                                                        trajectory))
                                                 .orElseGet(
                                                         () ->
                                                                 AutoBuilder.pathfindToPose(
