@@ -408,16 +408,16 @@ public class RobotContainer {
         Logger.recordOutput("Auto/StartPose", startPoseLocal);
         autoPreviewField.getObject("startPose").setPose(startPoseLocal);
 
+        Pose2d robotPose = robotState.getEstimatedPose();
+        startPose = startPoseLocal;
         Distance distanceFromStartPose =
                 Meters.of(
-                        robotState
-                                .getEstimatedPose()
+                        robotPose
                                 .getTranslation()
                                 .getDistance(startPoseLocal.getTranslation()));
         double degreesFromStartPose =
                 Math.abs(
-                        robotState
-                                .getEstimatedPose()
+                        robotPose
                                 .getRotation()
                                 .minus(startPoseLocal.getRotation())
                                 .getDegrees());
