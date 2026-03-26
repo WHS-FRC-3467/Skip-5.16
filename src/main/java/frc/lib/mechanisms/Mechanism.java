@@ -56,7 +56,7 @@ public abstract class Mechanism<T extends MotorIO> {
     @Getter protected final String name;
     protected final MotorInputsAutoLogged inputs = new MotorInputsAutoLogged();
     protected final T io;
-    private final List<TunablePidConfig> tunablePidConfigs = new ArrayList<>();
+    private final List<TunablePidConfig> tunablePidConfigs = new ArrayList<>(2);
 
     /**
      * Effective radius used for linear-to-angular conversion (meters). {@code null} means linear

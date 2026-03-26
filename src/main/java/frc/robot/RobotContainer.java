@@ -360,8 +360,9 @@ public class RobotContainer {
     /**
      * Checks and displays the robot's starting pose accuracy relative to the selected autonomous
      * path every 100ms.
-     * 
-     * @param counter an integer from 0 to 4, that determines whether to spend the time to display info.
+     *
+     * @param counter an integer from 0 to 4, that determines whether to spend the time to display
+     *     info.
      */
     public void checkStartPose(int counter) {
         /* Starting pose checker for auto */

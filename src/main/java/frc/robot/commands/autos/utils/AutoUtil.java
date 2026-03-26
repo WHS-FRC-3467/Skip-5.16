@@ -49,7 +49,7 @@ public final class AutoUtil {
             return commandOption(Commands::none);
         }
 
-        List<Pose2d> previewPoses = new ArrayList<>();
+        List<Pose2d> previewPoses = new ArrayList<>(250);
         for (Trajectory<SwerveSample> trajectory : trajectories) {
             previewPoses.addAll(List.of(trajectory.getPoses()));
         }
