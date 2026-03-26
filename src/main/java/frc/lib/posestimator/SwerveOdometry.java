@@ -127,8 +127,8 @@ public class SwerveOdometry {
     private Predicate<Pose2d> poseValidator = pose -> true;
 
     /**
-     * True when a pose reset has occurred and the next odometry observation should re-seed
-     * the module position baseline to avoid a spurious jump.
+     * True when a pose reset has occurred and the next odometry observation should re-seed the
+     * module position baseline to avoid a spurious jump.
      */
     private boolean pendingPositionReset = false;
 
@@ -183,10 +183,7 @@ public class SwerveOdometry {
             lastModulePositions = copyPositions(currentPositions);
             observation
                     .gyroAngle()
-                    .ifPresent(
-                            angle ->
-                                    gyroOffset =
-                                            odometryPose.getRotation().minus(angle));
+                    .ifPresent(angle -> gyroOffset = odometryPose.getRotation().minus(angle));
             odometryBuffer.addSample(timestampSeconds, odometryPose);
             pendingPositionReset = false;
             return;

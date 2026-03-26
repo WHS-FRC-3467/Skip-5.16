@@ -32,7 +32,6 @@ public class LoggerHelper {
      */
     public static void recordPose2dList(String key, List<Pose2d> list) {
         Pose2d[] array = new Pose2d[list.size()];
-        list.toArray(array);
-        Logger.recordOutput(key, array);
+        Logger.recordOutput(key, list.toArray(array));
     }
 }

@@ -439,7 +439,6 @@ public class RobotContainer {
                 (int) Math.round(degreesFromStartPose * 100.0) / 100.0);
         SmartDashboard.putBoolean(
                 "Auto Pose Check/Robot Rotation Within Tolerance",
-                degreesFromStartPose
-                        < Constants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees));
+                degreesFromStartPose < Constants.STARTING_POSE_ROT_TOLERANCE_DEGREES.in(Degrees));
     }
 }
