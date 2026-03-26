@@ -116,7 +116,8 @@ public class CommandXboxControllerExtended extends CommandXboxController {
     public Command rumbleForTime(double intensity, Time time) {
         return Commands.runOnce(() -> setRumble(intensity))
                 .andThen(Commands.waitSeconds(time.in(Seconds)))
-                .andThen(() -> setRumble(0.0));
+                .andThen(() -> setRumble(0.0))
+                .finallyDo(() -> setRumble(0.0));
     }
 
     double applyModifiers(double joystickInput) {
