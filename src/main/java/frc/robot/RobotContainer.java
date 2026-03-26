@@ -127,21 +127,16 @@ public class RobotContainer {
         autoChooser.addOption("PreloadAuto", PreloadAuto.create(ctx));
 
         // Neutral Autos
-        autoChooser.addOption("Aggressive-Left", NeutralAuto.create(ctx, false, false));
-        autoChooser.addOption("Aggressive-Right", NeutralAuto.create(ctx, true, false));
-        autoChooser.addOption("Safe-Left", NeutralAuto.create(ctx, false, true));
-        autoChooser.addOption("Safe-Right", NeutralAuto.create(ctx, true, true));
-        autoChooser.addOption("AntiNashoba-Left", AntiNashobaAuto.create(ctx, false));
-        autoChooser.addOption("AntiNashoba-Right", AntiNashobaAuto.create(ctx, true));
+        NeutralAuto.create(ctx, false, false)
+                .ifPresent(a -> autoChooser.addOption("Aggressive-Left", a));
+        NeutralAuto.create(ctx, true, false)
+                .ifPresent(a -> autoChooser.addOption("Aggressive-Right", a));
+        NeutralAuto.create(ctx, false, true).ifPresent(a -> autoChooser.addOption("Safe-Left", a));
+        NeutralAuto.create(ctx, true, true).ifPresent(a -> autoChooser.addOption("Safe-Right", a));
 
-        // Depot Autos
-        //      autoChooser.addOption(
-        //           "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
-        //    autoChooser.addOption(
-        //         "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
-
-        autoChooser.addOption("Aggressive-Depot", DepotShootAuto.create(ctx, false));
-        autoChooser.addOption("Safe-Depot", DepotShootAuto.create(ctx, true));
+        DepotShootAuto.create(ctx, false)
+                .ifPresent(a -> autoChooser.addOption("Aggressive-Depot", a));
+        DepotShootAuto.create(ctx, true).ifPresent(a -> autoChooser.addOption("Safe-Depot", a));
 
         autoChooser.onChange(
                 auto -> {

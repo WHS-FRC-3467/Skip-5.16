@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -69,19 +70,21 @@ public final class AutoUtil {
      * Loads a group of named Choreo trajectories, mirroring them across the field width when the
      * routine needs the opposite lane.
      */
-    public static List<Trajectory<SwerveSample>> loadTrajectories(
+    public static Optional<List<Trajectory<SwerveSample>>> loadTrajectories(
             List<String> names, boolean shouldMirror) {
-        try {
-            return names.stream().map(name -> loadTrajectory(name, shouldMirror)).toList();
-        } catch (RuntimeException e) {
+        var optionalTrajectories =
+                names.stream().map(name -> loadTrajectory(name, shouldMirror)).toList();
+        if (optionalTrajectories.stream().anyMatch(Optional::isEmpty)) {
             DriverStation.reportError(
                     "Failed to load Choreo trajectory for auto. Names: "
                             + names
                             + ", shouldMirror="
                             + shouldMirror,
-                    e.getStackTrace());
-            return List.of();
+                    false);
+            return Optional.empty();
         }
+
+        return Optional.of(optionalTrajectories.stream().map(Optional::get).toList());
     }
 
     /**
@@ -108,10 +111,13 @@ public final class AutoUtil {
     }
 
     /** Loads a single Choreo trajectory and mirrors it when the caller requests it. */
-    private static Trajectory<SwerveSample> loadTrajectory(String name, boolean shouldMirror) {
+    public static Optional<Trajectory<SwerveSample>> loadTrajectory(
+            String name, boolean shouldMirror) {
         Trajectory<SwerveSample> trajectory =
-                Choreo.<SwerveSample>loadTrajectory(name).orElseThrow();
-        return shouldMirror ? mirror(trajectory) : trajectory;
+                Choreo.<SwerveSample>loadTrajectory(name).orElse(null);
+        if (trajectory == null) return Optional.empty();
+
+        return Optional.of(shouldMirror ? mirror(trajectory) : trajectory);
     }
 
     /**
