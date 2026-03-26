@@ -335,7 +335,7 @@ public class RobotContainer {
                 .joysticksZeroed
                 .negate()
                 .and(new Trigger(DriverStation::isDisabled))
-                .whileTrue(controller.rumble(0.5));
+                .whileTrue(controller.rumble(1.0).ignoringDisable(true));
     }
 
     /**
