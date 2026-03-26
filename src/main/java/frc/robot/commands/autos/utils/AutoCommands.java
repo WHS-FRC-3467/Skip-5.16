@@ -281,7 +281,7 @@ public class AutoCommands {
                                                 "AutoCommands/RetryPathingStatus", "RETRY")),
                         Commands.either(
                                         tunnelTrajectory
-                                                .<Command>map(
+                                                .map(
                                                         trajectory ->
                                                                 pathFindThenFollow(
                                                                         drive,

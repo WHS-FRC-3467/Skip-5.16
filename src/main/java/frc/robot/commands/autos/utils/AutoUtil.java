@@ -9,6 +9,7 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -74,6 +75,12 @@ public final class AutoUtil {
         var optionalTrajectories =
                 names.stream().map(name -> loadTrajectory(name, shouldMirror)).toList();
         if (optionalTrajectories.stream().anyMatch(Optional::isEmpty)) {
+            DriverStation.reportError(
+                    "Failed to load Choreo trajectory for auto. Names: "
+                            + names
+                            + ", shouldMirror="
+                            + shouldMirror,
+                    false);
             return Optional.empty();
         }
 
