@@ -24,6 +24,9 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Extended Xbox controller with additional functionality for FRC use.
@@ -47,6 +50,14 @@ public class CommandXboxControllerExtended extends CommandXboxController {
     private GenericHID hid;
     private double deadband = 0.0;
     private boolean applyCurve = false;
+
+    public Trigger joysticksZeroed =
+            new Trigger(
+                    () ->
+                            getLeftX() == 0.0
+                                    && getLeftY() == 0.0
+                                    && getRightX() == 0.0
+                                    && getRightY() == 0.0);
 
     /**
      * Constructs an extended Xbox controller with additional functionality.
@@ -80,30 +91,32 @@ public class CommandXboxControllerExtended extends CommandXboxController {
         return this;
     }
 
+    private void setRumble(double intensity) {
+        Logger.recordOutput("Controllers/" + hid.getPort() + "/VibrationIntensity", intensity);
+        hid.setRumble(RumbleType.kBothRumble, intensity);
+    }
+
     /**
      * Rumble controller until command ends
      *
-     * @param side Which motor to rumble
      * @param intensity Percentage for rumble intensity
      * @return Command to rumble the controller
      */
-    public Command rumble(RumbleType side, double intensity) {
-        return Commands.startEnd(
-                () -> hid.setRumble(side, intensity), () -> hid.setRumble(side, 0.0));
+    public Command rumble(double intensity) {
+        return Commands.startEnd(() -> setRumble(intensity), () -> setRumble(0.0));
     }
 
     /**
      * Rumble controller for a set amount of time
      *
-     * @param side Which motor to rumble
      * @param intensity Percentage for rumble intensity
      * @param time Length of time to rumble
      * @return Command to rumble the controller
      */
-    public Command rumbleForTime(RumbleType side, double intensity, Time time) {
-        return Commands.runOnce(() -> hid.setRumble(side, intensity))
+    public Command rumbleForTime(double intensity, Time time) {
+        return Commands.runOnce(() -> setRumble(intensity))
                 .andThen(Commands.waitSeconds(time.in(Seconds)))
-                .andThen(() -> hid.setRumble(side, 0.0));
+                .andThen(() -> setRumble(0.0));
     }
 
     double applyModifiers(double joystickInput) {

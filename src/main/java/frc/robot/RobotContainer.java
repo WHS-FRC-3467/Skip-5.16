@@ -18,10 +18,12 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -52,6 +55,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
@@ -315,6 +319,23 @@ public class RobotContainer {
                 .negate()
                 .and(operatorController.y().negate())
                 .onTrue(shooter.stopFlywheels());
+
+        HubState.getInstance()
+                .getEnablingSoon()
+                .onTrue(
+                        Commands.sequence(
+                                controller.rumbleForTime(1.0, Seconds.of(0.5)),
+                                Commands.waitSeconds(0.5),
+                                controller.rumbleForTime(1.0, Seconds.of(0.5)),
+                                Commands.waitSeconds(0.5),
+                                controller.rumbleForTime(1.0, Seconds.of(0.5)),
+                                Commands.waitSeconds(0.5)));
+
+        controller
+                .joysticksZeroed
+                .negate()
+                .and(new Trigger(DriverStation::isDisabled))
+                .whileTrue(controller.rumble(0.5));
     }
 
     /**
