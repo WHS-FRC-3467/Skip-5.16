@@ -122,20 +122,20 @@ public class LightsIOSim implements LightsIO {
         int slot = Integer.valueOf(checkAndGet("Slot"));
         Logger.recordOutput("LEDs/Slot" + slot, requestInfo.toString());
 
-        final Distance kLedSpacing = // do not set to double, LEDPattern casts the input as an int
+        final Distance ledSpacing = // do not set to double, LEDPattern casts the input as an int
                 Inches.of(1);
         switch (requestInfo.get("Name")) {
             case "RainbowAnimation" ->
                     rainbow.scrollAtAbsoluteSpeed(
                                     InchesPerSecond.of(
                                             Double.valueOf(checkAndGet("FrameRate")) * direction),
-                                    kLedSpacing)
+                                    ledSpacing)
                             .applyTo(views.get(slot));
             case "FireAnimation" ->
                     candlePatterns
                             .fireScroll(
                                     Double.valueOf(checkAndGet("FrameRate")) * (direction / 0.5),
-                                    kLedSpacing)
+                                    ledSpacing)
                             .applyTo(views.get(slot));
             case "ColorFlowAnimation" ->
                     candlePatterns
