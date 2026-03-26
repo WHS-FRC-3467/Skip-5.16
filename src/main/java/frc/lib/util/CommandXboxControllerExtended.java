@@ -51,7 +51,7 @@ public class CommandXboxControllerExtended extends CommandXboxController {
     private double deadband = 0.0;
     private boolean applyCurve = false;
 
-    public Trigger joysticksZeroed =
+    public final Trigger joysticksZeroed =
             new Trigger(
                     () ->
                             getLeftX() == 0.0
