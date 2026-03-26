@@ -311,33 +311,12 @@ public class RobotContainer {
      */
     private void initializeDashboard() {
 
-        // Indexer Commands
-        SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Shoot", indexer.shoot());
-        SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Expel", indexer.eject());
-        SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Feed", indexer.feed());
-        SmartDashboard.putData(
-                IndexerSuperstructureConstants.NAME + "/Stop", indexer.stopCommand());
-
         // Intake Commands
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Intake", intake.intake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Coast", intake.linearCoast());
         SmartDashboard.putData("Home", Commands.parallel(intake.homeLinear(), shooter.homeHood()));
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/SlowRetract", intake.slowRetract());
-
-        // Tower Commands
-        SmartDashboard.putData(TowerConstants.NAME + "/Stop", tower.stopCommand());
-        SmartDashboard.putData(TowerConstants.NAME + "/Shoot", tower.shoot());
-        SmartDashboard.putData(TowerConstants.NAME + "/Feed", tower.feed());
-        SmartDashboard.putData(TowerConstants.NAME + "/Eject", tower.eject());
-
-        // Shooter Commands
-        SmartDashboard.putData(
-                ShooterSuperstructureConstants.NAME + "/Stop", shooter.stopFlywheels());
-        SmartDashboard.putData(
-                ShooterSuperstructureConstants.NAME + "/Spinup", shooter.spinUpShooter());
-        SmartDashboard.putData(
-                ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
 
         SmartDashboard.putData(
                 "Debug/SetOdometryToTestPose",
