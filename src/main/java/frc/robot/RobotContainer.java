@@ -181,7 +181,7 @@ public class RobotContainer {
                                                 () -> -controller.getLeftX() * 0.4,
                                                 robotState.feedLookaheadSeconds),
                                         DriveCommands.staticAimTowardsTarget(drive),
-                                        shooter.shouldFeed),
+                                        robotState.shouldFeed),
                                 shooter.spinUpShooter(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
                                         .onlyWhile(
