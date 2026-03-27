@@ -178,6 +178,15 @@ public class RobotState {
                             getFieldRegion() == FieldRegion.ALLIANCE_ZONE
                                     && enteringTrench.negate().getAsBoolean());
 
+    public final LoggedTrigger shouldFeed =
+            new LoggedTrigger(
+                    "RobotState/ShouldFeed",
+                    () ->
+                            switch (getTarget()) {
+                                case HUB -> false;
+                                case FEED_LEFT, FEED_RIGHT -> true;
+                            });
+
     /** Trigger determining whether robot is ready for a static shot */
     private final Debouncer staticShootingDebouncer = new Debouncer(0.05, DebounceType.kRising);
 
@@ -378,6 +387,24 @@ public class RobotState {
         } else {
             return FieldRegion.OPPONENT_ALLIANCE_ZONE;
         }
+    }
+
+    /**
+     * Returns whether the supplied translation lies in the Y band where a full-width shooter aimed
+     * straight along the X axis would still intersect the hub.
+     *
+     * @param currentTranslation The translation to check
+     * @return True if the robot overlaps the hub's Y span within half its bumper width
+     */
+    public boolean shouldAimFeed(Translation2d currentTranslation) {
+        Translation2d pose = FieldUtil.apply(currentTranslation);
+        double y = pose.getY();
+
+        double halfRobotWidth = Constants.FULL_ROBOT_WIDTH.in(Meters) / 2.0;
+        double minShotY = FieldConstants.Hub.NEAR_RIGHT_CORNER.getY() - halfRobotWidth;
+        double maxShotY = FieldConstants.Hub.NEAR_LEFT_CORNER.getY() + halfRobotWidth;
+
+        return y >= minShotY && y <= maxShotY;
     }
 
     /**
@@ -582,6 +609,10 @@ public class RobotState {
      * @return the angle to the target
      */
     public Rotation2d getAngleToTarget(Translation2d robotTranslation) {
+        if (shouldFeed.getAsBoolean() && !shouldAimFeed(robotTranslation)) {
+            return FieldUtil.apply(Rotation2d.k180deg);
+        }
+
         return getTarget()
                 .getAllianceTranslation()
                 .toTranslation2d()

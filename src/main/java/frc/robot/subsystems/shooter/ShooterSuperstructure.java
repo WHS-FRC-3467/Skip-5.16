@@ -198,15 +198,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
     public final LoggedTrigger hopperEmpty;
 
-    public final LoggedTrigger shouldFeed =
-            new LoggedTrigger(
-                    getName() + "/ShouldFeed",
-                    () ->
-                            switch (robotState.getTarget()) {
-                                case HUB -> false;
-                                case FEED_LEFT, FEED_RIGHT -> true;
-                            });
-
     /**
      * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
      *
@@ -368,7 +359,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private AngularVelocity getDesiredFlywheelVelocity() {
-        boolean shouldFeedNow = shouldFeed.getAsBoolean();
+        boolean shouldFeedNow = robotState.shouldFeed.getAsBoolean();
         InterpolatingDoubleTreeMap flywheelMap = shouldFeedNow ? feedFlywheelMap : hubFlywheelMap;
 
         Pose2d pose;
@@ -389,7 +380,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private Angle getDesiredHoodAngle() {
-        boolean shouldFeedNow = shouldFeed.getAsBoolean();
+        boolean shouldFeedNow = robotState.shouldFeed.getAsBoolean();
         if (!shouldFeedNow) {
             return Degrees.of(hoodAngleMap.get(robotState.getDistanceToTarget().in(Meters)));
         }
