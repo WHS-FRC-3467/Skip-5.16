@@ -18,6 +18,7 @@ package frc.robot.subsystems.objectdetector;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -29,7 +30,6 @@ import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.lib.util.FieldUtil;
-import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.RobotState;
 
@@ -89,7 +89,7 @@ public class ObjectDetector extends SubsystemBase {
     /**
      * Represents a lane target (i.e. spatial histogram argument) within the Object Detector's ROI.
      *
-     * @param x the field-relative x coordinate of the lane center.
+     * @param x the field-relative x coordinate of the lane center in meters.
      * @param count the number of detected objects within that lane.
      */
     public static record LaneTarget(double x, int count) {}
@@ -97,7 +97,8 @@ public class ObjectDetector extends SubsystemBase {
     /** The Object Detector's best guess at the argmax of the spatial histogram within its ROI. */
     @Getter private Optional<LaneTarget> bestLaneTarget = Optional.empty();
 
-    private static final Distance LANE_WIDTH = Constants.FULL_ROBOT_WIDTH.times(0.75);
+    private static final int NUM_LANES = 6;
+    private static Distance laneWidth = Meters.zero();
 
     /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
@@ -199,22 +200,24 @@ public class ObjectDetector extends SubsystemBase {
             List<Optional<ObjectDetectionObservation>> observations,
             Translation2d cornerA,
             Translation2d cornerB) {
-        if (observations.isEmpty()) return Optional.empty();
+        if (observations.isEmpty() || NUM_LANES <= 0) return Optional.empty();
 
         double minX = Math.min(cornerA.getMeasureX().in(Meters), cornerB.getMeasureX().in(Meters));
         double maxX = Math.max(cornerA.getMeasureX().in(Meters), cornerB.getMeasureX().in(Meters));
 
-        int laneCount = (int) Math.ceil((maxX - minX) / LANE_WIDTH.in(Meters));
-        if (laneCount <= 0) return Optional.empty();
+        laneWidth = Meters.of((maxX - minX) / NUM_LANES);
 
-        int[] histogram = new int[laneCount];
+        if (laneWidth.lte(Meters.zero())) return Optional.empty();
+
+        int[] histogram = new int[NUM_LANES];
 
         for (Optional<ObjectDetectionObservation> obs : observations) {
             if (obs.isEmpty() || obs.get().objectPose().isEmpty()) continue;
             double x = obs.get().objectPose().get().getX();
 
-            int index = (int) ((x - minX) / LANE_WIDTH.in(Meters));
-            if (index >= 0 && index < laneCount) histogram[index]++;
+            int index = (int) ((x - minX) / laneWidth.in(Meters));
+            index = MathUtil.clamp(index, 0, NUM_LANES - 1);
+            if (index >= 0 && index < NUM_LANES) histogram[index]++;
         }
 
         // Generate current best lane index and count from histogram
@@ -227,7 +230,7 @@ public class ObjectDetector extends SubsystemBase {
             }
         }
         if (bestIndex == -1 || bestCount == 0) return Optional.empty();
-        double bestX = minX + (bestIndex + 0.5) * LANE_WIDTH.in(Meters);
+        double bestX = minX + (bestIndex + 0.5) * laneWidth.in(Meters);
 
         return Optional.of(new LaneTarget(bestX, bestCount));
     }
@@ -294,8 +297,8 @@ public class ObjectDetector extends SubsystemBase {
     private void logBestLaneTarget(List<Translation2d> mirroredCorners) {
         if (bestLaneTarget.isPresent()) {
             double xLane = bestLaneTarget.get().x();
-            double x1 = xLane + LANE_WIDTH.in(Meters) / 2.0;
-            double x2 = xLane - LANE_WIDTH.in(Meters) / 2.0;
+            double x1 = xLane + laneWidth.in(Meters) / 2.0;
+            double x2 = xLane - laneWidth.in(Meters) / 2.0;
             double y1 = mirroredCorners.get(0).getY();
             double y2 = mirroredCorners.get(1).getY();
 

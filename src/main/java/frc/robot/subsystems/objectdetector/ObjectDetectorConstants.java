@@ -127,8 +127,8 @@ public class ObjectDetectorConstants {
     public static final double OBJECT0_HEIGHT_METERS = 0.150114;
 
     // Dynamic supplier for moving sim targets
-    // Only publish FUEL to Object Detection VisionSystemSim that are roughly within 8m of the
-    // camera & its FOV -- publish nearest values first
+    // Only publish FUEL to Object Detection VisionSystemSim that are roughly within 10m of the
+    // camera and its FOV -- publish nearest values first
     public static Supplier<VisionTargetSim[]> visionTargetSimSupplier =
             () -> {
                 var robotPose = robotState.getEstimatedPose();
