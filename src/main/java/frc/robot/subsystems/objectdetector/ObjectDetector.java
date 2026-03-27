@@ -22,7 +22,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.devices.ObjectDetection;
@@ -90,15 +89,16 @@ public class ObjectDetector extends SubsystemBase {
      * Represents a lane target (i.e. spatial histogram argument) within the Object Detector's ROI.
      *
      * @param x the field-relative x coordinate of the lane center in meters.
+     * @param width the width of the lane in meters.
      * @param count the number of detected objects within that lane.
      */
-    public static record LaneTarget(double x, int count) {}
+    public static record LaneTarget(double x, double width, int count) {}
 
     /** The Object Detector's best guess at the argmax of the spatial histogram within its ROI. */
     @Getter private Optional<LaneTarget> bestLaneTarget = Optional.empty();
 
+    /** The number of arguments to the histogram. */
     private static final int NUM_LANES = 6;
-    private static Distance laneWidth = Meters.zero();
 
     /**
      * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
@@ -205,9 +205,9 @@ public class ObjectDetector extends SubsystemBase {
         double minX = Math.min(cornerA.getMeasureX().in(Meters), cornerB.getMeasureX().in(Meters));
         double maxX = Math.max(cornerA.getMeasureX().in(Meters), cornerB.getMeasureX().in(Meters));
 
-        laneWidth = Meters.of((maxX - minX) / NUM_LANES);
+        double laneWidth = (maxX - minX) / NUM_LANES;
 
-        if (laneWidth.lte(Meters.zero())) return Optional.empty();
+        if (laneWidth <= 0) return Optional.empty();
 
         int[] histogram = new int[NUM_LANES];
 
@@ -215,9 +215,9 @@ public class ObjectDetector extends SubsystemBase {
             if (obs.isEmpty() || obs.get().objectPose().isEmpty()) continue;
             double x = obs.get().objectPose().get().getX();
 
-            int index = (int) ((x - minX) / laneWidth.in(Meters));
+            int index = (int) ((x - minX) / laneWidth);
             index = MathUtil.clamp(index, 0, NUM_LANES - 1);
-            if (index >= 0 && index < NUM_LANES) histogram[index]++;
+            histogram[index]++;
         }
 
         // Generate current best lane index and count from histogram
@@ -230,9 +230,9 @@ public class ObjectDetector extends SubsystemBase {
             }
         }
         if (bestIndex == -1 || bestCount == 0) return Optional.empty();
-        double bestX = minX + (bestIndex + 0.5) * laneWidth.in(Meters);
+        double bestX = minX + (bestIndex + 0.5) * laneWidth;
 
-        return Optional.of(new LaneTarget(bestX, bestCount));
+        return Optional.of(new LaneTarget(bestX, laneWidth, bestCount));
     }
 
     // Private helper for logging Object Detection values. -1 for stale values.
@@ -297,8 +297,10 @@ public class ObjectDetector extends SubsystemBase {
     private void logBestLaneTarget(List<Translation2d> mirroredCorners) {
         if (bestLaneTarget.isPresent()) {
             double xLane = bestLaneTarget.get().x();
-            double x1 = xLane + laneWidth.in(Meters) / 2.0;
-            double x2 = xLane - laneWidth.in(Meters) / 2.0;
+            double wLane = bestLaneTarget.get().width();
+
+            double x1 = xLane + wLane / 2.0;
+            double x2 = xLane - wLane / 2.0;
             double y1 = mirroredCorners.get(0).getY();
             double y2 = mirroredCorners.get(1).getY();
 
@@ -317,10 +319,14 @@ public class ObjectDetector extends SubsystemBase {
                         new Pose2d(a, Rotation2d.kZero)
                     });
             Logger.recordOutput("Detection/Best Lane Target X", xLane);
+            Logger.recordOutput("Detection/Best Lane Target Width", wLane);
             Logger.recordOutput("Detection/Best Lane Target Count", bestLaneTarget.get().count());
         } else {
             Logger.recordOutput("Detection/Best Lane Target X", -1.0);
+            Logger.recordOutput("Detection/Best Lane Target Width", -1.0);
             Logger.recordOutput("Detection/Best Lane Target Count", -1);
+
+            Logger.recordOutput("Detection/BestLane", new Pose2d[] {});
         }
     }
 
