@@ -144,7 +144,7 @@
             "height": 400.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Auto Pose Check/Robot Position within 2.9999999999999996 inches",
+              "topic": "/SmartDashboard/Auto Pose Check/Robot Position Within Tolerance",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -161,7 +161,7 @@
             "height": 400.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Auto Pose Check/Robot Rotation within 5.0 degrees",
+              "topic": "/SmartDashboard/Auto Pose Check/Robot Rotation Within Tolerance",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -183,6 +183,18 @@
               "data_type": "double",
               "show_submit_button": false
             }
+          },
+          {
+            "title": "Choreo Alerts",
+            "x": 1150.0,
+            "y": 550.0,
+            "width": 350.0,
+            "height": 300.0,
+            "type": "Alerts",
+            "properties": {
+              "topic": "/SmartDashboard/Choreo Alerts",
+              "period": 0.06
+            }
           }
         ]
       }
@@ -191,61 +203,6 @@
       "name": "Pit",
       "grid_layout": {
         "layouts": [
-          {
-            "title": "Intake Roller",
-            "x": 400.0,
-            "y": 50.0,
-            "width": 300.0,
-            "height": 350.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "Eject",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Roller/Eject",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Intake",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Roller/Intake",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Stop",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Roller/Stop",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              }
-            ]
-          },
           {
             "title": "Intake Linear",
             "x": 50.0,
@@ -272,28 +229,14 @@
                 }
               },
               {
-                "title": "Cycle",
+                "title": "Intake",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 300.0,
                 "height": 150.0,
                 "type": "Command",
                 "properties": {
-                  "topic": "/SmartDashboard/Intake Linear/Cycle",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Extend",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Linear/Extend",
+                  "topic": "/SmartDashboard/Intake Linear/Intake",
                   "period": 0.06,
                   "show_type": true,
                   "maximize_button_space": false
@@ -312,71 +255,16 @@
                   "show_type": true,
                   "maximize_button_space": false
                 }
-              }
-            ]
-          },
-          {
-            "title": "Indexer",
-            "x": 750.0,
-            "y": 50.0,
-            "width": 300.0,
-            "height": 450.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "Expel",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Indexer/Expel",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
               },
               {
-                "title": "Feed",
+                "title": "SlowRetract",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 300.0,
                 "height": 150.0,
                 "type": "Command",
                 "properties": {
-                  "topic": "/SmartDashboard/Indexer/Feed",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Shoot",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Indexer/Shoot",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Stop",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Indexer/Stop",
+                  "topic": "/SmartDashboard/Intake Linear/SlowRetract",
                   "period": 0.06,
                   "show_type": true,
                   "maximize_button_space": false
@@ -391,253 +279,17 @@
     {
       "name": "Sim",
       "grid_layout": {
-        "layouts": [
-          {
-            "title": "Intake Linear",
-            "x": 0.0,
-            "y": 0.0,
-            "width": 200.0,
-            "height": 350.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "Cycle",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Linear/Cycle",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Extend",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Linear/Extend",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Retract",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Linear/Retract",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              }
-            ]
-          },
-          {
-            "title": "Intake Roller",
-            "x": 200.0,
-            "y": 0.0,
-            "width": 200.0,
-            "height": 350.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "Eject",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Roller/Eject",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Intake",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Roller/Intake",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Stop",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Intake Roller/Stop",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              }
-            ]
-          },
-          {
-            "title": "Indexer",
-            "x": 400.0,
-            "y": 0.0,
-            "width": 200.0,
-            "height": 450.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "Expel",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Indexer/Expel",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Feed",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Indexer/Feed",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Shoot",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Indexer/Shoot",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              },
-              {
-                "title": "Stop",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 300.0,
-                "height": 150.0,
-                "type": "Command",
-                "properties": {
-                  "topic": "/SmartDashboard/Indexer/Stop",
-                  "period": 0.06,
-                  "show_type": true,
-                  "maximize_button_space": false
-                }
-              }
-            ]
-          }
-        ],
+        "layouts": [],
         "containers": [
           {
-            "title": "Ready Shooter",
-            "x": 0.0,
-            "y": 350.0,
-            "width": 300.0,
-            "height": 150.0,
-            "type": "Command",
-            "properties": {
-              "topic": "/SmartDashboard/Ready Shooter",
-              "period": 0.06,
-              "show_type": true,
-              "maximize_button_space": false
-            }
-          },
-          {
             "title": "Reset Fuel",
-            "x": 300.0,
-            "y": 500.0,
+            "x": 200.0,
+            "y": 100.0,
             "width": 300.0,
             "height": 150.0,
             "type": "Command",
             "properties": {
               "topic": "/SmartDashboard/Reset Fuel",
-              "period": 0.06,
-              "show_type": true,
-              "maximize_button_space": false
-            }
-          },
-          {
-            "title": "Set flywheel to 30",
-            "x": 0.0,
-            "y": 650.0,
-            "width": 300.0,
-            "height": 150.0,
-            "type": "Command",
-            "properties": {
-              "topic": "/SmartDashboard/Set flywheel to 30",
-              "period": 0.06,
-              "show_type": true,
-              "maximize_button_space": false
-            }
-          },
-          {
-            "title": "Set hood to 45 deg",
-            "x": 300.0,
-            "y": 650.0,
-            "width": 300.0,
-            "height": 150.0,
-            "type": "Command",
-            "properties": {
-              "topic": "/SmartDashboard/Set hood to 45 deg",
-              "period": 0.06,
-              "show_type": true,
-              "maximize_button_space": false
-            }
-          },
-          {
-            "title": "Shoot Fuel",
-            "x": 0.0,
-            "y": 500.0,
-            "width": 300.0,
-            "height": 150.0,
-            "type": "Command",
-            "properties": {
-              "topic": "/SmartDashboard/Shoot Fuel",
               "period": 0.06,
               "show_type": true,
               "maximize_button_space": false

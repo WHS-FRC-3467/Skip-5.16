@@ -421,10 +421,16 @@ public class Drive extends SubsystemBase {
         double[] sampleTimestamps = modules[0].getOdometryTimestamps();
         int sampleCount = sampleTimestamps.length;
 
+        // Cache references to each module's odometry positions array to avoid repeated calls
+        SwerveModulePosition[][] moduleOdometryArrays = new SwerveModulePosition[4][];
+        for (int i = 0; i < 4; i++) {
+            moduleOdometryArrays[i] = modules[i].getOdometryPositions();
+        }
+
         for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
             SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
             for (int i = 0; i < 4; i++) {
-                modulePositions[i] = modules[i].getOdometryPositions()[sampleIndex];
+                modulePositions[i] = moduleOdometryArrays[i][sampleIndex];
             }
 
             Optional<Rotation2d> gyroAngle = Optional.empty();
@@ -451,16 +457,14 @@ public class Drive extends SubsystemBase {
                             badWheels));
         }
 
-        // Update RobotState velocity
-        robotState.setRobotRelativeVelocity(getChassisSpeeds());
+        // Update RobotState velocity (cache chassis speeds to avoid repeated work)
+        ChassisSpeeds chassisSpeeds = getChassisSpeeds();
+        robotState.setRobotRelativeVelocity(chassisSpeeds);
 
-        Logger.recordOutput(
-                "Drive/Speed",
-                new Translation2d(
-                                        getChassisSpeeds().vxMetersPerSecond,
-                                        getChassisSpeeds().vyMetersPerSecond)
-                                .getNorm()
-                        * -1);
+        // Avoid allocating a Translation2d just to compute norm; use hypot
+        double speed =
+                Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond) * -1;
+        Logger.recordOutput("Drive/Speed", speed);
     }
 
     /**

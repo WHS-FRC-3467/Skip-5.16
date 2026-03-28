@@ -40,6 +40,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.rotary.RotaryMechanism;
+import frc.lib.util.LoggedDouble;
+import frc.lib.util.LoggedInt;
 import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
@@ -180,6 +182,14 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private @Getter int rightFuelCount = 0;
     private @Getter int totalFuelCount = 0;
 
+    // Logged counters to avoid repeated identical writes
+    private LoggedInt leftFuelLogger;
+    private LoggedInt rightFuelLogger;
+    private LoggedInt totalFuelLogger;
+
+    // Logged trim value
+    private LoggedDouble loggedFlywheelTrimRPS;
+
     // Trigger for whether we are at the static shooting state (shooter ready, robot stationary &
     // aligned to target)
     private final LoggedTrigger staticShotState =
@@ -222,6 +232,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         this.hoodIO = hoodIO;
         this.leftFlywheelIO = leftFlywheelIO;
         this.rightFlywheelIO = rightFlywheelIO;
+
+        // Initialize logged-on-change counters and numeric loggers that depend on the subsystem
+        // name
+        this.leftFuelLogger = new LoggedInt(getName() + "/LeftFuelCount");
+        this.rightFuelLogger = new LoggedInt(getName() + "/RightFuelCount");
+        this.totalFuelLogger = new LoggedInt(getName() + "/TotalFuelCount");
+        this.loggedFlywheelTrimRPS = new LoggedDouble(getName() + "/FlywheelTrimRPS");
 
         leftBallTrigger =
                 new LoggedTrigger(
@@ -552,21 +569,34 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 Commands.runOnce(
                         () -> {
                             leftFuelCount++;
-                            Logger.recordOutput(getName() + "/LeftFuelCount", leftFuelCount);
+                            // Log count only on change
+                            if (leftFuelLogger != null) {
+                                leftFuelLogger.log(leftFuelCount);
+                            } else {
+                                Logger.recordOutput(getName() + "/LeftFuelCount", leftFuelCount);
+                            }
                             updateTotalFuelCount();
                         }));
         rightBallTrigger.onTrue(
                 Commands.runOnce(
                         () -> {
                             rightFuelCount++;
-                            Logger.recordOutput(getName() + "/RightFuelCount", rightFuelCount);
+                            if (rightFuelLogger != null) {
+                                rightFuelLogger.log(rightFuelCount);
+                            } else {
+                                Logger.recordOutput(getName() + "/RightFuelCount", rightFuelCount);
+                            }
                             updateTotalFuelCount();
                         }));
     }
 
     private void updateTotalFuelCount() {
         totalFuelCount = leftFuelCount + rightFuelCount;
-        Logger.recordOutput(getName() + "/TotalFuelCount", totalFuelCount);
+        if (totalFuelLogger != null) {
+            totalFuelLogger.log(totalFuelCount);
+        } else {
+            Logger.recordOutput(getName() + "/TotalFuelCount", totalFuelCount);
+        }
     }
 
     @Override
@@ -602,8 +632,12 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 getName() + "/TotalDrawWatts",
                 leftFlywheelIO.getAppliedVoltage().times(leftFlywheelIO.getSupplyCurrent()));
 
-        Logger.recordOutput(
-                getName() + "/FlywheelTrimRPS", getFlywheelTrim().in(RotationsPerSecond));
+        if (loggedFlywheelTrimRPS != null) {
+            loggedFlywheelTrimRPS.log(getFlywheelTrim().in(RotationsPerSecond));
+        } else {
+            Logger.recordOutput(
+                    getName() + "/FlywheelTrimRPS", getFlywheelTrim().in(RotationsPerSecond));
+        }
     }
 
     /** Closes all underlying mechanisms and releases resources. */
