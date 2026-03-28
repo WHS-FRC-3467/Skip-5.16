@@ -321,7 +321,6 @@ public class Drive extends SubsystemBase {
     @Override
     @SuppressWarnings("LockNotBeforeTry")
     public void periodic() {
-        // long t0 = System.nanoTime();
         LoggerHelper.recordCurrentCommand("Drive", this);
 
         odometryLock.lock(); // Prevents odometry updates while reading data
@@ -467,8 +466,6 @@ public class Drive extends SubsystemBase {
                 Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond) * -1;
         Logger.recordOutput("Drive/Speed", speed);
 
-        // long dtNanos = System.nanoTime() - t0;
-        // Logger.recordOutput("Perf/DrivePeriodicMicros", (double) dtNanos/1000);
     }
 
     /**
