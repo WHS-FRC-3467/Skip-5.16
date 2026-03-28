@@ -3,8 +3,30 @@
  "version":2,
  "type":"Swerve",
  "variables":{
-  "expressions":{},
+  "expressions":{
+   "Neutral2ML_Safe_Y":{
+    "dimension":"Length",
+    "var":{
+     "exp":"3.9 m",
+     "val":3.9
+    }
+   }
+  },
   "poses":{
+   "DecisionPose":{
+    "x":{
+     "exp":"6.75 m",
+     "val":6.75
+    },
+    "y":{
+     "exp":"6.8 m",
+     "val":6.8
+    },
+    "heading":{
+     "exp":"-90 deg",
+     "val":-1.5707963267948966
+    }
+   },
    "NeutralShoot":{
     "x":{
      "exp":"3.1251399517059326 m",
