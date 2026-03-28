@@ -465,7 +465,6 @@ public class Drive extends SubsystemBase {
         double speed =
                 Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond) * -1;
         Logger.recordOutput("Drive/Speed", speed);
-
     }
 
     /**
