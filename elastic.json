@@ -67,6 +67,20 @@
               "red_start_time": 15,
               "yellow_start_time": 30
             }
+          },
+          {
+            "title": "Drivebase Speed Multiplier",
+            "x": 600.0,
+            "y": 600.0,
+            "width": 300.0,
+            "height": 100.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "Tuning/Drivebase Speed Multiplier",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
           }
         ]
       }
@@ -144,7 +158,7 @@
             "height": 400.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Auto Pose Check/Robot Position within 2.9999999999999996 inches",
+              "topic": "/SmartDashboard/Auto Pose Check/Robot Position Within Tolerance",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
@@ -161,7 +175,7 @@
             "height": 400.0,
             "type": "Boolean Box",
             "properties": {
-              "topic": "/SmartDashboard/Auto Pose Check/Robot Rotation within 5.0 degrees",
+              "topic": "/SmartDashboard/Auto Pose Check/Robot Rotation Within Tolerance",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,

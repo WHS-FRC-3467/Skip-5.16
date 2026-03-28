@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
+import frc.lib.util.LoggedTunableNumber;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
@@ -87,6 +88,10 @@ public class RobotContainer {
             new CommandXboxControllerExtended(0).withDeadband(0.1);
     private final CommandXboxControllerExtended operatorController =
             new CommandXboxControllerExtended(1).withDeadband(0.1);
+
+    // Drive speed multiplier
+    public LoggedTunableNumber speedMultiplier =
+            new LoggedTunableNumber("Drivebase Speed Multiplier", 1.0);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoOption> autoChooser;
@@ -169,9 +174,9 @@ public class RobotContainer {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
                         drive,
-                        () -> -controller.getLeftY(),
-                        () -> -controller.getLeftX(),
-                        () -> -controller.getRightX()));
+                        () -> -controller.getLeftY() * speedMultiplier.getAsDouble(),
+                        () -> -controller.getLeftX() * speedMultiplier.getAsDouble(),
+                        () -> -controller.getRightX() * speedMultiplier.getAsDouble()));
 
         // Right Trigger: Shoot/Pass
         controller
@@ -181,8 +186,14 @@ public class RobotContainer {
                                 Commands.either(
                                         DriveCommands.joystickDriveFacingFutureTarget(
                                                 drive,
-                                                () -> -controller.getLeftY() * 0.4,
-                                                () -> -controller.getLeftX() * 0.4,
+                                                () ->
+                                                        -controller.getLeftY()
+                                                                * 0.4
+                                                                * speedMultiplier.getAsDouble(),
+                                                () ->
+                                                        -controller.getLeftX()
+                                                                * 0.4
+                                                                * speedMultiplier.getAsDouble(),
                                                 robotState.feedLookaheadSeconds),
                                         DriveCommands.staticAimTowardsTarget(drive),
                                         robotState.shouldFeed),
