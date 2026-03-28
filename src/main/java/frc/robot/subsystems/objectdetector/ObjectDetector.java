@@ -161,33 +161,21 @@ public class ObjectDetector extends SubsystemBase {
         return new Translation2d(point.getMeasureX(), Meters.of(y));
     }
 
-    /** Ascertain whether a detected object's pose is within the corrected ROI. */
+    /** Ascertain whether a detected object's pose is within an ROI. */
     private boolean isObjectWithinROI(
             Optional<ObjectDetectionObservation> observation,
-            Translation2d correctedCornerOne,
-            Translation2d correctedCornerTwo) {
+            Translation2d cornerA,
+            Translation2d cornerB) {
         if (observation.isEmpty() || observation.get().objectPose().isEmpty()) {
             return false;
         }
         Pose2d objectPose = observation.get().objectPose().get();
 
         // Order coordinates for ROI boundary check
-        double minX =
-                Math.min(
-                        correctedCornerOne.getMeasureX().in(Meters),
-                        correctedCornerTwo.getMeasureX().in(Meters));
-        double maxX =
-                Math.max(
-                        correctedCornerOne.getMeasureX().in(Meters),
-                        correctedCornerTwo.getMeasureX().in(Meters));
-        double minY =
-                Math.min(
-                        correctedCornerOne.getMeasureY().in(Meters),
-                        correctedCornerTwo.getMeasureY().in(Meters));
-        double maxY =
-                Math.max(
-                        correctedCornerOne.getMeasureY().in(Meters),
-                        correctedCornerTwo.getMeasureY().in(Meters));
+        double minX = Math.min(cornerA.getMeasureX().in(Meters), cornerB.getMeasureX().in(Meters));
+        double maxX = Math.max(cornerA.getMeasureX().in(Meters), cornerB.getMeasureX().in(Meters));
+        double minY = Math.min(cornerA.getMeasureY().in(Meters), cornerB.getMeasureY().in(Meters));
+        double maxY = Math.max(cornerA.getMeasureY().in(Meters), cornerB.getMeasureY().in(Meters));
 
         return objectPose.getX() >= minX
                 && objectPose.getX() <= maxX
@@ -195,7 +183,7 @@ public class ObjectDetector extends SubsystemBase {
                 && objectPose.getY() <= maxY;
     }
 
-    /** Generate a spatial histogram within the Object Detector's ROI and determine the argmax. */
+    /** Generate a spatial histogram within the provided ROI and estimate the argmax. */
     private Optional<LaneTarget> computeBestLaneTarget(
             List<Optional<ObjectDetectionObservation>> observations,
             Translation2d cornerA,
@@ -335,7 +323,7 @@ public class ObjectDetector extends SubsystemBase {
         // Update the inputs data structure associated with this Object Detection camera with latest
         // readings
         objectDetection.periodic();
-        // Calculate corrected ROI corners based on current alliance and starting position. The ROI
+        // Generate corrected ROI based on current alliance and starting position. The ROI
         // acts as an interest cache for detected objects such that lanes needn't be reduced from
         // the full FOV each evaluation, increasing stability and reducing overhead
         List<Translation2d> correctedCorners = getCorrectedROI();
@@ -352,8 +340,8 @@ public class ObjectDetector extends SubsystemBase {
                                                     correctedCorners.get(0),
                                                     correctedCorners.get(1)))
                             .toList();
-            // Estimate the argmax of the Object Detector's spatial histogram (i.e. ROI) for lane
-            // correction in autos
+            // Estimate the argmax (within the camera's current FOV) of the Object Detector's
+            // spatial histogram (i.e. ROI)
             bestLaneTarget =
                     computeBestLaneTarget(
                             latestObjectObservation,
