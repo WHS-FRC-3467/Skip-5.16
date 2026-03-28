@@ -34,6 +34,7 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.lib.io.motor.MotorIO;
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorInputsAutoLogged;
+import frc.lib.util.LoggedDouble;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.PID;
 
@@ -64,6 +65,12 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     private Double radiusMeters = null;
 
+    // Logged linear values (created when radius is configured)
+    private LoggedDouble loggedLinearPosition = null;
+    private LoggedDouble loggedLinearPositionError = null;
+    private LoggedDouble loggedLinearVelocity = null;
+    private LoggedDouble loggedLinearVelocityError = null;
+
     protected Mechanism(String name, T io) {
         this.name = name;
         this.io = io;
@@ -84,6 +91,11 @@ public abstract class Mechanism<T extends MotorIO> {
             throw new IllegalArgumentException("radius must be greater than 0 meters");
         }
         this.radiusMeters = r;
+        // initialize logged outputs for linear equivalents
+        this.loggedLinearPosition = new LoggedDouble(this.name + "/LinearPosition");
+        this.loggedLinearPositionError = new LoggedDouble(this.name + "/LinearPositionError");
+        this.loggedLinearVelocity = new LoggedDouble(this.name + "/LinearVelocity");
+        this.loggedLinearVelocityError = new LoggedDouble(this.name + "/LinearVelocityError");
         return this;
     }
 
@@ -183,10 +195,30 @@ public abstract class Mechanism<T extends MotorIO> {
 
         // If a radius has been configured, also log linear equivalents of position/velocity.
         if (radiusMeters != null) {
-            Logger.recordOutput(this.name + "/LinearPosition", getLinearPosition());
-            Logger.recordOutput(this.name + "/LinearPositionError", getLinearPositionError());
-            Logger.recordOutput(this.name + "/LinearVelocity", getLinearVelocity());
-            Logger.recordOutput(this.name + "/LinearVelocityError", getLinearVelocityError());
+            // Use LoggedDouble to only write when values change to reduce NT traffic
+            if (loggedLinearPosition != null) {
+                loggedLinearPosition.log(getLinearPosition().in(Meters));
+            } else {
+                Logger.recordOutput(this.name + "/LinearPosition", getLinearPosition());
+            }
+
+            if (loggedLinearPositionError != null) {
+                loggedLinearPositionError.log(getLinearPositionError().in(Meters));
+            } else {
+                Logger.recordOutput(this.name + "/LinearPositionError", getLinearPositionError());
+            }
+
+            if (loggedLinearVelocity != null) {
+                loggedLinearVelocity.log(getLinearVelocity().in(MetersPerSecond));
+            } else {
+                Logger.recordOutput(this.name + "/LinearVelocity", getLinearVelocity());
+            }
+
+            if (loggedLinearVelocityError != null) {
+                loggedLinearVelocityError.log(getLinearVelocityError().in(MetersPerSecond));
+            } else {
+                Logger.recordOutput(this.name + "/LinearVelocityError", getLinearVelocityError());
+            }
         }
     }
 
