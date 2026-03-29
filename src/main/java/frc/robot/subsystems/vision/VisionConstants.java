@@ -34,7 +34,7 @@ import edu.wpi.first.units.measure.Time;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.lib.io.vision.VisionIO;
-import frc.lib.io.vision.VisionIOPhotonVision;
+import frc.lib.io.vision.VisionIOC2;
 import frc.lib.io.vision.VisionIOPhotonVisionSim;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
@@ -69,6 +69,12 @@ public class VisionConstants {
     public static final String LEFT_NAME = "left";
     public static final String RIGHT_NAME = "right";
     public static final String BACK_NAME = "back";
+
+    // Combined-frame slice order on the shared CTWO device.
+    private static final int FRONT_CTWO_CAMERA_INDEX = 0;
+    private static final int LEFT_CTWO_CAMERA_INDEX = 1;
+    private static final int RIGHT_CTWO_CAMERA_INDEX = 2;
+    private static final int BACK_CTWO_CAMERA_INDEX = 3;
 
     public static final Transform3d FRONT_TRANSFORM =
             new Transform3d(
@@ -301,8 +307,8 @@ public class VisionConstants {
 
     private static Optional<VisionSystemSim> visionSim = Optional.empty();
 
-    private static VisionIOPhotonVision getFrontIOReal() {
-        return new VisionIOPhotonVision(FRONT);
+    private static VisionIO getFrontIOReal() {
+        return new VisionIOC2(FRONT, VisionIOC2.defaultsFor(FRONT_CTWO_CAMERA_INDEX));
     }
 
     private static VisionIOPhotonVisionSim getFrontIOSim() {
@@ -318,8 +324,9 @@ public class VisionConstants {
                 AprilTagLayoutType.OFFICIAL.getLayout());
     }
 
-    // private static VisionIOPhotonVision getLeftIOReal() {
-    //     return new VisionIOPhotonVision(LEFT);
+    // private static VisionIO getLeftIOReal() {
+    //     return new VisionIOCTWO(
+    //             LEFT, VisionIOCTWO.defaultsFor(LEFT, LEFT_CTWO_CAMERA_INDEX));
     // }
 
     // private static VisionIOPhotonVisionSim getLeftIOSim() {
@@ -335,8 +342,9 @@ public class VisionConstants {
     //             AprilTagLayoutType.OFFICIAL.getLayout());
     // }
 
-    // private static VisionIOPhotonVision getRightIOReal() {
-    //     return new VisionIOPhotonVision(RIGHT);
+    // private static VisionIO getRightIOReal() {
+    //     return new VisionIOCTWO(
+    //             RIGHT, VisionIOCTWO.defaultsFor(RIGHT, RIGHT_CTWO_CAMERA_INDEX));
     // }
 
     // private static VisionIOPhotonVisionSim getRightIOSim() {
@@ -352,8 +360,8 @@ public class VisionConstants {
     //             AprilTagLayoutType.OFFICIAL.getLayout());
     // }
 
-    private static VisionIOPhotonVision getBackIOReal() {
-        return new VisionIOPhotonVision(BACK);
+    private static VisionIO getBackIOReal() {
+        return new VisionIOC2(BACK, VisionIOC2.defaultsFor(BACK_CTWO_CAMERA_INDEX));
     }
 
     private static VisionIOPhotonVisionSim getBackIOSim() {
