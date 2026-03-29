@@ -354,7 +354,7 @@ public class VisionIOSlopstar implements VisionIO {
         }
 
         CameraOutput cameraOutput = findCameraOutput(frame);
-        long captureTimestampUs = timestampFor(frame, cameraOutput, unreadFrame);
+        long captureTimestampUs = unreadFrame.timestamp;
         long publishTimestampUs =
                 unreadFrame.serverTime != 0 ? unreadFrame.serverTime : captureTimestampUs;
 
@@ -446,19 +446,6 @@ public class VisionIOSlopstar implements VisionIO {
         }
 
         return null;
-    }
-
-    private long timestampFor(Frame frame, CameraOutput cameraOutput, TimestampedRaw unreadFrame) {
-        if (cameraOutput != null && cameraOutput.timestampUs() != 0) {
-            return cameraOutput.timestampUs();
-        }
-        if (frame != null && frame.timestampUs() != 0) {
-            return frame.timestampUs();
-        }
-        if (unreadFrame.serverTime != 0) {
-            return unreadFrame.serverTime;
-        }
-        return unreadFrame.timestamp;
     }
 
     private PhotonPipelineResult createEmptyResult(
