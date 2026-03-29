@@ -1,0 +1,30 @@
+include "Geometry.fbs";
+
+namespace frc.robot.generated.flatbuffers;
+
+/// Overall dimensions of the field that contains the AprilTags.
+struct FieldDimensions {
+    /// Field length.
+    length:float64;
+    /// Field width.
+    width:float64;
+}
+
+/// One AprilTag definition within the field layout.
+struct AprilTag {
+    /// Numeric identifier printed on the physical tag.
+    id:int32;
+    /// Pose of the tag in the field coordinate frame.
+    pose:Pose3d;
+}
+
+/// Serialized AprilTag map used by the coprocessor for localization.
+table AprilTagFieldLayout {
+    /// All tags that exist on the field.
+    tags:[AprilTag] (required);
+    /// Dimensions of the field that the tags are placed on.
+    field:FieldDimensions (required);
+}
+
+root_type AprilTagFieldLayout;
+file_identifier "ATFL";

@@ -22,9 +22,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
 
-import frc.lib.devices.AprilTagCamera.CameraProperties;
-import frc.lib.io.objectdetection.*;
-import frc.robot.Constants;
+import frc.lib.devices.CamCamCoproc.CameraProperties;
 import frc.robot.RobotState;
 import frc.robot.util.RobotSim;
 
@@ -103,8 +101,6 @@ public class ObjectDetectorConstants {
     // Performance
     public static final double CAMERA0_FPS = 22;
 
-    public static final double CAMERA0_STDDEV_FACTOR = 1.0;
-
     // Exposure 5 ms, USB 5 ms, detection 15 ms, scheduling 5 ms
     public static final Time CAMERA0_LATENCY = Milliseconds.of(30);
 
@@ -118,7 +114,6 @@ public class ObjectDetectorConstants {
                     CAMERA0_DIST_COEFFS,
                     CAMERA0_RESOLUTION_WIDTH,
                     CAMERA0_RESOLUTION_HEIGHT,
-                    CAMERA0_STDDEV_FACTOR,
                     CAMERA0_FOV,
                     CAMERA0_FPS,
                     CAMERA0_LATENCY,
@@ -179,33 +174,7 @@ public class ObjectDetectorConstants {
                         .toArray(VisionTargetSim[]::new);
             };
 
-    /**
-     * Creates and configures an ObjectDetector subsystem based on the current robot mode. Selects
-     * the appropriate IO implementation (real hardware, simulation, or replay).
-     *
-     * @return a configured ObjectDetector instance
-     */
     public static ObjectDetector get() {
-        RobotState robotState = RobotState.getInstance();
-        switch (Constants.currentMode) {
-            case REAL:
-                // Real IO, inputs = PhotonVision implementation of ObjectDetectionIO
-                return new ObjectDetector(
-                        CAMERA0_NAME, new ObjectDetectionIOPhotonVision(CAMERA0_NAME));
-            case SIM:
-                // Sim IO, inputs = sim implementation of ObjectionDetectionIO
-                return new ObjectDetector(
-                        CAMERA0_NAME,
-                        new ObjectDetectionIOSim(
-                                CAMERA0,
-                                () -> robotState.getEstimatedPose(),
-                                OBJECT0_NAME,
-                                visionTargetSimSupplier));
-            case REPLAY:
-                // Replayed robot, use logged data for IO
-                return new ObjectDetector(CAMERA0_NAME, new ObjectDetectionIO() {});
-            default:
-                throw new IllegalStateException("Unrecognized Robot Mode");
-        }
+        return new ObjectDetector(CAMERA0_NAME);
     }
 }

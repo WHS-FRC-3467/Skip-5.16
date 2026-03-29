@@ -13,6 +13,165 @@ java {
 }
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
+def flatbuffersVersion = "25.2.10"
+def flatbuffersSchemaDir = file("src/main/idl")
+def flatbuffersJavaSourceRoot = file("$buildDir/generated/sources/flatbuffers/java/main")
+def flatbuffersGeneratedDir = file("$flatbuffersJavaSourceRoot/frc/robot/generated/flatbuffers")
+def flatbuffersToolDir = file("$buildDir/flatbuffers/tooling")
+
+def isWindows = {
+    System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win")
+}
+
+def flatcBinaryName = {
+    isWindows() ? "flatc.exe" : "flatc"
+}
+
+def flatcArchiveName = {
+    def osName = System.getProperty("os.name").toLowerCase(Locale.ROOT)
+    def arch = System.getProperty("os.arch").toLowerCase(Locale.ROOT)
+
+    if (osName.contains("mac")) {
+        return arch.contains("aarch64") || arch.contains("arm") ? "Mac.flatc.binary.zip" : "MacIntel.flatc.binary.zip"
+    }
+    if (osName.contains("win")) {
+        return "Windows.flatc.binary.zip"
+    }
+    if (osName.contains("linux")) {
+        return "Linux.flatc.binary.g++-13.zip"
+    }
+
+    throw new GradleException("Unsupported operating system for FlatBuffers code generation: ${System.getProperty("os.name")} (${System.getProperty("os.arch")})")
+}
+
+def findFlatcOnPath = {
+    def stdout = new ByteArrayOutputStream()
+    def stderr = new ByteArrayOutputStream()
+    def result = project.exec {
+        commandLine(isWindows() ? ["where", "flatc"] : ["which", "flatc"])
+        standardOutput = stdout
+        errorOutput = stderr
+        ignoreExitValue = true
+    }
+
+    if (result.exitValue != 0) {
+        return null
+    }
+
+    return stdout
+            .toString()
+            .readLines()
+            .collect { it.trim() }
+            .find { !it.isEmpty() }
+}
+
+def downloadFlatc = {
+    def archiveFile = file("$flatbuffersToolDir/${flatcArchiveName()}")
+    def extractDir = file("$flatbuffersToolDir/${flatcArchiveName() - '.zip'}")
+
+    flatbuffersToolDir.mkdirs()
+
+    if (!archiveFile.exists()) {
+        def downloadUrl = "https://github.com/google/flatbuffers/releases/download/v${flatbuffersVersion}/${flatcArchiveName()}"
+        logger.lifecycle("Downloading FlatBuffers compiler from ${downloadUrl}")
+        new URL(downloadUrl).withInputStream { input ->
+            archiveFile.withOutputStream { output ->
+                output << input
+            }
+        }
+    }
+
+    def flatcExecutable = fileTree(extractDir).matching {
+        include flatcBinaryName()
+        include "**/${flatcBinaryName()}"
+    }.files.find()
+
+    if (flatcExecutable == null) {
+        copy {
+            from zipTree(archiveFile)
+            into extractDir
+        }
+
+        flatcExecutable = fileTree(extractDir).matching {
+            include flatcBinaryName()
+            include "**/${flatcBinaryName()}"
+        }.files.find()
+    }
+
+    if (flatcExecutable == null) {
+        throw new GradleException("Unable to locate ${flatcBinaryName()} after extracting ${archiveFile.name}")
+    }
+
+    if (!isWindows()) {
+        flatcExecutable.setExecutable(true)
+    }
+
+    return flatcExecutable.absolutePath
+}
+
+tasks.register("generateFlatbuffers") {
+    description = "Generates Java sources from FlatBuffers schemas in src/main/idl."
+    group = "build"
+
+    inputs.files(fileTree(flatbuffersSchemaDir).matching { include "**/*.fbs" })
+    outputs.dir(flatbuffersGeneratedDir)
+
+    doLast {
+        def schemaFiles = fileTree(flatbuffersSchemaDir).matching { include "**/*.fbs" }.files.toList().sort()
+
+        delete(flatbuffersGeneratedDir)
+
+        if (schemaFiles.isEmpty()) {
+            logger.lifecycle("No FlatBuffers schemas found in ${flatbuffersSchemaDir}")
+            return
+        }
+
+        flatbuffersGeneratedDir.mkdirs()
+
+        // Schemas should use a namespace rooted at frc.robot.generated.flatbuffers.
+        def flatcPath = providers.gradleProperty("flatcPath").orNull ?: findFlatcOnPath() ?: downloadFlatc()
+
+        exec {
+            commandLine([
+                flatcPath,
+                "--java",
+                "-I", flatbuffersSchemaDir.absolutePath,
+                "-o", flatbuffersJavaSourceRoot.absolutePath,
+            ] + schemaFiles.collect { it.absolutePath })
+        }
+
+        // The generated version check methods are unused in this codebase and fail to
+        // resolve under the full project compile classpath despite matching the runtime jar.
+        fileTree(flatbuffersGeneratedDir).matching { include "**/*.java" }.files.each { generatedFile ->
+            def generatedSource = generatedFile.getText("UTF-8")
+            def sanitizedSource = generatedSource.replaceAll(
+                    /(?m)^  public static void ValidateVersion\(\) \{ Constants\.FLATBUFFERS_[0-9_]+\(\); \}\r?\n/,
+                    ""
+            )
+
+            if (sanitizedSource != generatedSource) {
+                generatedFile.write(sanitizedSource, "UTF-8")
+            }
+        }
+    }
+}
+
+sourceSets {
+    flatbuffers {
+        java.srcDir flatbuffersJavaSourceRoot
+    }
+}
+
+sourceSets.main.compileClasspath += sourceSets.flatbuffers.output
+sourceSets.main.runtimeClasspath += sourceSets.flatbuffers.output
+sourceSets.test.compileClasspath += sourceSets.flatbuffers.output
+sourceSets.test.runtimeClasspath += sourceSets.flatbuffers.output
+
+configurations {
+    flatbuffersImplementation.extendsFrom implementation
+    flatbuffersCompileOnly.extendsFrom compileOnly
+    flatbuffersRuntimeOnly.extendsFrom runtimeOnly
+}
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
@@ -109,6 +268,8 @@ dependencies {
     annotationProcessor 'com.google.errorprone:error_prone_core:2.35.0'
 
     implementation "org.apache.commons:commons-lang3:3.18.0"
+
+    implementation "com.google.flatbuffers:flatbuffers-java:${flatbuffersVersion}"
 }
 
 test {
@@ -131,6 +292,7 @@ wpi.sim.addDriverstation()
 jar {
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     from sourceSets.main.allSource
+    from sourceSets.flatbuffers.output
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
@@ -147,15 +309,22 @@ tasks.withType(JavaCompile) {
 
 tasks.withType(JavaCompile).configureEach {
     options.errorprone.disableWarningsInGeneratedCode = true
-    options.errorprone.excludedPaths = ".*/build/generated/.*"
+    options.errorprone.excludedPaths = ".*/(build/generated|src/main/java/frc/robot/generated)/.*"
 
     // Errorprone bug workaround
     options.errorprone.disable("UnusedVariable")
     options.errorprone.disable("Unused")
 }
 
+tasks.named("compileFlatbuffersJava", JavaCompile).configure {
+    dependsOn(tasks.named("generateFlatbuffers"))
+    options.errorprone.enabled = false
+    options.annotationProcessorPath = files()
+}
+
 // Create version file
 project.compileJava.dependsOn(createVersionFile)
+project.compileJava.dependsOn("compileFlatbuffersJava")
 project.compileJava.dependsOn("spotlessApply")
 gversion {
     srcDir       = "src/main/java/"
@@ -208,23 +377,30 @@ javadoc {
     options.stylesheetFile = new File(projectDir, "theme.css")
 }
 
+def spotlessKotlinTargets = files(
+    fileTree("src/main/kotlin") { include "**/*.kt" },
+    fileTree("src/test/kotlin") { include "**/*.kt" }
+)
+
 spotless {
     // Configuration for Java files
     java {
         // Target all Java files
         target '**/*.java'
+        targetExclude 'src/main/java/frc/robot/generated/**/*.java', 'build/generated/**/*.java'
         googleJavaFormat().reorderImports(true).aosp()
         trimTrailingWhitespace()
         endWithNewline()
     }
 
-    // Configuration for Kotlin files (if applicable)
-    kotlin {
-        target '**/*.kt'
-        // Use KtLint or any other Kotlin formatter
-        ktlint()
-        trimTrailingWhitespace()
-        endWithNewline()
+    // Only register Kotlin formatting when the repo has Kotlin source roots.
+    if (!spotlessKotlinTargets.isEmpty()) {
+        kotlin {
+            target spotlessKotlinTargets
+            ktlint()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
     }
 
     // Configuration for miscellaneous files (e.g., Gradle files, Markdown)
@@ -234,4 +410,8 @@ spotless {
         trimTrailingWhitespace()
         endWithNewline()
     }
+}
+
+tasks.named("spotlessMisc").configure {
+    mustRunAfter(tasks.named("generateFlatbuffers"))
 }

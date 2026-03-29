@@ -20,7 +20,6 @@ import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.math.MathUtil;
 
-import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
 import frc.lib.util.LoggedTunableProfiledPID;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
@@ -34,34 +33,28 @@ import java.util.OptionalDouble;
 
 /**
  * Strategy layer that determines robot heading required to align robot with centroid of detected
- * contour. Communal for both teleop &amp; auto. Logs outputs for sim.
+ * object. Communal for both teleop &amp; auto. Logs outputs for sim.
  */
 public abstract class AlignToObjectBase {
     @Getter private final LoggedTunableProfiledPID angularController;
     private final ObjectDetector objectDetector;
-    private final ContourSelectionMode mode;
     private final double maxAngularSpeed; // rad/s
     private static final double K_P = 8.3;
     private static final double K_I = 0.0;
     private static final double K_D = 1.0;
-    private double contourYaw;
+    private double objectYaw;
     private boolean hasTarget;
 
     /**
      * Constructs an AlignToObjectBase with the given parameters.
      *
      * @param objectDetector the object detector subsystem
-     * @param mode the contour selection mode (LARGEST or LOWEST)
      * @param maxAngularSpeed the maximum angular speed in rad/s
      * @param maxAngularAcceleration the maximum angular acceleration in rad/s^2
      */
     public AlignToObjectBase(
-            ObjectDetector objectDetector,
-            ContourSelectionMode mode,
-            double maxAngularSpeed,
-            double maxAngularAcceleration) {
+            ObjectDetector objectDetector, double maxAngularSpeed, double maxAngularAcceleration) {
         this.objectDetector = objectDetector;
-        this.mode = mode;
         this.maxAngularSpeed = maxAngularSpeed;
         this.angularController =
                 new LoggedTunableProfiledPID(
@@ -76,41 +69,28 @@ public abstract class AlignToObjectBase {
      * @return Error-reduced angular velocity (rad/s).
      */
     protected OptionalDouble getVisionOmega() {
-        Optional<ObjectDetectionObservation> contourObservation;
+        Optional<ObjectDetectionObservation> targetObservation =
+                objectDetector.getLatestTargetObservation();
 
-        switch (mode) {
-            case LARGEST:
-                contourObservation = objectDetector.getLatestBigContourObservation();
-                break;
-            case LOWEST:
-                contourObservation = objectDetector.getLatestLowContourObservation();
-                break;
-            default:
-                contourObservation = objectDetector.getLatestBigContourObservation();
-                break;
-        }
-        // If Object Detection camera sees no targets or record fails to generate
-        if (contourObservation.isEmpty()) {
+        if (targetObservation.isEmpty()) {
             if (hasTarget) {
-                // If camera loses sight of target temporarily, assume heading is approximately
-                // equal to prevent derivative kick
-                angularController.reset(contourYaw, 0.0);
+                angularController.reset(objectYaw, 0.0);
             } else {
                 angularController.reset(0.0, 0.0);
             }
             hasTarget = false;
-            logObjectAlign(contourObservation, -9999.0);
+            logObjectAlign(targetObservation, -9999.0);
             return OptionalDouble.empty();
         }
-        // Object Detection camera sees target(s) and record successfully generates
-        hasTarget = true;
-        contourYaw = contourObservation.get().yaw().in(Radians);
 
-        // Alignment PID: contourYaw is the heading measurement (feedback), 0.0 is the setpoint;
+        hasTarget = true;
+        objectYaw = targetObservation.get().yaw().in(Radians);
+
+        // Alignment PID: objectYaw is the heading measurement (feedback), 0.0 is the setpoint;
         // the controller output omega is the angular velocity command (CV)
-        double omega = angularController.calculate(contourYaw, 0.0);
+        double omega = angularController.calculate(objectYaw, 0.0);
         omega = MathUtil.clamp(omega, -maxAngularSpeed, maxAngularSpeed);
-        logObjectAlign(contourObservation, omega);
+        logObjectAlign(targetObservation, omega);
         return OptionalDouble.of(omega);
     }
 
@@ -120,9 +100,9 @@ public abstract class AlignToObjectBase {
         // Log for sim
         if (observation.isPresent()) {
             Logger.recordOutput(
-                    "VisionAlign/" + "ContourYawDeg", observation.get().yaw().in(Degrees));
+                    "VisionAlign/" + "ObjectYawDeg", observation.get().yaw().in(Degrees));
         } else {
-            Logger.recordOutput("VisionAlign/" + "ContourYawDeg", -9999.0);
+            Logger.recordOutput("VisionAlign/" + "ObjectYawDeg", -9999.0);
         }
         Logger.recordOutput("VisionAlign/" + "OmegaCmdRadPerSec", speedRadPerSec);
         Logger.recordOutput("VisionAlign/" + "HasTarget", hasTarget);
@@ -135,6 +115,6 @@ public abstract class AlignToObjectBase {
      * @return true if aligned within tolerance, false otherwise
      */
     protected Boolean isAligned(double tolRad) {
-        return (hasTarget && Math.abs(contourYaw) < tolRad);
+        return (hasTarget && Math.abs(objectYaw) < tolRad);
     }
 }

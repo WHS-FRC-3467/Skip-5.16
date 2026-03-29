@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 
-import frc.lib.devices.ObjectDetection.ContourSelectionMode;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.objectdetector.ObjectDetector;
@@ -31,8 +30,8 @@ import frc.robot.subsystems.objectdetector.ObjectDetector;
 import java.util.function.DoubleSupplier;
 
 /**
- * Command layer that actuates robot heading align robot with centroid of detected contour. Utilizes
- * a communal teleop/auto strategy layer containing the PID calculation.
+ * Command layer that actuates robot heading align robot with the preferred detected object.
+ * Utilizes a communal teleop/auto strategy layer containing the PID calculation.
  */
 public class TeleopAlignToObject extends Command {
     private final Drive drive;
@@ -47,7 +46,6 @@ public class TeleopAlignToObject extends Command {
      *
      * @param drive the Drive subsystem to control robot movement
      * @param objectDetector the ObjectDetector subsystem to detect and track objects
-     * @param mode the contour selection mode for choosing which detected object to align to
      * @param xSupplier a DoubleSupplier providing driver input for forward/backward movement
      * @param ySupplier a DoubleSupplier providing driver input for left/right movement
      * @param rotSupplier a DoubleSupplier providing fallback driver input for rotation if no object
@@ -56,7 +54,6 @@ public class TeleopAlignToObject extends Command {
     public TeleopAlignToObject(
             Drive drive,
             ObjectDetector objectDetector,
-            ContourSelectionMode mode,
             DoubleSupplier xSupplier,
             DoubleSupplier ySupplier,
             DoubleSupplier rotSupplier) {
@@ -67,7 +64,6 @@ public class TeleopAlignToObject extends Command {
         this.strategy =
                 new AlignToObjectBase(
                         objectDetector,
-                        mode,
                         DriveCommands.getANGLE_MAX_VELOCITY(),
                         DriveCommands.getANGLE_MAX_ACCELERATION()) {};
         // Reserve drive for this command

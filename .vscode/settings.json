@@ -26,6 +26,9 @@
     "**/.factorypath": true,
     "**/*~": true
   },
+  "files.associations": {
+    "src/main/java/frc/robot/generated/**/*.java": "plaintext"
+  },
   "java.test.config": [
     {
       "name": "WPIlibUnitTests",

@@ -17,84 +17,138 @@ package frc.robot.subsystems.objectdetector;
 
 import static edu.wpi.first.units.Units.Degrees;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.devices.ObjectDetection;
-import frc.lib.devices.ObjectDetection.ContourSelectionMode;
+import frc.lib.devices.ObjectDetection.DetectionFrame;
+import frc.lib.devices.ObjectDetection.DetectionTarget;
 import frc.lib.devices.ObjectDetection.ObjectDetectionObservation;
-import frc.lib.io.objectdetection.ObjectDetectionIO;
 import frc.robot.RobotState;
 
 import lombok.Getter;
 
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.DoubleFunction;
+import java.util.function.DoubleSupplier;
 
 /**
- * Generates the Object Detection subsystem which consists of some number of Object Detection
- * Devices (each representing a unique camera) each with their own inputs data structure that
- * periodically updates via a call from the device layer to the IO implementation layer.
+ * Tracks the latest object-detection frame received from CamCam and exposes derived observations
+ * for alignment commands.
  */
 public class ObjectDetector extends SubsystemBase {
-    private final RobotState robotState = RobotState.getInstance();
-    private final ObjectDetection objectDetection;
-    private int maxDetectionsSize = 0;
+    private static final double STALE_OBSERVATION_TIMEOUT_SECONDS = 0.25;
     private static final Translation2d INVALID_TRANSLATION = new Translation2d(-1, -1);
 
-    @Getter private List<Optional<ObjectDetectionObservation>> latestObjectObservation;
-    @Getter private Optional<ObjectDetectionObservation> latestBigContourObservation;
-    @Getter private Optional<ObjectDetectionObservation> latestLowContourObservation;
+    private final ObjectDetection objectDetection = new ObjectDetection();
+    private final String cameraName;
+    private final DoubleSupplier currentTimestampSupplier;
+    private final DoubleFunction<Optional<Pose2d>> poseAtTimeSupplier;
+
+    private int maxDetectionsSize = 0;
+    private double lastFrameTimestampSeconds = Double.NEGATIVE_INFINITY;
+
+    @Getter private List<Optional<ObjectDetectionObservation>> latestObjectObservation = List.of();
+    @Getter private Optional<ObjectDetectionObservation> latestTargetObservation = Optional.empty();
 
     /**
-     * Constructs a new ObjectDetector subsystem with the specified IO implementation. Creates an
-     * Object Detection device that can periodically update its inputs field.
+     * Creates the subsystem wrapper for one logical object-detection camera stream.
      *
-     * @param cameraName the name of the camera for logging purposes
-     * @param io the IO implementation for object detection (real, sim, or replay)
+     * @param cameraName name used for logging this detector's outputs
      */
-    public ObjectDetector(String cameraName, ObjectDetectionIO io) {
-        objectDetection = new ObjectDetection(cameraName, io);
+    public ObjectDetector(String cameraName) {
+        this(cameraName, Timer::getTimestamp, RobotState.getInstance()::getPoseAtTime);
     }
 
-    // Private helper for generating latest ML Object Observation
+    ObjectDetector(
+            String cameraName,
+            DoubleSupplier currentTimestampSupplier,
+            DoubleFunction<Optional<Pose2d>> poseAtTimeSupplier) {
+        this.cameraName = cameraName;
+        this.currentTimestampSupplier = currentTimestampSupplier;
+        this.poseAtTimeSupplier = poseAtTimeSupplier;
+    }
+
+    /**
+     * Accepts the newest detection frame from the vision subsystem and refreshes derived
+     * observations.
+     *
+     * @param frame latest CamCam object-detection frame
+     */
+    public void acceptLatestFrame(DetectionFrame frame) {
+        double frameTimestampSeconds = frame.timestampSeconds();
+        if (frameTimestampSeconds < lastFrameTimestampSeconds) {
+            return;
+        }
+
+        lastFrameTimestampSeconds = frameTimestampSeconds;
+        List<DetectionTarget> targets = frame.targets();
+        if (targets.isEmpty()) {
+            clearObservations();
+            return;
+        }
+
+        Optional<Pose2d> robotPoseAtFrame = poseAtTimeSupplier.apply(frameTimestampSeconds);
+        latestObjectObservation =
+                targets.stream()
+                        .map(target -> generateObjectObservation(target, robotPoseAtFrame))
+                        .toList();
+        latestTargetObservation = selectPreferredObservation(latestObjectObservation);
+    }
+
     private Optional<ObjectDetectionObservation> generateObjectObservation(
-            PhotonTrackedTarget target) {
-        // Attempt to generate full Object record using ML model
-        Optional<ObjectDetectionObservation> observation =
-                objectDetection.getObjectObservation(
-                        target,
-                        ObjectDetectorConstants.CAMERA0_TRANSFORM,
-                        ObjectDetectorConstants.OBJECT0_HEIGHT_METERS,
-                        1,
-                        0,
-                        1,
-                        0,
-                        robotState.getEstimatedPose());
-        // Return latest Object observation (full, partial, or empty record)
-        return observation;
+            DetectionTarget target, Optional<Pose2d> robotPoseAtFrame) {
+        if (robotPoseAtFrame.isEmpty()) {
+            return objectDetection.getUnlocalizedObservation(target);
+        }
+
+        return objectDetection.getObjectObservation(
+                target,
+                ObjectDetectorConstants.CAMERA0_TRANSFORM,
+                ObjectDetectorConstants.OBJECT0_HEIGHT_METERS,
+                1,
+                0,
+                1,
+                0,
+                robotPoseAtFrame.get());
     }
 
-    // Private helper for generating latest Contour observation
-    private Optional<ObjectDetectionObservation> generateContourObservation(
-            ContourSelectionMode selection) {
-        // Attempt to generate partial Object record using Blob model
-        Optional<ObjectDetectionObservation> observation =
-                objectDetection.getContourObservation(objectDetection.getTargets(), selection);
-        // Return latest Blob observation (partial or empty record)
-        return observation;
+    private Optional<ObjectDetectionObservation> selectPreferredObservation(
+            List<Optional<ObjectDetectionObservation>> observations) {
+        ObjectDetectionObservation preferred = null;
+        double maxArea = Double.NEGATIVE_INFINITY;
+        for (Optional<ObjectDetectionObservation> observation : observations) {
+            if (observation.isEmpty() || observation.get().area() <= maxArea) {
+                continue;
+            }
+
+            preferred = observation.get();
+            maxArea = preferred.area();
+        }
+        return Optional.ofNullable(preferred);
     }
 
-    // Private helper for logging Object Detection values. -1 for stale values.
+    private void clearObservations() {
+        latestObjectObservation = List.of();
+        latestTargetObservation = Optional.empty();
+    }
+
+    private boolean observationsStale() {
+        return currentTimestampSupplier.getAsDouble() - lastFrameTimestampSeconds
+                > STALE_OBSERVATION_TIMEOUT_SECONDS;
+    }
+
     private void logObjectObservation(List<Optional<ObjectDetectionObservation>> observation) {
         String prefix = "Detection/ML:";
         int detectionSize = observation.size();
         maxDetectionsSize = Math.max(detectionSize, maxDetectionsSize);
 
+        Logger.recordOutput("Detection/CameraName", cameraName);
         Logger.recordOutput(prefix + "Active Detections", detectionSize);
         for (int i = 0; i < maxDetectionsSize; i++) {
             Translation2d translation = INVALID_TRANSLATION;
@@ -108,10 +162,8 @@ public class ObjectDetector extends SubsystemBase {
         }
     }
 
-    // Private helper for logging Contour values. Object ID = -9999 for stale values.
-    private void logContourObservation(
-            Optional<ObjectDetectionObservation> observation, ContourSelectionMode mode) {
-        String prefix = "Detection/" + "Contour: " + mode + ": ";
+    private void logTargetObservation(Optional<ObjectDetectionObservation> observation) {
+        String prefix = "Detection/Target: ";
         if (observation.isPresent()) {
             ObjectDetectionObservation obs = observation.get();
             Logger.recordOutput(prefix + "Object ID", obs.objID());
@@ -126,28 +178,11 @@ public class ObjectDetector extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Update the inputs data structure associated with this object detection camera with latest
-        // readings
-        objectDetection.periodic();
-        // Now that inputs are updated, re-populate observations with new data
-        if (objectDetection.getTargets().length > 0) {
-            // Generate latest ML Object observations
-            latestObjectObservation =
-                    Arrays.stream(objectDetection.getTargets())
-                            .map(this::generateObjectObservation)
-                            .toList();
-            // Generate latest Contour observations
-            latestBigContourObservation = generateContourObservation(ContourSelectionMode.LARGEST);
-            latestLowContourObservation = generateContourObservation(ContourSelectionMode.LOWEST);
-        } else {
-            // Prevent stale data from persisting
-            latestObjectObservation = List.of();
-            latestBigContourObservation = Optional.empty();
-            latestLowContourObservation = Optional.empty();
+        if (!latestObjectObservation.isEmpty() && observationsStale()) {
+            clearObservations();
         }
-        // Log Object & Blob observations for sim
+
         logObjectObservation(latestObjectObservation);
-        logContourObservation(latestBigContourObservation, ContourSelectionMode.LARGEST);
-        logContourObservation(latestLowContourObservation, ContourSelectionMode.LOWEST);
+        logTargetObservation(latestTargetObservation);
     }
 }

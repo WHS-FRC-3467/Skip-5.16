@@ -1,0 +1,13 @@
+namespace frc.robot.generated.flatbuffers;
+
+/// Problem reported when a configured camera is not currently reachable.
+table CamCamProblemCameraDisconnect {
+    /// Zero-based AprilTag camera index in the configured camera list.
+    id:byte;
+}
+
+/// Runtime warning reported when an object detection camera is connected but not configured.
+table CamCamProblemObjectDetectionCameraUnconfigured {}
+
+/// Any runtime problem that should be surfaced to the driver station as an alert.
+union CamCamProblem { CamCamProblemCameraDisconnect, CamCamProblemObjectDetectionCameraUnconfigured }

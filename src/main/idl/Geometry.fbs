@@ -1,0 +1,33 @@
+namespace frc.robot.generated.flatbuffers;
+
+/// FlatBuffers representation of WPILib's Rotation3d.
+struct Rotation3d {
+    /// Quaternion scalar component.
+    w:float64;
+    /// Quaternion X component.
+    x:float64;
+    /// Quaternion Y component.
+    y:float64;
+    /// Quaternion Z component.
+    z:float64;
+}
+
+/// FlatBuffers representation of WPILib's Translation3d.
+struct Translation3d {
+    /// X translation component.
+    x:float64;
+    /// Y translation component.
+    y:float64;
+    /// Z translation component.
+    z:float64;
+}
+
+/// FlatBuffers representation of WPILib's Pose3d.
+struct Pose3d {
+    /// Translational component of the pose.
+    translation:Translation3d;
+    /// Rotational component of the pose.
+    rotation:Rotation3d;
+}
+
+file_identifier "GEOM";

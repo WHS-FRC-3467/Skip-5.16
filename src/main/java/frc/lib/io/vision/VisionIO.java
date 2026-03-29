@@ -15,108 +15,36 @@
 
 package frc.lib.io.vision;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.numbers.N8;
-
-import org.littletonrobotics.junction.LogTable;
-import org.littletonrobotics.junction.inputs.LoggableInputs;
-import org.photonvision.targeting.PhotonPipelineResult;
+import org.littletonrobotics.junction.AutoLog;
 
 /**
- * Hardware interface for vision cameras that detect AprilTags for robot localization.
+ * Hardware interface for CamCam vision coprocessors.
  *
- * <p>This interface defines the contract for vision camera hardware, allowing the robot to read
- * camera results for pose estimation. Implementations handle vendor-specific camera APIs
- * (PhotonVision, Limelight, etc.) while the rest of the robot code remains hardware-agnostic.
+ * <p>Implementations handle transport-specific configuration and packet delivery while the device
+ * layer remains agnostic to NetworkTables, simulation, or replay details.
  */
-public interface VisionIO {
-    /**
-     * Container for vision camera sensor readings and camera intrinsics. Logged automatically by
-     * AdvantageKit for replay and analysis.
-     */
-    public static class VisionIOInputs implements LoggableInputs {
-        /** Whether the camera is connected and responding */
-        public boolean connected = false;
-
-        /** Array of pipeline results from the camera since last update */
-        public PhotonPipelineResult[] results = new PhotonPipelineResult[0];
-
-        private boolean hasLoggedIntrinsics = false;
-
-        /** Camera intrinsic matrix (3x3) */
-        public double[] cameraMatrix = null;
-
-        /** Camera distortion coefficients (8x1) */
-        public double[] distCoeffs = null;
-
-        /** Constructs vision inputs without camera intrinsic parameters. */
-        public VisionIOInputs() {}
-
-        /**
-         * Constructs vision inputs with camera intrinsic parameters.
-         *
-         * @param cameraMatrix 3x3 camera intrinsic matrix (may be null if unavailable)
-         * @param distCoeffs 8x1 distortion coefficients (may be null if unavailable)
-         */
-        public VisionIOInputs(Matrix<N3, N3> cameraMatrix, Matrix<N8, N1> distCoeffs) {
-            this.cameraMatrix = cameraMatrix != null ? cameraMatrix.getData() : null;
-            this.distCoeffs = distCoeffs != null ? distCoeffs.getData() : null;
-        }
-
-        @Override
-        public void toLog(LogTable table) {
-            if (!hasLoggedIntrinsics) {
-                if (cameraMatrix != null) {
-                    table.put("CameraMatrix", cameraMatrix);
-                }
-                if (distCoeffs != null) {
-                    table.put("DistCoeffs", distCoeffs);
-                }
-
-                hasLoggedIntrinsics = true;
-            }
-
-            table.put("Connected", connected);
-
-            int resultsLength = results.length;
-            table.put("ResultsLength", resultsLength);
-            String resultsPrefix = "Results/";
-            for (int i = 0; i < resultsLength; i++) {
-                String key = resultsPrefix + i;
-                table.put(key, results[i]);
-            }
-        }
-
-        @Override
-        public void fromLog(LogTable table) {
-            if (!hasLoggedIntrinsics) {
-                cameraMatrix = table.get("CameraMatrix", (double[]) null);
-                distCoeffs = table.get("DistCoeffs", (double[]) null);
-
-                if (cameraMatrix != null && distCoeffs != null) {
-                    hasLoggedIntrinsics = true;
-                }
-            }
-
-            connected = table.get("Connected", false);
-
-            int resultsLength = table.get("ResultsLength", 0);
-            String resultsPrefix = "Results/";
-            results = new PhotonPipelineResult[resultsLength];
-            for (int i = 0; i < resultsLength; i++) {
-                String key = resultsPrefix + i;
-                results[i] = table.get(key, new PhotonPipelineResult());
-            }
-        }
+public interface VisionIO extends AutoCloseable {
+    /** Auto-logged raw data batches waiting to be decoded by the device layer. */
+    @AutoLog
+    public static class VisionIOInputs {
+        /** Unread FlatBuffer payloads returned by the coprocessor for this cycle. */
+        public byte[][] unreadData = new byte[][] {};
     }
 
+    @Override
+    public default void close() {}
+
     /**
-     * Updates the vision inputs with the latest readings from the camera. Called periodically by
-     * the vision device layer.
+     * Publishes a serialized CamCam configuration to the coprocessor.
      *
-     * @param inputs The input object to populate with sensor data
+     * @param configuration FlatBuffer-encoded configuration payload
+     */
+    public default void configure(byte[] configuration) {}
+
+    /**
+     * Updates the vision inputs with the latest unread payloads from the coprocessor.
+     *
+     * @param inputs the input object to populate with sensor data
      */
     public default void updateInputs(VisionIOInputs inputs) {}
 }

@@ -1,0 +1,35 @@
+include "Geometry.fbs";
+include "AprilTagFieldLayout.fbs";
+
+namespace frc.robot.generated.flatbuffers;
+
+/// A camera's intrinsic calibration parameters.
+struct Intrinsics {
+    /// 8x1 vector of lens distortion coefficients.
+    distortion_coefficients:[float64:8];
+    /// 3x3 intrinsic camera matrix used to project camera coordinates into image space.
+    camera_matrix:[float64:9];
+}
+
+/// Configuration for one physical camera attached to the robot.
+struct Camera {
+    /// Intrinsic calibration for this camera.
+    intrinsics:Intrinsics;
+    /// Transform from the robot frame to the camera frame.
+    extrinsics:Pose3d;
+}
+
+/// Configuration payload sent from the roboRIO to a CamCam instance.
+table CamCamConfiguration {
+    /// AprilTag cameras attached to the coprocessor, ordered from left to right on the robot.
+    /// These are independent from the optional object detection camera configuration.
+    apriltag_cameras:[Camera] (required);
+    /// AprilTag field layout used to localize detections from apriltag_cameras.
+    apriltag_layout:AprilTagFieldLayout (required);
+    /// Optional object detection camera calibration. If omitted, no object detection observations
+    /// should be emitted by the coprocessor.
+    object_detection_camera:Camera;
+}
+
+root_type CamCamConfiguration;
+file_identifier "CACC";

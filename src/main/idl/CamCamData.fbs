@@ -1,0 +1,81 @@
+include "Geometry.fbs";
+include "CamCamProblem.fbs";
+
+namespace frc.robot.generated.flatbuffers;
+
+/// A single robot pose estimate produced by the coprocessor.
+struct PoseObservation {
+    /// Timestamp associated with this observation.
+    timestamp:float64;
+    /// Estimated robot pose at the observation timestamp.
+    pose:Pose3d;
+    /// Average tag distance in meters from the camera(s).
+    average_distance:float64;
+    /// Pose ambiguity for a single-tag solve. -1 when the coprocessor did not produce a
+    /// single-tag ambiguity measurement for this observation.
+    ambiguity:float64;
+    /// Number of AprilTags that contributed to this pose solve.
+    num_tags:uint8;
+}
+
+/// One YOLO object detection relative to the configured object detection camera.
+struct ObjectDetection {
+    id:int16;
+    pitch:float64;
+    yaw:float64;
+    area:float64;
+}
+
+/// A single object detection frame emitted by the configured object detection camera.
+table YOLOObservation {
+    timestamp:float64;
+    objects:[ObjectDetection];
+}
+
+/// A batch of object detection frames delivered in one data packet.
+table YOLOObservations {
+    observations:[YOLOObservation];
+}
+
+/// A batch of pose observations delivered in one data packet.
+table PoseObservations {
+    /// Unread pose observations included in this packet.
+    observations:[PoseObservation];
+}
+
+/// A batch of runtime problems reported alongside configured data.
+table Problems {
+    /// Problems that should be surfaced to the robot as alerts.
+    problems:[CamCamProblem];
+}
+
+/// Normal runtime payload emitted after the coprocessor is configured.
+table ConfiguredData {
+    /// Pose observations generated since the previous unread packet. This field is independent from
+    /// object_detection_observations and may be omitted if no AprilTag observations were produced.
+    pose_observations:PoseObservations;
+    /// Object detection observations generated since the previous unread packet. This field is
+    /// independent from pose_observations and may be omitted. If no object detection camera
+    /// configuration is sent, this field should never be emitted.
+    object_detection_observations:YOLOObservations;
+    /// Runtime health problems active when this packet was emitted.
+    problems:Problems;
+}
+
+/// Error payload emitted when the coprocessor has not accepted configuration.
+table UnconfiguredError {
+    /// Human-readable reason configuration has not succeeded.
+    reason:string;
+}
+
+/// Coprocessor output, either valid data or an explanation for why data is unavailable.
+union Data { ConfiguredData, UnconfiguredError }
+
+/// Top-level packet published by a CamCam coprocessor instance.
+table CamCamData {
+    /// Packet payload describing either configured output or an error state.
+    data:Data;
+}
+
+root_type CamCamData;
+file_identifier "CACD";
