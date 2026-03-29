@@ -197,7 +197,8 @@ public class RobotContainer {
                                         robotState.shouldFeed),
                                 shooter.spinUpShooter(),
                                 Commands.sequence(
-                                        Commands.waitUntil(readyToShootAtCurrentTarget),
+                                        Commands.waitSeconds(0.05),
+                                        Commands.waitUntil(shooter.profileComplete),
                                         Commands.parallel(
                                                 indexer.shoot(),
                                                 tower.shoot(),
