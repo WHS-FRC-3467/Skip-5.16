@@ -41,8 +41,6 @@ import java.util.random.RandomGenerator;
 /** A simulated lights implementation */
 public class LightsIOSim implements LightsIO {
 
-    final LEDPattern rainbow = LEDPattern.rainbow(255, 128);
-
     private Map<String, String> requestInfo;
     private AddressableLED led;
     private AddressableLEDBuffer buffer;
@@ -126,22 +124,28 @@ public class LightsIOSim implements LightsIO {
         final Distance kLedSpacing = // do not set to double, LEDPattern casts the input as an int
                 Inches.of(1);
         switch (requestInfo.get("Name")) {
-            case "RainbowAnimation" -> rainbow.scrollAtAbsoluteSpeed(
+            case "RainbowAnimation" ->
+                    LEDPattern.rainbow(255, 128)
+                            .scrollAtAbsoluteSpeed(
                                     InchesPerSecond.of(
                                             Double.valueOf(checkAndGet("FrameRate")) * direction),
                                     kLedSpacing)
                             .applyTo(views.get(slot));
-            case "FireAnimation" -> candlePatterns
+            case "FireAnimation" ->
+                    candlePatterns
                             .fireScroll(
                                     Double.valueOf(checkAndGet("FrameRate")) * (direction / 0.5),
                                     kLedSpacing)
                             .applyTo(views.get(slot));
-            case "ColorFlowAnimation" -> candlePatterns
+            case "ColorFlowAnimation" ->
+                    candlePatterns
                             .scrollFill(
-                                    Double.valueOf(checkAndGet("FrameRate")) * direction, colorParse())
+                                    Double.valueOf(checkAndGet("FrameRate")) * direction,
+                                    colorParse())
                             .applyTo(views.get(slot));
             case "EmptyAnimation" -> LEDPattern.kOff.applyTo(views.get(slot));
-            case "LarsonAnimation" -> candlePatterns
+            case "LarsonAnimation" ->
+                    candlePatterns
                             .larsonPattern(
                                     Double.valueOf(checkAndGet("FrameRate")) * direction,
                                     colorParse(),
@@ -149,10 +153,17 @@ public class LightsIOSim implements LightsIO {
                                     slot,
                                     checkAndGet("BounceMode"))
                             .applyTo(views.get(slot));
-            case "SingleFadeAnimation" -> LEDPattern.solid(colorParse()).breathe(Seconds.of(1.0)).applyTo(views.get(slot));
+            case "SingleFadeAnimation" ->
+                    LEDPattern.solid(colorParse())
+                            .breathe(Seconds.of(1.0))
+                            .applyTo(views.get(slot));
             case "SolidColor" -> LEDPattern.solid(colorParse()).applyTo(views.get(slot));
-            case "StrobeAnimation" -> LEDPattern.solid(colorParse()).blink(Milliseconds.of(5.0)).applyTo(views.get(slot));
-            case "TwinkleAnimation" -> LEDPattern.solid(colorParse())
+            case "StrobeAnimation" ->
+                    LEDPattern.solid(colorParse())
+                            .blink(Milliseconds.of(5.0))
+                            .applyTo(views.get(slot));
+            case "TwinkleAnimation" ->
+                    LEDPattern.solid(colorParse())
                             .blink(Seconds.of(RandomGenerator.getDefault().nextDouble()))
                             .applyTo(views.get(slot));
             default -> {}
