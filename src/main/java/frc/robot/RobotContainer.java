@@ -175,12 +175,11 @@ public class RobotContainer {
                         () -> -controller.getLeftX(),
                         () -> -controller.getRightX()));
         Trigger readyToShootAtCurrentTarget =
-                new Trigger(
-                        () ->
-                                shooter.profileComplete.getAsBoolean()
-                                        && (robotState.shouldFeed.getAsBoolean()
-                                                ? robotState.facingFeedTarget.getAsBoolean()
-                                                : robotState.facingTarget.getAsBoolean()));
+                shooter.profileComplete.and(
+                        robotState
+                                .shouldFeed
+                                .and(robotState.facingFeedTarget)
+                                .or(robotState.shouldFeed.negate().and(robotState.facingTarget)));
 
         // Right Trigger: Shoot/Pass
         controller
@@ -198,7 +197,7 @@ public class RobotContainer {
                                 shooter.spinUpShooter(),
                                 Commands.sequence(
                                         Commands.waitSeconds(0.05),
-                                        Commands.waitUntil(shooter.profileComplete),
+                                        Commands.waitUntil(readyToShootAtCurrentTarget),
                                         Commands.parallel(
                                                 indexer.shoot(),
                                                 tower.shoot(),
