@@ -35,6 +35,7 @@ import frc.lib.devices.AprilTagCamera;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.lib.io.vision.VisionIO;
 import frc.lib.io.vision.VisionIOC2;
+import frc.lib.io.vision.VisionIOPhotonVision;
 import frc.lib.io.vision.VisionIOPhotonVisionSim;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
@@ -307,8 +308,8 @@ public class VisionConstants {
 
     private static Optional<VisionSystemSim> visionSim = Optional.empty();
 
-    private static VisionIO getFrontIOReal() {
-        return new VisionIOC2(FRONT, VisionIOC2.defaultsFor(FRONT_CTWO_CAMERA_INDEX));
+    private static VisionIOPhotonVision getFrontIOReal() {
+        return new VisionIOPhotonVision(FRONT);
     }
 
     private static VisionIOPhotonVisionSim getFrontIOSim() {
@@ -358,8 +359,8 @@ public class VisionConstants {
                 AprilTagLayoutType.OFFICIAL.getLayout());
     }
 
-    private static VisionIO getBackIOReal() {
-        return new VisionIOC2(BACK, VisionIOC2.defaultsFor(BACK_CTWO_CAMERA_INDEX));
+    private static VisionIOPhotonVision getBackIOReal() {
+        return new VisionIOPhotonVision(BACK);
     }
 
     private static VisionIOPhotonVisionSim getBackIOSim() {
