@@ -1,0 +1,3 @@
+[submodule "slopstar"]
+	path = slopstar
+	url = https://github.com/WHS-FRC-3467/slopstar.git
