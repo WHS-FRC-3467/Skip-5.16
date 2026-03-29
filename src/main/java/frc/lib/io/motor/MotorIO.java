@@ -101,6 +101,9 @@ public interface MotorIO extends AutoCloseable {
         /** Goal position */
         public Angle goalPosition = Rotations.zero();
 
+        /** Goal velocity */
+        public AngularVelocity goalVelocity = RotationsPerSecond.zero();
+
         /** Current control type */
         public ControlType controlType = ControlType.BRAKE;
     }

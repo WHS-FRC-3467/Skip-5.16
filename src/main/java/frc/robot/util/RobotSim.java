@@ -51,7 +51,7 @@ public class RobotSim {
         Trigger shootSimFuel =
                 new Trigger(
                         () ->
-                                (shooter.readyToShoot.getAsBoolean()
+                                (shooter.profileComplete.getAsBoolean()
                                         && (indexer.getFloorSpeed() < 0.1)
                                         && (fuelSim.getHeldFuel() > 0)));
 

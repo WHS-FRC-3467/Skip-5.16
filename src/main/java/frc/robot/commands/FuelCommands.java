@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
-import frc.robot.RobotState;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
@@ -69,15 +68,13 @@ public class FuelCommands {
         return Commands.parallel(
                         shooter.spinUpShooter(),
                         intake.slowRetract(retractSpeed).asProxy(),
-                        Commands.parallel(
+                        Commands.sequence(
+                                Commands.waitUntil(shooter.profileComplete),
+                                Commands.parallel(
                                         indexer.shoot()
                                                 .withInterruptBehavior(
                                                         InterruptionBehavior.kCancelIncoming),
-                                        tower.shoot())
-                                .onlyWhile(
-                                        shooter.readyToShoot.and(
-                                                RobotState.getInstance().facingTarget))
-                                .repeatedly())
+                                        tower.shoot())))
                 .withTimeout(duration)
                 .finallyDo(
                         () -> {

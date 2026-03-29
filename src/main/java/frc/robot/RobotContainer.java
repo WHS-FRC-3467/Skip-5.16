@@ -177,7 +177,7 @@ public class RobotContainer {
         Trigger readyToShootAtCurrentTarget =
                 new Trigger(
                         () ->
-                                shooter.readyToShoot.getAsBoolean()
+                                shooter.profileComplete.getAsBoolean()
                                         && (robotState.shouldFeed.getAsBoolean()
                                                 ? robotState.facingFeedTarget.getAsBoolean()
                                                 : robotState.facingTarget.getAsBoolean()));
@@ -261,8 +261,7 @@ public class RobotContainer {
                         Commands.parallel(
                                 shooter.spinUpShooterMidlineFeed(),
                                 Commands.sequence(
-                                        Commands.waitUntil(shooter.atMidlineFeedSetpoints)
-                                                .withTimeout(0.75),
+                                        Commands.waitUntil(shooter.profileComplete),
                                         Commands.parallel(indexer.shoot(), tower.shoot()))))
                 .onFalse(
                         Commands.parallel(

@@ -23,7 +23,6 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -44,9 +43,7 @@ import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
-import frc.robot.Constants;
 import frc.robot.FieldConstants;
-import frc.robot.FieldConstants.Hub;
 import frc.robot.RobotState;
 import frc.robot.util.RobotSim;
 
@@ -101,41 +98,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private final RotaryMechanism<?, ?> hoodIO;
     private final FlywheelMechanism<?> flywheelIO;
 
-    private final Debouncer readyToShootDebounder = new Debouncer(0.1, DebounceType.kFalling);
-
-    public final LoggedTrigger shooterWithinTolerance =
-            new LoggedTrigger(
-                    this.getName() + "/shooterWithinTolerance",
-                    () ->
-                            isFlywheelAt(getDesiredFlywheelVelocity())
-                                    && isHoodAt(getDesiredHoodAngle()));
-
-    public final LoggedTrigger readyToShoot =
-            new LoggedTrigger(
-                    this.getName() + "/readyToShoot",
-                    () -> readyToShootDebounder.calculate(shooterWithinTolerance.getAsBoolean()));
-
-    public final LoggedTrigger atHubSetpoints =
-            new LoggedTrigger(
-                    this.getName() + "/atHubSetpoints",
-                    () -> {
-                        // Distance between robot and hub centers
-                        // Assume the Robot is pressed against the Hub. Hardcoded as part of no
-                        // vision fallback.
-                        double dist = (Hub.WIDTH + Constants.FULL_ROBOT_LENGTH.in(Meters)) / 2.0;
-                        return isFlywheelAt(RotationsPerSecond.of(hubFlywheelMap.get(dist)))
-                                && isHoodAt(Degrees.of(hoodAngleMap.get(dist)));
-                    });
-
-    public final LoggedTrigger atMidlineFeedSetpoints =
-            new LoggedTrigger(
-                    this.getName() + "/atMidlineFeedSetpoints",
-                    () -> {
-                        return isFlywheelAt(
-                                        RotationsPerSecond.of(
-                                                feedFlywheelMap.get(MIDLINE_FEED_DISTANCE_METERS)))
-                                && isHoodAt(FEED_HOOD_ANGLE);
-                    });
+    public final LoggedTrigger profileComplete =
+            new LoggedTrigger(this.getName() + "/ProfileComplete", this::isProfileComplete);
 
     private final LoggedTunableBoolean tuningMode =
             new LoggedTunableBoolean(getName() + "/Tuning/Enable", false);
@@ -175,11 +139,8 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // Trigger for whether we are at the static shooting state (shooter ready, robot stationary &
     // aligned to target)
     private final LoggedTrigger staticShotState =
-            new LoggedTrigger(
-                    this.getName() + "/StaticShotState",
-                    () ->
-                            readyToShoot.getAsBoolean()
-                                    && robotState.atStaticShootingState.getAsBoolean());
+            robotState.atStaticShootingState.and(profileComplete);
+
     // Triggers determining whether a ball has passed through the shooter based on flywheel velocity
     // drops from current setpoint, currently only registering true during static feeding/shooting
     private final LoggedTrigger ballTrigger =
@@ -229,7 +190,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     private void spinFlywheel(AngularVelocity velocity) {
-        flywheelIO.runVelocity(velocity.plus(getFlywheelTrim()), PIDSlot.SLOT_0);
+        flywheelIO.runVelocity(
+                velocity.plus(getFlywheelTrim()),
+                FlywheelConstants.MAX_ACCELERATION,
+                PIDSlot.SLOT_0);
     }
 
     private void coastFlywheels() {
@@ -245,13 +209,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                         },
                         this)
                 .withName(name);
-    }
-
-    private boolean isFlywheelAt(AngularVelocity velocity) {
-        return MathUtil.isNear(
-                velocity.in(RotationsPerSecond),
-                flywheelIO.getVelocity().in(RotationsPerSecond),
-                FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     /**
@@ -281,8 +238,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         hoodIO.runUnprofiledPosition(angle, PIDSlot.SLOT_0);
     }
 
-    private boolean isHoodAt(Angle angle) {
-        return hoodIO.nearGoal(angle, HoodConstants.TOLERANCE);
+    private boolean isProfileComplete() {
+        return flywheelIO
+                .getVelocitySetpoint()
+                .isNear(flywheelIO.getVelocityGoal(), RotationsPerSecond.of(0.2));
     }
 
     /**
@@ -409,26 +368,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                             Amps.of(flywheelSlowSpinupTorque.getAsDouble()),
                             flywheelSlowSpinupDutyCycle.getAsDouble());
                 });
-    }
-
-    /**
-     * Prepares the subsystem to shoot at the HUB, and runs a command while it is ready
-     *
-     * @param whileAtPosition A command that runs while the shooter is ready to shoot at the HUB. If
-     *     shooting is disrupted because shooter readiness drops, attempt a flywheel/hood adjustment
-     *     and, if successful, re-commence shooting. Only valid for HUB shots. This is usually used
-     *     for starting and stopping the indexer to ensure balls are not shot unless we are
-     *     confident we will make the shot. Shooter remains spun-up at the end of this command.
-     * @return The command sequence
-     */
-    public Command shootFuel(Command whileAtPosition) {
-        return Commands.sequence(
-                        Commands.parallel(
-                                spinUpShooter(),
-                                Commands.repeatingSequence(
-                                        Commands.waitUntil(readyToShoot),
-                                        whileAtPosition.until(readyToShoot.negate()))))
-                .withName("Shoot Fuel");
     }
 
     public Command fountain() {
