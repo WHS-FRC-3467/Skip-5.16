@@ -309,7 +309,7 @@ public class VisionConstants {
 
     private static VisionIO getFrontIOReal() {
         return new VisionIOSlopstar(
-                FRONT, VisionIOSlopstar.defaultsFor(FRONT, FRONT_SLOPSTAR_CAMERA_INDEX));
+                FRONT, VisionIOSlopstar.defaultsFor(FRONT_SLOPSTAR_CAMERA_INDEX));
     }
 
     private static VisionIOPhotonVisionSim getFrontIOSim() {
@@ -362,8 +362,7 @@ public class VisionConstants {
     // }
 
     private static VisionIO getBackIOReal() {
-        return new VisionIOSlopstar(
-                BACK, VisionIOSlopstar.defaultsFor(BACK, BACK_SLOPSTAR_CAMERA_INDEX));
+        return new VisionIOSlopstar(BACK, VisionIOSlopstar.defaultsFor(BACK_SLOPSTAR_CAMERA_INDEX));
     }
 
     private static VisionIOPhotonVisionSim getBackIOSim() {
