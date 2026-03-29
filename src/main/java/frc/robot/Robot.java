@@ -20,6 +20,8 @@ import au.grapplerobotics.CanBridge;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
+import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -29,10 +31,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-import frc.robot.commands.autos.AutoCommands;
+import frc.robot.commands.autos.utils.AutoCommands;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.util.Elastic;
 import frc.robot.util.HubState;
+import frc.robot.util.LocalADStarAK;
 import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.LogFileUtil;
@@ -43,12 +46,6 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-/**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
- */
 public class Robot extends LoggedRobot {
     private final RobotState robotState = RobotState.getInstance();
 
@@ -128,12 +125,11 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
+        // DO THIS AFTER CONFIGURATION OF YOUR DESIRED PATHFINDER
+        Pathfinding.setPathfinder(new LocalADStarAK());
+        CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
         // Log first 8 character of robot serial
-        Logger.recordOutput(
-                "Robot Serial",
-                Robot.isReal()
-                        ? Constants.RobotConstants.serial.subSequence(0, 8).toString()
-                        : Constants.RobotConstants.serial);
+        Logger.recordOutput("Robot Serial", System.getenv("serialnum"));
 
         SmartDashboard.putData("Robot Pose Field Map", fieldMap);
 
@@ -201,12 +197,9 @@ public class Robot extends LoggedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        // This makes sure that the autonomous stops running when
-        // teleop starts running. If you want the autonomous to
-        // continue until interrupted by another command, remove
-        // this line or comment it out.
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
+            autonomousCommand = null;
         }
 
         // Switch to Teleop tab in Elastic Dashboard
@@ -231,7 +224,7 @@ public class Robot extends LoggedRobot {
     /** This function is called once when test mode is enabled. */
     @Override
     public void testInit() {
-        // Cancels all running commands at the start of test mode.
+        autonomousCommand = null;
         CommandScheduler.getInstance().cancelAll();
     }
 

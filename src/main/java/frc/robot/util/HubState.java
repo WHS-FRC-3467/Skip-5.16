@@ -44,6 +44,11 @@ public class HubState {
             new LoggedTrigger(
                     "Hub/About To Change (" + SECONDS_BEFORE + "s)", this::isCloseToSwitching);
 
+    @Getter
+    private final LoggedTrigger enablingSoon =
+            new LoggedTrigger(
+                    "Hub/About To Turn On (" + SECONDS_BEFORE + "s)", this::isEnablingSoon);
+
     public static double[] getHubChangeTimes() {
         return Arrays.copyOf(HUB_CHANGE_TIMES, HUB_CHANGE_TIMES.length);
     }
@@ -74,13 +79,45 @@ public class HubState {
     }
 
     private boolean isCloseToSwitching() {
-        double matchTime = DriverStation.getMatchTime();
+        return isCloseToSwitching(DriverStation.getMatchTime());
+    }
+
+    private boolean isCloseToSwitching(double matchTime) {
         if (matchTime < 0) return false;
 
         double next = nextSwitchTime(matchTime);
         if (next < 0) return false;
 
         return (matchTime - next) <= SECONDS_BEFORE;
+    }
+
+    private Alliance activeAllianceFor(double matchTime, Alliance ourAlliance) {
+        if (matchTime > HUB_CHANGE_TIMES[0]
+                || matchTime <= HUB_CHANGE_TIMES[HUB_CHANGE_TIMES.length - 1]) {
+            return ourAlliance;
+        }
+
+        initializeFirstActiveAlliance();
+
+        int shiftIndex = 0;
+        for (int i = 0; i < HUB_CHANGE_TIMES.length; i++) {
+            if (matchTime <= HUB_CHANGE_TIMES[i]) {
+                shiftIndex = i;
+            }
+        }
+
+        return shiftIndex % 2 == 0 ? firstActiveAlliance : opposite(firstActiveAlliance);
+    }
+
+    private boolean isEnablingSoon() {
+        double matchTime = DriverStation.getMatchTime();
+        if (!isCloseToSwitching(matchTime)) return false;
+
+        Alliance ourAlliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        double nextSwitch = nextSwitchTime(matchTime);
+
+        return activeAllianceFor(matchTime, ourAlliance) != ourAlliance
+                && activeAllianceFor(nextSwitch, ourAlliance) == ourAlliance;
     }
 
     public void periodic() {
@@ -92,27 +129,7 @@ public class HubState {
         }
 
         Alliance ourAlliance = DriverStation.getAlliance().orElse(Alliance.Blue);
-
-        // Auto or Endgame → our hub active
-        if (matchTime > HUB_CHANGE_TIMES[0]
-                || matchTime <= HUB_CHANGE_TIMES[HUB_CHANGE_TIMES.length - 1]) {
-            activeAlliance = ourAlliance;
-        } else {
-            initializeFirstActiveAlliance();
-
-            // Determine which shift we are in
-            int shiftIndex = 0;
-            for (int i = 0; i < HUB_CHANGE_TIMES.length; i++) {
-                if (matchTime <= HUB_CHANGE_TIMES[i]) {
-                    shiftIndex = i;
-                }
-            }
-
-            // Even shifts → firstActiveAlliance
-            // Odd shifts → opposite
-            boolean evenShift = shiftIndex % 2 == 0;
-            activeAlliance = evenShift ? firstActiveAlliance : opposite(firstActiveAlliance);
-        }
+        activeAlliance = activeAllianceFor(matchTime, ourAlliance);
 
         SmartDashboard.putBoolean(
                 "Can Shoot!", hubActive.getAsBoolean() || hubChange.getAsBoolean());
