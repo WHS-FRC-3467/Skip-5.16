@@ -41,8 +41,6 @@ import java.util.random.RandomGenerator;
 /** A simulated lights implementation */
 public class LightsIOSim implements LightsIO {
 
-    final LEDPattern rainbow = LEDPattern.rainbow(255, 128);
-
     private Map<String, String> requestInfo;
     private AddressableLED led;
     private AddressableLEDBuffer buffer;
@@ -126,7 +124,8 @@ public class LightsIOSim implements LightsIO {
                 Inches.of(1);
         switch (requestInfo.get("Name")) {
             case "RainbowAnimation" ->
-                    rainbow.scrollAtAbsoluteSpeed(
+                    LEDPattern.rainbow(255, 128)
+                            .scrollAtAbsoluteSpeed(
                                     InchesPerSecond.of(
                                             Double.valueOf(checkAndGet("FrameRate")) * direction),
                                     ledSpacing)

@@ -136,31 +136,16 @@ public class CANdlePatterns {
                 if (max > bufLen) {
                     int inner_max = max - bufLen;
                     if (i < inner_max) {
-                        if (reversed.get(buffer)) {
-                            writer.setLED(i, color);
-                        } else {
-                            writer.setLED(bufLen - 2 - i, color);
-                        }
-
+                        writer.setLED(reversed.get(buffer) ? i : bufLen - 2 - i, color);
                         continue;
                     }
                 }
                 if (i > max - 1 && i < max + size) {
-
-                    if (reversed.get(buffer)) {
-                        writer.setLED(bufLen - 2 - i, color);
-                    } else {
-                        writer.setLED(i, color);
-                    }
+                    writer.setLED(reversed.get(buffer) ? bufLen - 2 - i : i, color);
                     continue;
                 }
                 if (max < bufLen) {
-                    if (reversed.get(buffer)) {
-                        writer.setLED(bufLen - 2 - i, Color.kBlack);
-
-                    } else {
-                        writer.setLED(i, Color.kBlack);
-                    }
+                    writer.setLED(reversed.get(buffer) ? bufLen - 2 - i : i, Color.kBlack);
                 }
             }
 
