@@ -314,6 +314,8 @@ public class RobotContainer {
                 .whileTrue(
                         shooter.spinUpShooter()
                                 .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+
+        operatorController.leftBumper().onTrue(robotState.toggleLowPowerMode());
         controller
                 .rightTrigger()
                 .negate()

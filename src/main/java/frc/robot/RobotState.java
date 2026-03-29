@@ -31,6 +31,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.lib.posestimator.PoseEstimator;
@@ -82,6 +84,14 @@ public class RobotState {
         return Meters.of(
                 getEstimatedPose().getTranslation().getDistance(activeTrajPose.getTranslation()));
     }
+
+    private boolean LOW_POWER_MODE = false;
+
+    public Command toggleLowPowerMode() {
+        return Commands.runOnce(() -> LOW_POWER_MODE = !LOW_POWER_MODE);
+    }
+
+    @Getter Trigger lowPowerTrigger = new Trigger(() -> LOW_POWER_MODE);
 
     @Getter
     @AutoLogOutput(key = "Drive/FacingTarget")
