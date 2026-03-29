@@ -48,7 +48,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -281,15 +280,6 @@ public class VisionIOSlopstar implements VisionIO {
     private long sequenceId = 0;
 
     /**
-     * Constructs a slopstar camera interface using the repo's current defaults.
-     *
-     * @param cameraProperties Camera configuration including name and calibration
-     */
-    public VisionIOSlopstar(CameraProperties cameraProperties) {
-        this(cameraProperties, defaultsFor(cameraProperties));
-    }
-
-    /**
      * Constructs a slopstar camera interface with explicit slopstar configuration.
      *
      * @param cameraProperties Camera configuration including name and calibration
@@ -500,7 +490,7 @@ public class VisionIOSlopstar implements VisionIO {
         return Math.max(0.0, Math.min(1.0, primaryError / alternateError));
     }
 
-    public static SlopstarConfig defaultsFor(CameraProperties cameraProperties, int cameraIndex) {
+    public static SlopstarConfig defaultsFor(int cameraIndex) {
         return new SlopstarConfig(
                 DEFAULT_DEVICE_ID,
                 cameraIndex,
@@ -511,10 +501,6 @@ public class VisionIOSlopstar implements VisionIO {
                 AprilTagLayoutType.OFFICIAL.getLayout(),
                 AprilTagLayoutType.OFFICIAL.getLayoutString(),
                 DEFAULT_POLL_STORAGE_DEPTH);
-    }
-
-    private static SlopstarConfig defaultsFor(CameraProperties cameraProperties) {
-        return defaultsFor(cameraProperties, cameraIndexFor(cameraProperties.name()));
     }
 
     private static SlopstarConfig validateConfig(SlopstarConfig config) {
@@ -566,26 +552,5 @@ public class VisionIOSlopstar implements VisionIO {
                 config.gain(),
                 config.fiducialSizeMeters(),
                 config.tagLayoutJson());
-    }
-
-    private static int cameraIndexFor(String cameraName) {
-        String normalizedName = cameraName.toLowerCase(Locale.ROOT).trim();
-        return switch (normalizedName) {
-            case "front" -> 0;
-            case "left" -> 1;
-            case "right" -> 2;
-            case "back" -> 3;
-            default -> {
-                String digits = normalizedName.replaceAll("\\D+", "");
-                if (!digits.isEmpty()) {
-                    yield Integer.parseInt(digits);
-                }
-                throw new IllegalArgumentException(
-                        "Unknown slopstar camera name \""
-                                + cameraName
-                                + "\". Pass an explicit SlopstarConfig with cameraIndex if the"
-                                + " default mapping is incorrect.");
-            }
-        };
     }
 }
