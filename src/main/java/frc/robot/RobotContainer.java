@@ -60,6 +60,8 @@ import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
 
+import java.util.Set;
+
 /**
  * Container class for the robot that holds all subsystems, controllers, and command bindings. This
  * class is responsible for:
@@ -194,9 +196,14 @@ public class RobotContainer {
                                         DriveCommands.staticAimTowardsTarget(drive),
                                         robotState.shouldFeed),
                                 shooter.spinUpShooter(),
-                                Commands.parallel(indexer.shoot(), tower.shoot())
-                                        .onlyWhile(readyToShootAtCurrentTarget)
-                                        .repeatedly()))
+                                Commands.sequence(
+                                        Commands.waitUntil(readyToShootAtCurrentTarget),
+                                        Commands.parallel(
+                                                indexer.shoot(),
+                                                tower.shoot(),
+                                                Commands.defer(
+                                                        () -> intake.slowRetract(),
+                                                        Set.of(intake))))))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(),

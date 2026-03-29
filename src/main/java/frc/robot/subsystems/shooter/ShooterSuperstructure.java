@@ -62,11 +62,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
 
     static {
-        hoodAngleMap.put(1.41, 0.0);
-        hoodAngleMap.put(1.74, 4.0);
-        hoodAngleMap.put(2.1, 6.0);
-        hoodAngleMap.put(2.96, 8.0);
-        hoodAngleMap.put(3.47, 10.0);
+        hoodAngleMap.put(1.8, 2.0);
+        hoodAngleMap.put(2.1, 10.0);
+        hoodAngleMap.put(2.51, 12.0);
+        hoodAngleMap.put(3.55, 16.0);
     }
 
     /** Distance from hub in meters -> flywheel speed in rotations per second */
@@ -74,11 +73,10 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new InterpolatingDoubleTreeMap();
 
     static {
-        hubFlywheelMap.put(1.41, 25.0);
-        hubFlywheelMap.put(1.74, 26.0);
-        hubFlywheelMap.put(2.1, 27.0);
-        hubFlywheelMap.put(2.96, 30.6);
-        hubFlywheelMap.put(3.47, 32.0);
+        hubFlywheelMap.put(1.8, 25.0);
+        hubFlywheelMap.put(2.1, 26.0);
+        hubFlywheelMap.put(2.5, 26.0);
+        hubFlywheelMap.put(3.55, 30.0);
     }
 
     /** Distance from feed pose in meters -> flywheel speed in rotations per second */

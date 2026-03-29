@@ -49,7 +49,7 @@ public class HoodConstants {
 
     public static final Angle TOLERANCE = Degrees.of(1.5);
 
-    private static final double GEARING = (168.0 / 10.0) * (26.0 / 11.0);
+    private static final double GEARING = (168.0 / 10.0) * (28.0 / 11.0);
 
     // Actual arm angle from horizontal is 15 to 39 deg
     public static final Angle MIN_ANGLE_OFFSET = Degrees.of(15.0);
