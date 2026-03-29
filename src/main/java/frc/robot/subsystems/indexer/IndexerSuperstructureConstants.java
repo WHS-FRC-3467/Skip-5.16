@@ -33,6 +33,6 @@ public class IndexerSuperstructureConstants {
      * @return configured IndexerSuperstructure instance
      */
     public static IndexerSuperstructure get() {
-        return new IndexerSuperstructure(IndexerFloorConstants.get(), IndexerCenterConstants.get());
+        return new IndexerSuperstructure(IndexerConstants.get());
     }
 }

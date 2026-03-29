@@ -14,6 +14,7 @@
  */
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -27,9 +28,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
+import frc.lib.util.LoggedTrigger;
 import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
+
+import java.util.Set;
 
 /**
  * Subsystem that controls the indexer floor and indexer centering mechanism for moving game pieces
@@ -38,54 +42,44 @@ import frc.lib.util.LoggerHelper;
  */
 public class IndexerSuperstructure extends SubsystemBase {
     private final FlywheelMechanism<?> floorIO;
-    private final FlywheelMechanism<?> centerIO;
 
     private static final LoggedTunableNumber FLOOR_SHOOT_RPS =
             new LoggedTunableNumber(
-                    IndexerFloorConstants.NAME + "/ShootRPS",
-                    IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
+                    IndexerConstants.NAME + "/ShootRPS",
+                    IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber FLOOR_EJECT_RPS =
             new LoggedTunableNumber(
-                    IndexerFloorConstants.NAME + "/EjectRPS",
-                    -IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
+                    IndexerConstants.NAME + "/EjectRPS",
+                    -IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber FLOOR_FEED_RPS =
             new LoggedTunableNumber(
-                    IndexerFloorConstants.NAME + "/FeedRPS",
-                    IndexerFloorConstants.MAX_VELOCITY.in(RotationsPerSecond));
-
-    private static final LoggedTunableNumber CENTER_SHOOT_RPS =
-            new LoggedTunableNumber(
-                    IndexerCenterConstants.NAME + "/ShootRPS",
-                    IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
-
-    private static final LoggedTunableNumber CENTER_EJECT_RPS =
-            new LoggedTunableNumber(
-                    IndexerCenterConstants.NAME + "/EjectRPS",
-                    -IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
-
-    private static final LoggedTunableNumber CENTER_FEED_RPS =
-            new LoggedTunableNumber(
-                    IndexerCenterConstants.NAME + "/FeedRPS",
-                    IndexerCenterConstants.MAX_VELOCITY.in(RotationsPerSecond));
+                    IndexerConstants.NAME + "/FeedRPS",
+                    IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private final Trigger tuningModeEnabled =
             new Trigger(new LoggedTunableBoolean(getName() + "/Tuning/Enable", false));
     private final LoggedTunableNumber tuningModeFloorRPS =
             new LoggedTunableNumber(getName() + "/Tuning/FloorSpeedRPS", 0.0);
-    private final LoggedTunableNumber tuningModeCenterRPS =
-            new LoggedTunableNumber(getName() + "/Tuning/CenteringSpeedRPS", 0.0);
+
+    // From logs
+    private final LoggedTunableNumber jamDetectionVelocityError =
+            new LoggedTunableNumber(getName() + "/JamDetection/VelocityErrorThresholdRPS", 15.0);
+    private final LoggedTunableNumber jamDetectionTorqueCurrent =
+            new LoggedTunableNumber(getName() + "/JamDetection/TorqueCurrentThreshold", 65.0);
+    private final LoggedTunableNumber jamDetectionTorqueCurrentResponse =
+            new LoggedTunableNumber(getName() + "/JamDetection/TorqueCurrentResponse", 100.0);
+    private final LoggedTunableNumber jamDetectionResponseLengthSeconds =
+            new LoggedTunableNumber(getName() + "/JamDetection/ResponseLengthSeconds", 0.2);
+    private final LoggedTrigger isJammed;
 
     private final Command tuningModeCommand =
             Commands.sequence(
                             Commands.runOnce(this::cancelCurrentCommandIfAny),
                             createTuningRunCommand())
                     .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
-                    .finallyDo(
-                            () ->
-                                    runVelocity(
-                                            RotationsPerSecond.zero(), RotationsPerSecond.zero()));
+                    .finallyDo(() -> runVelocity(RotationsPerSecond.zero()));
 
     private void cancelCurrentCommandIfAny() {
         var currentCommand = this.getCurrentCommand();
@@ -94,11 +88,7 @@ public class IndexerSuperstructure extends SubsystemBase {
     }
 
     private Command createTuningRunCommand() {
-        return this.run(
-                        () ->
-                                runVelocity(
-                                        RotationsPerSecond.of(tuningModeFloorRPS.getAsDouble()),
-                                        RotationsPerSecond.of(tuningModeCenterRPS.getAsDouble())))
+        return this.run(() -> runVelocity(RotationsPerSecond.of(tuningModeFloorRPS.getAsDouble())))
                 .asProxy();
     }
 
@@ -106,24 +96,37 @@ public class IndexerSuperstructure extends SubsystemBase {
      * Constructs an IndexerSuperstructure subsystem.
      *
      * @param floorIO The flywheel mechanism for controlling the indexer floor motors
-     * @param centerIO The flywheel mechanism for controlling the indexer centering motors
      */
-    public IndexerSuperstructure(FlywheelMechanism<?> floorIO, FlywheelMechanism<?> centerIO) {
+    public IndexerSuperstructure(FlywheelMechanism<?> floorIO) {
         this.floorIO = floorIO;
-        this.centerIO = centerIO;
         tuningModeEnabled.whileTrue(tuningModeCommand);
+
+        isJammed =
+                new LoggedTrigger(
+                                getName() + "/IsJammed",
+                                () -> {
+                                    boolean velocityTripped =
+                                            floorIO.getVelocityError()
+                                                    .gt(
+                                                            RotationsPerSecond.of(
+                                                                    jamDetectionVelocityError
+                                                                            .get()));
+                                    boolean currentTripped =
+                                            floorIO.getTorqueCurrent()
+                                                    .gt(Amps.of(jamDetectionTorqueCurrent.get()));
+                                    return velocityTripped && currentTripped;
+                                })
+                        .debounce(0.1);
     }
 
     @Override
     public void periodic() {
         LoggerHelper.recordCurrentCommand(this.getName(), this);
         floorIO.periodic();
-        centerIO.periodic();
     }
 
-    private void runVelocity(AngularVelocity floorVelocity, AngularVelocity centeringVelocity) {
+    private void runVelocity(AngularVelocity floorVelocity) {
         floorIO.runVelocity(floorVelocity, PIDSlot.SLOT_0);
-        centerIO.runVelocity(centeringVelocity, PIDSlot.SLOT_0);
     }
 
     /**
@@ -137,7 +140,6 @@ public class IndexerSuperstructure extends SubsystemBase {
 
     private void stop() {
         floorIO.runCoast();
-        centerIO.runCoast();
     }
 
     /**
@@ -157,8 +159,7 @@ public class IndexerSuperstructure extends SubsystemBase {
     }
 
     public Command fountain() {
-        return this.runOnce(
-                () -> runVelocity(RotationsPerSecond.of(5.0), RotationsPerSecond.of(5.0)));
+        return this.runOnce(() -> runVelocity(RotationsPerSecond.of(5.0)));
     }
 
     /**
@@ -168,12 +169,22 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return a command that runs the indexer at shooting speed
      */
     public Command shoot() {
-        return this.startEnd(
-                        () ->
-                                runVelocity(
-                                        RotationsPerSecond.of(FLOOR_SHOOT_RPS.get()),
-                                        RotationsPerSecond.of(CENTER_SHOOT_RPS.get())),
-                        () -> stop())
+        return Commands.repeatingSequence(
+                        this.runOnce(
+                                () -> runVelocity(RotationsPerSecond.of(FLOOR_SHOOT_RPS.get()))),
+                        Commands.waitUntil(isJammed),
+                        this.runOnce(
+                                () ->
+                                        floorIO.runCurrent(
+                                                Amps.of(
+                                                        Math.copySign(
+                                                                jamDetectionTorqueCurrentResponse
+                                                                        .get(),
+                                                                -FLOOR_SHOOT_RPS.get())))),
+                        Commands.defer(
+                                () -> Commands.waitSeconds(jamDetectionResponseLengthSeconds.get()),
+                                Set.of()))
+                .finallyDo(this::stop)
                 .withName("Shoot");
     }
 
@@ -185,10 +196,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     public Command feed() {
         return this.startEnd(
-                        () ->
-                                runVelocity(
-                                        RotationsPerSecond.of(FLOOR_FEED_RPS.get()),
-                                        RotationsPerSecond.of(CENTER_FEED_RPS.get())),
+                        () -> runVelocity(RotationsPerSecond.of(FLOOR_FEED_RPS.get())),
                         () -> stop())
                 .withName("Feed");
     }
@@ -201,10 +209,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     public Command eject() {
         return this.startEnd(
-                        () ->
-                                runVelocity(
-                                        RotationsPerSecond.of(FLOOR_EJECT_RPS.get()),
-                                        RotationsPerSecond.of(CENTER_EJECT_RPS.get())),
+                        () -> runVelocity(RotationsPerSecond.of(FLOOR_EJECT_RPS.get())),
                         () -> stop())
                 .withName("Eject");
     }
@@ -215,8 +220,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return true if the indexer is within tolerance of the setpoint, false otherwise
      */
     public boolean nearSetpoint() {
-        return floorIO.getVelocityError().lte(IndexerFloorConstants.TOLERANCE)
-                && centerIO.getVelocityError().lte(IndexerCenterConstants.TOLERANCE);
+        return floorIO.getVelocityError().lte(IndexerConstants.TOLERANCE);
     }
 
     /**
@@ -229,15 +233,6 @@ public class IndexerSuperstructure extends SubsystemBase {
     }
 
     /**
-     * Gets the current velocity of the indexer centering motor.
-     *
-     * @return The velocity in rotations per second
-     */
-    public double getCenteringSpeed() {
-        return centerIO.getVelocity().in(RotationsPerSecond);
-    }
-
-    /**
      * Gets the current linear velocity of the indexer floor motors.
      *
      * @return The linear velocity in meters per second.
@@ -247,29 +242,16 @@ public class IndexerSuperstructure extends SubsystemBase {
     }
 
     /**
-     * Gets the current linear velocity of the indexer centering motor.
-     *
-     * @return The linear velocity in meters per second.
-     */
-    public LinearVelocity getCenteringLinearVelocity() {
-        return centerIO.getLinearVelocity();
-    }
-
-    /**
      * Sets the current linear velocities of the indexer motors.
      *
      * @param floorVelocity the desired linear velocity for the floor mechanism (meters per second)
-     * @param centeringVelocity the desired linear velocity for the centering mechanism (meters per
-     *     second)
      */
-    public void setLinearVelocity(LinearVelocity floorVelocity, LinearVelocity centeringVelocity) {
+    public void setLinearVelocity(LinearVelocity floorVelocity) {
         floorIO.runLinearVelocity(floorVelocity, PIDSlot.SLOT_0);
-        centerIO.runLinearVelocity(centeringVelocity, PIDSlot.SLOT_0);
     }
 
     /** Closes the indexer mechanism and releases resources. */
     public void close() {
         floorIO.close();
-        centerIO.close();
     }
 }

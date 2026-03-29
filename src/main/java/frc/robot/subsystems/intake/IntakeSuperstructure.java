@@ -34,9 +34,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private static final LoggedTunableNumber ROLLER_INTAKE_RPS =
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/IntakeRPS", 35.0);
 
-    private static final LoggedTunableNumber ROLLER_AUTO_INTAKE_RPS =
-            new LoggedTunableNumber(IntakeRollerConstants.NAME + "/AutoIntakeRPS", 40.0);
-
     private static final LoggedTunableNumber ROLLER_EJECT_RPS =
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
 
@@ -49,9 +46,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private final LoggedTrigger isExtended;
     private final LoggedTrigger isRetracted;
     private final LoggedTrigger isCycleComplete;
-    private final LoggedTrigger isFullyRetracted; // Prep for hub shot
 
     private final LinearVelocity shuffleVelocity = MetersPerSecond.of(0.8);
+    private final Distance retractDistance = IntakeLinearConstants.MIN_DISTANCE;
+    private final Distance cycleCompleteTolerance =
+            IntakeLinearConstants.MIN_DISTANCE.plus(Inches.of(1.5));
 
     public IntakeSuperstructure(
             LinearMechanism<?> intakeLinearIO, FlywheelMechanism<?> intakeRollerIO) {
@@ -79,8 +78,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         "IntakeSuperstructure/IsRetracted",
                         () ->
                                 MathUtil.isNear(
-                                        IntakeLinearConstants.MIN_DISTANCE.in(Meters)
-                                                + Inches.of(2.0).in(Meters),
+                                        retractDistance.in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
                                         IntakeLinearConstants.TOLERANCE.in(Meters)));
         isCycleComplete =
@@ -88,19 +86,9 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                         "IntakeSuperstructure/IsCycleComplete",
                         () ->
                                 MathUtil.isNear(
-                                        IntakeLinearConstants.MIN_DISTANCE.in(Meters)
-                                                + Inches.of(1.5).in(Meters),
+                                        cycleCompleteTolerance.in(Meters),
                                         intakeLinearIO.getLinearPosition().in(Meters),
                                         Inches.of(2.0).in(Meters)));
-        isFullyRetracted =
-                new LoggedTrigger(
-                        "IntakeSuperstructure/IsFullyRetracted",
-                        () ->
-                                MathUtil.isNear(
-                                        IntakeLinearConstants.MIN_DISTANCE.in(Meters)
-                                                + Inches.of(0.5).in(Meters),
-                                        intakeLinearIO.getLinearPosition().in(Meters),
-                                        IntakeLinearConstants.TOLERANCE.in(Meters)));
     }
 
     /** Returns true if the intake roller is running and the intake is extended. */
@@ -111,20 +99,15 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     /**
      * Moves the intake to a goal distance using Motion Magic with the given cruise velocity and
-     * acceleration. The command completes immediately after issuing the control request — use
-     * {@link Commands#waitUntil} to block until the goal is reached.
+     * acceleration. The command completes immediately after issuing the control request. Use {@link
+     * Commands#waitUntil} to block until the goal is reached.
      */
     private Command moveToPosition(
             Distance goal,
             LinearVelocity cruiseVelocity,
             LinearAcceleration acceleration,
             String name) {
-        Distance clampedGoal =
-                Meters.of(
-                        MathUtil.clamp(
-                                goal.in(Meters),
-                                IntakeLinearConstants.MIN_DISTANCE.in(Meters),
-                                IntakeLinearConstants.MAX_DISTANCE.in(Meters)));
+        Distance clampedGoal = clampDistance(goal);
         return this.runOnce(
                         () ->
                                 intakeLinearIO.runLinearPosition(
@@ -132,78 +115,56 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 .withName(name);
     }
 
-    /**
-     * Moves the intake by a delta in inches using Motion Magic with the given cruise velocity and
-     * acceleration, optionally running the roller at a scaled speed, and waits until within
-     * toleranceMeters of the goal.
-     */
-    private Command moveByInches(
-            double inches,
-            LinearVelocity cruiseVelocity,
-            LinearAcceleration acceleration,
-            boolean runRoller,
-            double rollerScale,
-            double toleranceMeters,
-            String name) {
-
-        return Commands.sequence(
-                        this.runOnce(
-                                () -> {
-                                    double current = intakeLinearIO.getLinearPosition().in(Meters);
-                                    Distance goal =
-                                            Meters.of(
-                                                    MathUtil.clamp(
-                                                            current + Inches.of(inches).in(Meters),
-                                                            IntakeLinearConstants.MIN_DISTANCE.in(
-                                                                    Meters),
-                                                            IntakeLinearConstants.MAX_DISTANCE.in(
-                                                                    Meters)));
-                                    intakeLinearIO.runLinearPosition(
-                                            goal, PIDSlot.SLOT_0, cruiseVelocity, acceleration);
-                                }),
-                        runRoller
-                                ? runRoller(
-                                        () ->
-                                                RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())
-                                                        .times(rollerScale))
-                                : Commands.none(),
-                        Commands.waitUntil(
-                                () ->
-                                        MathUtil.isNear(
-                                                intakeLinearIO.getGoalLinearPosition().in(Meters),
-                                                intakeLinearIO.getLinearPosition().in(Meters),
-                                                toleranceMeters)))
-                .withName(name);
+    private Distance clampDistance(Distance goal) {
+        return Meters.of(
+                MathUtil.clamp(
+                        goal.in(Meters),
+                        IntakeLinearConstants.MIN_DISTANCE.in(Meters),
+                        IntakeLinearConstants.MAX_DISTANCE.in(Meters)));
     }
 
     /**
-     * Moves the intake to an absolute position in inches using Motion Magic with the given cruise
-     * velocity and acceleration, optionally running the roller, and waits until within
+     * Moves the intake by a delta using Motion Magic with the given cruise velocity and
+     * acceleration, optionally running the roller at a scaled speed, and waits until within
      * toleranceMeters of the goal.
      */
-    private Command moveToInches(
-            double inches,
+    private Command moveByDistance(
+            Distance distance,
             LinearVelocity cruiseVelocity,
             LinearAcceleration acceleration,
             boolean runRoller,
             double rollerScale,
             double toleranceMeters,
             String name) {
+        return moveToDistance(
+                () ->
+                        Meters.of(
+                                intakeLinearIO.getLinearPosition().in(Meters)
+                                        + distance.in(Meters)),
+                cruiseVelocity,
+                acceleration,
+                runRoller,
+                rollerScale,
+                toleranceMeters,
+                name);
+    }
 
+    private Command moveToDistance(
+            Supplier<Distance> goalSupplier,
+            LinearVelocity cruiseVelocity,
+            LinearAcceleration acceleration,
+            boolean runRoller,
+            double rollerScale,
+            double toleranceMeters,
+            String name) {
         return Commands.sequence(
                         this.runOnce(
-                                () -> {
-                                    Distance goal =
-                                            Meters.of(
-                                                    MathUtil.clamp(
-                                                            Inches.of(inches).in(Meters),
-                                                            IntakeLinearConstants.MIN_DISTANCE.in(
-                                                                    Meters),
-                                                            IntakeLinearConstants.MAX_DISTANCE.in(
-                                                                    Meters)));
-                                    intakeLinearIO.runLinearPosition(
-                                            goal, PIDSlot.SLOT_0, cruiseVelocity, acceleration);
-                                }),
+                                () ->
+                                        intakeLinearIO.runLinearPosition(
+                                                clampDistance(goalSupplier.get()),
+                                                PIDSlot.SLOT_0,
+                                                cruiseVelocity,
+                                                acceleration)),
                         runRoller
                                 ? runRoller(
                                         () ->
@@ -224,6 +185,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 .withName("Run Roller");
     }
 
+    private Command runRoller(double dutyCycle) {
+        return this.runOnce(() -> intakeRollerIO.runDutyCycle(dutyCycle, false))
+                .withName("Run Roller");
+    }
+
     public Command stopRoller() {
         return this.runOnce(intakeRollerIO::runBrake).withName("Stop Roller");
     }
@@ -239,66 +205,50 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     }
 
     public Command intake() {
-        return Commands.sequence(
-                        runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-                        moveToPosition(
-                                IntakeLinearConstants.MAX_DISTANCE,
-                                IntakeLinearConstants.CRUISE_VELOCITY,
-                                IntakeLinearConstants.MAX_ACCELERATION,
-                                "Extend Linear"))
-                .withName("Intake");
-    }
-
-    // For autos only
-    public Command autoIntake() {
-        return Commands.sequence(
-                        runRoller(() -> RotationsPerSecond.of(ROLLER_AUTO_INTAKE_RPS.get())),
-                        moveToPosition(
-                                IntakeLinearConstants.MAX_DISTANCE,
-                                IntakeLinearConstants.CRUISE_VELOCITY,
-                                IntakeLinearConstants.MAX_ACCELERATION,
-                                "Extend Linear"))
-                .withName("Auto Intake");
+        return extendWithRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get()), "Intake");
     }
 
     public Command extendIntake() {
+        return extendWithRoller(RotationsPerSecond::zero, "Extend Intake");
+    }
+
+    private Command extendWithRoller(Supplier<AngularVelocity> rollerVelocity, String name) {
         return Commands.sequence(
-                        runRoller(RotationsPerSecond::zero),
+                        runRoller(rollerVelocity),
                         moveToPosition(
                                 IntakeLinearConstants.MAX_DISTANCE,
                                 IntakeLinearConstants.CRUISE_VELOCITY,
                                 IntakeLinearConstants.MAX_ACCELERATION,
                                 "Extend Linear"))
-                .withName("Extend Intake");
+                .withName(name);
     }
 
     public Command retractIntake() {
-        return Commands.sequence(
-                        runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())),
-                        moveToPosition(
-                                IntakeLinearConstants.MIN_DISTANCE.plus(Inches.of(2.0)),
-                                IntakeLinearConstants.CRUISE_VELOCITY,
-                                IntakeLinearConstants.MAX_ACCELERATION,
-                                "Retract Linear"),
-                        Commands.waitUntil(isRetracted),
-                        stopRoller())
-                .withName("Retract Intake");
+        return retractWithSpeed(IntakeLinearConstants.CRUISE_VELOCITY, 1.0, "Retract Intake");
     }
 
     public Command slowRetract(LinearVelocity retractSpeed) {
-        return Commands.sequence(
-                runRoller(() -> RotationsPerSecond.of(ROLLER_INTAKE_RPS.get()).times(0.6)),
-                moveToPosition(
-                        IntakeLinearConstants.MIN_DISTANCE.plus(Inches.of(2.0)),
-                        retractSpeed,
-                        IntakeLinearConstants.MAX_ACCELERATION,
-                        "Slow Retract"),
-                Commands.waitUntil(isRetracted),
-                stopRoller());
+        return retractWithSpeed(retractSpeed, 0.6, "Slow Retract");
     }
 
     public Command slowRetract() {
         return slowRetract(MetersPerSecond.of(SLOW_MPS.get()));
+    }
+
+    private Command retractWithSpeed(LinearVelocity retractSpeed, double rollerScale, String name) {
+        return Commands.sequence(
+                        runRoller(
+                                () ->
+                                        RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())
+                                                .times(rollerScale)),
+                        moveToPosition(
+                                retractDistance,
+                                retractSpeed,
+                                IntakeLinearConstants.MAX_ACCELERATION,
+                                "Retract Linear"),
+                        Commands.waitUntil(isRetracted),
+                        stopRoller())
+                .withName(name);
     }
 
     /**
@@ -316,8 +266,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                 Commands.sequence(extendIntake(), Commands.waitUntil(isExtended)),
                                 Commands.none(),
                                 isCycleComplete),
-                        moveByInches(
-                                        -6,
+                        moveByDistance(
+                                        Inches.of(-6),
                                         shuffleVelocity,
                                         IntakeLinearConstants.MAX_ACCELERATION,
                                         true,
@@ -325,8 +275,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         Inches.of(0.5).in(Meters),
                                         "Shuffle Retract")
                                 .withTimeout(0.5),
-                        moveByInches(
-                                        3.0,
+                        moveByDistance(
+                                        Inches.of(3.0),
                                         shuffleVelocity,
                                         IntakeLinearConstants.MAX_ACCELERATION,
                                         false,
@@ -347,8 +297,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     public Command hubShuffleStep() {
         return Commands.sequence(
                         // Ensure intake is retracted
-                        moveToInches(
-                                        IntakeLinearConstants.MIN_DISTANCE.in(Inches),
+                        moveToDistance(
+                                        () -> IntakeLinearConstants.MIN_DISTANCE,
                                         shuffleVelocity,
                                         IntakeLinearConstants.MAX_ACCELERATION,
                                         true,
@@ -356,8 +306,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                         Inches.of(0.5).in(Meters),
                                         "Hub Shuffle Pre Retract")
                                 .withTimeout(1),
-                        moveByInches(
-                                        3.15,
+                        moveByDistance(
+                                        Inches.of(3.15),
                                         shuffleVelocity,
                                         IntakeLinearConstants.MAX_ACCELERATION,
                                         false,
