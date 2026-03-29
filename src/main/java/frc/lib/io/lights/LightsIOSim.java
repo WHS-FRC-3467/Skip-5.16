@@ -48,11 +48,11 @@ public class LightsIOSim implements LightsIO {
     private AddressableLEDBuffer buffer;
     private ArrayList<AddressableLEDBufferView> views;
 
-    private static CANdlePatterns candlePatterns; // helper class to contain more complex animations
+    private final CANdlePatterns candlePatterns; // helper class to contain more complex animations
 
     /** Translates CTRE LED Commands To WPILIB Sim LED Commands */
     public LightsIOSim(List<LEDSegment> ledSegments) {
-        candlePatterns = new CANdlePatterns(ledSegments.size());
+        this.candlePatterns = new CANdlePatterns(ledSegments.size());
         this.led = new AddressableLED(0);
 
         this.views = new ArrayList<>();
