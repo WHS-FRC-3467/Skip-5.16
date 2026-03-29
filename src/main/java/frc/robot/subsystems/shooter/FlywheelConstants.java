@@ -43,18 +43,18 @@ public class FlywheelConstants {
     public static final AngularAcceleration MAX_ACCELERATION =
             RotationsPerSecondPerSecond.of(189.5);
 
-    private static final double GEARING = (20.0 / 18.0);
+    private static final double GEARING = (32.0 / 24.0);
 
-    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
+    public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(1.0);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX60(4);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.001);
 
-    public static final Distance FLYWHEEL_RADIUS = Inches.of(1.5);
+    public static final Distance FLYWHEEL_RADIUS = Inches.of(4.0);
 
     private static PID getPID() {
         if (RobotBase.isReal()) {
-            return new PID(12.0, 0.0, 0.0).withS(4.0);
+            return new PID(8.0, 0.0, 0.0).withS(5.5).withV(0.15);
         } else {
             return new PID(27.0, 1.0, 0.0).withS(8.0);
         }
@@ -81,7 +81,7 @@ public class FlywheelConstants {
         config.Voltage.PeakReverseVoltage = -12.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
 
@@ -120,10 +120,10 @@ public class FlywheelConstants {
                                 new MotorIOTalonFX(
                                         NAME,
                                         getFXConfig(),
-                                        Ports.flywheelMain,
-                                        new TalonFXFollower(Ports.flywheelFollower0, false),
-                                        new TalonFXFollower(Ports.flywheelFollower1, true),
-                                        new TalonFXFollower(Ports.flywheelFollower2, true)));
+                                        Ports.topLeftFlywheel,
+                                        new TalonFXFollower(Ports.topRightFlywheel, true),
+                                        new TalonFXFollower(Ports.bottomLeftFlywheel, false),
+                                        new TalonFXFollower(Ports.bottomRightFlywheel, true)));
 
                 break;
             case SIM:
@@ -133,10 +133,10 @@ public class FlywheelConstants {
                                 new MotorIOTalonFXSim(
                                         NAME,
                                         getFXConfig(),
-                                        Ports.flywheelMain,
-                                        new TalonFXFollower(Ports.flywheelFollower0, false),
-                                        new TalonFXFollower(Ports.flywheelFollower1, true),
-                                        new TalonFXFollower(Ports.flywheelFollower2, true)),
+                                        Ports.topLeftFlywheel,
+                                        new TalonFXFollower(Ports.topRightFlywheel, true),
+                                        new TalonFXFollower(Ports.bottomLeftFlywheel, false),
+                                        new TalonFXFollower(Ports.bottomRightFlywheel, true)),
                                 DCMOTOR,
                                 MOI,
                                 TOLERANCE);

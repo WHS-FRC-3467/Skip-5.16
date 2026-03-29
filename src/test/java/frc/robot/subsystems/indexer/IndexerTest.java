@@ -75,7 +75,7 @@ public class IndexerTest {
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
-            assertTrue((indexer.getFloorSpeed() < 0.1) && (indexer.getCenteringSpeed() < 0.1));
+            assertTrue(indexer.getFloorSpeed() < 0.1);
         } catch (Exception e) {
             fail("Failed to stop indexer: " + e.getMessage());
         }

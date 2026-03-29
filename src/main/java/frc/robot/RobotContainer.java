@@ -59,6 +59,8 @@ import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
 
+import java.util.Set;
+
 /**
  * Container class for the robot that holds all subsystems, controllers, and command bindings. This
  * class is responsible for:
@@ -184,10 +186,14 @@ public class RobotContainer {
                         Commands.parallel(
                                 DriveCommands.staticAimTowardsTarget(drive),
                                 shooter.spinUpShooter(),
-                                Commands.parallel(indexer.shoot(), tower.shoot())
-                                        .onlyWhile(
-                                                shooter.readyToShoot.and(robotState.facingTarget))
-                                        .repeatedly()))
+                                Commands.sequence(
+                                        Commands.waitUntil(
+                                                shooter.readyToShoot.and(robotState.facingTarget)),
+                                        Commands.parallel(
+                                                indexer.shoot(),
+                                                tower.shoot(),
+                                                Commands.defer(
+                                                        intake::slowRetract, Set.of(intake))))))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(),
@@ -372,6 +378,18 @@ public class RobotContainer {
                 new DriveToPose(drive, () -> startPose)
                         .withDistanceTolerance(Meters.of(0.04))
                         .withAngularTolerance(Degrees.of(3)));
+        SmartDashboard.putData(
+                "Reset to Test Pose",
+                Commands.runOnce(
+                        () ->
+                                robotState.resetPose(
+                                        FieldUtil.apply(
+                                                new Pose2d(
+                                                        FieldConstants.Hub.TOP_CENTER_POINT.getX()
+                                                                - FieldConstants.Hub
+                                                                        .HUB_SHOT_DISTANCE,
+                                                        FieldConstants.Hub.TOP_CENTER_POINT.getY(),
+                                                        Rotation2d.kZero)))));
 
         // Diagnostics
         // SmartDashboard.putData(
