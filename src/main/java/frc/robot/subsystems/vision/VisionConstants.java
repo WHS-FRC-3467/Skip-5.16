@@ -34,8 +34,8 @@ import edu.wpi.first.units.measure.Time;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.lib.io.vision.VisionIO;
+import frc.lib.io.vision.VisionIOC2;
 import frc.lib.io.vision.VisionIOPhotonVisionSim;
-import frc.lib.io.vision.VisionIOSlopstar;
 import frc.robot.Constants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
@@ -70,11 +70,11 @@ public class VisionConstants {
     public static final String RIGHT_NAME = "right";
     public static final String BACK_NAME = "back";
 
-    // Combined-frame slice order on the shared slopstar device.
-    private static final int FRONT_SLOPSTAR_CAMERA_INDEX = 0;
-    private static final int LEFT_SLOPSTAR_CAMERA_INDEX = 1;
-    private static final int RIGHT_SLOPSTAR_CAMERA_INDEX = 2;
-    private static final int BACK_SLOPSTAR_CAMERA_INDEX = 3;
+    // Combined-frame slice order on the shared CTWO device.
+    private static final int FRONT_CTWO_CAMERA_INDEX = 0;
+    private static final int LEFT_CTWO_CAMERA_INDEX = 1;
+    private static final int RIGHT_CTWO_CAMERA_INDEX = 2;
+    private static final int BACK_CTWO_CAMERA_INDEX = 3;
 
     public static final Transform3d FRONT_TRANSFORM =
             new Transform3d(
@@ -308,8 +308,7 @@ public class VisionConstants {
     private static Optional<VisionSystemSim> visionSim = Optional.empty();
 
     private static VisionIO getFrontIOReal() {
-        return new VisionIOSlopstar(
-                FRONT, VisionIOSlopstar.defaultsFor(FRONT_SLOPSTAR_CAMERA_INDEX));
+        return new VisionIOC2(FRONT, VisionIOC2.defaultsFor(FRONT_CTWO_CAMERA_INDEX));
     }
 
     private static VisionIOPhotonVisionSim getFrontIOSim() {
@@ -326,8 +325,8 @@ public class VisionConstants {
     }
 
     // private static VisionIO getLeftIOReal() {
-    //     return new VisionIOSlopstar(
-    //             LEFT, VisionIOSlopstar.defaultsFor(LEFT, LEFT_SLOPSTAR_CAMERA_INDEX));
+    //     return new VisionIOCTWO(
+    //             LEFT, VisionIOCTWO.defaultsFor(LEFT, LEFT_CTWO_CAMERA_INDEX));
     // }
 
     // private static VisionIOPhotonVisionSim getLeftIOSim() {
@@ -344,8 +343,8 @@ public class VisionConstants {
     // }
 
     // private static VisionIO getRightIOReal() {
-    //     return new VisionIOSlopstar(
-    //             RIGHT, VisionIOSlopstar.defaultsFor(RIGHT, RIGHT_SLOPSTAR_CAMERA_INDEX));
+    //     return new VisionIOCTWO(
+    //             RIGHT, VisionIOCTWO.defaultsFor(RIGHT, RIGHT_CTWO_CAMERA_INDEX));
     // }
 
     // private static VisionIOPhotonVisionSim getRightIOSim() {
@@ -362,7 +361,7 @@ public class VisionConstants {
     // }
 
     private static VisionIO getBackIOReal() {
-        return new VisionIOSlopstar(BACK, VisionIOSlopstar.defaultsFor(BACK_SLOPSTAR_CAMERA_INDEX));
+        return new VisionIOC2(BACK, VisionIOC2.defaultsFor(BACK_CTWO_CAMERA_INDEX));
     }
 
     private static VisionIOPhotonVisionSim getBackIOSim() {

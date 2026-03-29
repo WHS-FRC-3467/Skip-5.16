@@ -14,7 +14,7 @@ java {
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 def flatbuffersVersion = "25.2.10"
-def flatbuffersSchemaDir = file("slopstar/schema")
+def flatbuffersSchemaDir = file("seetoo/schema")
 def flatbuffersGeneratedSourceDir = file("src/main/generated/flatbuffers/java")
 def flatbuffersToolDir = file("$buildDir/flatbuffers/tooling")
 

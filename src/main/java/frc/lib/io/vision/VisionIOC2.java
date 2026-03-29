@@ -59,7 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * per-camera flatbuffer output into {@link PhotonPipelineResult} instances so the rest of the
  * vision stack can stay unchanged.
  */
-public class VisionIOSlopstar implements VisionIO {
+public class VisionIOC2 implements VisionIO {
     private static final String DEFAULT_DEVICE_ID = "dsv0";
     private static final String DEFAULT_CAMERA_ID = "0";
     private static final String FLATBUFFER_TYPE = "dsv0_fb";
@@ -285,7 +285,7 @@ public class VisionIOSlopstar implements VisionIO {
      * @param cameraProperties Camera configuration including name and calibration
      * @param config slopstar capture and topic configuration
      */
-    public VisionIOSlopstar(CameraProperties cameraProperties, SlopstarConfig config) {
+    public VisionIOC2(CameraProperties cameraProperties, SlopstarConfig config) {
         this.config = validateConfig(config);
         this.deviceContext = getOrCreateDeviceContext(cameraProperties, this.config);
 
