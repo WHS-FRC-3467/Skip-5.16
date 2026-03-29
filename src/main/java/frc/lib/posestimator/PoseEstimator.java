@@ -21,6 +21,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -30,12 +31,14 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Time;
 
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
+import frc.robot.FieldConstants.AprilTagLayoutType;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
 import org.littletonrobotics.junction.Logger;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -47,7 +50,7 @@ public class PoseEstimator {
             double timestampSeconds,
             Pose2d robotPose,
             double avgTagDistance,
-            int numTagsUsed,
+            List<Integer> seenTagIds,
             double linearStdDev,
             double angularStdDev) {}
 
@@ -479,13 +482,27 @@ public class PoseEstimator {
             VisionObservationReason reason,
             double translationNSigma,
             double rotationNSigma) {
+        int[] seenTagIds =
+                observation.seenTagIds() != null
+                        ? observation.seenTagIds().stream().mapToInt(Integer::intValue).toArray()
+                        : new int[] {};
+        Pose3d[] seenTagPoses = new Pose3d[seenTagIds.length];
+        for (int i = 0; i < seenTagIds.length; i++) {
+            seenTagPoses[i] =
+                    AprilTagLayoutType.OFFICIAL
+                            .getLayout()
+                            .getTagPose(seenTagIds[i])
+                            .orElse(Pose3d.kZero);
+        }
+
         Logger.recordOutput(LOG_PREFIX + "Vision/Accepted", accepted);
         Logger.recordOutput(LOG_PREFIX + "Vision/Reason", reason.name());
         Logger.recordOutput(LOG_PREFIX + "Vision/ObservationPose", observation.robotPose());
         Logger.recordOutput(LOG_PREFIX + "Vision/TimestampSeconds", observation.timestampSeconds());
         Logger.recordOutput(
                 LOG_PREFIX + "Vision/AvgTagDistanceMeters", observation.avgTagDistance());
-        Logger.recordOutput(LOG_PREFIX + "Vision/NumTagsUsed", observation.numTagsUsed());
+        Logger.recordOutput(LOG_PREFIX + "Vision/SeenTagIds", seenTagIds);
+        Logger.recordOutput(LOG_PREFIX + "Vision/SeenTagPoses", seenTagPoses);
         Logger.recordOutput(LOG_PREFIX + "Vision/LinearStdDev", observation.linearStdDev());
         Logger.recordOutput(LOG_PREFIX + "Vision/AngularStdDev", observation.angularStdDev());
         Logger.recordOutput(LOG_PREFIX + "Vision/TranslationNSigma", translationNSigma);
@@ -493,15 +510,12 @@ public class PoseEstimator {
         Logger.recordOutput(
                 LOG_PREFIX + "Vision/CandidatePose",
                 candidatePose != null ? candidatePose : Pose2d.kZero);
-        Logger.recordOutput(
-                LOG_PREFIX + "Vision/AcceptedPose",
-                accepted && candidatePose != null ? new Pose2d[] {candidatePose} : new Pose2d[] {});
-        Logger.recordOutput(
-                LOG_PREFIX + "Vision/RejectedPose",
-                !accepted
-                        ? new Pose2d[] {
-                            candidatePose != null ? candidatePose : observation.robotPose()
-                        }
-                        : new Pose2d[] {});
+        if (accepted && candidatePose != null) {
+            Logger.recordOutput(LOG_PREFIX + "Vision/AcceptedPose", candidatePose);
+        } else {
+            Logger.recordOutput(
+                    LOG_PREFIX + "Vision/RejectedPose",
+                    candidatePose != null ? candidatePose : observation.robotPose());
+        }
     }
 }

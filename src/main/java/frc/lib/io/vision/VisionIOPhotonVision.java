@@ -18,6 +18,7 @@ package frc.lib.io.vision;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 
 import org.photonvision.PhotonCamera;
+import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 /**
@@ -27,6 +28,8 @@ import org.photonvision.targeting.PhotonPipelineResult;
  * results over NetworkTables. Used for real robot operation.
  */
 public class VisionIOPhotonVision implements VisionIO {
+    private static final byte[] PHOTON_RESULT_MAGIC = new byte[] {'P', 'H', 'O', 'T', 'O', 'N', 1};
+
     protected final PhotonCamera photonCamera;
 
     /**
@@ -34,7 +37,7 @@ public class VisionIOPhotonVision implements VisionIO {
      *
      * @param cameraProperties Camera configuration including name and calibration
      */
-    public VisionIOPhotonVision(CameraProperties cameraProperties) {
+    public VisionIOPhotonVision(CameraProperties cameraProperties, VisionIOC2.C2Config c2Config) {
         this.photonCamera = new PhotonCamera(cameraProperties.name());
     }
 
@@ -43,9 +46,24 @@ public class VisionIOPhotonVision implements VisionIO {
         inputs.connected = photonCamera.isConnected();
 
         if (!inputs.connected) {
+            inputs.rawResults = new byte[0][];
             return;
         }
 
-        inputs.results = photonCamera.getAllUnreadResults().toArray(PhotonPipelineResult[]::new);
+        inputs.rawResults =
+                photonCamera.getAllUnreadResults().stream()
+                        .map(VisionIOPhotonVision::packPhotonResult)
+                        .toArray(byte[][]::new);
+    }
+
+    private static byte[] packPhotonResult(PhotonPipelineResult result) {
+        Packet packet = new Packet(512);
+        PhotonPipelineResult.photonStruct.pack(packet, result);
+        byte[] packedResult = packet.getWrittenDataCopy();
+        byte[] rawResult = new byte[PHOTON_RESULT_MAGIC.length + packedResult.length];
+        System.arraycopy(PHOTON_RESULT_MAGIC, 0, rawResult, 0, PHOTON_RESULT_MAGIC.length);
+        System.arraycopy(
+                packedResult, 0, rawResult, PHOTON_RESULT_MAGIC.length, packedResult.length);
+        return rawResult;
     }
 }

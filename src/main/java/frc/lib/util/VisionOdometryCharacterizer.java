@@ -126,7 +126,7 @@ public class VisionOdometryCharacterizer {
 
         // Distance & tags
         meanVisDistance += (observation.avgTagDistance() - meanVisDistance) / nVis;
-        meanNumVisTags += (observation.numTagsUsed() - meanNumVisTags) / nVis;
+        meanNumVisTags += (observation.seenTagIds().size() - meanNumVisTags) / nVis;
 
         if (hasSufficientVisionSamples() && hasSufficientOdoSamples()) disable();
     }
@@ -157,8 +157,8 @@ public class VisionOdometryCharacterizer {
         // vision noise and not outliers
         if (observation.avgTagDistance() > 4
                 || observation.avgTagDistance() < 1.5
-                || observation.numTagsUsed() < 2
-                || observation.numTagsUsed() > 4) {
+                || observation.seenTagIds().size() < 2
+                || observation.seenTagIds().size() > 4) {
             return false;
         }
         return true;
@@ -263,7 +263,7 @@ public class VisionOdometryCharacterizer {
         }
         // Assume vision is "ground truth" only if it is a high confidence measurement (multiple
         // tags, close range)
-        if (observation.avgTagDistance() > 5.0 || observation.numTagsUsed() < 3) {
+        if (observation.avgTagDistance() > 5.0 || observation.seenTagIds().size() < 3) {
             return false;
         }
         return true;
