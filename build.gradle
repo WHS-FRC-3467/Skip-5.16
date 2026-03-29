@@ -345,6 +345,9 @@ tasks.withType(JavaCompile).configureEach {
 project.compileJava.dependsOn(createVersionFile)
 project.compileJava.dependsOn("generateFlatbuffers")
 project.compileJava.dependsOn("spotlessApply")
+tasks.named("delombok").configure {
+    dependsOn(tasks.named("generateFlatbuffers"))
+}
 gversion {
     srcDir       = "src/main/java/"
     classPackage = "frc.robot"
