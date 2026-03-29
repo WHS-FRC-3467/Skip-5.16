@@ -25,6 +25,10 @@ import java.util.List;
 public class Lights {
     private final LightsIO io;
 
+    public void periodic() {
+        io.periodic();
+    }
+
     /**
      * Constructs Lights.
      *
