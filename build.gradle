@@ -213,6 +213,7 @@ spotless {
     java {
         // Target all Java files
         target '**/*.java'
+        exclude 'src/main/java/frc/robot/generated/*'
         googleJavaFormat().reorderImports(true).aosp()
         trimTrailingWhitespace()
         endWithNewline()
