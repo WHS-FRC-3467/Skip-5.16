@@ -37,7 +37,7 @@ public class VisionIOPhotonVision implements VisionIO {
      *
      * @param cameraProperties Camera configuration including name and calibration
      */
-    public VisionIOPhotonVision(CameraProperties cameraProperties, VisionIOC2.C2Config c2Config) {
+    public VisionIOPhotonVision(CameraProperties cameraProperties) {
         this.photonCamera = new PhotonCamera(cameraProperties.name());
     }
 
