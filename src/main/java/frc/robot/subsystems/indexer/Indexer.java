@@ -40,28 +40,28 @@ import java.util.Set;
  * within the robot. The indexer can pull game pieces in, expel them, or stop. Uses a flywheel
  * mechanism for velocity control.
  */
-public class IndexerSuperstructure extends SubsystemBase {
-    private final FlywheelMechanism<?> floorIO;
+public class Indexer extends SubsystemBase {
+    private final FlywheelMechanism<?> io;
 
-    private static final LoggedTunableNumber FLOOR_SHOOT_RPS =
+    private static final LoggedTunableNumber SHOOT_RPS =
             new LoggedTunableNumber(
                     IndexerConstants.NAME + "/ShootRPS",
                     IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
-    private static final LoggedTunableNumber FLOOR_EJECT_RPS =
+    private static final LoggedTunableNumber EJECT_RPS =
             new LoggedTunableNumber(
                     IndexerConstants.NAME + "/EjectRPS",
                     -IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
-    private static final LoggedTunableNumber FLOOR_FEED_RPS =
+    private static final LoggedTunableNumber FEED_RPS =
             new LoggedTunableNumber(
                     IndexerConstants.NAME + "/FeedRPS",
                     IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private final Trigger tuningModeEnabled =
             new Trigger(new LoggedTunableBoolean(getName() + "/Tuning/Enable", false));
-    private final LoggedTunableNumber tuningModeFloorRPS =
-            new LoggedTunableNumber(getName() + "/Tuning/FloorSpeedRPS", 0.0);
+    private final LoggedTunableNumber tuningModeRPS =
+            new LoggedTunableNumber(getName() + "/Tuning/SpeedRPS", 0.0);
 
     // From logs
     private final LoggedTunableNumber jamDetectionVelocityError =
@@ -88,17 +88,17 @@ public class IndexerSuperstructure extends SubsystemBase {
     }
 
     private Command createTuningRunCommand() {
-        return this.run(() -> runVelocity(RotationsPerSecond.of(tuningModeFloorRPS.getAsDouble())))
+        return this.run(() -> runVelocity(RotationsPerSecond.of(tuningModeRPS.getAsDouble())))
                 .asProxy();
     }
 
     /**
-     * Constructs an IndexerSuperstructure subsystem.
+     * Constructs an Indexer subsystem.
      *
-     * @param floorIO The flywheel mechanism for controlling the indexer floor motors
+     * @param io The flywheel mechanism for controlling the indexer floor motors
      */
-    public IndexerSuperstructure(FlywheelMechanism<?> floorIO) {
-        this.floorIO = floorIO;
+    public Indexer(FlywheelMechanism<?> io) {
+        this.io = io;
         tuningModeEnabled.whileTrue(tuningModeCommand);
 
         isJammed =
@@ -106,13 +106,13 @@ public class IndexerSuperstructure extends SubsystemBase {
                                 getName() + "/IsJammed",
                                 () -> {
                                     boolean velocityTripped =
-                                            floorIO.getVelocityError()
+                                            io.getVelocityError()
                                                     .gt(
                                                             RotationsPerSecond.of(
                                                                     jamDetectionVelocityError
                                                                             .get()));
                                     boolean currentTripped =
-                                            floorIO.getTorqueCurrent()
+                                            io.getTorqueCurrent()
                                                     .gt(Amps.of(jamDetectionTorqueCurrent.get()));
                                     return velocityTripped && currentTripped;
                                 })
@@ -122,11 +122,11 @@ public class IndexerSuperstructure extends SubsystemBase {
     @Override
     public void periodic() {
         LoggerHelper.recordCurrentCommand(this.getName(), this);
-        floorIO.periodic();
+        io.periodic();
     }
 
-    private void runVelocity(AngularVelocity floorVelocity) {
-        floorIO.runVelocity(floorVelocity, PIDSlot.SLOT_0);
+    private void runVelocity(AngularVelocity velocity) {
+        io.runVelocity(velocity, PIDSlot.SLOT_0);
     }
 
     /**
@@ -139,7 +139,7 @@ public class IndexerSuperstructure extends SubsystemBase {
     }
 
     private void stop() {
-        floorIO.runCoast();
+        io.runCoast();
     }
 
     /**
@@ -158,6 +158,11 @@ public class IndexerSuperstructure extends SubsystemBase {
         CommandScheduler.getInstance().cancel(tuningModeCommand);
     }
 
+    /**
+     * Run the indexer at the foundtain velocity (5RPS)
+     *
+     * @return a command to fountain
+     */
     public Command fountain() {
         return this.runOnce(() -> runVelocity(RotationsPerSecond.of(5.0)));
     }
@@ -170,17 +175,16 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     public Command shoot() {
         return Commands.repeatingSequence(
-                        this.runOnce(
-                                () -> runVelocity(RotationsPerSecond.of(FLOOR_SHOOT_RPS.get()))),
+                        this.runOnce(() -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get()))),
                         Commands.waitUntil(isJammed),
                         this.runOnce(
                                 () ->
-                                        floorIO.runCurrent(
+                                        io.runCurrent(
                                                 Amps.of(
                                                         Math.copySign(
                                                                 jamDetectionTorqueCurrentResponse
                                                                         .get(),
-                                                                -FLOOR_SHOOT_RPS.get())))),
+                                                                -SHOOT_RPS.get())))),
                         Commands.defer(
                                 () -> Commands.waitSeconds(jamDetectionResponseLengthSeconds.get()),
                                 Set.of()))
@@ -195,9 +199,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return a command that runs the indexer at feeding speed
      */
     public Command feed() {
-        return this.startEnd(
-                        () -> runVelocity(RotationsPerSecond.of(FLOOR_FEED_RPS.get())),
-                        () -> stop())
+        return this.startEnd(() -> runVelocity(RotationsPerSecond.of(FEED_RPS.get())), () -> stop())
                 .withName("Feed");
     }
 
@@ -209,8 +211,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      */
     public Command eject() {
         return this.startEnd(
-                        () -> runVelocity(RotationsPerSecond.of(FLOOR_EJECT_RPS.get())),
-                        () -> stop())
+                        () -> runVelocity(RotationsPerSecond.of(EJECT_RPS.get())), () -> stop())
                 .withName("Eject");
     }
 
@@ -220,7 +221,7 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return true if the indexer is within tolerance of the setpoint, false otherwise
      */
     public boolean nearSetpoint() {
-        return floorIO.getVelocityError().lte(IndexerConstants.TOLERANCE);
+        return io.getVelocityError().lte(IndexerConstants.TOLERANCE);
     }
 
     /**
@@ -229,29 +230,29 @@ public class IndexerSuperstructure extends SubsystemBase {
      * @return The velocity in rotations per second
      */
     public double getFloorSpeed() {
-        return floorIO.getVelocity().in(RotationsPerSecond);
+        return io.getVelocity().in(RotationsPerSecond);
     }
 
     /**
-     * Gets the current linear velocity of the indexer floor motors.
+     * Gets the current linear velocity of the indexer motors.
      *
      * @return The linear velocity in meters per second.
      */
     public LinearVelocity getFloorLinearVelocity() {
-        return floorIO.getLinearVelocity();
+        return io.getLinearVelocity();
     }
 
     /**
      * Sets the current linear velocities of the indexer motors.
      *
-     * @param floorVelocity the desired linear velocity for the floor mechanism (meters per second)
+     * @param velocity the desired linear velocity for the mechanism (meters per second)
      */
-    public void setLinearVelocity(LinearVelocity floorVelocity) {
-        floorIO.runLinearVelocity(floorVelocity, PIDSlot.SLOT_0);
+    public void setLinearVelocity(LinearVelocity velocity) {
+        io.runLinearVelocity(velocity, PIDSlot.SLOT_0);
     }
 
     /** Closes the indexer mechanism and releases resources. */
     public void close() {
-        floorIO.close();
+        io.close();
     }
 }
