@@ -305,7 +305,7 @@ public class VisionConstants {
     private static final VisionIOC2.C2Config BACK_C2_CONFIG = VisionIOC2.defaultsFor(3);
 
     private static VisionIOPhotonVision getFrontIOReal() {
-        return new VisionIOPhotonVision(FRONT, FRONT_C2_CONFIG);
+        return new VisionIOPhotonVision(FRONT);
     }
 
     private static VisionIOPhotonVisionSim getFrontIOSim() {
@@ -316,7 +316,6 @@ public class VisionConstants {
 
         return new VisionIOPhotonVisionSim(
                 FRONT,
-                FRONT_C2_CONFIG,
                 visionSim.get(),
                 () -> RobotState.getInstance().getOdometryPose(),
                 AprilTagLayoutType.OFFICIAL.getLayout());
@@ -357,7 +356,7 @@ public class VisionConstants {
     // }
 
     private static VisionIOPhotonVision getBackIOReal() {
-        return new VisionIOPhotonVision(BACK, BACK_C2_CONFIG);
+        return new VisionIOPhotonVision(BACK);
     }
 
     private static VisionIOPhotonVisionSim getBackIOSim() {
@@ -368,7 +367,6 @@ public class VisionConstants {
 
         return new VisionIOPhotonVisionSim(
                 BACK,
-                BACK_C2_CONFIG,
                 visionSim.get(),
                 () -> RobotState.getInstance().getOdometryPose(),
                 AprilTagLayoutType.OFFICIAL.getLayout());
