@@ -22,39 +22,35 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-/** Native Choreo routine for the neutral-zone multi-piece autonomous variants. */
+/** Native Choreo routine for the depot-side multi-piece autonomous variants. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class NeutralAuto {
+public final class DepotShootAuto {
     private static final Alert TRAJECTORIES_MISSING =
-            new Alert("Neutral Auto Trajectories Missing, Auto(s) Unavailable", AlertType.kError);
+            new Alert("Depot Auto Trajectories Missing, Auto(s) Unavailable", AlertType.kError);
 
-    /**
-     * Builds the selected neutral auto variant.
-     *
-     * @param shouldMirror Whether to mirror the route for the opposite starting side
-     * @param isSafe Whether to use the safer first segment instead of the aggressive one
-     */
-    public static Optional<AutoOption> create(
-            AutoContext ctx, boolean shouldMirror, boolean isSafe) {
+    /** Builds the safe or aggressive depot autonomous routine. */
+    public static Optional<AutoOption> create(AutoContext ctx, boolean isSafe) {
         List<String> names =
                 isSafe
                         ? List.of(
                                 ChoreoTraj.NeutralSafe1.name(),
+                                ChoreoTraj.Depot1.name(),
                                 ChoreoTraj.NeutralSafe2.name(),
                                 ChoreoTraj.Neutral2.name())
                         : List.of(
                                 ChoreoTraj.Neutral1.name(),
+                                ChoreoTraj.Depot1.name(),
                                 ChoreoTraj.NeutralSafe2.name(),
                                 ChoreoTraj.Neutral2.name());
         List<Trajectory<SwerveSample>> trajectories =
-                AutoUtil.loadTrajectories(names, shouldMirror).orElse(null);
+                AutoUtil.loadTrajectories(names, false).orElse(null);
         if (trajectories == null) {
             TRAJECTORIES_MISSING.set(true);
             return Optional.empty();
         }
 
         Optional<Trajectory<SwerveSample>> tunnelTrajectory =
-                AutoUtil.loadTrajectory(ChoreoTraj.TunnelPath.name(), shouldMirror);
+                AutoUtil.loadTrajectory(ChoreoTraj.TunnelPath.name(), false);
 
         return Optional.of(
                 AutoUtil.trajectoryOption(
@@ -62,16 +58,14 @@ public final class NeutralAuto {
                         () -> {
                             AutoRoutine routine =
                                     ctx.autoFactory()
-                                            .newRoutine(
-                                                    "Neutral"
-                                                            + (isSafe ? "Safe" : "Aggressive")
-                                                            + (shouldMirror ? "Right" : "Left"));
+                                            .newRoutine("Depot" + (isSafe ? "Safe" : "Aggressive"));
                             AutoTrajectory first = routine.trajectory(trajectories.get(0));
                             AutoTrajectory second = routine.trajectory(trajectories.get(1));
                             AutoTrajectory third = routine.trajectory(trajectories.get(2));
+                            AutoTrajectory fourth = routine.trajectory(trajectories.get(3));
                             Optional<AutoTrajectory> tunnel =
                                     tunnelTrajectory.map(routine::trajectory);
-                            AutoUtil.bindEvents(ctx, first, second, third);
+                            AutoUtil.bindEvents(ctx, first, second, third, fourth);
                             routine.active()
                                     .onTrue(
                                             Commands.sequence(
@@ -87,23 +81,29 @@ public final class NeutralAuto {
                                                             Set.of()),
                                                     first.spawnCmd()));
 
-                            first.done().onTrue(AutoCommands.shootThenFollow(ctx, 3.0, second));
+                            first.done().onTrue(AutoCommands.shootThenFollow(ctx, 2.5, second));
                             AutoCommands.retryTrigger(routine, first)
                                     .onTrue(
                                             AutoCommands.recoverThenFollow(
-                                                    ctx, first, tunnel, 3.0, second));
+                                                    ctx, first, tunnel, 2.5, second));
 
-                            second.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, third));
+                            second.done().onTrue(AutoCommands.shootThenFollow(ctx, 2.5, third));
                             AutoCommands.retryTrigger(routine, second)
                                     .onTrue(
                                             AutoCommands.recoverThenFollow(
-                                                    ctx, second, tunnel, 10.0, third));
+                                                    ctx, second, tunnel, 2.5, third));
 
-                            third.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, second));
+                            third.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, fourth));
                             AutoCommands.retryTrigger(routine, third)
                                     .onTrue(
                                             AutoCommands.recoverThenFollow(
-                                                    ctx, third, tunnel, 10.0, second));
+                                                    ctx, third, tunnel, 10.0, fourth));
+
+                            fourth.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, third));
+                            AutoCommands.retryTrigger(routine, fourth)
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, fourth, tunnel, 10.0, third));
 
                             return routine;
                         }));

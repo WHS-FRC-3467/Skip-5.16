@@ -25,7 +25,6 @@ import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.io.motor.MotorIOTalonFX;
 import frc.lib.io.motor.MotorIOTalonFX.TalonFXFollower;
 import frc.lib.io.motor.MotorIOTalonFXSim;
-import frc.lib.mechanisms.DistanceControlledMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismReal;
 import frc.lib.mechanisms.flywheel.FlywheelMechanismSim;
@@ -68,8 +67,10 @@ public class IndexerFloorConstants {
         config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
         config.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
-        config.CurrentLimits.StatorCurrentLimitEnable = Robot.isReal();
-        config.CurrentLimits.StatorCurrentLimit = 80.0;
+        if (Robot.isReal()) {
+            config.TorqueCurrent.PeakForwardTorqueCurrent = 80.0;
+            config.TorqueCurrent.PeakReverseTorqueCurrent = -80.0;
+        }
 
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
@@ -96,7 +97,7 @@ public class IndexerFloorConstants {
      *
      * @return A fully configured IndexerSuperstructure subsystem
      */
-    public static DistanceControlledMechanism<FlywheelMechanism<?>> get() {
+    public static FlywheelMechanism<?> get() {
         FlywheelMechanism<?> mechanism;
         switch (Constants.currentMode) {
             case REAL:
@@ -125,6 +126,7 @@ public class IndexerFloorConstants {
                 throw new IllegalStateException("Unrecognized Robot Mode");
         }
         mechanism.enableTunablePID(PIDSlot.SLOT_0, SLOT0_PID);
-        return new DistanceControlledMechanism<>(mechanism, Inches.of(0.5));
+        mechanism.withRadius(RADIUS);
+        return mechanism;
     }
 }

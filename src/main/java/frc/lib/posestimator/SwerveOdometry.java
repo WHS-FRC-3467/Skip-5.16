@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Integrates swerve-drive odometry observations to maintain a continuous estimate of the robot's
@@ -122,6 +123,15 @@ public class SwerveOdometry {
     /** The most recent odometry-based robot pose. */
     @Getter private Pose2d odometryPose = Pose2d.kZero;
 
+    /** Optional validator for candidate odometry poses. */
+    private Predicate<Pose2d> poseValidator = pose -> true;
+
+    /**
+     * True when a pose reset has occurred and the next odometry observation should re-seed the
+     * module position baseline to avoid a spurious jump.
+     */
+    private boolean pendingPositionReset = false;
+
     /**
      * Constructs a new {@code SwerveOdometry}.
      *
@@ -169,6 +179,16 @@ public class SwerveOdometry {
         double timestampSeconds = observation.timestamp().in(Seconds);
         SwerveModulePosition[] currentPositions = observation.swervePositions();
 
+        if (pendingPositionReset) {
+            lastModulePositions = copyPositions(currentPositions);
+            observation
+                    .gyroAngle()
+                    .ifPresent(angle -> gyroOffset = odometryPose.getRotation().minus(angle));
+            odometryBuffer.addSample(timestampSeconds, odometryPose);
+            pendingPositionReset = false;
+            return;
+        }
+
         Twist2d twist =
                 computeTwist(lastModulePositions, currentPositions, observation.badWheels());
 
@@ -176,7 +196,41 @@ public class SwerveOdometry {
         lastModulePositions = copyPositions(currentPositions);
 
         // Integrate twist into odometry pose
-        odometryPose = odometryPose.exp(twist);
+        Pose2d candidatePose = odometryPose.exp(twist);
+
+        // If gyro angle is available, correct heading drift
+        if (observation.gyroAngle().isPresent()) {
+            Rotation2d angle = observation.gyroAngle().get();
+            candidatePose = new Pose2d(candidatePose.getTranslation(), angle.plus(gyroOffset));
+        }
+
+        odometryPose = resolveValidatedPose(candidatePose, observation.gyroAngle());
+
+        // Store pose for later interpolation (e.g., vision sync)
+        odometryBuffer.addSample(timestampSeconds, odometryPose);
+    }
+
+    /**
+     * Adds an odometry observation to the integrator, ignoring everything except gyro.
+     *
+     * @param observation an {@link OdometryObservation} containing an optional gyro angle
+     */
+    public void addGyroObservation(OdometryObservation observation) {
+        double timestampSeconds = observation.timestamp().in(Seconds);
+
+        if (pendingPositionReset) {
+            // While awaiting a position reset, still apply gyro heading updates to the pose
+            observation
+                    .gyroAngle()
+                    .ifPresent(
+                            angle ->
+                                    odometryPose =
+                                            new Pose2d(
+                                                    odometryPose.getTranslation(),
+                                                    angle.plus(gyroOffset)));
+            odometryBuffer.addSample(timestampSeconds, odometryPose);
+            return;
+        }
 
         // If gyro angle is available, correct heading drift
         observation
@@ -193,25 +247,24 @@ public class SwerveOdometry {
     }
 
     /**
-     * Adds an odometry observation to the integrator, ignoring everything except gyro.
+     * Sets a validator for candidate odometry poses. When the validator returns {@code false},
+     * translation updates are rejected (heading may still update if gyro data is present).
      *
-     * @param observation an {@link OdometryObservation} containing an optional gyro angle
+     * @param poseValidator predicate that returns {@code true} for acceptable poses
      */
-    public void addGyroObservation(OdometryObservation observation) {
-        double timestampSeconds = observation.timestamp().in(Seconds);
+    public void setPoseValidator(Predicate<Pose2d> poseValidator) {
+        this.poseValidator = poseValidator == null ? pose -> true : poseValidator;
+    }
 
-        // If gyro angle is available, correct heading drift
-        observation
-                .gyroAngle()
-                .ifPresent(
-                        angle ->
-                                odometryPose =
-                                        new Pose2d(
-                                                odometryPose.getTranslation(),
-                                                angle.plus(gyroOffset)));
-
-        // Store pose for later interpolation (e.g., vision sync)
-        odometryBuffer.addSample(timestampSeconds, odometryPose);
+    private Pose2d resolveValidatedPose(Pose2d candidatePose, Optional<Rotation2d> gyroAngle) {
+        if (poseValidator.test(candidatePose)) {
+            return candidatePose;
+        }
+        if (gyroAngle.isPresent()) {
+            // Keep translation stable but allow heading to track the gyro.
+            return new Pose2d(odometryPose.getTranslation(), gyroAngle.get().plus(gyroOffset));
+        }
+        return odometryPose;
     }
 
     private Twist2d computeTwist(
@@ -302,5 +355,6 @@ public class SwerveOdometry {
         gyroOffset = pose.getRotation().minus(odometryPose.getRotation().minus(gyroOffset));
         odometryPose = pose;
         odometryBuffer.clear();
+        pendingPositionReset = true;
     }
 }
