@@ -12,15 +12,15 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
-package frc.robot.util;
+package frc.lib.util;
 
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
  * Extended CommandGenericHID with additional functionality for FRC use. This class is intended to
- * provide support for a generic digital button board with multiple buttons/switches and LEDs/buzzers
- * but no axes.
+ * provide support for a generic digital button board with multiple buttons/switches and
+ * LEDs/buzzers but no axes.
  */
 public class ButtonBoard extends CommandGenericHID {
     public ButtonBoard(int port) {
@@ -30,10 +30,4 @@ public class ButtonBoard extends CommandGenericHID {
     public Trigger buttonBoardButton(int buttonNumber) {
         return super.button(buttonNumber);
     }
-
-    // public Command flashLED(double seconds) {
-    //     return Commands.startEnd(
-    //         () -> setLED(true),
-    //         () -> setLED(false)).withTimeout(seconds);
-    // }
 }
