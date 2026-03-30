@@ -161,7 +161,7 @@ public class ObjectDetector extends SubsystemBase {
         return new Translation2d(point.getMeasureX(), Meters.of(y));
     }
 
-    /** Ascertain whether a detected object's pose is within an ROI. */
+    /** Ascertain whether a detected object's pose is within the provided ROI. */
     private boolean isObjectWithinROI(
             Optional<ObjectDetectionObservation> observation,
             Translation2d cornerA,
@@ -183,7 +183,11 @@ public class ObjectDetector extends SubsystemBase {
                 && objectPose.getY() <= maxY;
     }
 
-    /** Generate a spatial histogram within the provided ROI and estimate the argmax. */
+    /**
+     * Generates a spatial histogram within the provided ROI and estimates the argmax. Assumes the
+     * provided object poses are already within the ROI. Filtering can be done by {@link
+     * isObjectWithinROI}.
+     */
     private Optional<LaneTarget> computeBestLaneTarget(
             List<Optional<ObjectDetectionObservation>> observations,
             Translation2d cornerA,
