@@ -11,8 +11,8 @@ import edu.wpi.first.units.measure.*;
  * in the Choreo GUI.
  */
 public final class ChoreoVars {
-    public static final Distance Neutral2ML_Safe_X1a = Units.Meters.of(5.95);
-    public static final Distance Neutral2ML_Safe_X3a = Units.Meters.of(7.8);
+    public static final Distance Neutral2ML_Safe_X1 = Units.Meters.of(5.95);
+    public static final Distance Neutral2ML_Safe_X3 = Units.Meters.of(7.8);
     public static final Distance Neutral2ML_Safe_Y = Units.Meters.of(4.2);
 
     public static final class Poses {

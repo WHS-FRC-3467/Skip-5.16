@@ -56,8 +56,8 @@ public record ChoreoTraj(
         new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
         new Pose2d(6.55, 7.39928, Rotation2d.fromRadians(1.5708))
     );
-    public static final ChoreoTraj Neutral2ML_Safe1a = new ChoreoTraj(
-        "Neutral2ML_Safe1a",
+    public static final ChoreoTraj Neutral2ML_Safe1 = new ChoreoTraj(
+        "Neutral2ML_Safe1",
         OptionalInt.empty(),
         5.43553,
         new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
@@ -91,15 +91,15 @@ public record ChoreoTraj(
         new Pose2d(5.65, 7.39928, Rotation2d.fromRadians(-1.5708)),
         new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
     );
-    public static final ChoreoTraj Neutral2ML_Safe2a = new ChoreoTraj(
-        "Neutral2ML_Safe2a",
+    public static final ChoreoTraj Neutral2ML_Safe2 = new ChoreoTraj(
+        "Neutral2ML_Safe2",
         OptionalInt.empty(),
         4.79101,
         new Pose2d(6.55, 7.39928, Rotation2d.fromRadians(1.5708)),
         new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
     );
-    public static final ChoreoTraj Neutral2ML_Safe3a = new ChoreoTraj(
-        "Neutral2ML_Safe3a",
+    public static final ChoreoTraj Neutral2ML_Safe3 = new ChoreoTraj(
+        "Neutral2ML_Safe3",
         OptionalInt.empty(),
         5.32222,
         new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
@@ -116,13 +116,13 @@ public record ChoreoTraj(
         Map.entry("Neutral1Nashoba", Neutral1Nashoba),
         Map.entry("Neutral2", Neutral2),
         Map.entry("Neutral2ML_0", Neutral2ML_0),
-        Map.entry("Neutral2ML_Safe1a", Neutral2ML_Safe1a),
+        Map.entry("Neutral2ML_Safe1", Neutral2ML_Safe1),
         Map.entry("NeutralSafe1", NeutralSafe1),
         Map.entry("NeutralSafe1Nashoba", NeutralSafe1Nashoba),
         Map.entry("NeutralSafe2", NeutralSafe2),
         Map.entry("TunnelPath", TunnelPath),
-        Map.entry("Neutral2ML_Safe2a", Neutral2ML_Safe2a),
-        Map.entry("Neutral2ML_Safe3a", Neutral2ML_Safe3a)
+        Map.entry("Neutral2ML_Safe2", Neutral2ML_Safe2),
+        Map.entry("Neutral2ML_Safe3", Neutral2ML_Safe3)
     );
 
     /**
