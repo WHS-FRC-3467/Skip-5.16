@@ -180,8 +180,14 @@ public class AprilTagCamera {
 
     private PhotonPipelineResult[] decodeUnreadResults() {
         ArrayList<PhotonPipelineResult> decodedResults = new ArrayList<>(inputs.rawResults.length);
-        for (byte[] rawResult : inputs.rawResults) {
-            PhotonPipelineResult decodedResult = decodeResult(rawResult);
+        for (int i = 0; i < inputs.rawResults.length; i++) {
+            byte[] rawResult = inputs.rawResults[i];
+            long captureTimestampUs =
+                    i < inputs.captureTimestampsUs.length ? inputs.captureTimestampsUs[i] : 0;
+            long publishTimestampUs =
+                    i < inputs.publishTimestampsUs.length ? inputs.publishTimestampsUs[i] : 0;
+            PhotonPipelineResult decodedResult =
+                    decodeResult(rawResult, captureTimestampUs, publishTimestampUs);
             if (decodedResult != null) {
                 decodedResults.add(decodedResult);
             }
@@ -189,14 +195,15 @@ public class AprilTagCamera {
         return decodedResults.toArray(PhotonPipelineResult[]::new);
     }
 
-    private PhotonPipelineResult decodeResult(byte[] rawResult) {
+    private PhotonPipelineResult decodeResult(
+            byte[] rawResult, long captureTimestampUs, long publishTimestampUs) {
         if (rawResult == null || rawResult.length == 0) {
             return null;
         }
         if (isPhotonResult(rawResult)) {
             return decodePhotonResult(rawResult);
         }
-        return decodeC2Result(rawResult);
+        return decodeC2Result(rawResult, captureTimestampUs, publishTimestampUs);
     }
 
     private static boolean isPhotonResult(byte[] rawResult) {
@@ -215,7 +222,8 @@ public class AprilTagCamera {
         }
     }
 
-    private PhotonPipelineResult decodeC2Result(byte[] rawResult) {
+    private PhotonPipelineResult decodeC2Result(
+            byte[] rawResult, long captureTimestampUs, long publishTimestampUs) {
         if (tagLayout == null || cameraIndex < 0) {
             return null;
         }
@@ -229,17 +237,25 @@ public class AprilTagCamera {
 
         CameraOutput cameraOutput = findCameraOutput(frame, cameraIndex);
         if (cameraOutput == null) {
-            long captureTimestampUs = frame.timestampUs();
-            return createEmptyC2Result(captureTimestampUs, captureTimestampUs);
+            long resolvedCaptureTimestampUs =
+                    captureTimestampUs != 0 ? captureTimestampUs : frame.timestampUs();
+            long resolvedPublishTimestampUs =
+                    publishTimestampUs != 0 ? publishTimestampUs : resolvedCaptureTimestampUs;
+            return createEmptyC2Result(resolvedCaptureTimestampUs, resolvedPublishTimestampUs);
         }
 
-        long captureTimestampUs =
-                cameraOutput.timestampUs() != 0 ? cameraOutput.timestampUs() : frame.timestampUs();
-        long publishTimestampUs = captureTimestampUs;
+        long resolvedCaptureTimestampUs =
+                captureTimestampUs != 0
+                        ? captureTimestampUs
+                        : (cameraOutput.timestampUs() != 0
+                                ? cameraOutput.timestampUs()
+                                : frame.timestampUs());
+        long resolvedPublishTimestampUs =
+                publishTimestampUs != 0 ? publishTimestampUs : resolvedCaptureTimestampUs;
 
         CameraObservation observation = cameraOutput.cameraObservation();
         if (observation == null || observation.solution0() == null) {
-            return createEmptyC2Result(captureTimestampUs, publishTimestampUs);
+            return createEmptyC2Result(resolvedCaptureTimestampUs, resolvedPublishTimestampUs);
         }
 
         PoseSolution primarySolution = observation.solution0();
@@ -305,7 +321,12 @@ public class AprilTagCamera {
         }
 
         return new PhotonPipelineResult(
-                c2SequenceId++, captureTimestampUs, publishTimestampUs, 0, targets, multitagResult);
+                c2SequenceId++,
+                resolvedCaptureTimestampUs,
+                resolvedPublishTimestampUs,
+                0,
+                targets,
+                multitagResult);
     }
 
     private CameraOutput findCameraOutput(Frame frame, int cameraIndex) {

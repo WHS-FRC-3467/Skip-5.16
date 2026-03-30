@@ -36,6 +36,12 @@ public interface VisionIO {
 
         /** Raw unread frame payloads from the camera since last update. */
         public byte[][] rawResults = new byte[0][];
+
+        /** NT-synced capture timestamps for each unread result, in microseconds. */
+        public long[] captureTimestampsUs = new long[0];
+
+        /** NT-synced publish timestamps for each unread result, in microseconds. */
+        public long[] publishTimestampsUs = new long[0];
     }
 
     /**
