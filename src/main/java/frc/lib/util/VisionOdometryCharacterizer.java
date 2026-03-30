@@ -137,8 +137,9 @@ public class VisionOdometryCharacterizer {
      * this characterizer produces LINEAR_STDDEV_BASELINE & ANGULAR_STDDEV_BASELINE.
      *
      * <p>Note that avgTagDistance is used as a proxy for measurement variance since variance scales
-     * with distance, and numTagsUsed is used as a proxy for number of independent measurements
-     * contributing to the correction since variance scales with 1/N such that sigma^2 ~ d^2 / N.
+     * with distance, and the number of tags used is used as a proxy for number of independent
+     * measurements contributing to the correction since variance scales with 1/N such that sigma^2
+     * ~ d^2 / N.
      */
     private static boolean validVisionMeasurement(
             Pose2d predictedPose, VisionPoseObservation observation) {
