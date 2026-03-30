@@ -105,7 +105,6 @@ public class AprilTagCamera {
     private final AprilTagFieldLayout tagLayout;
     private final int cameraIndex;
 
-    private final Alert mismatchedIntrinsicsAlert;
     private final Alert disconnectAlert;
     private final Debouncer disconnectDebouncer = new Debouncer(0.25);
     private long c2SequenceId = 0;
@@ -126,13 +125,6 @@ public class AprilTagCamera {
             VisionIO io,
             int cameraIndex,
             AprilTagFieldLayout tagLayout) {
-        mismatchedIntrinsicsAlert =
-                new Alert(
-                        "Camera "
-                                + properties.name()
-                                + "'s supplied intrinsics in code do not match intrinsics from"
-                                + " replayed inputs! Defaulting to inputs!",
-                        AlertType.kWarning);
         disconnectAlert =
                 new Alert("Camera " + properties.name() + " is Disconnected!", AlertType.kError);
 
@@ -154,7 +146,6 @@ public class AprilTagCamera {
                         properties.fps(),
                         properties.latency(),
                         properties.latencyStdDev());
-        mismatchedIntrinsicsAlert.set(false);
     }
 
     /**
