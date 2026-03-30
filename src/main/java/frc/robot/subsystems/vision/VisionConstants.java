@@ -326,7 +326,6 @@ public class VisionConstants {
     private static VisionIOPhotonVisionSim getLeftIOSim() {
         return new VisionIOPhotonVisionSim(
                 LEFT,
-                LEFT_C2_CONFIG,
                 getVisionSim(),
                 () -> RobotState.getInstance().getOdometryPose(),
                 AprilTagLayoutType.OFFICIAL.getLayout());
@@ -339,7 +338,6 @@ public class VisionConstants {
     private static VisionIOPhotonVisionSim getRightIOSim() {
         return new VisionIOPhotonVisionSim(
                 RIGHT,
-                RIGHT_C2_CONFIG,
                 getVisionSim(),
                 () -> RobotState.getInstance().getOdometryPose(),
                 AprilTagLayoutType.OFFICIAL.getLayout());
