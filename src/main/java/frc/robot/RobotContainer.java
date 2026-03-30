@@ -132,6 +132,18 @@ public class RobotContainer {
         autoChooser.addOption(
                 "Safe-Right", new NeutralAuto(drive, intake, indexer, tower, shooter, true, true));
 
+        // STSE Autos
+        autoChooser.addOption(
+                "STSE-Left", new STSEAuto(drive, intake, indexer, tower, shooter, false, false));
+        autoChooser.addOption(
+                "STSE-Right", new STSEAuto(drive, intake, indexer, tower, shooter, true, false));
+        autoChooser.addOption(
+                "STSE-Safe-Left",
+                new STSEAuto(drive, intake, indexer, tower, shooter, false, true));
+        autoChooser.addOption(
+                "STSE-Safe-Right",
+                new STSEAuto(drive, intake, indexer, tower, shooter, true, true));
+
         // Depot Autos
         autoChooser.addOption(
                 "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));

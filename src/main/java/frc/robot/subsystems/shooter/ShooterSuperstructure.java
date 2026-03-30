@@ -191,7 +191,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     () ->
                             detectFlywheelDrop(
                                     MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
-   
+
     // Determines whether the hopper is empty for at least 0.5s while shooting, using
     // staticShotState as a proxy for a shot
     private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
@@ -207,8 +207,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                             () ->
                                     hopperEmptyDebouncer.calculate(
                                             staticShotState.getAsBoolean()
-                                                    && !ballTrigger.getAsBoolean()
-                                                  ));
+                                                    && !ballTrigger.getAsBoolean()));
 
     /**
      * Gets the total flywheel trim to apply, including both default and user-defined runtime trim
@@ -227,10 +226,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      * @param leftFlywheelIO the left flywheel mechanism for spinning up shots
      * @param rightFlywheelIO the right flywheel mechanism for spinning up shots
      */
-    public ShooterSuperstructure(
-            RotaryMechanism<?, ?> hoodIO,
-            FlywheelMechanism<?> flywheelIO
-           ) {
+    public ShooterSuperstructure(RotaryMechanism<?, ?> hoodIO, FlywheelMechanism<?> flywheelIO) {
         this.hoodIO = hoodIO;
         this.flywheelIO = flywheelIO;
         attachBallTriggers();
@@ -242,9 +238,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private boolean isFlywheelAt(AngularVelocity velocity) {
         return MathUtil.isNear(
-                        velocity.in(RotationsPerSecond),
-                        flywheelIO.getVelocity().in(RotationsPerSecond),
-                        FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
+                velocity.in(RotationsPerSecond),
+                flywheelIO.getVelocity().in(RotationsPerSecond),
+                FlywheelConstants.TOLERANCE.in(RotationsPerSecond));
     }
 
     /**
@@ -413,7 +409,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                     flywheelIO.runCurrent(
                             Amps.of(flywheelSlowSpinupTorque.getAsDouble()),
                             flywheelSlowSpinupDutyCycle.getAsDouble());
-                    
                 });
     }
 
@@ -481,7 +476,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return Commands.runOnce(
                 () -> {
                     flywheelIO.runCoast();
-                  
                 });
     }
 
@@ -489,7 +483,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         return this.runOnce(
                 () -> {
                     flywheelIO.runCoast();
-                    
                 });
     }
 
@@ -534,7 +527,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                             totalFuelCount++;
                             Logger.recordOutput(getName() + "/TotalFuelCount", totalFuelCount);
                         }));
-        
     }
 
     @Override
@@ -560,9 +552,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
         staticShotState.getAsBoolean();
         hopperEmpty.getAsBoolean();
 
-        Logger.recordOutput(
-                getName() + "/VelocityErrorDifference",
-                flywheelIO.getVelocityError());
+        Logger.recordOutput(getName() + "/VelocityErrorDifference", flywheelIO.getVelocityError());
 
         Logger.recordOutput(
                 getName() + "/TotalDrawWatts",

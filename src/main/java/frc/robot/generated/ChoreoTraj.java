@@ -47,6 +47,27 @@ public record ChoreoTraj(
                     5.43834,
                     new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(1.5708)),
                     new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)));
+    public static final ChoreoTraj STSESafe1 =
+            new ChoreoTraj(
+                    "STSESafe1",
+                    OptionalInt.empty(),
+                    5.24997,
+                    new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(1.5708)),
+                    new Pose2d(2.73412, 6.0926, Rotation2d.fromRadians(-0.83152)));
+    public static final ChoreoTraj STSE1 =
+            new ChoreoTraj(
+                    "STSE1",
+                    OptionalInt.empty(),
+                    6.27917,
+                    new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(1.5708)),
+                    new Pose2d(2.73412, 6.0926, Rotation2d.fromRadians(-0.83152)));
+    public static final ChoreoTraj STSE2 =
+            new ChoreoTraj(
+                    "STSE2",
+                    OptionalInt.empty(),
+                    7.49818,
+                    new Pose2d(2.73412, 6.0926, Rotation2d.fromRadians(-0.83152)),
+                    new Pose2d(2.73412, 6.0926, Rotation2d.fromRadians(-0.83152)));
 
     /**
      * A map between trajectory names and their corresponding data. This allows for trajectory data
@@ -57,7 +78,10 @@ public record ChoreoTraj(
                     Map.entry("Neutral2", Neutral2),
                     Map.entry("NeutralSafe2", NeutralSafe2),
                     Map.entry("Neutral1", Neutral1),
-                    Map.entry("NeutralSafe1", NeutralSafe1));
+                    Map.entry("NeutralSafe1", NeutralSafe1),
+                    Map.entry("STSESafe1", STSESafe1),
+                    Map.entry("STSE1", STSE1),
+                    Map.entry("STSE2", STSE2));
 
     /**
      * Looks up the ChoreoTraj segment of the given overall ChoreoTraj. WARNING: will raise an
