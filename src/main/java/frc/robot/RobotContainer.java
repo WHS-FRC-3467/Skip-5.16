@@ -130,22 +130,12 @@ public class RobotContainer {
         NeutralAuto.create(ctx, true, true).ifPresent(a -> autoChooser.addOption("Safe-Right", a));
 
         // STSE Autos
-        autoChooser.addOption(
-                "STSE-Left", new STSEAuto(drive, intake, indexer, tower, shooter, false, false));
-        autoChooser.addOption(
-                "STSE-Right", new STSEAuto(drive, intake, indexer, tower, shooter, true, false));
-        autoChooser.addOption(
-                "STSE-Safe-Left",
-                new STSEAuto(drive, intake, indexer, tower, shooter, false, true));
-        autoChooser.addOption(
-                "STSE-Safe-Right",
-                new STSEAuto(drive, intake, indexer, tower, shooter, true, true));
-
-        // Depot Autos
-        autoChooser.addOption(
-                "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
-        autoChooser.addOption(
-                "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
+        STSEAuto.create(ctx, false, false).ifPresent(a -> autoChooser.addOption("STSE-Left", a));
+        STSEAuto.create(ctx, true, false).ifPresent(a -> autoChooser.addOption("STSE-Right", a));
+        STSEAuto.create(ctx, false, true)
+                .ifPresent(a -> autoChooser.addOption("STSE-Safe-Left", a));
+        STSEAuto.create(ctx, true, true)
+                .ifPresent(a -> autoChooser.addOption("STSE-Safe-Right", a));
 
         autoChooser.onChange(
                 auto -> {

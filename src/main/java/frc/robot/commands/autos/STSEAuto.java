@@ -14,69 +14,89 @@
  */
 package frc.robot.commands.autos;
 
-import com.pathplanner.lib.auto.AutoBuilder;
+import choreo.auto.AutoRoutine;
+import choreo.auto.AutoTrajectory;
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Commands;
 
-import frc.lib.util.AutoRoutine;
+import frc.robot.commands.autos.utils.AutoCommands;
+import frc.robot.commands.autos.utils.AutoContext;
+import frc.robot.commands.autos.utils.AutoOption;
+import frc.robot.commands.autos.utils.AutoUtil;
 import frc.robot.generated.ChoreoTraj;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.IndexerSuperstructure;
-import frc.robot.subsystems.intake.IntakeSuperstructure;
-import frc.robot.subsystems.shooter.ShooterSuperstructure;
-import frc.robot.subsystems.tower.Tower;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
-public class STSEAuto extends AutoRoutine {
-    public STSEAuto(
-            Drive drive,
-            IntakeSuperstructure intake,
-            IndexerSuperstructure indexer,
-            Tower tower,
-            ShooterSuperstructure shooter,
-            boolean shouldMirror,
-            boolean isSafe) {
-        // Choose path names based on start position
-        List<ChoreoTraj> expectedPaths;
-        if (isSafe) {
-            expectedPaths = List.of(ChoreoTraj.STSESafe1, ChoreoTraj.STSE2);
-        } else {
-            expectedPaths = List.of(ChoreoTraj.STSE1, ChoreoTraj.STSE2);
-        }
+public class STSEAuto {
 
-        // Load the named paths
-        this.loadAllPaths(expectedPaths.stream().map(p -> p.name()).toList(), shouldMirror, true);
+    private static final Alert TRAJECTORIES_MISSING =
+            new Alert("Neutral Auto Trajectories Missing, Auto(s) Unavailable", AlertType.kError);
 
-        // Defensive check: ensure we loaded exactly the expected number of paths and none are null
-        if (!pathPlannerPaths.isEmpty()
-                && pathPlannerPaths.size() == expectedPaths.size()
-                && !pathPlannerPaths.contains(null)) {
-            loadCommands(
-                    AutoCommands.resetOdom(drive, pathPlannerPaths.get(0)),
-                    // Delay if necessary
-                    Commands.defer(
-                            () -> Commands.waitSeconds(AutoCommands.getAutoDelay()), Set.of()),
-                    // Sweep neutral zone while intaking
-                    AutoBuilder.followPath(pathPlannerPaths.get(0)),
-                    AutoCommands.shootCommand(drive, intake, indexer, tower, shooter, 2.5),
-                    // Run back under the trench and shoot
-                    // Initialize intake and hood to starting positions for teleop
-                    Commands.repeatingSequence(
-                                    AutoCommands.stowHood(shooter),
-                                    intake.retractIntake().asProxy().withTimeout(0.5),
-                                    // Drive to the neutral zone
-                                    AutoBuilder.followPath(pathPlannerPaths.get(1)),
-                                    AutoCommands.shootCommand(
-                                            drive, intake, indexer, tower, shooter, 10))
-                            .finallyDo(
-                                    () ->
-                                            CommandScheduler.getInstance()
-                                                    .schedule(
-                                                            intake.stopRoller()
-                                                                    .ignoringDisable(true))));
+    public static Optional<AutoOption> create(
+            AutoContext ctx, boolean shouldMirror, boolean isSafe) {
+        List<String> names =
+                isSafe
+                        ? List.of(ChoreoTraj.STSESafe1.name(), ChoreoTraj.STSE2.name())
+                        : List.of(ChoreoTraj.STSE1.name(), ChoreoTraj.STSE2.name());
+
+        List<Trajectory<SwerveSample>> trajectories =
+                AutoUtil.loadTrajectories(names, shouldMirror).orElse(null);
+
+        Optional<Trajectory<SwerveSample>> bumpTrajectory =
+                AutoUtil.loadTrajectory(ChoreoTraj.BumpPath.name(), shouldMirror);
+        if (trajectories == null) {
+            TRAJECTORIES_MISSING.set(true);
+            return Optional.empty();
         }
+        return Optional.of(
+                AutoUtil.trajectoryOption(
+                        trajectories,
+                        () -> {
+                            AutoRoutine routine =
+                                    ctx.autoFactory()
+                                            .newRoutine(
+                                                    "STSE"
+                                                            + (isSafe ? "Safe" : "Aggressive")
+                                                            + (shouldMirror ? "Right" : "Left"));
+
+                            AutoTrajectory first = routine.trajectory(trajectories.get(0));
+                            AutoTrajectory second = routine.trajectory(trajectories.get(1));
+                            Optional<AutoTrajectory> bump = bumpTrajectory.map(routine::trajectory);
+                            AutoUtil.bindEvents(ctx, first, second);
+
+                            routine.active()
+                                    .onTrue(
+                                            Commands.sequence(
+                                                    Commands.runOnce(
+                                                            ctx.drive()
+                                                                    ::resetTrajectoryControllers),
+                                                    first.resetOdometry(),
+                                                    Commands.defer(
+                                                            () ->
+                                                                    Commands.waitSeconds(
+                                                                            AutoCommands
+                                                                                    .getAutoDelay()),
+                                                            Set.of()),
+                                                    first.spawnCmd()));
+
+                            first.done().onTrue(AutoCommands.shootThenFollow(ctx, 3.0, second));
+                            AutoCommands.retryTrigger(routine, first)
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, first, bump, 3.0, second));
+
+                            second.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, second));
+                            AutoCommands.retryTrigger(routine, second)
+                                    .onTrue(
+                                            AutoCommands.recoverThenFollow(
+                                                    ctx, second, bump, 10.0, second));
+                            return routine;
+                        }));
     }
 }
