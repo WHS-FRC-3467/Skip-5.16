@@ -22,6 +22,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.devices.ObjectDetection;
@@ -324,13 +325,28 @@ public class ObjectDetector extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Update the inputs data structure associated with this Object Detection camera with latest
-        // readings
-        objectDetection.periodic();
         // Generate corrected ROI based on current alliance and starting position. The ROI
         // acts as an interest cache for detected objects such that lanes needn't be reduced from
         // the full FOV each evaluation, increasing stability and reducing overhead
         List<Translation2d> correctedCorners = getCorrectedROI();
+        // Skip ML inference calculations during teleop for performance
+        if (DriverStation.isTeleop()) {
+            latestObjectObservation = List.of();
+            latestBigContourObservation = Optional.empty();
+            latestLowContourObservation = Optional.empty();
+            bestLaneTarget = Optional.empty();
+
+            // Log empty / invalid values for visualization
+            logObjectObservation(latestObjectObservation);
+            logContourObservation(latestBigContourObservation, ContourSelectionMode.LARGEST);
+            logContourObservation(latestLowContourObservation, ContourSelectionMode.LOWEST);
+            logROI(correctedCorners);
+            logBestLaneTarget(correctedCorners);
+            return;
+        }
+        // Update the inputs data structure associated with this Object Detection camera with latest
+        // readings
+        objectDetection.periodic();
         // Now that inputs are updated, re-populate observation fields with new data
         if (objectDetection.getTargets().length > 0) {
             // Generate latest ML Object observations within the corrected ROI
