@@ -11,11 +11,12 @@ import edu.wpi.first.units.measure.*;
  * in the Choreo GUI.
  */
 public final class ChoreoVars {
-    public static final Distance Neutral2ML_Safe_X1a = Units.Meters.of(6);
+    public static final Distance Neutral2ML_Safe_X1a = Units.Meters.of(5.95);
+    public static final Distance Neutral2ML_Safe_X3a = Units.Meters.of(7.8);
     public static final Distance Neutral2ML_Safe_Y = Units.Meters.of(4.2);
 
     public static final class Poses {
-        public static final Pose2d DecisionPose = new Pose2d(6.55, 7.3992772, Rotation2d.fromRadians(1.5707963));
+        public static final Pose2d DecisionPose = new Pose2d(6.7, 7.3992772, Rotation2d.fromRadians(1.5707963));
         public static final Pose2d NeutralShoot = new Pose2d(3.12514, 7.3089199, Rotation2d.fromRadians(-1.1536837));
         public static final Pose2d TunnelEntrance = new Pose2d(4, 7.3992772, Rotation2d.fromRadians(-1.5707963));
         public static final Pose2d TunnelExit = new Pose2d(5.65, 7.3992772, Rotation2d.fromRadians(-1.5707963));

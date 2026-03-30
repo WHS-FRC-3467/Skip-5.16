@@ -21,7 +21,7 @@
     {"x":{"exp":"NeutralShoot.x", "val":3.1251399517059326}, "y":{"exp":"NeutralShoot.y", "val":7.308919906616211}, "heading":{"exp":"NeutralShoot.heading", "val":-1.1536837053307711}, "intervals":25, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"TunnelEntrance.x", "val":4.0}, "y":{"exp":"TunnelEntrance.y", "val":7.399277210235596}, "heading":{"exp":"TunnelEntrance.heading", "val":-1.5707963267948966}, "intervals":24, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"TunnelExit.x", "val":5.65}, "y":{"exp":"TunnelExit.y", "val":7.399277210235596}, "heading":{"exp":"TunnelExit.heading", "val":-1.5707963267948966}, "intervals":45, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"DecisionPose.x", "val":6.55}, "y":{"exp":"DecisionPose.y", "val":7.399277210235596}, "heading":{"exp":"DecisionPose.heading", "val":1.5707963267948966}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"DecisionPose.x", "val":6.7}, "y":{"exp":"DecisionPose.y", "val":7.399277210235596}, "heading":{"exp":"DecisionPose.heading", "val":1.5707963267948966}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":{"exp":"0 m", "val":0.0}, "y":{"exp":"0 m", "val":0.0}, "w":{"exp":"16.541 m", "val":16.541}, "h":{"exp":"8.0692 m", "val":8.0692}}}, "enabled":true},
     {"from":1, "to":"last", "data":{"type":"KeepInLane", "props":{"tolerance":{"exp":"0.005 m", "val":0.005}}}, "enabled":true},

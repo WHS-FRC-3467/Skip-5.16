@@ -7,8 +7,15 @@
    "Neutral2ML_Safe_X1a":{
     "dimension":"Length",
     "var":{
-     "exp":"6 m",
-     "val":6.0
+     "exp":"5.95 m",
+     "val":5.95
+    }
+   },
+   "Neutral2ML_Safe_X3a":{
+    "dimension":"Length",
+    "var":{
+     "exp":"7.8 m",
+     "val":7.8
     }
    },
    "Neutral2ML_Safe_Y":{
@@ -22,8 +29,8 @@
   "poses":{
    "DecisionPose":{
     "x":{
-     "exp":"6.55 m",
-     "val":6.55
+     "exp":"6.7 m",
+     "val":6.7
     },
     "y":{
      "exp":"TunnelExit.y",
