@@ -90,6 +90,7 @@ public class MotorIOTalonFX implements MotorIO {
 
     private volatile TalonFXConfiguration currentConfig;
     protected volatile Angle goalPosition = Rotations.of(0.0);
+    protected volatile AngularVelocity goalVelocity = RotationsPerSecond.zero();
 
     // Caches for last-applied Motion Magic parameters (NaN = never applied)
     private double lastAppliedMmCruiseVelocity = Double.NaN;
@@ -317,6 +318,7 @@ public class MotorIOTalonFX implements MotorIO {
                         : Rotations.zero();
 
         inputs.goalPosition = isRunningPositionControl ? goalPosition : Rotations.zero();
+        inputs.goalVelocity = isRunningVelocityControl ? goalVelocity : RotationsPerSecond.zero();
 
         if (isRunningVelocityControl) {
             inputs.velocityError = RotationsPerSecond.of(closedLoopErrorValue);
@@ -448,6 +450,7 @@ public class MotorIOTalonFX implements MotorIO {
      */
     @Override
     public void runVelocity(AngularVelocity velocity, PIDSlot slot) {
+        goalVelocity = velocity;
         motor.setControl(velocityControl.withVelocity(velocity).withSlot(slot.getNum()));
     }
 
@@ -466,6 +469,7 @@ public class MotorIOTalonFX implements MotorIO {
 
         queueMotionMagicConfigUpdate(lastRequestedMmCruiseVelocity, newAccel);
 
+        goalVelocity = velocity;
         motor.setControl(mmVelocityControl.withVelocity(velocity).withSlot(slot.getNum()));
     }
 
