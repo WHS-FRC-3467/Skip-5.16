@@ -3,71 +3,117 @@
 package dsv0;
 
 import com.google.flatbuffers.BaseVector;
-import com.google.flatbuffers.BooleanVector;
-import com.google.flatbuffers.ByteVector;
-import com.google.flatbuffers.Constants;
-import com.google.flatbuffers.DoubleVector;
 import com.google.flatbuffers.FlatBufferBuilder;
-import com.google.flatbuffers.FloatVector;
-import com.google.flatbuffers.IntVector;
-import com.google.flatbuffers.LongVector;
-import com.google.flatbuffers.ShortVector;
-import com.google.flatbuffers.StringVector;
-import com.google.flatbuffers.Struct;
 import com.google.flatbuffers.Table;
-import com.google.flatbuffers.UnionVector;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-/**
- * Top-level message containing results from all cameras in a single frame
- */
+/** Top-level message containing results from all cameras in a single frame */
 @SuppressWarnings("unused")
 public final class Frame extends Table {
-  public static Frame getRootAsFrame(ByteBuffer _bb) { return getRootAsFrame(_bb, new Frame()); }
-  public static Frame getRootAsFrame(ByteBuffer _bb, Frame obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
-  public Frame __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+    public static Frame getRootAsFrame(ByteBuffer _bb) {
+        return getRootAsFrame(_bb, new Frame());
+    }
 
-  /**
-   * Microsecond timestamp for the frame capture
-   */
-  public long timestampUs() { int o = __offset(4); return o != 0 ? bb.getLong(o + bb_pos) : 0L; }
-  /**
-   * Per-camera results
-   */
-  public dsv0.CameraOutput cameras(int j) { return cameras(new dsv0.CameraOutput(), j); }
-  public dsv0.CameraOutput cameras(dsv0.CameraOutput obj, int j) { int o = __offset(6); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
-  public int camerasLength() { int o = __offset(6); return o != 0 ? __vector_len(o) : 0; }
-  public dsv0.CameraOutput.Vector camerasVector() { return camerasVector(new dsv0.CameraOutput.Vector()); }
-  public dsv0.CameraOutput.Vector camerasVector(dsv0.CameraOutput.Vector obj) { int o = __offset(6); return o != 0 ? obj.__assign(__vector(o), 4, bb) : null; }
+    public static Frame getRootAsFrame(ByteBuffer _bb, Frame obj) {
+        _bb.order(ByteOrder.LITTLE_ENDIAN);
+        return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb));
+    }
 
-  public static int createFrame(FlatBufferBuilder builder,
-      long timestampUs,
-      int camerasOffset) {
-    builder.startTable(2);
-    Frame.addTimestampUs(builder, timestampUs);
-    Frame.addCameras(builder, camerasOffset);
-    return Frame.endFrame(builder);
-  }
+    public void __init(int _i, ByteBuffer _bb) {
+        __reset(_i, _bb);
+    }
 
-  public static void startFrame(FlatBufferBuilder builder) { builder.startTable(2); }
-  public static void addTimestampUs(FlatBufferBuilder builder, long timestampUs) { builder.addLong(0, timestampUs, 0L); }
-  public static void addCameras(FlatBufferBuilder builder, int camerasOffset) { builder.addOffset(1, camerasOffset, 0); }
-  public static int createCamerasVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
-  public static void startCamerasVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static int endFrame(FlatBufferBuilder builder) {
-    int o = builder.endTable();
-    return o;
-  }
-  public static void finishFrameBuffer(FlatBufferBuilder builder, int offset) { builder.finish(offset); }
-  public static void finishSizePrefixedFrameBuffer(FlatBufferBuilder builder, int offset) { builder.finishSizePrefixed(offset); }
+    public Frame __assign(int _i, ByteBuffer _bb) {
+        __init(_i, _bb);
+        return this;
+    }
 
-  public static final class Vector extends BaseVector {
-    public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) { __reset(_vector, _element_size, _bb); return this; }
+    /** Microsecond timestamp for the frame capture */
+    public long timestampUs() {
+        int o = __offset(4);
+        return o != 0 ? bb.getLong(o + bb_pos) : 0L;
+    }
 
-    public Frame get(int j) { return get(new Frame(), j); }
-    public Frame get(Frame obj, int j) {  return obj.__assign(__indirect(__element(j), bb), bb); }
-  }
+    /** Per-camera results */
+    public dsv0.CameraOutput cameras(int j) {
+        return cameras(new dsv0.CameraOutput(), j);
+    }
+
+    public dsv0.CameraOutput cameras(dsv0.CameraOutput obj, int j) {
+        int o = __offset(6);
+        return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null;
+    }
+
+    public int camerasLength() {
+        int o = __offset(6);
+        return o != 0 ? __vector_len(o) : 0;
+    }
+
+    public dsv0.CameraOutput.Vector camerasVector() {
+        return camerasVector(new dsv0.CameraOutput.Vector());
+    }
+
+    public dsv0.CameraOutput.Vector camerasVector(dsv0.CameraOutput.Vector obj) {
+        int o = __offset(6);
+        return o != 0 ? obj.__assign(__vector(o), 4, bb) : null;
+    }
+
+    public static int createFrame(FlatBufferBuilder builder, long timestampUs, int camerasOffset) {
+        builder.startTable(2);
+        Frame.addTimestampUs(builder, timestampUs);
+        Frame.addCameras(builder, camerasOffset);
+        return Frame.endFrame(builder);
+    }
+
+    public static void startFrame(FlatBufferBuilder builder) {
+        builder.startTable(2);
+    }
+
+    public static void addTimestampUs(FlatBufferBuilder builder, long timestampUs) {
+        builder.addLong(0, timestampUs, 0L);
+    }
+
+    public static void addCameras(FlatBufferBuilder builder, int camerasOffset) {
+        builder.addOffset(1, camerasOffset, 0);
+    }
+
+    public static int createCamerasVector(FlatBufferBuilder builder, int[] data) {
+        builder.startVector(4, data.length, 4);
+        for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]);
+        return builder.endVector();
+    }
+
+    public static void startCamerasVector(FlatBufferBuilder builder, int numElems) {
+        builder.startVector(4, numElems, 4);
+    }
+
+    public static int endFrame(FlatBufferBuilder builder) {
+        int o = builder.endTable();
+        return o;
+    }
+
+    public static void finishFrameBuffer(FlatBufferBuilder builder, int offset) {
+        builder.finish(offset);
+    }
+
+    public static void finishSizePrefixedFrameBuffer(FlatBufferBuilder builder, int offset) {
+        builder.finishSizePrefixed(offset);
+    }
+
+    public static final class Vector extends BaseVector {
+        public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) {
+            __reset(_vector, _element_size, _bb);
+            return this;
+        }
+
+        public Frame get(int j) {
+            return get(new Frame(), j);
+        }
+
+        public Frame get(Frame obj, int j) {
+            return obj.__assign(__indirect(__element(j), bb), bb);
+        }
+    }
 }
-
