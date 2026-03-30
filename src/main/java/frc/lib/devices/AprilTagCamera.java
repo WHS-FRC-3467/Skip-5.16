@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 
 import frc.lib.io.vision.VisionIO;
 import frc.lib.io.vision.VisionIOInputsAutoLogged;
+import frc.lib.io.vision.VisionIOPhotonVision;
 
 import lombok.Getter;
 
@@ -61,8 +62,7 @@ import java.util.Optional;
  * mounting transforms, and reading vision results.
  */
 public class AprilTagCamera {
-    /** Magic prefix for identifying photon-encoded results */
-    private static final byte[] PHOTON_RESULT_MAGIC = new byte[] {'P', 'H', 'O', 'T', 'O', 'N', 1};
+    private static final byte[] PHOTON_RESULT_MAGIC = VisionIOPhotonVision.getPhotonResultMagic();
 
     private static final List<TargetCorner> ZERO_MIN_AREA_RECT_CORNERS =
             List.of(
