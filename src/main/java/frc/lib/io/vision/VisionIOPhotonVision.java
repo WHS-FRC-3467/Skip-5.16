@@ -37,7 +37,7 @@ public class VisionIOPhotonVision implements VisionIO {
      *
      * @param cameraProperties Camera configuration including name and calibration
      */
-    public VisionIOPhotonVision(CameraProperties cameraProperties, VisionIOC2.C2Config c2Config) {
+    public VisionIOPhotonVision(CameraProperties cameraProperties) {
         this.photonCamera = new PhotonCamera(cameraProperties.name());
     }
 
@@ -47,13 +47,24 @@ public class VisionIOPhotonVision implements VisionIO {
 
         if (!inputs.connected) {
             inputs.rawResults = new byte[0][];
+            inputs.captureTimestampsUs = new long[0];
+            inputs.publishTimestampsUs = new long[0];
             return;
         }
 
+        var unreadResults = photonCamera.getAllUnreadResults();
         inputs.rawResults =
-                photonCamera.getAllUnreadResults().stream()
+                unreadResults.stream()
                         .map(VisionIOPhotonVision::packPhotonResult)
                         .toArray(byte[][]::new);
+        inputs.captureTimestampsUs =
+                unreadResults.stream()
+                        .mapToLong(result -> result.metadata.captureTimestampMicros)
+                        .toArray();
+        inputs.publishTimestampsUs =
+                unreadResults.stream()
+                        .mapToLong(result -> result.metadata.publishTimestampMicros)
+                        .toArray();
     }
 
     private static byte[] packPhotonResult(PhotonPipelineResult result) {

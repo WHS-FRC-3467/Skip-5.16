@@ -293,17 +293,30 @@ public class VisionIOC2 implements VisionIO {
         TimestampedRaw[] unreadFrames = observationSubscriber.readQueue();
         if (unreadFrames.length == 0) {
             inputs.rawResults = new byte[0][];
+            inputs.captureTimestampsUs = new long[0];
+            inputs.publishTimestampsUs = new long[0];
             return;
         }
 
         ArrayList<byte[]> results = new ArrayList<>(unreadFrames.length);
+        ArrayList<Long> captureTimestampsUs = new ArrayList<>(unreadFrames.length);
+        ArrayList<Long> publishTimestampsUs = new ArrayList<>(unreadFrames.length);
         for (TimestampedRaw unreadFrame : unreadFrames) {
             if (unreadFrame != null && unreadFrame.value != null && unreadFrame.value.length > 0) {
                 results.add(unreadFrame.value);
+                captureTimestampsUs.add(unreadFrame.timestamp);
+                publishTimestampsUs.add(
+                        unreadFrame.serverTime != 0
+                                ? unreadFrame.serverTime
+                                : unreadFrame.timestamp);
             }
         }
 
         inputs.rawResults = results.toArray(byte[][]::new);
+        inputs.captureTimestampsUs =
+                captureTimestampsUs.stream().mapToLong(Long::longValue).toArray();
+        inputs.publishTimestampsUs =
+                publishTimestampsUs.stream().mapToLong(Long::longValue).toArray();
     }
 
     private void publishConfigIfNeeded() {
