@@ -80,6 +80,7 @@ public class RobotContainer {
     private final IntakeSuperstructure intake;
     private final IndexerSuperstructure indexer;
     private final Tower tower;
+    // private final LEDs leds;
     // private final ObjectDetector objectDetector;
 
     // Controller
@@ -103,6 +104,7 @@ public class RobotContainer {
         tower = TowerConstants.get();
         VisionConstants.create();
         // VisionOdometryCharacterizer.enable();
+        // leds = LEDsConstants.get();
         // objectDetector = ObjectDetectorConstants.get();
 
         if (RobotBase.isSimulation()) {
