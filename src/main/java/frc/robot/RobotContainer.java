@@ -18,10 +18,12 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
@@ -52,6 +55,7 @@ import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.subsystems.tower.TowerConstants;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
@@ -118,21 +122,16 @@ public class RobotContainer {
         autoChooser.addOption("PreloadAuto", PreloadAuto.create(ctx));
 
         // Neutral Autos
-        autoChooser.addOption("Aggressive-Left", NeutralAuto.create(ctx, false, false));
-        autoChooser.addOption("Aggressive-Right", NeutralAuto.create(ctx, true, false));
-        autoChooser.addOption("Safe-Left", NeutralAuto.create(ctx, false, true));
-        autoChooser.addOption("Safe-Right", NeutralAuto.create(ctx, true, true));
-        autoChooser.addOption("AntiNashoba-Left", AntiNashobaAuto.create(ctx, false));
-        autoChooser.addOption("AntiNashoba-Right", AntiNashobaAuto.create(ctx, true));
+        NeutralAuto.create(ctx, false, false)
+                .ifPresent(a -> autoChooser.addOption("Aggressive-Left", a));
+        NeutralAuto.create(ctx, true, false)
+                .ifPresent(a -> autoChooser.addOption("Aggressive-Right", a));
+        NeutralAuto.create(ctx, false, true).ifPresent(a -> autoChooser.addOption("Safe-Left", a));
+        NeutralAuto.create(ctx, true, true).ifPresent(a -> autoChooser.addOption("Safe-Right", a));
 
-        // Depot Autos
-        //      autoChooser.addOption(
-        //           "DepotAuto-Left", new DepotSideAuto(drive, intake, indexer, tower, shooter));
-        //    autoChooser.addOption(
-        //         "DepotAuto-Center", new DepotCenterAuto(drive, intake, indexer, tower, shooter));
-
-        autoChooser.addOption("Aggressive-Depot", DepotShootAuto.create(ctx, false));
-        autoChooser.addOption("Safe-Depot", DepotShootAuto.create(ctx, true));
+        DepotShootAuto.create(ctx, false)
+                .ifPresent(a -> autoChooser.addOption("Aggressive-Depot", a));
+        DepotShootAuto.create(ctx, true).ifPresent(a -> autoChooser.addOption("Safe-Depot", a));
 
         autoChooser.onChange(
                 auto -> {
@@ -188,7 +187,7 @@ public class RobotContainer {
                                                 () -> -controller.getLeftX() * 0.4,
                                                 robotState.feedLookaheadSeconds),
                                         DriveCommands.staticAimTowardsTarget(drive),
-                                        shooter.shouldFeed),
+                                        robotState.shouldFeed),
                                 shooter.spinUpShooter(),
                                 Commands.parallel(indexer.shoot(), tower.shoot())
                                         .onlyWhile(
@@ -322,6 +321,23 @@ public class RobotContainer {
                 .negate()
                 .and(operatorController.y().negate())
                 .onTrue(shooter.stopFlywheels());
+
+        HubState.getInstance()
+                .getEnablingSoon()
+                .onTrue(
+                        Commands.sequence(
+                                controller.rumbleForTime(1.0, Seconds.of(0.5)),
+                                Commands.waitSeconds(0.5),
+                                controller.rumbleForTime(1.0, Seconds.of(0.5)),
+                                Commands.waitSeconds(0.5),
+                                controller.rumbleForTime(1.0, Seconds.of(0.5)),
+                                Commands.waitSeconds(0.5)));
+
+        controller
+                .joysticksZeroed
+                .negate()
+                .and(new Trigger(DriverStation::isDisabled))
+                .whileTrue(controller.rumble(1.0).ignoringDisable(true));
     }
 
     /**
