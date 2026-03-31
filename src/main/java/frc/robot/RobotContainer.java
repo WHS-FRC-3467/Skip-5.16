@@ -365,9 +365,6 @@ public class RobotContainer {
      *     info.
      */
     public void checkStartPose(int counter) {
-        /* Starting pose checker for auto */
-        autoPreviewField.setRobotPose(robotState.getEstimatedPose());
-
         var pathObj = autoPreviewField.getObject("path");
         var poses = pathObj.getPoses();
         if (poses == null || poses.isEmpty()) {
@@ -378,6 +375,8 @@ public class RobotContainer {
 
         // Only update dashboard every 100 ms
         if (counter == 0) {
+            /* Starting pose checker for auto */
+            autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
             if (poses == null || poses.isEmpty()) {
                 // No path defined; show defaults

@@ -196,29 +196,10 @@ public abstract class Mechanism<T extends MotorIO> {
         // If a radius has been configured, also log linear equivalents of position/velocity.
         if (radiusMeters != null) {
             // Use LoggedDouble to only write when values change to reduce NT traffic
-            if (loggedLinearPosition != null) {
-                loggedLinearPosition.log(getLinearPosition().in(Meters));
-            } else {
-                Logger.recordOutput(this.name + "/LinearPosition", getLinearPosition());
-            }
-
-            if (loggedLinearPositionError != null) {
-                loggedLinearPositionError.log(getLinearPositionError().in(Meters));
-            } else {
-                Logger.recordOutput(this.name + "/LinearPositionError", getLinearPositionError());
-            }
-
-            if (loggedLinearVelocity != null) {
-                loggedLinearVelocity.log(getLinearVelocity().in(MetersPerSecond));
-            } else {
-                Logger.recordOutput(this.name + "/LinearVelocity", getLinearVelocity());
-            }
-
-            if (loggedLinearVelocityError != null) {
-                loggedLinearVelocityError.log(getLinearVelocityError().in(MetersPerSecond));
-            } else {
-                Logger.recordOutput(this.name + "/LinearVelocityError", getLinearVelocityError());
-            }
+            loggedLinearPosition.log(getLinearPosition().in(Meters));
+            loggedLinearPositionError.log(getLinearPositionError().in(Meters));
+            loggedLinearVelocity.log(getLinearVelocity().in(MetersPerSecond));
+            loggedLinearVelocityError.log(getLinearVelocityError().in(MetersPerSecond));
         }
     }
 
