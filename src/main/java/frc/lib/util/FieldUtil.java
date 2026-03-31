@@ -110,6 +110,7 @@ public class FieldUtil {
                 && DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
     }
+}
 
     // /**
     // * Whether or not a pose needs to be flipped
@@ -160,4 +161,3 @@ public class FieldUtil {
     // && translation.getY() >= margin.in(Meters)
     // && translation.getY() <= FieldConstants.FIELD_WIDTH - margin.in(Meters);
     // }
-}
