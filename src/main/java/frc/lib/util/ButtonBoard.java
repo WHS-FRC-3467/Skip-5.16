@@ -12,23 +12,22 @@
  * You should have received a copy of the GNU General Public License along with this program. If
  * not, see <https://www.gnu.org/licenses/>.
  */
+package frc.lib.util;
 
-package frc.lib.io.lights;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-import com.ctre.phoenix6.controls.ControlRequest;
+/**
+ * Extended CommandGenericHID with additional functionality for FRC use. This class is intended to
+ * provide support for a generic digital button board with multiple buttons/switches and
+ * LEDs/buzzers but no axes.
+ */
+public class ButtonBoard extends CommandGenericHID {
+    public ButtonBoard(int port) {
+        super(port);
+    }
 
-/** Standardized interface for lights used in FRC. */
-public interface LightsIO {
-
-    /**
-     * Passes ControlRequest to IO layer
-     *
-     * @param request {@link ControlRequest}
-     */
-    public default void setAnimation(ControlRequest request) {}
-
-    /** Updates the Animation Without Wasting CPU Time */
-    public default void periodic() {}
-
-    public record LEDSegment(int startIndex, int endIndex, int animationSlot) {}
+    public Trigger buttonBoardButton(int buttonNumber) {
+        return super.button(buttonNumber);
+    }
 }
