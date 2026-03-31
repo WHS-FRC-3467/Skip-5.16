@@ -44,7 +44,7 @@ public class VisionIOC2 implements VisionIO {
     private static final String DEFAULT_DEVICE_ID = "dsv0";
     private static final String DEFAULT_CAMERA_ID = "0";
     private static final String FLATBUFFER_TYPE = "dsv0_fb";
-    private static final int DEFAULT_CAMERA_EXPOSURE = 20;
+    private static final int DEFAULT_CAMERA_EXPOSURE = 70;
     private static final int DEFAULT_CAMERA_GAIN = 0;
     private static final int DEFAULT_POLL_STORAGE_DEPTH = 32;
     private static final long DISCONNECT_TIMEOUT_US = 500_000L;
