@@ -84,7 +84,7 @@ public class VisionConstants {
                     Units.inchesToMeters(5.42),
                     Units.inchesToMeters(12.672),
                     new Rotation3d(
-                            Units.degreesToRadians(-5.2),
+                            Units.degreesToRadians(-4.7754),
                             Units.degreesToRadians(-25.0),
                             Units.degreesToRadians(11.361)));
     public static final Transform3d LEFT_TRANSFORM =
@@ -107,7 +107,7 @@ public class VisionConstants {
                     Units.inchesToMeters(-5.42),
                     Units.inchesToMeters(12.672),
                     new Rotation3d(
-                            Units.degreesToRadians(5.2),
+                            Units.degreesToRadians(4.7754),
                             Units.degreesToRadians(-25.0),
                             Units.degreesToRadians(-11.361)));
 
