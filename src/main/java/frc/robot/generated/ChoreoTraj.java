@@ -87,21 +87,21 @@ public record ChoreoTraj(
     public static final ChoreoTraj Neutral2ML_1_Safe1 = new ChoreoTraj(
         "Neutral2ML_1_Safe1",
         OptionalInt.empty(),
-        4.72155,
+        4.5983,
         new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
-        new Pose2d(3.06667, 5.47686, Rotation2d.fromRadians(-0.80285))
+        new Pose2d(3.02006, 5.56034, Rotation2d.fromRadians(-0.80285))
     );
     public static final ChoreoTraj Neutral2ML_1_Safe2 = new ChoreoTraj(
         "Neutral2ML_1_Safe2",
         OptionalInt.empty(),
-        4.88634,
+        4.62694,
         new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
         new Pose2d(3.06667, 5.47686, Rotation2d.fromRadians(-0.80285))
     );
     public static final ChoreoTraj Neutral2ML_1_Safe3 = new ChoreoTraj(
         "Neutral2ML_1_Safe3",
         OptionalInt.empty(),
-        5.03074,
+        4.69984,
         new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
         new Pose2d(3.06667, 5.47686, Rotation2d.fromRadians(-0.80285))
     );
