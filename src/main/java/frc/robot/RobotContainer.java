@@ -45,8 +45,8 @@ import frc.robot.commands.autos.utils.AutoContext;
 import frc.robot.commands.autos.utils.AutoOption;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.indexer.IndexerConstants;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
+import frc.robot.subsystems.indexer.IndexerSuperstructureConstants;
 import frc.robot.subsystems.intake.IntakeLinearConstants;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
@@ -59,8 +59,6 @@ import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
-
-import java.util.Set;
 
 /**
  * Container class for the robot that holds all subsystems, controllers, and command bindings. This
@@ -80,7 +78,7 @@ public class RobotContainer {
     public final Drive drive;
     final ShooterSuperstructure shooter;
     private final IntakeSuperstructure intake;
-    private final Indexer indexer;
+    private final IndexerSuperstructure indexer;
     private final Tower tower;
     // private final LEDs leds;
     // private final ObjectDetector objectDetector;
@@ -102,7 +100,7 @@ public class RobotContainer {
         drive = DriveConstants.get();
         shooter = ShooterSuperstructureConstants.get();
         intake = IntakeSuperstructureConstants.get();
-        indexer = IndexerConstants.get();
+        indexer = IndexerSuperstructureConstants.get();
         tower = TowerConstants.get();
         VisionConstants.create();
         // VisionOdometryCharacterizer.enable();
@@ -176,12 +174,6 @@ public class RobotContainer {
                         () -> -controller.getLeftY(),
                         () -> -controller.getLeftX(),
                         () -> -controller.getRightX()));
-        Trigger readyToShootAtCurrentTarget =
-                shooter.profileComplete.and(
-                        robotState
-                                .shouldFeed
-                                .and(robotState.facingFeedTarget)
-                                .or(robotState.shouldFeed.negate().and(robotState.facingTarget)));
 
         // Right Trigger: Shoot/Pass
         controller
@@ -197,15 +189,11 @@ public class RobotContainer {
                                         DriveCommands.staticAimTowardsTarget(drive),
                                         robotState.shouldFeed),
                                 shooter.spinUpShooter(),
-                                Commands.sequence(
-                                        Commands.waitSeconds(0.05),
-                                        Commands.waitUntil(readyToShootAtCurrentTarget),
-                                        Commands.parallel(
-                                                indexer.shoot(),
-                                                tower.shoot(),
-                                                Commands.defer(
-                                                        () -> intake.slowRetract(),
-                                                        Set.of(intake))))))
+                                Commands.parallel(indexer.shoot(), tower.shoot())
+                                        .onlyWhile(
+                                                shooter.readyToShoot.and(
+                                                        robotState.facingFeedTarget))
+                                        .repeatedly()))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(),
@@ -239,14 +227,14 @@ public class RobotContainer {
                 .povDown()
                 .whileTrue(Commands.parallel(intake.ejectRoller(), indexer.eject(), tower.eject()));
 
-        // Driver X: Trench Shot (No-Vision Fallback)
+        // Driver X: Hub Shot (No-Vision Fallback)
         controller
                 .x()
                 .whileTrue(
                         Commands.parallel(
                                 DriveCommands.stopWithX(drive),
                                 shooter.spinUpShooterToFixedDistance(
-                                        FieldConstants.TRENCH_SHOT_DISTANCE),
+                                        FieldConstants.Hub.HUB_SHOT_DISTANCE),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
                 .onFalse(
                         Commands.parallel(
@@ -263,7 +251,8 @@ public class RobotContainer {
                         Commands.parallel(
                                 shooter.spinUpShooterMidlineFeed(),
                                 Commands.sequence(
-                                        Commands.waitUntil(shooter.profileComplete),
+                                        Commands.waitUntil(shooter.atMidlineFeedSetpoints)
+                                                .withTimeout(0.75),
                                         Commands.parallel(indexer.shoot(), tower.shoot()))))
                 .onFalse(
                         Commands.parallel(
@@ -358,10 +347,11 @@ public class RobotContainer {
     private void initializeDashboard() {
 
         // Indexer Commands
-        SmartDashboard.putData(IndexerConstants.NAME + "/Shoot", indexer.shoot());
-        SmartDashboard.putData(IndexerConstants.NAME + "/Expel", indexer.eject());
-        SmartDashboard.putData(IndexerConstants.NAME + "/Feed", indexer.feed());
-        SmartDashboard.putData(IndexerConstants.NAME + "/Stop", indexer.stopCommand());
+        SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Shoot", indexer.shoot());
+        SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Expel", indexer.eject());
+        SmartDashboard.putData(IndexerSuperstructureConstants.NAME + "/Feed", indexer.feed());
+        SmartDashboard.putData(
+                IndexerSuperstructureConstants.NAME + "/Stop", indexer.stopCommand());
 
         // Intake Commands
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Intake", intake.intake());
@@ -411,18 +401,6 @@ public class RobotContainer {
                 new DriveToPose(drive, () -> startPose)
                         .withDistanceTolerance(Meters.of(0.04))
                         .withAngularTolerance(Degrees.of(3)));
-        SmartDashboard.putData(
-                "Reset to Test Pose",
-                Commands.runOnce(
-                        () ->
-                                robotState.resetPose(
-                                        FieldUtil.apply(
-                                                new Pose2d(
-                                                        FieldConstants.Hub.TOP_CENTER_POINT.getX()
-                                                                - FieldConstants.Hub
-                                                                        .HUB_SHOT_DISTANCE,
-                                                        FieldConstants.Hub.TOP_CENTER_POINT.getY(),
-                                                        Rotation2d.kZero)))));
     }
 
     /**

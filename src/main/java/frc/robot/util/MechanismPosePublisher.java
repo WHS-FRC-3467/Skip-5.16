@@ -35,22 +35,19 @@ public record MechanismPosePublisher(IntakeSuperstructure intake, ShooterSuperst
     private static final double DOOHICKEY_MAX_ROTATION_DEGREES = 60;
 
     public void update() {
-        Logger.recordOutput(
-                "MechanismZeros", new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()});
-
         var hood =
                 new Pose3d(
                         // Offset from origin (inverse of 1st component in
-                        // ascope_assets/Robot_Perry_2026/config.json)
-                        new Translation3d(0.28, 0, 0.47),
+                        // ascope_assets/Robot_Alpha_2026/config.json)
+                        new Translation3d(-0.1, 0, 0.48),
                         // Rotate by hood angle
                         new Rotation3d(Rotations.zero(), shooter.getHoodAngle(), Rotations.zero()));
 
-        var directionRot = new Rotation3d(Degrees.zero(), Degrees.of(-8.3), Degrees.zero());
+        var directionRot = new Rotation3d(Degrees.zero(), Degrees.of(8.3), Degrees.zero());
 
         // Start with +X, scale by extension, then rotate that vector by 8.3 degrees.
         var offset =
-                new Translation3d(intake.getExtension().unaryMinus(), Meters.zero(), Meters.zero())
+                new Translation3d(intake.getExtension(), Meters.zero(), Meters.zero())
                         .rotateBy(directionRot);
 
         // Apply ONLY a translation (identity rotation), so pose orientation does not change.
@@ -60,9 +57,9 @@ public record MechanismPosePublisher(IntakeSuperstructure intake, ShooterSuperst
                 (intake.getExtension().in(Inches) / IntakeLinearConstants.MAX_DISTANCE.in(Inches));
 
         // Offset from origin (inverse of 3rd component in
-        // ascope_assets/Robot_Perry_2026/config.json)
+        // ascope_assets/Robot_Alpha_2026/config.json)
         var doohickey =
-                new Pose3d(-0.185, 0, 0.255, Rotation3d.kZero)
+                new Pose3d(0.192, 0, 0.246, Rotation3d.kZero)
                         .transformBy(
                                 new Transform3d(
                                         // Move with linear slide

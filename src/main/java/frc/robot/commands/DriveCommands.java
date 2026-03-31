@@ -198,14 +198,12 @@ public class DriveCommands {
 
                             // Calculate angular speed
                             double omega =
-                                    angleController.atGoal()
-                                            ? 0.0
-                                            : angleController.calculate(
-                                                    robotState
-                                                            .getEstimatedPose()
-                                                            .getRotation()
-                                                            .getRadians(),
-                                                    rotationSupplier.get().getRadians());
+                                    angleController.calculate(
+                                            robotState
+                                                    .getEstimatedPose()
+                                                    .getRotation()
+                                                    .getRadians(),
+                                            rotationSupplier.get().getRadians());
 
                             // Convert to field relative speeds & send command
                             ChassisSpeeds speeds =

@@ -1209,7 +1209,7 @@ public class FuelSim {
             // compute z based on layer (floor + stacked layers)
             double z = HOPPER_FLOOR_HEIGHT + layer * LAYER_HEIGHT;
 
-            Translation3d pos = new Translation3d(-x, -y, z);
+            Translation3d pos = new Translation3d(x, y, z);
             hopperMap.put(index, pos);
             return pos;
         }
