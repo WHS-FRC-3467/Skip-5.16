@@ -200,12 +200,7 @@ public class RobotContainer {
                                 Commands.sequence(
                                         Commands.waitSeconds(0.05),
                                         Commands.waitUntil(readyToShootAtCurrentTarget),
-                                        Commands.parallel(
-                                                indexer.shoot(),
-                                                tower.shoot(),
-                                                Commands.defer(
-                                                        () -> intake.slowRetract(),
-                                                        Set.of(intake))))))
+                                        Commands.parallel(indexer.shoot(), tower.shoot()))))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(),
@@ -218,7 +213,7 @@ public class RobotContainer {
         controller
                 .rightBumper()
                 .and(controller.x().negate())
-                .onTrue(intake.shuffleStep())
+                .onTrue(Commands.defer(() -> intake.slowRetract(), Set.of(intake)))
                 .onFalse(intake.stopRoller());
 
         // Tap Right Bumper while X held: Manually cycle intake within bumpers for hub shot
