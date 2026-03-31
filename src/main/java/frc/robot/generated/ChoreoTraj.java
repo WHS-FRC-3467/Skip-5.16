@@ -66,16 +66,16 @@ public record ChoreoTraj(
     public static final ChoreoTraj DelayedBump2 = new ChoreoTraj(
         "DelayedBump2",
         OptionalInt.empty(),
-        7.86693,
-        new Pose2d(3.18811, 5.34643, Rotation2d.fromRadians(-0.75683)),
-        new Pose2d(3.18811, 5.34643, Rotation2d.fromRadians(-0.75683))
+        6.79607,
+        new Pose2d(3.18811, 5.49041, Rotation2d.fromRadians(-0.75683)),
+        new Pose2d(3.18811, 5.49041, Rotation2d.fromRadians(-0.75683))
     );
     public static final ChoreoTraj DelayedBump1 = new ChoreoTraj(
         "DelayedBump1",
         OptionalInt.empty(),
-        4.79183,
-        new Pose2d(3.28665, 5.98716, Rotation2d.fromRadians(-0.89046)),
-        new Pose2d(3.18811, 5.34643, Rotation2d.fromRadians(-0.75683))
+        3.98016,
+        new Pose2d(3.28665, 5.97115, Rotation2d.fromRadians(-0.78773)),
+        new Pose2d(3.18811, 5.49041, Rotation2d.fromRadians(-0.75683))
     );
     public static final ChoreoTraj TunnelPath = new ChoreoTraj(
         "TunnelPath",
