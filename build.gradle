@@ -221,6 +221,7 @@ spotless {
     java {
         // Target all Java files
         target '**/*.java'
+        targetExclude '**/generated/*.*'
         googleJavaFormat().reorderImports(true).aosp()
         trimTrailingWhitespace()
         endWithNewline()
