@@ -28,7 +28,14 @@ import org.photonvision.targeting.PhotonPipelineResult;
  * results over NetworkTables. Used for real robot operation.
  */
 public class VisionIOPhotonVision implements VisionIO {
+    /** Magic prefix for identifying photon-encoded results */
     private static final byte[] PHOTON_RESULT_MAGIC = new byte[] {'P', 'H', 'O', 'T', 'O', 'N', 1};
+
+    public static byte[] getPhotonResultMagic() {
+        byte[] copy = new byte[PHOTON_RESULT_MAGIC.length];
+        System.arraycopy(PHOTON_RESULT_MAGIC, 0, copy, 0, PHOTON_RESULT_MAGIC.length);
+        return copy;
+    }
 
     protected final PhotonCamera photonCamera;
 
