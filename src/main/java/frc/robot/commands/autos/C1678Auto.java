@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class STSEAuto {
+public class C1678Auto {
 
     private static final Alert TRAJECTORIES_MISSING =
             new Alert("Neutral Auto Trajectories Missing, Auto(s) Unavailable", AlertType.kError);
@@ -42,8 +42,8 @@ public class STSEAuto {
             AutoContext ctx, boolean shouldMirror, boolean isSafe) {
         List<String> names =
                 isSafe
-                        ? List.of(ChoreoTraj.STSESafe1.name(), ChoreoTraj.STSE2.name())
-                        : List.of(ChoreoTraj.STSE1.name(), ChoreoTraj.STSE2.name());
+                        ? List.of(ChoreoTraj.C1678Safe1.name(), ChoreoTraj.C16782.name())
+                        : List.of(ChoreoTraj.C16781.name(), ChoreoTraj.C16782.name());
 
         List<Trajectory<SwerveSample>> trajectories =
                 AutoUtil.loadTrajectories(names, shouldMirror).orElse(null);

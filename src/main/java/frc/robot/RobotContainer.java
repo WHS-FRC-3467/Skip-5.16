@@ -129,12 +129,12 @@ public class RobotContainer {
         NeutralAuto.create(ctx, false, true).ifPresent(a -> autoChooser.addOption("Safe-Left", a));
         NeutralAuto.create(ctx, true, true).ifPresent(a -> autoChooser.addOption("Safe-Right", a));
 
-        // STSE Autos
-        STSEAuto.create(ctx, false, false).ifPresent(a -> autoChooser.addOption("STSE-Left", a));
-        STSEAuto.create(ctx, true, false).ifPresent(a -> autoChooser.addOption("STSE-Right", a));
-        STSEAuto.create(ctx, false, true)
+        // Citrus Autos
+        C1678Auto.create(ctx, false, false).ifPresent(a -> autoChooser.addOption("STSE-Left", a));
+        C1678Auto.create(ctx, true, false).ifPresent(a -> autoChooser.addOption("STSE-Right", a));
+        C1678Auto.create(ctx, false, true)
                 .ifPresent(a -> autoChooser.addOption("STSE-Safe-Left", a));
-        STSEAuto.create(ctx, true, true)
+        C1678Auto.create(ctx, true, true)
                 .ifPresent(a -> autoChooser.addOption("STSE-Safe-Right", a));
 
         autoChooser.onChange(
