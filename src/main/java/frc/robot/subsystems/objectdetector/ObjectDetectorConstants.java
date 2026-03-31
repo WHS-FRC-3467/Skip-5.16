@@ -66,6 +66,7 @@ public class ObjectDetectorConstants {
                     new Rotation3d(
                             Units.Degrees.of(0.0), Units.Degrees.of(25.0), Units.Degrees.of(0.0)));
 
+
     // Intrinsics
     public static final int CAMERA0_RESOLUTION_WIDTH = 1280;
     public static final int CAMERA0_RESOLUTION_HEIGHT = 800;

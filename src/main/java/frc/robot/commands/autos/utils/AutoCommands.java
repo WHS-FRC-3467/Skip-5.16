@@ -31,7 +31,7 @@ import frc.robot.RobotState.FieldRegion;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.indexer.IndexerSuperstructure;
+import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
@@ -65,21 +65,21 @@ public class AutoCommands {
     public static Command shootCommand(
             Drive drive,
             IntakeSuperstructure intake,
-            IndexerSuperstructure indexer,
+            Indexer indexer,
             Tower tower,
             ShooterSuperstructure shooter,
             double timeoutDuration) {
         return Commands.deadline(
                 Commands.parallel(
                                 shooter.spinUpShooter().asProxy(),
-                                Commands.parallel(
+                                Commands.sequence(
+                                        Commands.waitUntil(
+                                                shooter.profileComplete.and(
+                                                        RobotState.getInstance().facingTarget)),
+                                        Commands.parallel(
                                                 indexer.shoot(),
                                                 tower.shoot(),
-                                                intake.shuffleStep().repeatedly().asProxy())
-                                        .onlyWhile(
-                                                shooter.readyToShoot.and(
-                                                        RobotState.getInstance().facingTarget))
-                                        .repeatedly())
+                                                intake.shuffleStep().repeatedly().asProxy())))
                         .until(shooter.hopperEmpty)
                         .withTimeout(timeoutDuration)
                         .finallyDo(

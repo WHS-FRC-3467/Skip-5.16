@@ -20,7 +20,7 @@ import frc.lib.util.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.IndexerSuperstructure;
+import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
@@ -46,12 +46,12 @@ public class RobotSim {
     private void registerFuelSimMechanisms(
             Drive drive,
             ShooterSuperstructure shooter,
-            IndexerSuperstructure indexer,
+            Indexer indexer,
             IntakeSuperstructure intake) {
         Trigger shootSimFuel =
                 new Trigger(
                         () ->
-                                (shooter.readyToShoot.getAsBoolean()
+                                (shooter.profileComplete.getAsBoolean()
                                         && (indexer.getFloorSpeed() < 0.1)
                                         && (fuelSim.getHeldFuel() > 0)));
 
@@ -68,8 +68,8 @@ public class RobotSim {
                                             new Pose3d(robotState.getEstimatedPose())
                                                     .plus(
                                                             new Transform3d(
-                                                                    Inches.of(-10),
-                                                                    Inches.of(-3.6),
+                                                                    Inches.of(10),
+                                                                    Inches.of(3.6),
                                                                     Inches.of(21),
                                                                     Rotation3d.kZero))
                                                     .getTranslation(),
@@ -79,13 +79,12 @@ public class RobotSim {
                                                             .minus(shooter.getHoodAngle())));
                                     fuelSim.fillHopperBy(-1);
                                     if (fuelSim.getHeldFuel() == 0) return;
-
                                     fuelSim.spawnFuel(
                                             new Pose3d(robotState.getEstimatedPose())
                                                     .plus(
                                                             new Transform3d(
-                                                                    Inches.of(-10),
-                                                                    Inches.of(3.6),
+                                                                    Inches.of(10),
+                                                                    Inches.of(-3.6),
                                                                     Inches.of(21),
                                                                     Rotation3d.kZero))
                                                     .getTranslation(),
@@ -108,8 +107,8 @@ public class RobotSim {
                 robotState::getEstimatedPose,
                 robotState::getFieldRelativeVelocity);
         fuelSim.registerIntake(
-                -Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
-                Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(12)).in(Meters),
+                Constants.FULL_ROBOT_LENGTH.div(2).plus(Inches.of(12)).unaryMinus().in(Meters),
+                Constants.FULL_ROBOT_LENGTH.div(2).in(Meters),
                 -Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
                 Constants.FULL_ROBOT_WIDTH.div(2).in(Meters),
                 intakeSimFuel);
@@ -139,7 +138,7 @@ public class RobotSim {
     public void addMechanismData(
             Drive drive,
             ShooterSuperstructure shooter,
-            IndexerSuperstructure indexer,
+            Indexer indexer,
             IntakeSuperstructure intake) {
         registerFuelSimMechanisms(drive, shooter, indexer, intake);
         posePublisher = new MechanismPosePublisher(intake, shooter);

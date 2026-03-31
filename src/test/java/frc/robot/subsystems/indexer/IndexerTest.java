@@ -31,14 +31,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class IndexerTest {
-    IndexerSuperstructure indexer;
+    Indexer indexer;
 
     @BeforeEach // this method will run before each test
     void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
         CommandScheduler.getInstance().cancelAll();
-        indexer = IndexerSuperstructureConstants.get();
+        indexer = IndexerConstants.get();
 
         /* enable the robot */
         DriverStationSim.setEnabled(true);
@@ -65,7 +65,7 @@ public class IndexerTest {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
             assertTrue(indexer.nearSetpoint());
         } catch (Exception e) {
-            fail("Failed to run IndexerSuperstructure to pull: " + e.getMessage());
+            fail("Failed to run Indexer to pull: " + e.getMessage());
         }
     }
 
@@ -75,9 +75,9 @@ public class IndexerTest {
         try {
             // Check velocity to check if the subsystem is actually in tolerance of stopped
             // velocity.
-            assertTrue((indexer.getFloorSpeed() < 0.1) && (indexer.getCenteringSpeed() < 0.1));
+            assertTrue(indexer.getFloorSpeed() < 0.1);
         } catch (Exception e) {
-            fail("Failed to stop indexer: " + e.getMessage());
+            fail("Failed to stop Indexer: " + e.getMessage());
         }
     }
 

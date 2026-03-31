@@ -48,8 +48,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     private final LoggedTrigger isCycleComplete;
 
     private final LinearVelocity shuffleVelocity = MetersPerSecond.of(0.8);
-    private final Distance retractDistance =
-            IntakeLinearConstants.MIN_DISTANCE.plus(Inches.of(2.0));
+    private final Distance retractDistance = IntakeLinearConstants.MIN_DISTANCE;
     private final Distance cycleCompleteTolerance =
             IntakeLinearConstants.MIN_DISTANCE.plus(Inches.of(1.5));
 
@@ -183,6 +182,11 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     private Command runRoller(Supplier<AngularVelocity> angularVelocity) {
         return this.runOnce(() -> intakeRollerIO.runVelocity(angularVelocity.get(), PIDSlot.SLOT_0))
+                .withName("Run Roller");
+    }
+
+    private Command runRoller(double dutyCycle) {
+        return this.runOnce(() -> intakeRollerIO.runDutyCycle(dutyCycle, false))
                 .withName("Run Roller");
     }
 
