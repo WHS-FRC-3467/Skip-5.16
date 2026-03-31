@@ -1,4 +1,4 @@
-
+// spotless:off
 package frc.robot.generated;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,25 +21,11 @@ public record ChoreoTraj(
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue
 ) {
-    public static final ChoreoTraj Depot1 = new ChoreoTraj(
-        "Depot1",
+    public static final ChoreoTraj NeutralSafe1Nashoba = new ChoreoTraj(
+        "NeutralSafe1Nashoba",
         OptionalInt.empty(),
-        3.96128,
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
-    );
-    public static final ChoreoTraj Neutral1 = new ChoreoTraj(
-        "Neutral1",
-        OptionalInt.empty(),
-        5.33159,
-        new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
-    );
-    public static final ChoreoTraj Neutral1Nashoba = new ChoreoTraj(
-        "Neutral1Nashoba",
-        OptionalInt.empty(),
-        5.07241,
-        new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
+        5.03104,
+        new Pose2d(5.65, 7.39928, Rotation2d.fromRadians(-1.5708)),
         new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
     );
     public static final ChoreoTraj Neutral2 = new ChoreoTraj(
@@ -49,81 +35,25 @@ public record ChoreoTraj(
         new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
         new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
     );
-    public static final ChoreoTraj Neutral2ML_0 = new ChoreoTraj(
-        "Neutral2ML_0",
-        OptionalInt.empty(),
-        2.19337,
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
-        new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708))
-    );
-    public static final ChoreoTraj Neutral2ML_0_Safe1 = new ChoreoTraj(
-        "Neutral2ML_0_Safe1",
-        OptionalInt.empty(),
-        5.31466,
-        new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
-    );
-    public static final ChoreoTraj Neutral2ML_0_Safe2 = new ChoreoTraj(
-        "Neutral2ML_0_Safe2",
-        OptionalInt.empty(),
-        4.67093,
-        new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
-    );
-    public static final ChoreoTraj Neutral2ML_0_Safe3 = new ChoreoTraj(
-        "Neutral2ML_0_Safe3",
-        OptionalInt.empty(),
-        5.18264,
-        new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
-    );
-    public static final ChoreoTraj Neutral2ML_1 = new ChoreoTraj(
-        "Neutral2ML_1",
-        OptionalInt.empty(),
-        2.77952,
-        new Pose2d(3.06667, 5.47686, Rotation2d.fromRadians(-0.80285)),
-        new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708))
-    );
-    public static final ChoreoTraj Neutral2ML_1_Safe1 = new ChoreoTraj(
-        "Neutral2ML_1_Safe1",
-        OptionalInt.empty(),
-        4.5983,
-        new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
-        new Pose2d(3.02006, 5.56034, Rotation2d.fromRadians(-0.80285))
-    );
-    public static final ChoreoTraj Neutral2ML_1_Safe2 = new ChoreoTraj(
-        "Neutral2ML_1_Safe2",
-        OptionalInt.empty(),
-        4.62694,
-        new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
-        new Pose2d(3.06667, 5.47686, Rotation2d.fromRadians(-0.80285))
-    );
-    public static final ChoreoTraj Neutral2ML_1_Safe3 = new ChoreoTraj(
-        "Neutral2ML_1_Safe3",
-        OptionalInt.empty(),
-        4.69984,
-        new Pose2d(6.7, 7.39928, Rotation2d.fromRadians(1.5708)),
-        new Pose2d(3.06667, 5.47686, Rotation2d.fromRadians(-0.80285))
-    );
-    public static final ChoreoTraj NeutralSafe1 = new ChoreoTraj(
-        "NeutralSafe1",
-        OptionalInt.empty(),
-        5.40971,
-        new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
-    );
-    public static final ChoreoTraj NeutralSafe1Nashoba = new ChoreoTraj(
-        "NeutralSafe1Nashoba",
-        OptionalInt.empty(),
-        5.03104,
-        new Pose2d(5.65, 7.39928, Rotation2d.fromRadians(-1.5708)),
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
-    );
     public static final ChoreoTraj NeutralSafe2 = new ChoreoTraj(
         "NeutralSafe2",
         OptionalInt.empty(),
         6.35491,
         new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
+        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
+    );
+    public static final ChoreoTraj Depot1 = new ChoreoTraj(
+        "Depot1",
+        OptionalInt.empty(),
+        3.96128,
+        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
+        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
+    );
+    public static final ChoreoTraj Neutral1Nashoba = new ChoreoTraj(
+        "Neutral1Nashoba",
+        OptionalInt.empty(),
+        5.07241,
+        new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
         new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
     );
     public static final ChoreoTraj TunnelPath = new ChoreoTraj(
@@ -133,28 +63,34 @@ public record ChoreoTraj(
         new Pose2d(5.65, 7.39928, Rotation2d.fromRadians(-1.5708)),
         new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
     );
+    public static final ChoreoTraj Neutral1 = new ChoreoTraj(
+        "Neutral1",
+        OptionalInt.empty(),
+        5.33159,
+        new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
+        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
+    );
+    public static final ChoreoTraj NeutralSafe1 = new ChoreoTraj(
+        "NeutralSafe1",
+        OptionalInt.empty(),
+        5.40971,
+        new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(-1.5708)),
+        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
+    );
 
     /**
      * A map between trajectory names and their corresponding data.
      * This allows for trajectory data to be looked up with strings during runtime.
      */
     public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
-        Map.entry("Depot1", Depot1),
-        Map.entry("Neutral1", Neutral1),
-        Map.entry("Neutral1Nashoba", Neutral1Nashoba),
-        Map.entry("Neutral2", Neutral2),
-        Map.entry("Neutral2ML_0", Neutral2ML_0),
-        Map.entry("Neutral2ML_0_Safe1", Neutral2ML_0_Safe1),
-        Map.entry("Neutral2ML_0_Safe2", Neutral2ML_0_Safe2),
-        Map.entry("Neutral2ML_0_Safe3", Neutral2ML_0_Safe3),
-        Map.entry("Neutral2ML_1", Neutral2ML_1),
-        Map.entry("Neutral2ML_1_Safe1", Neutral2ML_1_Safe1),
-        Map.entry("Neutral2ML_1_Safe2", Neutral2ML_1_Safe2),
-        Map.entry("Neutral2ML_1_Safe3", Neutral2ML_1_Safe3),
-        Map.entry("NeutralSafe1", NeutralSafe1),
         Map.entry("NeutralSafe1Nashoba", NeutralSafe1Nashoba),
+        Map.entry("Neutral2", Neutral2),
         Map.entry("NeutralSafe2", NeutralSafe2),
-        Map.entry("TunnelPath", TunnelPath)
+        Map.entry("Depot1", Depot1),
+        Map.entry("Neutral1Nashoba", Neutral1Nashoba),
+        Map.entry("TunnelPath", TunnelPath),
+        Map.entry("Neutral1", Neutral1),
+        Map.entry("NeutralSafe1", NeutralSafe1)
     );
 
     /**
@@ -170,3 +106,4 @@ public record ChoreoTraj(
     }
     
 }
+// spotless:on

@@ -379,25 +379,6 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
-     * Gets the current velocity setpoint
-     *
-     * @return The velocity setpoint
-     */
-    public AngularVelocity getVelocitySetpoint() {
-        return inputs.activeTrajectoryVelocity;
-    }
-
-    /**
-     * Gets the current velocity goal. Equal to {@link Mechanism#getVelocitySetpoint} unless running
-     * Motion Magic
-     *
-     * @return The velocity goal
-     */
-    public AngularVelocity getVelocityGoal() {
-        return inputs.goalVelocity;
-    }
-
-    /**
      * Checks that this mechanism was configured with a radius and throws if not.
      *
      * @throws IllegalStateException if {@link #withRadius} was never called

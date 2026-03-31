@@ -18,6 +18,7 @@ package frc.robot.subsystems.tower;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -25,6 +26,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -44,10 +46,12 @@ import frc.robot.Robot;
 public class TowerConstants {
     public static String NAME = "Tower";
 
-    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(40.0);
+    public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(116.6);
+    public static final AngularAcceleration MAX_ACCELERATION =
+            RotationsPerSecondPerSecond.of(406.0);
 
-    private static final double GEARING = (37.0 / 21.0) * (28.0 / 18.0);
-    private static final Distance RADIUS = Inches.of(2);
+    private static final double GEARING = (36.0 / 12.0);
+    private static final Distance RADIUS = Inches.of(1);
 
     public static final AngularVelocity TOLERANCE = MAX_VELOCITY.times(0.2);
 
@@ -55,7 +59,7 @@ public class TowerConstants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
 
     // Velocity PID
-    public static final PID SLOT0_PID = new PID(5.0, 0.0, 0.0).withS(14.0).withV(0.5);
+    public static final PID SLOT0_PID = new PID(80.0, 0.0, 0.0).withV(10.0);
 
     /**
      * Creates a TalonFX motor controller configuration for the tower mechanism. Configures current
@@ -80,7 +84,7 @@ public class TowerConstants {
         config.Voltage.PeakReverseVoltage = -12.0;
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
 

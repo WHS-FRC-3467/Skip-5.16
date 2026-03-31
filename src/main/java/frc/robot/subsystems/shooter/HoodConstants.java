@@ -7,16 +7,20 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.ctre.phoenix6.configs.*;
-import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -49,13 +53,16 @@ public class HoodConstants {
 
     public static final Angle TOLERANCE = Degrees.of(1.5);
 
-    private static final double GEARING = (168.0 / 10.0) * (28.0 / 11.0);
+    public static final AngularVelocity CRUISE_VELOCITY = RadiansPerSecond.of(187.75);
+    public static final AngularAcceleration ACCELERATION = RadiansPerSecondPerSecond.of(293.0);
 
-    // Actual arm angle from horizontal is 15 to 39 deg
-    public static final Angle MIN_ANGLE_OFFSET = Degrees.of(15.0);
+    private static final double GEARING = (48.0 / 14.0) * (164.0 / 10.0);
+
+    // Actual arm angle from horizontal is 17 to 44 deg
+    public static final Angle MIN_ANGLE_OFFSET = Degrees.of(17.0);
 
     public static final Angle MIN_ANGLE = Degrees.of(0.0);
-    public static final Angle MAX_ANGLE = Degrees.of(24.0);
+    public static final Angle MAX_ANGLE = Degrees.of(27.0);
     public static final Angle STARTING_ANGLE = Degrees.of(0.0);
     public static final Distance ARM_LENGTH = Inches.of(6.9);
 
@@ -68,7 +75,7 @@ public class HoodConstants {
 
     private static PID getPID() {
         if (RobotBase.isReal()) {
-            return new PID(1000.0, 0.0, 60.0).withS(2.0).withG(12.0);
+            return new PID(3000.0, 0.0, 160.0).withS(8.0);
         } else {
             return new PID(5.0, 0.0, 0.0).withS(8.0);
         }
@@ -111,10 +118,9 @@ public class HoodConstants {
 
         config.Feedback.SensorToMechanismRatio = GEARING;
 
-        config.Slot0 =
-                Slot0Configs.from(SLOT0_PID.toSlotConfigs())
-                        .withGravityType(GravityTypeValue.Arm_Cosine)
-                        .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
+        config.Slot0 = Slot0Configs.from(SLOT0_PID.toSlotConfigs());
+        config.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY.in(RotationsPerSecond);
+        config.MotionMagic.MotionMagicAcceleration = ACCELERATION.in(RotationsPerSecondPerSecond);
 
         return config;
     }

@@ -6,7 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
@@ -22,7 +22,7 @@ import org.littletonrobotics.junction.Logger;
 public record AutoContext(
         Drive drive,
         IntakeSuperstructure intake,
-        Indexer indexer,
+        IndexerSuperstructure indexer,
         Tower tower,
         ShooterSuperstructure shooter,
         RobotState robotState,
@@ -33,7 +33,7 @@ public record AutoContext(
     public static AutoContext create(
             Drive drive,
             IntakeSuperstructure intake,
-            Indexer indexer,
+            IndexerSuperstructure indexer,
             Tower tower,
             ShooterSuperstructure shooter) {
         RobotState robotState = RobotState.getInstance();
