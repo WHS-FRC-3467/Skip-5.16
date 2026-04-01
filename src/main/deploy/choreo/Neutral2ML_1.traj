@@ -19,11 +19,11 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"DumperShot.x", "val":3.0666701793670654}, "y":{"exp":"DumperShot.y", "val":5.476860046386719}, "heading":{"exp":"DumperShot.heading", "val":-0.8028514559173916}, "intervals":43, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"DumperShot.x", "val":3.0666702}, "y":{"exp":"DumperShot.y", "val":5.47686}, "heading":{"exp":"DumperShot.heading", "val":-0.8028515}, "intervals":43, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"3.310145139694214 m", "val":3.310145139694214}, "y":{"exp":"TunnelEntrance.y", "val":7.399277210235596}, "heading":{"exp":"90 deg", "val":1.5707963267948966}, "intervals":16, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"TunnelEntrance.x", "val":4.0}, "y":{"exp":"TunnelEntrance.y", "val":7.399277210235596}, "heading":{"exp":"90 deg", "val":1.5707963267948966}, "intervals":24, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"TunnelExit.x", "val":5.65}, "y":{"exp":"TunnelExit.y", "val":7.399277210235596}, "heading":{"exp":"DecisionPose.heading", "val":1.5707963267948966}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"DecisionPose.x", "val":6.7}, "y":{"exp":"DecisionPose.y", "val":7.399277210235596}, "heading":{"exp":"DecisionPose.heading", "val":1.5707963267948966}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"TunnelExit.x", "val":5.65}, "y":{"exp":"TunnelExit.y", "val":7.399277210235596}, "heading":{"exp":"DecisionPose.heading", "val":1.5707963}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"DecisionPose.x", "val":6.7}, "y":{"exp":"DecisionPose.y", "val":7.3992772}, "heading":{"exp":"DecisionPose.heading", "val":1.5707963}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
