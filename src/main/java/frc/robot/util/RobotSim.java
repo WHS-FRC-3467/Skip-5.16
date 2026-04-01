@@ -20,7 +20,7 @@ import frc.lib.util.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.indexer.IndexerSuperstructure;
+import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 
@@ -46,7 +46,7 @@ public class RobotSim {
     private void registerFuelSimMechanisms(
             Drive drive,
             ShooterSuperstructure shooter,
-            IndexerSuperstructure indexer,
+            Indexer indexer,
             IntakeSuperstructure intake) {
         Trigger shootSimFuel =
                 new Trigger(
@@ -138,7 +138,7 @@ public class RobotSim {
     public void addMechanismData(
             Drive drive,
             ShooterSuperstructure shooter,
-            IndexerSuperstructure indexer,
+            Indexer indexer,
             IntakeSuperstructure intake) {
         registerFuelSimMechanisms(drive, shooter, indexer, intake);
         posePublisher = new MechanismPosePublisher(intake, shooter);
