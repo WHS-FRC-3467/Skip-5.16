@@ -55,7 +55,7 @@ public class HoodConstants {
     public static final Angle MIN_ANGLE_OFFSET = Degrees.of(15.0);
 
     public static final Angle MIN_ANGLE = Degrees.of(0.0);
-    public static final Angle MAX_ANGLE = Degrees.of(24.0);
+    public static final Angle MAX_ANGLE = Degrees.of(27.0);
     public static final Angle STARTING_ANGLE = Degrees.of(0.0);
     public static final Distance ARM_LENGTH = Inches.of(6.9);
 

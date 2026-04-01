@@ -56,13 +56,16 @@ import java.util.function.Supplier;
 public class ShooterSuperstructure extends SubsystemBase implements AutoCloseable {
 
     /** Distance from hub in meters -> hood angle in degrees */
-    private static final InterpolatingDoubleTreeMap hoodAngleMap = new InterpolatingDoubleTreeMap();
+    private static final InterpolatingDoubleTreeMap hubHoodMap = new InterpolatingDoubleTreeMap();
 
     static {
-        hoodAngleMap.put(1.8, 2.0);
-        hoodAngleMap.put(2.1, 10.0);
-        hoodAngleMap.put(2.51, 12.0);
-        hoodAngleMap.put(3.55, 16.0);
+        hubHoodMap.put(1.8, 0.0);
+        hubHoodMap.put(2.1, 6.0);
+        hubHoodMap.put(2.51, 7.0);
+        hubHoodMap.put(3.0, 8.0);
+        hubHoodMap.put(3.55, 10.0);
+        hubHoodMap.put(4.0, 13.0);
+        hubHoodMap.put(5.0, 21.0);
     }
 
     /** Distance from hub in meters -> flywheel speed in rotations per second */
@@ -70,10 +73,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new InterpolatingDoubleTreeMap();
 
     static {
-        hubFlywheelMap.put(1.8, 25.0);
-        hubFlywheelMap.put(2.1, 26.0);
-        hubFlywheelMap.put(2.5, 26.0);
-        hubFlywheelMap.put(3.55, 30.0);
+        hubFlywheelMap.put(1.8, 26.5);
+        hubFlywheelMap.put(2.1, 26.5);
+        hubFlywheelMap.put(2.5, 28.0);
+        hubFlywheelMap.put(3.0, 30.0);
+        hubFlywheelMap.put(3.55, 32.0);
+        hubFlywheelMap.put(4.0, 33.0);
+        hubFlywheelMap.put(5.0, 35.0);
     }
 
     /** Distance from feed pose in meters -> flywheel speed in rotations per second */
@@ -81,17 +87,29 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new InterpolatingDoubleTreeMap();
 
     static {
-        feedFlywheelMap.put(0.0, 50.0);
-        feedFlywheelMap.put(6.0, 50.0);
-        feedFlywheelMap.put(7.0, 55.0);
-        feedFlywheelMap.put(8.0, 60.0);
-        feedFlywheelMap.put(20.0, 60.0);
+        feedFlywheelMap.put(3.35, 32.0);
+        feedFlywheelMap.put(4.5, 32.0);
+        feedFlywheelMap.put(5.5, 35.0);
+        feedFlywheelMap.put(8.0, 37.0);
+    }
+
+    /** Distance from feed pose in meters -> flywheel speed in rotations per second */
+    private static final InterpolatingDoubleTreeMap feedHoodMap = new InterpolatingDoubleTreeMap();
+
+    static {
+        feedFlywheelMap.put(3.35, 10.0);
+        feedHoodMap.put(4.5, 24.0);
+        feedHoodMap.put(5.0, 24.0);
+        feedHoodMap.put(5.5, 27.0);
+        feedHoodMap.put(7.0, 27.0);
+        feedHoodMap.put(8.0, 27.0);
+        feedHoodMap.put(9.0, 27.0);
+        feedHoodMap.put(10.0, 27.0);
     }
 
     private static final double MIDLINE_FEED_DISTANCE_METERS =
             FieldConstants.FIELD_LENGTH / 2.0
                     - (FieldConstants.LinesVertical.NEUTRAL_ZONE_NEAR / 2.0);
-    private static final Angle FEED_HOOD_ANGLE = Degrees.of(24.0);
 
     private final RobotState robotState = RobotState.getInstance();
 
@@ -116,7 +134,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
             new LoggedTunableNumber(getName() + "/FlywheelTrimStepRPS", 0.5);
 
     private final LoggedTunableNumber flywheelSlowSpinupTorque =
-            new LoggedTunableNumber(getName() + "/FlywheelSlowSpinupTorque", 10.0);
+            new LoggedTunableNumber(getName() + "/FlywheelSlowSpinupTorque", 16.0);
     private final LoggedTunableNumber flywheelSlowSpinupDutyCycle =
             new LoggedTunableNumber(getName() + "/FlywheelSlowSpinupDutyCycle", 0.3);
 
@@ -290,11 +308,17 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     private Angle getDesiredHoodAngle() {
         boolean shouldFeedNow = robotState.shouldFeed.getAsBoolean();
-        if (!shouldFeedNow) {
-            return Degrees.of(hoodAngleMap.get(robotState.getDistanceToTarget().in(Meters)));
+        InterpolatingDoubleTreeMap hoodMap = shouldFeedNow ? feedHoodMap : hubHoodMap;
+
+        Pose2d pose;
+        if (shouldFeedNow) {
+            pose = robotState.getFuturePose(robotState.feedLookaheadSeconds.get());
+        } else {
+            pose = robotState.getEstimatedPose();
         }
 
-        return FEED_HOOD_ANGLE;
+        return Degrees.of(
+                hoodMap.get(robotState.getDistanceToTarget(pose.getTranslation()).in(Meters)));
     }
 
     // Gets ball trajectory exit angle relative to horizontal, accounting for hood angle and
@@ -318,7 +342,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                 () -> RotationsPerSecond.of(hubFlywheelMap.get(distance.in(Meters))),
                 () ->
                         robotState.hoodSafe.getAsBoolean()
-                                ? Degrees.of(hoodAngleMap.get(distance.in(Meters)))
+                                ? Degrees.of(hubHoodMap.get(distance.in(Meters)))
                                 : Degrees.zero(),
                 "Spin-Up Shooter to Distance");
     }
@@ -332,7 +356,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public Command spinUpShooterToFixedDistance(double distance) {
         return spinUpCommand(
                 () -> RotationsPerSecond.of(hubFlywheelMap.get(distance)),
-                () -> Degrees.of(hoodAngleMap.get(distance)),
+                () -> Degrees.of(hubHoodMap.get(distance)),
                 "Spin-Up Shooter to Distance");
     }
 
@@ -344,7 +368,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     public Command spinUpShooterMidlineFeed() {
         return spinUpCommand(
                 () -> RotationsPerSecond.of(feedFlywheelMap.get(MIDLINE_FEED_DISTANCE_METERS)),
-                () -> FEED_HOOD_ANGLE,
+                () -> Degrees.of(feedHoodMap.get(MIDLINE_FEED_DISTANCE_METERS)),
                 "Spin-Up Shooter to FEED Distance");
     }
 
