@@ -50,6 +50,8 @@ import frc.robot.subsystems.indexer.IndexerSuperstructureConstants;
 import frc.robot.subsystems.intake.IntakeLinearConstants;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
+import frc.robot.subsystems.objectdetector.ObjectDetector;
+import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
@@ -59,6 +61,8 @@ import frc.robot.util.HubState;
 import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
+
+import java.util.Optional;
 
 /**
  * Container class for the robot that holds all subsystems, controllers, and command bindings. This
@@ -81,7 +85,7 @@ public class RobotContainer {
     private final IndexerSuperstructure indexer;
     private final Tower tower;
     // private final LEDs leds;
-    // private final ObjectDetector objectDetector;
+    private final ObjectDetector objectDetector;
 
     // Controller
     private final CommandXboxControllerExtended controller =
@@ -105,12 +109,14 @@ public class RobotContainer {
         VisionConstants.create();
         // VisionOdometryCharacterizer.enable();
         // leds = LEDsConstants.get();
-        // objectDetector = ObjectDetectorConstants.get();
+        objectDetector = ObjectDetectorConstants.get();
 
         if (RobotBase.isSimulation()) {
             RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intake);
         }
-        AutoContext ctx = AutoContext.create(drive, intake, indexer, tower, shooter);
+        AutoContext ctx =
+                AutoContext.create(
+                        drive, intake, indexer, tower, shooter, Optional.of(objectDetector));
 
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
@@ -128,6 +134,8 @@ public class RobotContainer {
                 .ifPresent(a -> autoChooser.addOption("Aggressive-Right", a));
         NeutralAuto.create(ctx, false, true).ifPresent(a -> autoChooser.addOption("Safe-Left", a));
         NeutralAuto.create(ctx, true, true).ifPresent(a -> autoChooser.addOption("Safe-Right", a));
+        MLNeutralAuto.create(ctx, false, true)
+                .ifPresent(a -> autoChooser.addOption("ML-Neutral-Safe-Left", a));
 
         DepotShootAuto.create(ctx, false)
                 .ifPresent(a -> autoChooser.addOption("Aggressive-Depot", a));
