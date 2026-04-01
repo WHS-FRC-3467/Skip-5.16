@@ -125,7 +125,10 @@ public final class MLNeutralAuto {
                                                             Set.of()),
                                                     start.spawnCmd()));
 
-                            start.done().onTrue(AutoCommands.shootThenFollow(ctx, 3.0, decision)); // works up to here
+                            start.done()
+                                    .onTrue(
+                                            AutoCommands.shootThenFollow(
+                                                    ctx, 3.0, decision)); // works up to here
 
                             // ML loop: path to decision -> decicde -> follow best lane -> shoot
                             decision.done()
@@ -151,7 +154,9 @@ public final class MLNeutralAuto {
                                                                             ctx,
                                                                             3.0,
                                                                             laneTrajectory),
-                                                            Set.of()))); // SEEMS to work up to here, but needs more testing
+                                                            Set.of()))); // SEEMS to work up to
+                            // here, but needs
+                            // more testing
 
                             return routine;
                         }));

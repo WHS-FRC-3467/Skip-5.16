@@ -111,14 +111,15 @@ public class CANdlePatterns {
             long now = RobotController.getTime();
 
             int bufLen = reader.getLength();
-            
+
             double wereToBounce = 0; // Where the scanner should bounce
-            wereToBounce = switch (bounceMode) {
-                case "Front" -> bufLen - size;
-                case "Back" -> bufLen + size;
-                case "Center" -> Math.floor(bufLen / 2);
-                default -> 0;
-            };
+            wereToBounce =
+                    switch (bounceMode) {
+                        case "Front" -> bufLen - size;
+                        case "Back" -> bufLen + size;
+                        case "Center" -> Math.floor(bufLen / 2);
+                        default -> 0;
+                    };
 
             final double periodMicros =
                     Hertz.of(velocity).asPeriod().in(Microseconds) * wereToBounce;
