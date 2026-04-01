@@ -129,10 +129,15 @@ public class RobotContainer {
         NeutralAuto.create(ctx, false, true).ifPresent(a -> autoChooser.addOption("Safe-Left", a));
         NeutralAuto.create(ctx, true, true).ifPresent(a -> autoChooser.addOption("Safe-Right", a));
 
+        // Depot Autos
         DepotShootAuto.create(ctx, false)
                 .ifPresent(a -> autoChooser.addOption("Aggressive-Depot", a));
         DepotShootAuto.create(ctx, true).ifPresent(a -> autoChooser.addOption("Safe-Depot", a));
 
+        // Delayed Bump Autos
+        DelayedBumpAuto.create(ctx, false)
+                .ifPresent(a -> autoChooser.addOption("Aggressive-Bump", a));
+        DelayedBumpAuto.create(ctx, true).ifPresent(a -> autoChooser.addOption("Safe-Bump", a));
         autoChooser.onChange(
                 auto -> {
                     if (auto == null) {
