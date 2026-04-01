@@ -120,7 +120,7 @@ public class CANdlePatterns {
                     switch (bounceMode) {
                         case "Front" -> bufLen - size;
                         case "Back" -> bufLen + size;
-                        case "Center" -> Math.floor(bufLen / 2);
+                        case "Center" -> Math.floor(bufLen / 2.0);
                         default -> 0;
                     };
 

@@ -27,32 +27,74 @@
    }
   },
   "poses":{
-   "BumpEntrance":{
+   "DecisionPose":{
     "x":{
-     "exp":"5.664522647857666 m",
-     "val":5.664522647857666
+     "exp":"6.7 m",
+     "val":6.7
     },
     "y":{
-     "exp":"5.792764186859131 m",
-     "val":5.792764186859131
+     "exp":"TunnelExit.y",
+     "val":7.399277210235596
     },
     "heading":{
-     "exp":"360 deg",
-     "val":6.283185307179586
+     "exp":"90 deg",
+     "val":1.5707963267948966
     }
    },
-   "BumpExit":{
+   "DumperShot":{
     "x":{
-     "exp":"3.4681100845336914 m",
-     "val":3.4681100845336914
+     "exp":"3.0666701793670654 m",
+     "val":3.0666701793670654
     },
     "y":{
-     "exp":"5.792764186859131 m",
-     "val":5.792764186859131
+     "exp":"5.476860046386719 m",
+     "val":5.476860046386719
     },
     "heading":{
-     "exp":"360 deg",
-     "val":6.283185307179586
+     "exp":"-46 deg",
+     "val":-0.8028514559173916
+    }
+   },
+   "LanePose1ML":{
+    "x":{
+     "exp":"Neutral2ML_Safe_X1",
+     "val":5.95
+    },
+    "y":{
+     "exp":"6.4 m",
+     "val":6.4
+    },
+    "heading":{
+     "exp":"DecisionPose.heading",
+     "val":1.5707963267948966
+    }
+   },
+   "LanePose2ML":{
+    "x":{
+     "exp":"DecisionPose.x",
+     "val":6.7
+    },
+    "y":{
+     "exp":"6.4 m",
+     "val":6.4
+    },
+    "heading":{
+     "exp":"DecisionPose.heading",
+     "val":1.5707963267948966
+    }
+   },
+   "LanePose3ML":{
+    "x":{
+     "exp":"Neutral2ML_Safe_X3",
+     "val":7.8
+    },
+    "y":{
+     "exp":"6.4 m",
+     "val":6.4
+    },
+    "heading":{
+     "exp":"DecisionPose.heading",
+     "val":1.5707963267948966
     }
    },
    "NeutralShoot":{
