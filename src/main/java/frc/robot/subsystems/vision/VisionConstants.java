@@ -34,6 +34,7 @@ import edu.wpi.first.units.measure.Time;
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.lib.io.vision.VisionIO;
+import frc.lib.io.vision.VisionIOC2;
 import frc.lib.io.vision.VisionIOPhotonVision;
 import frc.lib.io.vision.VisionIOPhotonVisionSim;
 import frc.robot.Constants;
@@ -300,6 +301,8 @@ public class VisionConstants {
                     BACK_LATENCY_STDDEV);
 
     private static Optional<VisionSystemSim> visionSim = Optional.empty();
+    private static final VisionIOC2.C2Config FRONT_C2_CONFIG = VisionIOC2.defaultsFor(0);
+    private static final VisionIOC2.C2Config BACK_C2_CONFIG = VisionIOC2.defaultsFor(3);
 
     private static VisionIOPhotonVision getFrontIOReal() {
         return new VisionIOPhotonVision(FRONT);
@@ -376,24 +379,54 @@ public class VisionConstants {
     public static void create() {
         switch (Constants.currentMode) {
             case REAL -> {
-                var camera1 = new AprilTagCamera(FRONT, getFrontIOReal());
-                // var camera2 = new AprilTagCamera(LEFT, getLeftIOReal());
-                // var camera3 = new AprilTagCamera(RIGHT, getRightIOReal());
-                var camera4 = new AprilTagCamera(BACK, getBackIOReal());
+                var camera1 =
+                        new AprilTagCamera(
+                                FRONT,
+                                getFrontIOReal(),
+                                FRONT_C2_CONFIG.cameraIndex(),
+                                FRONT_C2_CONFIG.tagLayout());
+                // var camera2 = new AprilTagCamera(LEFT, getLeftIOReal(), ..., ...);
+                // var camera3 = new AprilTagCamera(RIGHT, getRightIOReal(), ..., ...);
+                var camera4 =
+                        new AprilTagCamera(
+                                BACK,
+                                getBackIOReal(),
+                                BACK_C2_CONFIG.cameraIndex(),
+                                BACK_C2_CONFIG.tagLayout());
                 new VisionSubsystem(camera1, camera4);
             }
             case SIM -> {
-                var camera1 = new AprilTagCamera(FRONT, getFrontIOSim());
-                // var camera2 = new AprilTagCamera(LEFT, getLeftIOSim());
-                // var camera3 = new AprilTagCamera(RIGHT, getRightIOSim());
-                var camera4 = new AprilTagCamera(BACK, getBackIOSim());
+                var camera1 =
+                        new AprilTagCamera(
+                                FRONT,
+                                getFrontIOSim(),
+                                FRONT_C2_CONFIG.cameraIndex(),
+                                FRONT_C2_CONFIG.tagLayout());
+                // var camera2 = new AprilTagCamera(LEFT, getLeftIOSim(), ..., ...);
+                // var camera3 = new AprilTagCamera(RIGHT, getRightIOSim(), ..., ...);
+                var camera4 =
+                        new AprilTagCamera(
+                                BACK,
+                                getBackIOSim(),
+                                BACK_C2_CONFIG.cameraIndex(),
+                                BACK_C2_CONFIG.tagLayout());
                 new VisionSubsystem(camera1, camera4);
             }
             case REPLAY -> {
-                var camera1 = new AprilTagCamera(FRONT, new VisionIO() {});
-                // var camera2 = new AprilTagCamera(LEFT, new VisionIO() {});
-                // var camera3 = new AprilTagCamera(RIGHT, new VisionIO() {});
-                var camera4 = new AprilTagCamera(BACK, new VisionIO() {});
+                var camera1 =
+                        new AprilTagCamera(
+                                FRONT,
+                                new VisionIO() {},
+                                FRONT_C2_CONFIG.cameraIndex(),
+                                FRONT_C2_CONFIG.tagLayout());
+                // var camera2 = new AprilTagCamera(LEFT, new VisionIO() {}, ..., ...);
+                // var camera3 = new AprilTagCamera(RIGHT, new VisionIO() {}, ..., ...);
+                var camera4 =
+                        new AprilTagCamera(
+                                BACK,
+                                new VisionIO() {},
+                                BACK_C2_CONFIG.cameraIndex(),
+                                BACK_C2_CONFIG.tagLayout());
                 new VisionSubsystem(camera1, camera4);
             }
         }
