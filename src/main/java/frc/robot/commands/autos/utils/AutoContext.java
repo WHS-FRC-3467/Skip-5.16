@@ -8,10 +8,13 @@ import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
+import frc.robot.subsystems.objectdetector.ObjectDetector;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 
 import org.littletonrobotics.junction.Logger;
+
+import java.util.Optional;
 
 /**
  * Shared dependencies for autonomous routine builders.
@@ -25,6 +28,7 @@ public record AutoContext(
         Indexer indexer,
         Tower tower,
         ShooterSuperstructure shooter,
+        Optional<ObjectDetector> objectDetector,
         RobotState robotState,
         AutoFactory autoFactory) {
     /**
@@ -35,7 +39,8 @@ public record AutoContext(
             IntakeSuperstructure intake,
             Indexer indexer,
             Tower tower,
-            ShooterSuperstructure shooter) {
+            ShooterSuperstructure shooter,
+            Optional<ObjectDetector> objectDetector) {
         RobotState robotState = RobotState.getInstance();
         AutoFactory autoFactory =
                 new AutoFactory(
@@ -48,6 +53,7 @@ public record AutoContext(
                                 Logger.recordOutput(
                                         "Odometry/Trajectory",
                                         starting ? trajectory.getPoses() : new Pose2d[] {}));
-        return new AutoContext(drive, intake, indexer, tower, shooter, robotState, autoFactory);
+        return new AutoContext(
+                drive, intake, indexer, tower, shooter, objectDetector, robotState, autoFactory);
     }
 }
