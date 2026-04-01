@@ -29,10 +29,13 @@ import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.RobotState.FieldRegion;
 import frc.robot.commands.DriveCommands;
+import frc.robot.generated.ChoreoVars;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.IndexerSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
+import frc.robot.subsystems.objectdetector.ObjectDetector;
+import frc.robot.subsystems.objectdetector.ObjectDetector.LaneTarget;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.tower.Tower;
 import frc.robot.util.RobotSim;
@@ -112,17 +115,17 @@ public class AutoCommands {
     }
 
     /**
-     * Makes the robot smaller by retracting the intake and lowering the hood.
+     * Makes the robot smaller by lowering the hood.
      *
      * @param shooter the shooter superstructure subsystem
-     * @return returns a timed command that retracts the intake and lowers the hood
+     * @return returns a timed command that lowers the hood
      */
     public static Command stowHood(ShooterSuperstructure shooter) {
         return Commands.parallel(shooter.retractHood()).withTimeout(1.25);
     }
 
     /**
-     * Shoots the currently held note, stows the hood, retracts the intake, then starts the next
+     * Shoots the currently held FUEL, stows the hood, retracts the intake, then starts the next
      * trajectory.
      */
     public static Command shootThenFollow(
@@ -132,6 +135,52 @@ public class AutoCommands {
                 stowHood(ctx.shooter()),
                 retractIntake(ctx),
                 next.spawnCmd());
+    }
+
+    /**
+     * Starts the given trajectory then shoots the currently held FUEL. Spins down the shooter and
+     * retracts the intake afterwards.
+     */
+    public static Command followThenShoot(
+            AutoContext ctx, double timeoutSeconds, AutoTrajectory current) {
+        return Commands.sequence(
+                current.spawnCmd(), Commands.waitUntil(current.done()), shootOnly(ctx, timeoutSeconds), retractIntake(ctx));
+    }
+
+    /**
+     * Return the int corresponding to the lane most populated with FUEL according to the object
+     * detector, if the lane exists. Currently factored for just 3 ML lanes indexed 0-2.
+     *
+     * @param objectDetector the object detector subsystem
+     * @return an Optional containing the lane number (0, 1, or 2) with the most FUEL, or an empty
+     *     Optional if no lane is matched
+     */
+    public static Optional<Integer> getBestLane(ObjectDetector objectDetector) {
+        Optional<LaneTarget> bestLaneTarget = objectDetector.getBestLaneTarget();
+        if (bestLaneTarget.isEmpty()) {
+            return Optional.empty();
+        }
+        double laneX = bestLaneTarget.get().x();
+
+        // Three pre-defined ML lanes, so find the closest one to the optimal lane
+        double[] lanes =
+                new double[] {
+                    ChoreoVars.Poses.LanePose1ML.getX(),
+                    ChoreoVars.Poses.LanePose2ML.getX(),
+                    ChoreoVars.Poses.LanePose3ML.getX()
+                };
+
+        int bestIndex = -1;
+        double bestDistance = Double.MAX_VALUE;
+        for (int i = 0; i < lanes.length; i++) {
+            double distance = Math.abs(laneX - lanes[i]);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestIndex = i;
+            }
+        }
+
+        return bestIndex == -1 ? Optional.empty() : Optional.of(bestIndex);
     }
 
     /**
