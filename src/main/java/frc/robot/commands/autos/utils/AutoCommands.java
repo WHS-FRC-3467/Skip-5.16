@@ -144,7 +144,10 @@ public class AutoCommands {
     public static Command followThenShoot(
             AutoContext ctx, double timeoutSeconds, AutoTrajectory current) {
         return Commands.sequence(
-                current.spawnCmd(), Commands.waitUntil(current.done()), shootOnly(ctx, timeoutSeconds), retractIntake(ctx));
+                current.spawnCmd(),
+                Commands.waitUntil(current.done()),
+                shootOnly(ctx, timeoutSeconds),
+                retractIntake(ctx));
     }
 
     /**

@@ -38,7 +38,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
 
     private static final LoggedTunableNumber SLOW_MPS =
-            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowMPS", 0.05);
+            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowMPS", 0.5);
 
     private final LinearMechanism<?> intakeLinearIO;
     private final FlywheelMechanism<?> intakeRollerIO;

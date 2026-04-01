@@ -14,26 +14,17 @@
  */
 package frc.robot.subsystems.indexer;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import frc.lib.io.motor.MotorIO.PIDSlot;
 import frc.lib.mechanisms.flywheel.FlywheelMechanism;
-import frc.lib.util.LoggedTrigger;
-import frc.lib.util.LoggedTunableBoolean;
 import frc.lib.util.LoggedTunableNumber;
 import frc.lib.util.LoggerHelper;
-
-import java.util.Set;
 
 /**
  * Subsystem that controls the indexer floor and indexer centering mechanism for moving game pieces
@@ -58,40 +49,6 @@ public class Indexer extends SubsystemBase {
                     IndexerConstants.NAME + "/FeedRPS",
                     IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
-    private final Trigger tuningModeEnabled =
-            new Trigger(new LoggedTunableBoolean(getName() + "/Tuning/Enable", false));
-    private final LoggedTunableNumber tuningModeRPS =
-            new LoggedTunableNumber(getName() + "/Tuning/SpeedRPS", 0.0);
-
-    // From logs
-    private final LoggedTunableNumber jamDetectionVelocityError =
-            new LoggedTunableNumber(getName() + "/JamDetection/VelocityErrorThresholdRPS", 15.0);
-    private final LoggedTunableNumber jamDetectionTorqueCurrent =
-            new LoggedTunableNumber(getName() + "/JamDetection/TorqueCurrentThreshold", 65.0);
-    private final LoggedTunableNumber jamDetectionTorqueCurrentResponse =
-            new LoggedTunableNumber(getName() + "/JamDetection/TorqueCurrentResponse", 100.0);
-    private final LoggedTunableNumber jamDetectionResponseLengthSeconds =
-            new LoggedTunableNumber(getName() + "/JamDetection/ResponseLengthSeconds", 0.2);
-    private final LoggedTrigger isJammed;
-
-    private final Command tuningModeCommand =
-            Commands.sequence(
-                            Commands.runOnce(this::cancelCurrentCommandIfAny),
-                            createTuningRunCommand())
-                    .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
-                    .finallyDo(() -> runVelocity(RotationsPerSecond.zero()));
-
-    private void cancelCurrentCommandIfAny() {
-        var currentCommand = this.getCurrentCommand();
-        if (currentCommand == null) return;
-        CommandScheduler.getInstance().cancel(currentCommand);
-    }
-
-    private Command createTuningRunCommand() {
-        return this.run(() -> runVelocity(RotationsPerSecond.of(tuningModeRPS.getAsDouble())))
-                .asProxy();
-    }
-
     /**
      * Constructs an Indexer subsystem.
      *
@@ -99,24 +56,6 @@ public class Indexer extends SubsystemBase {
      */
     public Indexer(FlywheelMechanism<?> io) {
         this.io = io;
-        tuningModeEnabled.whileTrue(tuningModeCommand);
-
-        isJammed =
-                new LoggedTrigger(
-                                getName() + "/IsJammed",
-                                () -> {
-                                    boolean velocityTripped =
-                                            io.getVelocityError()
-                                                    .gt(
-                                                            RotationsPerSecond.of(
-                                                                    jamDetectionVelocityError
-                                                                            .get()));
-                                    boolean currentTripped =
-                                            io.getTorqueCurrent()
-                                                    .gt(Amps.of(jamDetectionTorqueCurrent.get()));
-                                    return velocityTripped && currentTripped;
-                                })
-                        .debounce(0.1);
     }
 
     @Override
@@ -143,22 +82,6 @@ public class Indexer extends SubsystemBase {
     }
 
     /**
-     * Enables tuning mode by cancelling the currently running command (if any), scheduling a
-     * non-interruptible idle command, and applying the current tuning position setpoint.
-     */
-    void enableTuningMode() {
-        CommandScheduler.getInstance().schedule(tuningModeCommand);
-    }
-
-    /**
-     * Disables tuning mode by cancelling the tuning idle command and restoring the previously
-     * active command when one was captured.
-     */
-    void disableTuningMode() {
-        CommandScheduler.getInstance().cancel(tuningModeCommand);
-    }
-
-    /**
      * Run the indexer at the foundtain velocity (5RPS)
      *
      * @return a command to fountain
@@ -174,21 +97,8 @@ public class Indexer extends SubsystemBase {
      * @return a command that runs the indexer at shooting speed
      */
     public Command shoot() {
-        return Commands.repeatingSequence(
-                        this.runOnce(() -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get()))),
-                        Commands.waitUntil(isJammed),
-                        this.runOnce(
-                                () ->
-                                        io.runCurrent(
-                                                Amps.of(
-                                                        Math.copySign(
-                                                                jamDetectionTorqueCurrentResponse
-                                                                        .get(),
-                                                                -SHOOT_RPS.get())))),
-                        Commands.defer(
-                                () -> Commands.waitSeconds(jamDetectionResponseLengthSeconds.get()),
-                                Set.of()))
-                .finallyDo(this::stop)
+        return this.startEnd(
+                        () -> runVelocity(RotationsPerSecond.of(SHOOT_RPS.get())), () -> stop())
                 .withName("Shoot");
     }
 

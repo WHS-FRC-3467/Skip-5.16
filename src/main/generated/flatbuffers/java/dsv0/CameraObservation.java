@@ -3,76 +3,134 @@
 package dsv0;
 
 import com.google.flatbuffers.BaseVector;
-import com.google.flatbuffers.BooleanVector;
-import com.google.flatbuffers.ByteVector;
-import com.google.flatbuffers.Constants;
-import com.google.flatbuffers.DoubleVector;
 import com.google.flatbuffers.FlatBufferBuilder;
-import com.google.flatbuffers.FloatVector;
 import com.google.flatbuffers.IntVector;
-import com.google.flatbuffers.LongVector;
-import com.google.flatbuffers.ShortVector;
-import com.google.flatbuffers.StringVector;
-import com.google.flatbuffers.Struct;
 import com.google.flatbuffers.Table;
-import com.google.flatbuffers.UnionVector;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 @SuppressWarnings("unused")
 public final class CameraObservation extends Table {
-  public static CameraObservation getRootAsCameraObservation(ByteBuffer _bb) { return getRootAsCameraObservation(_bb, new CameraObservation()); }
-  public static CameraObservation getRootAsCameraObservation(ByteBuffer _bb, CameraObservation obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
-  public CameraObservation __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+    public static CameraObservation getRootAsCameraObservation(ByteBuffer _bb) {
+        return getRootAsCameraObservation(_bb, new CameraObservation());
+    }
 
-  /**
-   * Primary pose solution (always present)
-   */
-  public dsv0.PoseSolution solution0() { return solution0(new dsv0.PoseSolution()); }
-  public dsv0.PoseSolution solution0(dsv0.PoseSolution obj) { int o = __offset(4); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  /**
-   * Alternate pose solution (present for single-tag ambiguity)
-   */
-  public dsv0.PoseSolution solution1() { return solution1(new dsv0.PoseSolution()); }
-  public dsv0.PoseSolution solution1(dsv0.PoseSolution obj) { int o = __offset(6); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  /**
-   * IDs of the tags used in this observation
-   */
-  public int tagIds(int j) { int o = __offset(8); return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0; }
-  public int tagIdsLength() { int o = __offset(8); return o != 0 ? __vector_len(o) : 0; }
-  public IntVector tagIdsVector() { return tagIdsVector(new IntVector()); }
-  public IntVector tagIdsVector(IntVector obj) { int o = __offset(8); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer tagIdsAsByteBuffer() { return __vector_as_bytebuffer(8, 4); }
-  public ByteBuffer tagIdsInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 8, 4); }
+    public static CameraObservation getRootAsCameraObservation(
+            ByteBuffer _bb, CameraObservation obj) {
+        _bb.order(ByteOrder.LITTLE_ENDIAN);
+        return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb));
+    }
 
-  public static int createCameraObservation(FlatBufferBuilder builder,
-      int solution0Offset,
-      int solution1Offset,
-      int tagIdsOffset) {
-    builder.startTable(3);
-    CameraObservation.addTagIds(builder, tagIdsOffset);
-    CameraObservation.addSolution1(builder, solution1Offset);
-    CameraObservation.addSolution0(builder, solution0Offset);
-    return CameraObservation.endCameraObservation(builder);
-  }
+    public void __init(int _i, ByteBuffer _bb) {
+        __reset(_i, _bb);
+    }
 
-  public static void startCameraObservation(FlatBufferBuilder builder) { builder.startTable(3); }
-  public static void addSolution0(FlatBufferBuilder builder, int solution0Offset) { builder.addOffset(0, solution0Offset, 0); }
-  public static void addSolution1(FlatBufferBuilder builder, int solution1Offset) { builder.addOffset(1, solution1Offset, 0); }
-  public static void addTagIds(FlatBufferBuilder builder, int tagIdsOffset) { builder.addOffset(2, tagIdsOffset, 0); }
-  public static int createTagIdsVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]); return builder.endVector(); }
-  public static void startTagIdsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
-  public static int endCameraObservation(FlatBufferBuilder builder) {
-    int o = builder.endTable();
-    return o;
-  }
+    public CameraObservation __assign(int _i, ByteBuffer _bb) {
+        __init(_i, _bb);
+        return this;
+    }
 
-  public static final class Vector extends BaseVector {
-    public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) { __reset(_vector, _element_size, _bb); return this; }
+    /** Primary pose solution (always present) */
+    public dsv0.PoseSolution solution0() {
+        return solution0(new dsv0.PoseSolution());
+    }
 
-    public CameraObservation get(int j) { return get(new CameraObservation(), j); }
-    public CameraObservation get(CameraObservation obj, int j) {  return obj.__assign(__indirect(__element(j), bb), bb); }
-  }
+    public dsv0.PoseSolution solution0(dsv0.PoseSolution obj) {
+        int o = __offset(4);
+        return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null;
+    }
+
+    /** Alternate pose solution (present for single-tag ambiguity) */
+    public dsv0.PoseSolution solution1() {
+        return solution1(new dsv0.PoseSolution());
+    }
+
+    public dsv0.PoseSolution solution1(dsv0.PoseSolution obj) {
+        int o = __offset(6);
+        return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null;
+    }
+
+    /** IDs of the tags used in this observation */
+    public int tagIds(int j) {
+        int o = __offset(8);
+        return o != 0 ? bb.getInt(__vector(o) + j * 4) : 0;
+    }
+
+    public int tagIdsLength() {
+        int o = __offset(8);
+        return o != 0 ? __vector_len(o) : 0;
+    }
+
+    public IntVector tagIdsVector() {
+        return tagIdsVector(new IntVector());
+    }
+
+    public IntVector tagIdsVector(IntVector obj) {
+        int o = __offset(8);
+        return o != 0 ? obj.__assign(__vector(o), bb) : null;
+    }
+
+    public ByteBuffer tagIdsAsByteBuffer() {
+        return __vector_as_bytebuffer(8, 4);
+    }
+
+    public ByteBuffer tagIdsInByteBuffer(ByteBuffer _bb) {
+        return __vector_in_bytebuffer(_bb, 8, 4);
+    }
+
+    public static int createCameraObservation(
+            FlatBufferBuilder builder, int solution0Offset, int solution1Offset, int tagIdsOffset) {
+        builder.startTable(3);
+        CameraObservation.addTagIds(builder, tagIdsOffset);
+        CameraObservation.addSolution1(builder, solution1Offset);
+        CameraObservation.addSolution0(builder, solution0Offset);
+        return CameraObservation.endCameraObservation(builder);
+    }
+
+    public static void startCameraObservation(FlatBufferBuilder builder) {
+        builder.startTable(3);
+    }
+
+    public static void addSolution0(FlatBufferBuilder builder, int solution0Offset) {
+        builder.addOffset(0, solution0Offset, 0);
+    }
+
+    public static void addSolution1(FlatBufferBuilder builder, int solution1Offset) {
+        builder.addOffset(1, solution1Offset, 0);
+    }
+
+    public static void addTagIds(FlatBufferBuilder builder, int tagIdsOffset) {
+        builder.addOffset(2, tagIdsOffset, 0);
+    }
+
+    public static int createTagIdsVector(FlatBufferBuilder builder, int[] data) {
+        builder.startVector(4, data.length, 4);
+        for (int i = data.length - 1; i >= 0; i--) builder.addInt(data[i]);
+        return builder.endVector();
+    }
+
+    public static void startTagIdsVector(FlatBufferBuilder builder, int numElems) {
+        builder.startVector(4, numElems, 4);
+    }
+
+    public static int endCameraObservation(FlatBufferBuilder builder) {
+        int o = builder.endTable();
+        return o;
+    }
+
+    public static final class Vector extends BaseVector {
+        public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) {
+            __reset(_vector, _element_size, _bb);
+            return this;
+        }
+
+        public CameraObservation get(int j) {
+            return get(new CameraObservation(), j);
+        }
+
+        public CameraObservation get(CameraObservation obj, int j) {
+            return obj.__assign(__indirect(__element(j), bb), bb);
+        }
+    }
 }
-

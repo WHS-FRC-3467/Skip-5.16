@@ -3,51 +3,72 @@
 package dsv0;
 
 import com.google.flatbuffers.BaseVector;
-import com.google.flatbuffers.BooleanVector;
-import com.google.flatbuffers.ByteVector;
-import com.google.flatbuffers.Constants;
-import com.google.flatbuffers.DoubleVector;
 import com.google.flatbuffers.FlatBufferBuilder;
-import com.google.flatbuffers.FloatVector;
-import com.google.flatbuffers.IntVector;
-import com.google.flatbuffers.LongVector;
-import com.google.flatbuffers.ShortVector;
-import com.google.flatbuffers.StringVector;
 import com.google.flatbuffers.Struct;
-import com.google.flatbuffers.Table;
-import com.google.flatbuffers.UnionVector;
+
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 @SuppressWarnings("unused")
 public final class Pose3d extends Struct {
-  public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
-  public Pose3d __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+    public void __init(int _i, ByteBuffer _bb) {
+        __reset(_i, _bb);
+    }
 
-  public dsv0.Vec3 translation() { return translation(new dsv0.Vec3()); }
-  public dsv0.Vec3 translation(dsv0.Vec3 obj) { return obj.__assign(bb_pos + 0, bb); }
-  public dsv0.Quaternion rotation() { return rotation(new dsv0.Quaternion()); }
-  public dsv0.Quaternion rotation(dsv0.Quaternion obj) { return obj.__assign(bb_pos + 24, bb); }
+    public Pose3d __assign(int _i, ByteBuffer _bb) {
+        __init(_i, _bb);
+        return this;
+    }
 
-  public static int createPose3d(FlatBufferBuilder builder, double translation_x, double translation_y, double translation_z, double rotation_w, double rotation_x, double rotation_y, double rotation_z) {
-    builder.prep(8, 56);
-    builder.prep(8, 32);
-    builder.putDouble(rotation_z);
-    builder.putDouble(rotation_y);
-    builder.putDouble(rotation_x);
-    builder.putDouble(rotation_w);
-    builder.prep(8, 24);
-    builder.putDouble(translation_z);
-    builder.putDouble(translation_y);
-    builder.putDouble(translation_x);
-    return builder.offset();
-  }
+    public dsv0.Vec3 translation() {
+        return translation(new dsv0.Vec3());
+    }
 
-  public static final class Vector extends BaseVector {
-    public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) { __reset(_vector, _element_size, _bb); return this; }
+    public dsv0.Vec3 translation(dsv0.Vec3 obj) {
+        return obj.__assign(bb_pos + 0, bb);
+    }
 
-    public Pose3d get(int j) { return get(new Pose3d(), j); }
-    public Pose3d get(Pose3d obj, int j) {  return obj.__assign(__element(j), bb); }
-  }
+    public dsv0.Quaternion rotation() {
+        return rotation(new dsv0.Quaternion());
+    }
+
+    public dsv0.Quaternion rotation(dsv0.Quaternion obj) {
+        return obj.__assign(bb_pos + 24, bb);
+    }
+
+    public static int createPose3d(
+            FlatBufferBuilder builder,
+            double translation_x,
+            double translation_y,
+            double translation_z,
+            double rotation_w,
+            double rotation_x,
+            double rotation_y,
+            double rotation_z) {
+        builder.prep(8, 56);
+        builder.prep(8, 32);
+        builder.putDouble(rotation_z);
+        builder.putDouble(rotation_y);
+        builder.putDouble(rotation_x);
+        builder.putDouble(rotation_w);
+        builder.prep(8, 24);
+        builder.putDouble(translation_z);
+        builder.putDouble(translation_y);
+        builder.putDouble(translation_x);
+        return builder.offset();
+    }
+
+    public static final class Vector extends BaseVector {
+        public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) {
+            __reset(_vector, _element_size, _bb);
+            return this;
+        }
+
+        public Pose3d get(int j) {
+            return get(new Pose3d(), j);
+        }
+
+        public Pose3d get(Pose3d obj, int j) {
+            return obj.__assign(__element(j), bb);
+        }
+    }
 }
-

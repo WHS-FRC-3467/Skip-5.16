@@ -15,7 +15,6 @@
 
 package frc.robot.subsystems.indexer;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -67,28 +66,5 @@ public class IndexerTest {
         } catch (Exception e) {
             fail("Failed to run Indexer to pull: " + e.getMessage());
         }
-    }
-
-    @Test
-    void stop() {
-        TestUtil.runTest(indexer.stopCommand(), 2, indexer);
-        try {
-            // Check velocity to check if the subsystem is actually in tolerance of stopped
-            // velocity.
-            assertTrue(indexer.getFloorSpeed() < 0.1);
-        } catch (Exception e) {
-            fail("Failed to stop Indexer: " + e.getMessage());
-        }
-    }
-
-    @Test
-    void tuningModeToggleWithNoScheduledCommandDoesNotThrow() {
-        CommandScheduler.getInstance().cancelAll();
-
-        assertDoesNotThrow(
-                () -> {
-                    indexer.enableTuningMode();
-                    indexer.disableTuningMode();
-                });
     }
 }

@@ -14,16 +14,7 @@
  */
 package frc.lib.io.vision;
 
-import dsv0.CameraObservation;
-import dsv0.CameraOutput;
-import dsv0.Frame;
-import dsv0.PoseSolution;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerPublisher;
@@ -38,60 +29,43 @@ import edu.wpi.first.util.WPIUtilJNI;
 import frc.lib.devices.AprilTagCamera.CameraProperties;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 
-import org.photonvision.targeting.MultiTargetPNPResult;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.PnpResult;
-import org.photonvision.targeting.TargetCorner;
-
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Real hardware implementation of {@link VisionIO} using slopstar.
+ * Real hardware implementation of {@link VisionIO} using c2.
  *
- * <p>Publishes the capture configuration expected by the slopstar coprocessor and converts its
- * per-camera flatbuffer output into {@link PhotonPipelineResult} instances so the rest of the
- * vision stack can stay unchanged.
+ * <p>Publishes the capture configuration expected by the c2 coprocessor and reads its per-camera
+ * flatbuffer output as raw bytes for downstream decoding.
  */
 public class VisionIOC2 implements VisionIO {
     private static final String DEFAULT_DEVICE_ID = "dsv0";
     private static final String DEFAULT_CAMERA_ID = "0";
     private static final String FLATBUFFER_TYPE = "dsv0_fb";
-    private static final int DEFAULT_CAMERA_EXPOSURE = 20;
+    private static final int DEFAULT_CAMERA_EXPOSURE = 70;
     private static final int DEFAULT_CAMERA_GAIN = 0;
     private static final int DEFAULT_POLL_STORAGE_DEPTH = 32;
     private static final long DISCONNECT_TIMEOUT_US = 500_000L;
     private static final double DEFAULT_FIDUCIAL_SIZE_METERS = Units.inchesToMeters(6.5);
-    private static final List<TargetCorner> ZERO_MIN_AREA_RECT_CORNERS =
-            List.of(
-                    new TargetCorner(0.0, 0.0),
-                    new TargetCorner(0.0, 0.0),
-                    new TargetCorner(0.0, 0.0),
-                    new TargetCorner(0.0, 0.0));
-    private static final List<TargetCorner> EMPTY_DETECTED_CORNERS = List.of();
-    private static final ConcurrentHashMap<String, SlopstarDeviceContext> DEVICE_CONTEXTS =
+    private static final ConcurrentHashMap<String, C2DeviceContext> DEVICE_CONTEXTS =
             new ConcurrentHashMap<>();
 
     /**
-     * Shared capture configuration for slopstar.
+     * Shared capture configuration for c2.
      *
      * @param deviceId NetworkTables device ID root, e.g. {@code dsv0}
      * @param cameraIndex Index of this camera's output topic
-     * @param cameraId Capture device ID consumed by slopstar
-     * @param exposure Exposure value sent to slopstar's config topic
-     * @param gain Gain value sent to slopstar's config topic
-     * @param fiducialSizeMeters AprilTag edge length used by slopstar solvePnP
+     * @param cameraId Capture device ID consumed by c2
+     * @param exposure Exposure value sent to c2's config topic
+     * @param gain Gain value sent to c2's config topic
+     * @param fiducialSizeMeters AprilTag edge length used by c2 solvePnP
      * @param tagLayout Field layout used both for config publishing and result reconstruction
-     * @param tagLayoutJson Serialized field layout in slopstar's expected JSON format
+     * @param tagLayoutJson Serialized field layout in c2's expected JSON format
      * @param pollStorageDepth NT queue depth for unread raw frames
      */
-    public static record SlopstarConfig(
+    public static record C2Config(
             String deviceId,
             int cameraIndex,
             String cameraId,
@@ -111,10 +85,8 @@ public class VisionIOC2 implements VisionIO {
             double fiducialSizeMeters,
             String tagLayoutJson) {}
 
-    /**
-     * Per-device shared slopstar config publishers. Camera outputs remain per VisionIO instance.
-     */
-    private static final class SlopstarDeviceContext {
+    /** Per-device shared c2 config publishers. Camera outputs remain per VisionIO instance. */
+    private static final class C2DeviceContext {
         private final NetworkTableInstance ntInstance;
         private final String deviceId;
         private final StringPublisher cameraIdPublisher;
@@ -130,10 +102,10 @@ public class VisionIOC2 implements VisionIO {
         private boolean hasPublishedConfig = false;
         private boolean lastNtConnected = false;
 
-        private SlopstarDeviceContext(
+        private C2DeviceContext(
                 NetworkTableInstance ntInstance,
                 CameraProperties cameraProperties,
-                SlopstarConfig config) {
+                C2Config config) {
             this.ntInstance = ntInstance;
             this.deviceId = config.deviceId();
 
@@ -152,12 +124,12 @@ public class VisionIOC2 implements VisionIO {
         }
 
         public synchronized void registerCamera(
-                CameraProperties cameraProperties, SlopstarConfig config) {
+                CameraProperties cameraProperties, C2Config config) {
             String existingCameraName =
                     cameraNamesByIndex.putIfAbsent(config.cameraIndex(), cameraProperties.name());
             if (existingCameraName != null && !existingCameraName.equals(cameraProperties.name())) {
                 throw new IllegalArgumentException(
-                        "Duplicate slopstar cameraIndex "
+                        "Duplicate c2 cameraIndex "
                                 + config.cameraIndex()
                                 + " for deviceId \""
                                 + deviceId
@@ -237,7 +209,7 @@ public class VisionIOC2 implements VisionIO {
                     candidateSharedConfig.tagLayoutJson());
 
             return new IllegalArgumentException(
-                    "Conflicting shared slopstar config for deviceId \""
+                    "Conflicting shared c2 config for deviceId \""
                             + deviceId
                             + "\" from camera \""
                             + cameraProperties.name()
@@ -273,19 +245,17 @@ public class VisionIOC2 implements VisionIO {
     }
 
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
-    private final SlopstarConfig config;
-    private final SlopstarDeviceContext deviceContext;
+    private final C2Config config;
+    private final C2DeviceContext deviceContext;
     private final RawSubscriber observationSubscriber;
 
-    private long sequenceId = 0;
-
     /**
-     * Constructs a slopstar camera interface with explicit slopstar configuration.
+     * Constructs a c2 camera interface with explicit c2 configuration.
      *
      * @param cameraProperties Camera configuration including name and calibration
-     * @param config slopstar capture and topic configuration
+     * @param config c2 capture and topic configuration
      */
-    public VisionIOC2(CameraProperties cameraProperties, SlopstarConfig config) {
+    public VisionIOC2(CameraProperties cameraProperties, C2Config config) {
         this.config = validateConfig(config);
         this.deviceContext = getOrCreateDeviceContext(cameraProperties, this.config);
 
@@ -322,163 +292,39 @@ public class VisionIOC2 implements VisionIO {
 
         TimestampedRaw[] unreadFrames = observationSubscriber.readQueue();
         if (unreadFrames.length == 0) {
-            inputs.results = new PhotonPipelineResult[0];
+            inputs.rawResults = new byte[0][];
+            inputs.captureTimestampsUs = new long[0];
+            inputs.publishTimestampsUs = new long[0];
             return;
         }
 
-        ArrayList<PhotonPipelineResult> results = new ArrayList<>(unreadFrames.length);
+        ArrayList<byte[]> results = new ArrayList<>(unreadFrames.length);
+        ArrayList<Long> captureTimestampsUs = new ArrayList<>(unreadFrames.length);
+        ArrayList<Long> publishTimestampsUs = new ArrayList<>(unreadFrames.length);
         for (TimestampedRaw unreadFrame : unreadFrames) {
-            PhotonPipelineResult result = decodeResult(unreadFrame);
-            if (result != null) {
-                results.add(result);
+            if (unreadFrame != null && unreadFrame.value != null && unreadFrame.value.length > 0) {
+                results.add(unreadFrame.value);
+                captureTimestampsUs.add(unreadFrame.timestamp);
+                publishTimestampsUs.add(
+                        unreadFrame.serverTime != 0
+                                ? unreadFrame.serverTime
+                                : unreadFrame.timestamp);
             }
         }
 
-        inputs.results = results.toArray(PhotonPipelineResult[]::new);
+        inputs.rawResults = results.toArray(byte[][]::new);
+        inputs.captureTimestampsUs =
+                captureTimestampsUs.stream().mapToLong(Long::longValue).toArray();
+        inputs.publishTimestampsUs =
+                publishTimestampsUs.stream().mapToLong(Long::longValue).toArray();
     }
 
     private void publishConfigIfNeeded() {
         deviceContext.publishConfigIfNeeded();
     }
 
-    private PhotonPipelineResult decodeResult(TimestampedRaw unreadFrame) {
-        if (unreadFrame == null || unreadFrame.value == null || unreadFrame.value.length == 0) {
-            return null;
-        }
-
-        Frame frame;
-        try {
-            frame = Frame.getRootAsFrame(ByteBuffer.wrap(unreadFrame.value));
-        } catch (RuntimeException e) {
-            return null;
-        }
-
-        CameraOutput cameraOutput = findCameraOutput(frame);
-        long captureTimestampUs = unreadFrame.timestamp;
-        long publishTimestampUs =
-                unreadFrame.serverTime != 0 ? unreadFrame.serverTime : captureTimestampUs;
-
-        if (cameraOutput == null) {
-            return createEmptyResult(captureTimestampUs, publishTimestampUs);
-        }
-
-        CameraObservation observation = cameraOutput.cameraObservation();
-        if (observation == null || observation.solution0() == null) {
-            return createEmptyResult(captureTimestampUs, publishTimestampUs);
-        }
-
-        PoseSolution primarySolution = observation.solution0();
-        Pose3d fieldToCamera = toWpilibPose(primarySolution);
-        PoseSolution alternateSolution = observation.solution1();
-        Pose3d fieldToCameraAlt =
-                alternateSolution != null ? toWpilibPose(alternateSolution) : null;
-
-        double ambiguity =
-                alternateSolution != null
-                        ? computeAmbiguity(primarySolution.error(), alternateSolution.error())
-                        : 0.0;
-
-        ArrayList<PhotonTrackedTarget> targets = new ArrayList<>(observation.tagIdsLength());
-        for (int i = 0; i < observation.tagIdsLength(); i++) {
-            int tagId = observation.tagIds(i);
-            Optional<Pose3d> tagPose = config.tagLayout().getTagPose(tagId);
-            if (tagPose.isEmpty()) {
-                continue;
-            }
-
-            Transform3d bestCameraToTarget = new Transform3d(fieldToCamera, tagPose.get());
-            Transform3d altCameraToTarget =
-                    fieldToCameraAlt != null
-                            ? new Transform3d(fieldToCameraAlt, tagPose.get())
-                            : bestCameraToTarget;
-
-            Translation3d translation = bestCameraToTarget.getTranslation();
-            double yawDegrees = Math.toDegrees(Math.atan2(translation.getY(), translation.getX()));
-            double pitchDegrees =
-                    Math.toDegrees(
-                            Math.atan2(
-                                    translation.getZ(),
-                                    Math.hypot(translation.getX(), translation.getY())));
-
-            targets.add(
-                    new PhotonTrackedTarget(
-                            yawDegrees,
-                            pitchDegrees,
-                            0.0,
-                            0.0,
-                            tagId,
-                            -1,
-                            -1.0f,
-                            bestCameraToTarget,
-                            altCameraToTarget,
-                            ambiguity,
-                            ZERO_MIN_AREA_RECT_CORNERS,
-                            EMPTY_DETECTED_CORNERS));
-        }
-
-        Optional<MultiTargetPNPResult> multitagResult = Optional.empty();
-        if (targets.size() >= 2) {
-            Transform3d fieldToCameraTransform = new Transform3d(Pose3d.kZero, fieldToCamera);
-            List<Short> idsUsed =
-                    targets.stream().map(target -> (short) target.getFiducialId()).toList();
-
-            multitagResult =
-                    Optional.of(
-                            new MultiTargetPNPResult(
-                                    new PnpResult(fieldToCameraTransform, primarySolution.error()),
-                                    idsUsed));
-        }
-
-        return new PhotonPipelineResult(
-                sequenceId++, captureTimestampUs, publishTimestampUs, 0, targets, multitagResult);
-    }
-
-    private CameraOutput findCameraOutput(Frame frame) {
-        if (frame == null || frame.camerasLength() == 0) {
-            return null;
-        }
-
-        for (int i = 0; i < frame.camerasLength(); i++) {
-            CameraOutput candidate = frame.cameras(i);
-            if (candidate != null && candidate.cameraIndex() == config.cameraIndex()) {
-                return candidate;
-            }
-        }
-
-        return null;
-    }
-
-    private PhotonPipelineResult createEmptyResult(
-            long captureTimestampUs, long publishTimestampUs) {
-        return new PhotonPipelineResult(
-                sequenceId++,
-                captureTimestampUs,
-                publishTimestampUs,
-                0,
-                List.of(),
-                Optional.empty());
-    }
-
-    private static Pose3d toWpilibPose(PoseSolution solution) {
-        dsv0.Pose3d pose = solution.pose();
-        dsv0.Vec3 translation = pose.translation();
-        dsv0.Quaternion rotation = pose.rotation();
-        return new Pose3d(
-                new Translation3d(translation.x(), translation.y(), translation.z()),
-                new Rotation3d(
-                        new edu.wpi.first.math.geometry.Quaternion(
-                                rotation.w(), rotation.x(), rotation.y(), rotation.z())));
-    }
-
-    private static double computeAmbiguity(double primaryError, double alternateError) {
-        if (alternateError <= 0.0) {
-            return 0.0;
-        }
-        return Math.max(0.0, Math.min(1.0, primaryError / alternateError));
-    }
-
-    public static SlopstarConfig defaultsFor(int cameraIndex) {
-        return new SlopstarConfig(
+    public static C2Config defaultsFor(int cameraIndex) {
+        return new C2Config(
                 DEFAULT_DEVICE_ID,
                 cameraIndex,
                 DEFAULT_CAMERA_ID,
@@ -490,38 +336,38 @@ public class VisionIOC2 implements VisionIO {
                 DEFAULT_POLL_STORAGE_DEPTH);
     }
 
-    private static SlopstarConfig validateConfig(SlopstarConfig config) {
+    private static C2Config validateConfig(C2Config config) {
         if (config == null) {
-            throw new IllegalArgumentException("SlopstarConfig cannot be null");
+            throw new IllegalArgumentException("c2Config cannot be null");
         }
         if (config.deviceId() == null || config.deviceId().isBlank()) {
-            throw new IllegalArgumentException("SlopstarConfig.deviceId cannot be blank");
+            throw new IllegalArgumentException("c2Config.deviceId cannot be blank");
         }
         if (config.cameraIndex() < 0) {
-            throw new IllegalArgumentException("SlopstarConfig.cameraIndex must be non-negative");
+            throw new IllegalArgumentException("c2Config.cameraIndex must be non-negative");
         }
         if (config.cameraId() == null) {
-            throw new IllegalArgumentException("SlopstarConfig.cameraId cannot be null");
+            throw new IllegalArgumentException("c2Config.cameraId cannot be null");
         }
         if (config.tagLayout() == null) {
-            throw new IllegalArgumentException("SlopstarConfig.tagLayout cannot be null");
+            throw new IllegalArgumentException("c2Config.tagLayout cannot be null");
         }
         if (config.tagLayoutJson() == null || config.tagLayoutJson().isBlank()) {
-            throw new IllegalArgumentException("SlopstarConfig.tagLayoutJson cannot be blank");
+            throw new IllegalArgumentException("c2Config.tagLayoutJson cannot be blank");
         }
         if (config.pollStorageDepth() <= 0) {
-            throw new IllegalArgumentException("SlopstarConfig.pollStorageDepth must be positive");
+            throw new IllegalArgumentException("c2Config.pollStorageDepth must be positive");
         }
         return config;
     }
 
-    private static SlopstarDeviceContext getOrCreateDeviceContext(
-            CameraProperties cameraProperties, SlopstarConfig config) {
+    private static C2DeviceContext getOrCreateDeviceContext(
+            CameraProperties cameraProperties, C2Config config) {
         return DEVICE_CONTEXTS.compute(
                 config.deviceId(),
                 (deviceId, existingContext) -> {
                     if (existingContext == null) {
-                        return new SlopstarDeviceContext(
+                        return new C2DeviceContext(
                                 NetworkTableInstance.getDefault(), cameraProperties, config);
                     }
                     existingContext.registerCamera(cameraProperties, config);
@@ -530,7 +376,7 @@ public class VisionIOC2 implements VisionIO {
     }
 
     private static SharedDeviceConfig sharedConfigFor(
-            CameraProperties cameraProperties, SlopstarConfig config) {
+            CameraProperties cameraProperties, C2Config config) {
         return new SharedDeviceConfig(
                 config.cameraId(),
                 cameraProperties.resolutionWidth(),

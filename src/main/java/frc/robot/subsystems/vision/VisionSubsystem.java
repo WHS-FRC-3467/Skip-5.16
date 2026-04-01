@@ -15,8 +15,6 @@
 
 package frc.robot.subsystems.vision;
 
-import static edu.wpi.first.units.Units.Radians;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -28,7 +26,6 @@ import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
-import frc.robot.subsystems.drive.DriveConstants;
 
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
@@ -145,13 +142,8 @@ public class VisionSubsystem extends SubsystemBase {
      */
     public static boolean postFilter(Pose3d pose) {
         double z = pose.getZ();
-        double pitch = Math.abs(pose.getRotation().getY());
-        double roll = Math.abs(pose.getRotation().getX());
         Pose2d pose2d = pose.toPose2d();
-        return !(z > MAX_Z_METERS
-                || !RobotState.getInstance().isPoseWithinField(pose2d)
-                || pitch > DriveConstants.ANGLED_TOLERANCE.in(Radians)
-                || roll > DriveConstants.ANGLED_TOLERANCE.in(Radians));
+        return !(z > MAX_Z_METERS || !RobotState.getInstance().isPoseWithinField(pose2d));
     }
 
     private final RobotState robotState = RobotState.getInstance();
@@ -197,8 +189,8 @@ public class VisionSubsystem extends SubsystemBase {
 
             ArrayList<PhotonPipelineResult> acceptedResults = new ArrayList<>();
             ArrayList<PhotonPipelineResult> rejectedResults = new ArrayList<>();
-            ArrayList<Pose2d> acceptedPoses = new ArrayList<>();
-            ArrayList<Pose2d> rejectedPoses = new ArrayList<>();
+            ArrayList<Pose3d> acceptedPoses = new ArrayList<>();
+            ArrayList<Pose3d> rejectedPoses = new ArrayList<>();
             for (var result : results) {
 
                 if (result.targets.size() == 1
@@ -237,7 +229,7 @@ public class VisionSubsystem extends SubsystemBase {
 
                 if (!postFilter(poseRecord.pose())) {
                     rejectedResults.add(result);
-                    rejectedPoses.add(poseRecord.pose().toPose2d());
+                    rejectedPoses.add(poseRecord.pose());
                     continue;
                 }
 
@@ -251,12 +243,12 @@ public class VisionSubsystem extends SubsystemBase {
                                 result.getTimestampSeconds(),
                                 poseRecord.pose().toPose2d(),
                                 poseRecord.averageDistanceMeters(),
-                                poseRecord.tagsUsed().size(),
+                                poseRecord.tagsUsed(),
                                 linearStdDev,
                                 angularStdDev));
 
                 acceptedResults.add(result);
-                acceptedPoses.add(poseRecord.pose().toPose2d());
+                acceptedPoses.add(poseRecord.pose());
             }
 
             Set<Integer> tagsAccepted = new HashSet<>();
@@ -281,10 +273,10 @@ public class VisionSubsystem extends SubsystemBase {
             }
 
             Logger.recordOutput(
-                    cameraLogPrefix + "/Poses/Accepted", acceptedPoses.toArray(Pose2d[]::new));
+                    cameraLogPrefix + "/Poses/Accepted", acceptedPoses.toArray(Pose3d[]::new));
 
             Logger.recordOutput(
-                    cameraLogPrefix + "/Poses/Rejected", rejectedPoses.toArray(Pose2d[]::new));
+                    cameraLogPrefix + "/Poses/Rejected", rejectedPoses.toArray(Pose3d[]::new));
 
             List<Pose3d> tagPosesAccepted =
                     tagsAccepted.stream()
