@@ -32,8 +32,6 @@ import frc.lib.io.objectdetection.ObjectDetectionIO.ObjectDetectionIOInputs;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -78,13 +76,12 @@ public class ObjectDetection {
             Optional<Distance> distance,
             Optional<Pose2d> objectPose) {}
 
-    /*
-     * Interface as a data type allows ObjectDetection to accept various implementations of
-     * ObjectDetectionIO (e.g. ObjectDetectionIOPhotonVision or ObjectDetectionIOLimelight).
-     * Currently factored for PhotonVision only.
+    /**
+     * Utilizing a standard Object Detection interface as a data type allows ObjectDetection to
+     * accept various implementations of ObjectDetectionIO (e.g. ObjectDetectionIOPhotonVision or
+     * ObjectDetectionIOLimelight). Currently factored for PhotonVision only.
      *
      * @param cameraName The name of the camera for logging purposes
-     *
      * @param io The ObjectDetectionIO implementation to use
      */
     public ObjectDetection(String cameraName, ObjectDetectionIO io) {
@@ -110,64 +107,6 @@ public class ObjectDetection {
     }
 
     /**
-     * Uses an empirical curve fit of area to estimate distance (in.). deltaS = a*area^3 + b*area^2
-     * + c*area + d. Cubic fit required to better match governing physics (tan(x) based). Determine
-     * fit coefficients from calibration procedure.
-     *
-     * @param target A data type containing vision pipeline results for a single object.
-     * @param a Coefficient for cubic term in curve fit equation.
-     * @param b Coefficient for quadratic term in curve fit equation.
-     * @param c Coefficient for linear term in curve fit equation.
-     * @param d Coefficient for constant term in curve fit equation.
-     * @return The estimated range to the object in meters.
-     */
-    public double rangeToTarget_SingleFactorArea(
-            PhotonTrackedTarget target, float a, float b, float c, float d) {
-        return (a * Math.pow(target.getArea(), 3)
-                + b * Math.pow(target.getArea(), 2)
-                + c * target.getArea()
-                + d);
-    }
-
-    /**
-     * Uses the camera's focal length &amp; trig to estimate range from target; requires no
-     * measurement of pitch. Utilizes pinhole model of a camera. Note that camera focal length in
-     * pixels = (P * D) / H, where P = perceived width of known object (px), D = known distance from
-     * camera (in.), H = known height of object (in.). For unreliable corner detection or object
-     * digital height calculation, use rangeToTarget_SingleFactorArea.
-     *
-     * @param target A data type containing vision pipeline results for a single object.
-     * @param objectPhysicalHeightMeters The physical height of the object being targeted in meters.
-     * @param cameraFocalLengthPixels The camera focal length in pixels as determined by a
-     *     calibration procedure.
-     * @param cameraCalFactor An empirical calibration factor to account for real lens effects (e.g.
-     *     blur, distortion, focus).
-     * @return The estimated range to the object in meters.
-     */
-    public double rangeToTarget_FocalLength(
-            PhotonTrackedTarget target,
-            double objectPhysicalHeightMeters,
-            double cameraFocalLengthPixels,
-            double cameraCalFactor) {
-        // Return & sort corners to estimate detected object's digital height in pixels.
-        double[] objectDigitalCorners_px = {
-            target.getDetectedCorners().get(0).y,
-            target.getDetectedCorners().get(1).y,
-            target.getDetectedCorners().get(2).y,
-            target.getDetectedCorners().get(3).y
-        };
-        Arrays.sort(objectDigitalCorners_px);
-        // Calculate object's digital height in pixels.
-        double objectPhysicalHeightPixels =
-                objectDigitalCorners_px[objectDigitalCorners_px.length - 1]
-                        - objectDigitalCorners_px[0];
-        // Return estimated range to object in meters.
-        return (cameraCalFactor
-                * ((objectPhysicalHeightMeters * cameraFocalLengthPixels)
-                        / objectPhysicalHeightPixels));
-    }
-
-    /**
      * Estimates robot's range to a target using the target's known height. Algorithm similar to
      * {@link org.photonvision.PhotonUtils} but also allows for camera installation yaw (at the
      * expense of accuracy, particularly when operating around the angular limits of the camera's
@@ -175,7 +114,7 @@ public class ObjectDetection {
      * 6d robot pose is not required. Note that this method requires the camera to have 0 roll (not
      * be skewed clockwise or CCW relative to the floor), and for there to exist a height
      * differential between goal and camera. The larger this differential, the more accurate the
-     * distance estimate will be. For very small differentials, use rangeToTarget_FocalLength.
+     * distance estimate will be.
      *
      * @param target A data type containing vision pipeline results for a single target. Used to
      *     determine the pitch & yaw of the target from the centerline of the camera's lens in
@@ -238,7 +177,7 @@ public class ObjectDetection {
                     + cameraRangeDelta);
 
         } else {
-            // Use rangeToTarget_FocalLength.
+            // Out of range for this algorithm; height differential too small.
             return -1.0;
         }
     }
@@ -323,56 +262,6 @@ public class ObjectDetection {
                                         targetRangeMeters, targetHeadingMeters, new Rotation2d()))
                         .getTranslation();
         return fieldToTargetTranslation;
-    }
-
-    /**
-     * Generates an N-element FIFO list of the last N object poses detected by the camera. 0th index
-     * represents the oldest detection (i.e. start of the list), N-1th index represents the most
-     * recent detection (i.e. end of the list). If a detection is deemed a repeat (according to the
-     * passed Translation2D tolerance), it is removed from its current location in robot memory and
-     * re-added to the end of the list.
-     *
-     * @param N The number of last detections to store in memory.
-     * @param lastNDetections The list of Translation2d objects representing the camera's memory of
-     *     last N detections.
-     * @param toleranceMeters The tolerance in meters for determining whether a detection is new or
-     *     old.
-     * @param targetTranslation The Translation2d of the current target detection to be evaluated.
-     */
-    public void updateObservationPoseBuffer(
-            int N,
-            List<Translation2d> lastNDetections,
-            double toleranceMeters,
-            Translation2d targetTranslation) {
-        Translation2d currentTranslation;
-        boolean isNewDetection = true;
-        double repeatIndex = 0;
-        // Loop through robot detection memory to determine if the current detection is new.
-        for (int i = 0; i < lastNDetections.size(); i++) {
-            currentTranslation = lastNDetections.get(i);
-            if ((Math.abs(targetTranslation.getX() - currentTranslation.getX()) <= toleranceMeters)
-                    && (Math.abs(targetTranslation.getY() - currentTranslation.getY())
-                            <= toleranceMeters)) {
-                isNewDetection = false;
-                repeatIndex = i;
-            }
-        }
-        // If the detection is new and the list is full, remove the oldest (index 0). Removal of 0
-        // shifts list to the left. Add new detection to the end of the list (index N-1).
-        if (isNewDetection && lastNDetections.size() >= N) {
-            lastNDetections.remove(0);
-            lastNDetections.add(N - 1, targetTranslation);
-        }
-        // If the detection is new and the list isn't full, add it to the end of the list.
-        else if (isNewDetection && lastNDetections.size() < N) {
-            lastNDetections.add(targetTranslation);
-        }
-        // If the detection is old, remove it from where it is in the list, shift everything after
-        // it left, and re-add it to the end of the list.
-        else {
-            lastNDetections.remove((int) repeatIndex);
-            lastNDetections.add(targetTranslation);
-        }
     }
 
     /**
