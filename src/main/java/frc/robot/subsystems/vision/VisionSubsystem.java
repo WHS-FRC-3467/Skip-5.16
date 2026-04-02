@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
+import frc.lib.util.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
@@ -95,6 +96,9 @@ public class VisionSubsystem extends SubsystemBase {
 
     public static final record VisionPoseRecord(
             Pose3d pose, List<Integer> tagsUsed, double averageDistanceMeters) {}
+
+    private static final LoggedTunableNumber TIMESTAMP_OFFSET =
+            new LoggedTunableNumber("VisionSubsystem/TimestampOffset", -(1.0 / 45.0));
 
     /**
      * Quickly checks whether a {@link PhotonPipelineResult} is likely to be useful before full
@@ -240,7 +244,7 @@ public class VisionSubsystem extends SubsystemBase {
 
                 robotState.addVisionObservation(
                         new VisionPoseObservation(
-                                result.getTimestampSeconds(),
+                                result.getTimestampSeconds() + TIMESTAMP_OFFSET.get(),
                                 poseRecord.pose().toPose2d(),
                                 poseRecord.averageDistanceMeters(),
                                 poseRecord.tagsUsed(),

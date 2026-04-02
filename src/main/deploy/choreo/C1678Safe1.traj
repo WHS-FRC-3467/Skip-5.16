@@ -68,7 +68,7 @@
    "radius":0.0508,
    "vmax":523.5987755982989,
    "tmax":0.65,
-   "cof":0.8,
+   "cof":0.5,
    "bumper":{
     "front":0.447675,
     "side":0.447675,
@@ -349,6 +349,5 @@
  },
  "events":[
    {"name":"ExtendIntake", "from":{"target":1, "targetTimestamp":0.70569, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"RetractIntake", "from":{"target":5, "targetTimestamp":4.09843, "offset":{"exp":"-0.25 s", "val":-0.25}}, "event":null},
    {"name":"Spinup", "from":{"target":5, "targetTimestamp":4.09843, "offset":{"exp":"0 s", "val":0.0}}, "event":null}]
 }

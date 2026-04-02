@@ -80,13 +80,13 @@ public class VisionConstants {
 
     public static final Transform3d FRONT_LEFT_TRANSFORM =
             new Transform3d(
-                    Units.inchesToMeters(13.085),
-                    Units.inchesToMeters(5.42),
-                    Units.inchesToMeters(12.672),
+                    Units.inchesToMeters(13.106),
+                    Units.inchesToMeters(5.25),
+                    Units.inchesToMeters(12.681),
                     new Rotation3d(
-                            Units.degreesToRadians(-4.854),
+                            Units.degreesToRadians(0.0),
                             Units.degreesToRadians(-25.0),
-                            Units.degreesToRadians(12.5)));
+                            Units.degreesToRadians(0.0)));
     public static final Transform3d LEFT_TRANSFORM =
             new Transform3d(
                     Units.inchesToMeters(12.749),
@@ -103,13 +103,13 @@ public class VisionConstants {
                             0.0, Units.degreesToRadians(-20.0), Units.degreesToRadians(-90.00)));
     public static final Transform3d FRONT_RIGHT_TRANSFORM =
             new Transform3d(
-                    Units.inchesToMeters(13.085),
-                    Units.inchesToMeters(-5.42),
-                    Units.inchesToMeters(12.672),
+                    Units.inchesToMeters(13.106),
+                    Units.inchesToMeters(-5.25),
+                    Units.inchesToMeters(12.681),
                     new Rotation3d(
-                            Units.degreesToRadians(4.854),
+                            Units.degreesToRadians(0.0),
                             Units.degreesToRadians(-25.0),
-                            Units.degreesToRadians(-12.5)));
+                            Units.degreesToRadians(0.0)));
 
     // Intrinsics
     // ThriftyCam Default Calibrations

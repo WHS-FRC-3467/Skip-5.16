@@ -86,16 +86,16 @@ public class C1678Auto {
                                                     first.spawnCmd()));
 
                             first.done().onTrue(AutoCommands.shootThenFollow(ctx, 3.0, second));
-                            AutoCommands.retryTrigger(routine, first)
-                                    .onTrue(
-                                            AutoCommands.recoverThenFollow(
-                                                    ctx, first, bump, 3.0, second));
+                            // AutoCommands.retryTrigger(routine, first)
+                            //         .onTrue(
+                            //                 AutoCommands.recoverThenFollow(
+                            //                         ctx, first, bump, 3.0, second));
 
                             second.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, second));
-                            AutoCommands.retryTrigger(routine, second)
-                                    .onTrue(
-                                            AutoCommands.recoverThenFollow(
-                                                    ctx, second, bump, 10.0, second));
+                            // AutoCommands.retryTrigger(routine, second)
+                            //         .onTrue(
+                            //                 AutoCommands.recoverThenFollow(
+                            //                         ctx, second, bump, 10.0, second));
                             return routine;
                         }));
     }
