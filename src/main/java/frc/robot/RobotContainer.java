@@ -135,13 +135,13 @@ public class RobotContainer {
         //         .ifPresent(a -> autoChooser.addOption("ML-Neutral-Safe-Left", a));
 
         // Citrus Autos
-        C1678Auto.create(ctx, false, false).ifPresent(a -> autoChooser.addOption("STSE-Left", a));
-        C1678Auto.create(ctx, true, false).ifPresent(a -> autoChooser.addOption("STSE-Right", a));
+        C1678Auto.create(ctx, false, false).ifPresent(a -> autoChooser.addOption("NeutralAuto-Left", a));
+        C1678Auto.create(ctx, true, false).ifPresent(a -> autoChooser.addOption("NeutralAuto-Right", a));
         DepotAuto.create(ctx, false, false).ifPresent(a -> autoChooser.addOption("Depot", a));
         C1678Auto.create(ctx, false, true)
-                .ifPresent(a -> autoChooser.addOption("STSE-Safe-Left", a));
+                .ifPresent(a -> autoChooser.addOption("NeutralAuto-Safe-Left", a));
         C1678Auto.create(ctx, true, true)
-                .ifPresent(a -> autoChooser.addOption("STSE-Safe-Right", a));
+                .ifPresent(a -> autoChooser.addOption("NeutralAuto-Safe-Right", a));
 
         autoChooser.onChange(
                 auto -> {
