@@ -62,6 +62,7 @@ import frc.robot.util.RobotSim;
 
 import org.littletonrobotics.junction.Logger;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 
@@ -97,6 +98,7 @@ public class RobotContainer {
     // Dashboard inputs
     private final LoggedDashboardChooser<AutoOption> autoChooser;
     public final Field2d autoPreviewField = new Field2d();
+    private Pose2d[] rawAutoPreviewPoses = new Pose2d[] {}; // Unflipped (blue-alliance) poses
     private Pose2d startPose = new Pose2d(); // Initialize start pose for auto dashboard tab
 
     /** The container for the robot. Contains subsystems, IO devices, and commands. */
@@ -144,17 +146,24 @@ public class RobotContainer {
         autoChooser.onChange(
                 auto -> {
                     if (auto == null) {
+                        rawAutoPreviewPoses = new Pose2d[] {};
                         autoPreviewField.getObject("path").setPoses(new Pose2d[] {});
                         return;
                     }
-                    var pathPoses =
-                            auto.previewPoses().stream()
+                    var pathPoses = auto.previewPoses().toArray(Pose2d[]::new);
+                    if (pathPoses.length == 0) {
+                        rawAutoPreviewPoses = new Pose2d[] {};
+                        return;
+                    }
+                    pathPoses[0] = auto.startingPose();
+                    rawAutoPreviewPoses = pathPoses;
+
+                    // Apply alliance flip for initial preview
+                    var flippedPoses =
+                            Arrays.stream(rawAutoPreviewPoses)
                                     .map(FieldUtil::apply)
                                     .toArray(Pose2d[]::new);
-                    if (pathPoses.length == 0) return;
-                    pathPoses[0] = FieldUtil.apply(auto.startingPose());
-
-                    autoPreviewField.getObject("path").setPoses(pathPoses);
+                    autoPreviewField.getObject("path").setPoses(flippedPoses);
 
                     auto.command();
                 });
@@ -444,6 +453,14 @@ public class RobotContainer {
 
         /* Starting pose checker for auto */
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
+
+        // Re-apply alliance flip to preview poses each cycle so the path updates if alliance
+        // changes
+        if (rawAutoPreviewPoses.length > 0) {
+            var flippedPoses =
+                    Arrays.stream(rawAutoPreviewPoses).map(FieldUtil::apply).toArray(Pose2d[]::new);
+            autoPreviewField.getObject("path").setPoses(flippedPoses);
+        }
 
         try {
             startPose = autoPreviewField.getObject("path").getPoses().get(0);
