@@ -212,7 +212,7 @@ public class AutoCommands {
         return routine.observe(
                 new BooleanSupplier() {
                     private final Timer errorCheckDelayTimer = new Timer();
-                    private final Debouncer pathErrorDebouncer = new Debouncer(0.5);
+                    private final Debouncer pathErrorDebouncer = new Debouncer(1.0);
                     private boolean wasActive = false;
 
                     @Override
@@ -288,7 +288,7 @@ public class AutoCommands {
                                                         AutoBuilder.pathfindToPose(
                                                                 startPose,
                                                                 DriveConstants.PATH_CONSTRAINTS,
-                                                                2.0),
+                                                                3.0),
                                                         tunnelTrajectory.cmd()))
                                 .orElseGet(
                                         () -> {
