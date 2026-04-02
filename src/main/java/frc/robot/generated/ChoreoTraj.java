@@ -52,9 +52,9 @@ public record ChoreoTraj(
     public static final ChoreoTraj Depot1 = new ChoreoTraj(
         "Depot1",
         OptionalInt.empty(),
-        3.96128,
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
+        6.70909,
+        new Pose2d(3.51757, 4.05254, Rotation2d.fromRadians(0)),
+        new Pose2d(2.51318, 4.05254, Rotation2d.fromRadians(0))
     );
     public static final ChoreoTraj Neutral1ML_1_Safe = new ChoreoTraj(
         "Neutral1ML_1_Safe",
