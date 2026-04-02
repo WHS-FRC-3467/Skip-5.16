@@ -55,7 +55,7 @@ public class FlywheelConstants {
         if (RobotBase.isReal()) {
             return new PID(8.0, 0.0, 0.0).withS(5.5).withV(0.15);
         } else {
-            return new PID(27.0, 1.0, 0.0).withS(8.0);
+            return new PID(10.0, 0.0, 0.0).withV(1.8);
         }
     }
 

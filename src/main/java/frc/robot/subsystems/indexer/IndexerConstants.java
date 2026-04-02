@@ -49,7 +49,7 @@ public class IndexerConstants {
     public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
     private static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.01);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.001);
 
     // Velocity PID
     public static final PID SLOT0_PID = new PID(5.0, 0.0, 0.0).withS(5.0);

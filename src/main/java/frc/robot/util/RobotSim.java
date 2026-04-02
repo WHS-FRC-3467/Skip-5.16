@@ -52,7 +52,7 @@ public class RobotSim {
                 new Trigger(
                         () ->
                                 (shooter.profileComplete.getAsBoolean()
-                                        && (indexer.getFloorSpeed() < 0.1)
+                                        && (indexer.getFloorSpeed() > 0.1)
                                         && (fuelSim.getHeldFuel() > 0)));
 
         shootSimFuel.whileTrue(
