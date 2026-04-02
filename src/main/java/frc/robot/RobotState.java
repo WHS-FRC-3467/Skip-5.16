@@ -56,7 +56,7 @@ import java.util.Optional;
 public class RobotState {
 
     private static final LoggedTunableNumber SHOOT_TOLERANCE_DEGREES =
-            new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 5.0);
+            new LoggedTunableNumber("RobotState/ShootToleranceDegrees", 2.0);
     private static final LoggedTunableNumber MAX_HOOD_RETRACT_TIME =
             new LoggedTunableNumber("RobotState/MaxHoodRetractTime", 0.2);
 

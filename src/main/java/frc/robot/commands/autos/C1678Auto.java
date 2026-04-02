@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2026 Windham Windup
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If
+ * not, see <https://www.gnu.org/licenses/>.
+ */
 package frc.robot.commands.autos;
 
 import choreo.auto.AutoRoutine;
@@ -15,47 +29,31 @@ import frc.robot.commands.autos.utils.AutoOption;
 import frc.robot.commands.autos.utils.AutoUtil;
 import frc.robot.generated.ChoreoTraj;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-/** Native Choreo routine for the neutral-zone multi-piece autonomous variants. */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class NeutralAuto {
+public class C1678Auto {
+
     private static final Alert TRAJECTORIES_MISSING =
             new Alert("Neutral Auto Trajectories Missing, Auto(s) Unavailable", AlertType.kError);
 
-    /**
-     * Builds the selected neutral auto variant.
-     *
-     * @param shouldMirror Whether to mirror the route for the opposite starting side
-     * @param isSafe Whether to use the safer first segment instead of the aggressive one
-     */
     public static Optional<AutoOption> create(
             AutoContext ctx, boolean shouldMirror, boolean isSafe) {
         List<String> names =
                 isSafe
-                        ? List.of(
-                                ChoreoTraj.NeutralSafe1.name(),
-                                ChoreoTraj.NeutralSafe2.name(),
-                                ChoreoTraj.Neutral2.name())
-                        : List.of(
-                                ChoreoTraj.Neutral1.name(),
-                                ChoreoTraj.NeutralSafe2.name(),
-                                ChoreoTraj.Neutral2.name());
+                        ? List.of(ChoreoTraj.C1678Safe1.name(), ChoreoTraj.C16782.name())
+                        : List.of(ChoreoTraj.C16781.name(), ChoreoTraj.C16782.name());
+
         List<Trajectory<SwerveSample>> trajectories =
                 AutoUtil.loadTrajectories(names, shouldMirror).orElse(null);
+
+        Optional<Trajectory<SwerveSample>> bumpTrajectory =
+                AutoUtil.loadTrajectory(ChoreoTraj.BumpPath.name(), shouldMirror);
         if (trajectories == null) {
             TRAJECTORIES_MISSING.set(true);
             return Optional.empty();
         }
-
-        Optional<Trajectory<SwerveSample>> tunnelTrajectory =
-                AutoUtil.loadTrajectory(ChoreoTraj.TunnelPath.name(), shouldMirror);
-
         return Optional.of(
                 AutoUtil.trajectoryOption(
                         trajectories,
@@ -63,15 +61,15 @@ public final class NeutralAuto {
                             AutoRoutine routine =
                                     ctx.autoFactory()
                                             .newRoutine(
-                                                    "Neutral"
+                                                    "STSE"
                                                             + (isSafe ? "Safe" : "Aggressive")
                                                             + (shouldMirror ? "Right" : "Left"));
+
                             AutoTrajectory first = routine.trajectory(trajectories.get(0));
                             AutoTrajectory second = routine.trajectory(trajectories.get(1));
-                            AutoTrajectory third = routine.trajectory(trajectories.get(2));
-                            Optional<AutoTrajectory> tunnel =
-                                    tunnelTrajectory.map(routine::trajectory);
-                            AutoUtil.bindEvents(ctx, first, second, third);
+                            Optional<AutoTrajectory> bump = bumpTrajectory.map(routine::trajectory);
+                            AutoUtil.bindEvents(ctx, first, second);
+
                             routine.active()
                                     .onTrue(
                                             Commands.sequence(
@@ -88,23 +86,16 @@ public final class NeutralAuto {
                                                     first.spawnCmd()));
 
                             first.done().onTrue(AutoCommands.shootThenFollow(ctx, 3.0, second));
-                            AutoCommands.retryTrigger(routine, first)
-                                    .onTrue(
-                                            AutoCommands.recoverThenFollow(
-                                                    ctx, first, tunnel, 3.0, second));
+                            // AutoCommands.retryTrigger(routine, first)
+                            //         .onTrue(
+                            //                 AutoCommands.recoverThenFollow(
+                            //                         ctx, first, bump, 3.0, second));
 
-                            second.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, third));
-                            AutoCommands.retryTrigger(routine, second)
-                                    .onTrue(
-                                            AutoCommands.recoverThenFollow(
-                                                    ctx, second, tunnel, 10.0, third));
-
-                            third.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, second));
-                            AutoCommands.retryTrigger(routine, third)
-                                    .onTrue(
-                                            AutoCommands.recoverThenFollow(
-                                                    ctx, third, tunnel, 10.0, second));
-
+                            second.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, second));
+                            // AutoCommands.retryTrigger(routine, second)
+                            //         .onTrue(
+                            //                 AutoCommands.recoverThenFollow(
+                            //                         ctx, second, bump, 10.0, second));
                             return routine;
                         }));
     }
