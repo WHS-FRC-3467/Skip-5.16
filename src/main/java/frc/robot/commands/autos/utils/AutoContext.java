@@ -4,6 +4,7 @@ import choreo.auto.AutoFactory;
 
 import edu.wpi.first.math.geometry.Pose2d;
 
+import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
@@ -52,7 +53,9 @@ public record AutoContext(
                         (trajectory, starting) ->
                                 Logger.recordOutput(
                                         "Odometry/Trajectory",
-                                        starting ? trajectory.getPoses() : new Pose2d[] {}));
+                                        starting
+                                                ? FieldUtil.apply(trajectory.getPoses())
+                                                : new Pose2d[] {}));
         return new AutoContext(
                 drive, intake, indexer, tower, shooter, objectDetector, robotState, autoFactory);
     }
