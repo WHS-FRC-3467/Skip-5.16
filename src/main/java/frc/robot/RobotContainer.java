@@ -135,8 +135,10 @@ public class RobotContainer {
         //         .ifPresent(a -> autoChooser.addOption("ML-Neutral-Safe-Left", a));
 
         // Citrus Autos
-        C1678Auto.create(ctx, false, false).ifPresent(a -> autoChooser.addOption("NeutralAuto-Left", a));
-        C1678Auto.create(ctx, true, false).ifPresent(a -> autoChooser.addOption("NeutralAuto-Right", a));
+        C1678Auto.create(ctx, false, false)
+                .ifPresent(a -> autoChooser.addOption("NeutralAuto-Left", a));
+        C1678Auto.create(ctx, true, false)
+                .ifPresent(a -> autoChooser.addOption("NeutralAuto-Right", a));
         DepotAuto.create(ctx, false, false).ifPresent(a -> autoChooser.addOption("Depot", a));
         C1678Auto.create(ctx, false, true)
                 .ifPresent(a -> autoChooser.addOption("NeutralAuto-Safe-Left", a));
@@ -191,6 +193,14 @@ public class RobotContainer {
                         () -> -controller.getLeftY(),
                         () -> -controller.getLeftX(),
                         () -> -controller.getRightX()));
+
+        HubState hubState = HubState.getInstance();
+        shooter.setDefaultCommand(
+                Commands.either(
+                        shooter.spinUpShooter(),
+                        Commands.none(),
+                        hubState.getEnablingSoon().or(hubState.getHubActive())));
+
         Trigger readyToShootAtCurrentTarget =
                 shooter.profileComplete.and(
                         robotState
@@ -343,16 +353,23 @@ public class RobotContainer {
                 .and(operatorController.y().negate())
                 .onTrue(shooter.stopFlywheels());
 
-        HubState.getInstance()
-                .getEnablingSoon()
+        hubState.getEnablingSoon()
                 .onTrue(
                         Commands.sequence(
-                                controller.rumbleForTime(1.0, Seconds.of(0.5)),
-                                Commands.waitSeconds(0.5),
-                                controller.rumbleForTime(1.0, Seconds.of(0.5)),
-                                Commands.waitSeconds(0.5),
-                                controller.rumbleForTime(1.0, Seconds.of(0.5)),
-                                Commands.waitSeconds(0.5)));
+                                Commands.sequence(
+                                        controller.rumbleForTime(1.0, Seconds.of(0.5)),
+                                        Commands.waitSeconds(0.5),
+                                        controller.rumbleForTime(1.0, Seconds.of(0.5)),
+                                        Commands.waitSeconds(0.5),
+                                        controller.rumbleForTime(1.0, Seconds.of(0.5)),
+                                        Commands.waitSeconds(0.5)),
+                                Commands.sequence(
+                                        operatorController.rumbleForTime(1.0, Seconds.of(0.5)),
+                                        Commands.waitSeconds(0.5),
+                                        operatorController.rumbleForTime(1.0, Seconds.of(0.5)),
+                                        Commands.waitSeconds(0.5),
+                                        operatorController.rumbleForTime(1.0, Seconds.of(0.5)),
+                                        Commands.waitSeconds(0.5))));
 
         controller
                 .joysticksZeroed
