@@ -65,9 +65,9 @@ public record ChoreoTraj(
 	public static final ChoreoTraj BumpPath = new ChoreoTraj(
 	    "BumpPath",
 	    OptionalInt.empty(),
-	    1.40733,
+	    2.01196,
 	    new Pose2d(5.638, 5.274, Rotation2d.fromRadians(0)),
-	    new Pose2d(3.656, 5.336, Rotation2d.fromRadians(0))
+	    new Pose2d(2.734, 6.093, Rotation2d.fromRadians(-0.832))
 	);
 	public static final ChoreoTraj Depot1 = new ChoreoTraj(
 	    "Depot1",

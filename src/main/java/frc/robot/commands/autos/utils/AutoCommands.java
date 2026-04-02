@@ -198,6 +198,7 @@ public class AutoCommands {
             double timeoutSeconds,
             AutoTrajectory next) {
         return Commands.sequence(
+                ctx.drive().runOnce(ctx.drive()::stop),
                 recoverTrajectory(ctx.drive(), failedTrajectory, tunnel, retractIntake(ctx)),
                 shootThenFollow(ctx, timeoutSeconds, next));
     }
@@ -268,12 +269,7 @@ public class AutoCommands {
                 .andThen(
                         Commands.either(
                                 Commands.none(),
-                                retryPathing(
-                                        drive,
-                                        goalPose,
-                                        tunnelTrajectory,
-                                        atGoal,
-                                        onRetry.asProxy()),
+                                retryPathing(drive, goalPose, tunnelTrajectory, atGoal, onRetry),
                                 atGoal))
                 .finallyDo(() -> Logger.recordOutput("Auto/GoalPose", new Pose2d()));
     }
