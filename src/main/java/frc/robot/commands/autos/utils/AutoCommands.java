@@ -369,6 +369,6 @@ public class AutoCommands {
     }
 
     private static Command retractIntake(AutoContext ctx) {
-        return ctx.intake().retractIntake().asProxy().withTimeout(0.5);
+        return ctx.intake().retractIntake().withTimeout(0.5);
     }
 }
