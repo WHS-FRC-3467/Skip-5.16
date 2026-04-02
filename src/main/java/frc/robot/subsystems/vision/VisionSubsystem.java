@@ -272,7 +272,7 @@ public class VisionSubsystem extends SubsystemBase {
                                 result.getTimestampSeconds(),
                                 poseRecord.pose().toPose2d(),
                                 poseRecord.averageDistanceMeters(),
-                                poseRecord.tagsUsed().size(),
+                                poseRecord.tagsUsed(),
                                 linearStdDev,
                                 angularStdDev));
 
