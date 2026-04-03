@@ -471,14 +471,6 @@ public class RobotContainer {
         /* Starting pose checker for auto */
         autoPreviewField.setRobotPose(robotState.getEstimatedPose());
 
-        // Re-apply alliance flip to preview poses each cycle so the path updates if alliance
-        // changes
-        if (rawAutoPreviewPoses.length > 0) {
-            var flippedPoses =
-                    Arrays.stream(rawAutoPreviewPoses).map(FieldUtil::apply).toArray(Pose2d[]::new);
-            autoPreviewField.getObject("path").setPoses(flippedPoses);
-        }
-
         try {
             startPose = autoPreviewField.getObject("path").getPoses().get(0);
             Logger.recordOutput("Auto/StartPose", startPose);

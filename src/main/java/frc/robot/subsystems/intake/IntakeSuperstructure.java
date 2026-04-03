@@ -38,7 +38,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
             new LoggedTunableNumber(IntakeRollerConstants.NAME + "/EjectRPS", -35.0);
 
     private static final LoggedTunableNumber SLOW_MPS =
-            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowMPS", 0.5);
+            new LoggedTunableNumber(IntakeLinearConstants.NAME + "/SlowMPS", 0.25);
 
     private final LinearMechanism<?> intakeLinearIO;
     private final FlywheelMechanism<?> intakeRollerIO;
@@ -165,12 +165,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                                 PIDSlot.SLOT_0,
                                                 cruiseVelocity,
                                                 acceleration)),
-                        runRoller
-                                ? runRoller(
-                                        () ->
-                                                RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())
-                                                        .times(rollerScale))
-                                : Commands.none(),
+                        runRoller ? runRoller(1.0) : Commands.none(),
                         Commands.waitUntil(
                                 () ->
                                         MathUtil.isNear(
@@ -178,11 +173,6 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                                 intakeLinearIO.getLinearPosition().in(Meters),
                                                 toleranceMeters)))
                 .withName(name);
-    }
-
-    private Command runRoller(Supplier<AngularVelocity> angularVelocity) {
-        return this.runOnce(() -> intakeRollerIO.runVelocity(angularVelocity.get(), PIDSlot.SLOT_0))
-                .withName("Run Roller");
     }
 
     private Command runRoller(double dutyCycle) {
@@ -214,7 +204,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     private Command extendWithRoller(Supplier<AngularVelocity> rollerVelocity, String name) {
         return Commands.sequence(
-                        runRoller(rollerVelocity),
+                        runRoller(1.0),
                         moveToPosition(
                                 IntakeLinearConstants.MAX_DISTANCE,
                                 IntakeLinearConstants.CRUISE_VELOCITY,
@@ -237,10 +227,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     private Command retractWithSpeed(LinearVelocity retractSpeed, double rollerScale, String name) {
         return Commands.sequence(
-                        runRoller(
-                                () ->
-                                        RotationsPerSecond.of(ROLLER_INTAKE_RPS.get())
-                                                .times(rollerScale)),
+                        runRoller(1.0),
                         moveToPosition(
                                 retractDistance,
                                 retractSpeed,

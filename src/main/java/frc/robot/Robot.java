@@ -152,8 +152,6 @@ public class Robot extends LoggedRobot {
 
         // Driver Elastic Dashboard - Update the robot's pose on the main fieldmap
         fieldMap.setRobotPose(RobotState.getInstance().getEstimatedPose());
-        // Update auto tab
-        robotContainer.checkStartPose();
         SmartDashboard.putNumber("Auto Delay", AutoCommands.getAutoDelay());
     }
 
@@ -168,7 +166,10 @@ public class Robot extends LoggedRobot {
 
     /** This function is called periodically when disabled. */
     @Override
-    public void disabledPeriodic() {}
+    public void disabledPeriodic() {
+        // Update auto tab
+        robotContainer.checkStartPose();
+    }
 
     /**
      * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.

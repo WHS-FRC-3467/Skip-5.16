@@ -128,7 +128,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     // Default trim to apply
     private final LoggedTunableNumber flywheelTrimDefaultRPS =
-            new LoggedTunableNumber(getName() + "/FlywheelTrimDefaultRPS", 0.0);
+            new LoggedTunableNumber(getName() + "/FlywheelTrimDefaultRPS", 1.0);
     // How much to add or subtract on each button press
     private final LoggedTunableNumber flywheelTrimStepRPS =
             new LoggedTunableNumber(getName() + "/FlywheelTrimStepRPS", 0.5);
@@ -149,7 +149,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // Linear velocity drop required to detect a shot passing through the shooter, default tuned
     // from auto replay logs. Typically 0.5 - 1 m/s.
     private final LoggedTunableNumber shotDetectionThresholdMPS =
-            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.65);
+            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.30);
 
     // Fuel counts
     private @Getter int totalFuelCount = 0;

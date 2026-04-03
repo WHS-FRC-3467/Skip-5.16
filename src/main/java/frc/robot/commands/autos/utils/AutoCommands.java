@@ -71,7 +71,7 @@ public class AutoCommands {
             double timeoutDuration) {
         return Commands.deadline(
                 Commands.parallel(
-                                shooter.spinUpShooter().asProxy(),
+                                shooter.spinUpShooter(),
                                 Commands.sequence(
                                         Commands.waitUntil(
                                                 shooter.profileComplete.and(
@@ -79,7 +79,7 @@ public class AutoCommands {
                                         Commands.parallel(
                                                 indexer.shoot(),
                                                 tower.shoot(),
-                                                Commands.waitSeconds(0.25)
+                                                Commands.waitSeconds(0.5)
                                                         .andThen(
                                                                 Commands.defer(
                                                                         intake::slowRetract,
