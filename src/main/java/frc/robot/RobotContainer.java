@@ -39,8 +39,7 @@ import frc.lib.util.LoggedDashboardChooser;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
-import frc.robot.commands.autos.tuning.FeedforwardCharacterizationAuto;
-import frc.robot.commands.autos.tuning.WheelCharacterizationAuto;
+import frc.robot.commands.autos.tuning.*;
 import frc.robot.commands.autos.utils.AutoContext;
 import frc.robot.commands.autos.utils.AutoOption;
 import frc.robot.subsystems.drive.Drive;
@@ -50,8 +49,6 @@ import frc.robot.subsystems.indexer.IndexerConstants;
 import frc.robot.subsystems.intake.IntakeLinearConstants;
 import frc.robot.subsystems.intake.IntakeSuperstructure;
 import frc.robot.subsystems.intake.IntakeSuperstructureConstants;
-import frc.robot.subsystems.objectdetector.ObjectDetector;
-import frc.robot.subsystems.objectdetector.ObjectDetectorConstants;
 import frc.robot.subsystems.shooter.ShooterSuperstructure;
 import frc.robot.subsystems.shooter.ShooterSuperstructureConstants;
 import frc.robot.subsystems.tower.Tower;
@@ -87,7 +84,7 @@ public class RobotContainer {
     private final Indexer indexer;
     private final Tower tower;
     // private final LEDs leds;
-    private final ObjectDetector objectDetector;
+    // private final ObjectDetector objectDetector;
 
     // Controller
     private final CommandXboxControllerExtended controller =
@@ -112,14 +109,13 @@ public class RobotContainer {
         VisionConstants.create();
         // VisionOdometryCharacterizer.enable();
         // leds = LEDsConstants.get();
-        objectDetector = ObjectDetectorConstants.get();
+        // objectDetector = ObjectDetectorConstants.get();
 
         if (RobotBase.isSimulation()) {
             RobotSim.getInstance().addMechanismData(drive, shooter, indexer, intake);
         }
         AutoContext ctx =
-                AutoContext.create(
-                        drive, intake, indexer, tower, shooter, Optional.of(objectDetector));
+                AutoContext.create(drive, intake, indexer, tower, shooter, Optional.empty());
 
         autoChooser = new LoggedDashboardChooser<>("Auto Choices");
         SmartDashboard.putData("Auto Preview", autoPreviewField);
@@ -175,8 +171,8 @@ public class RobotContainer {
         autoChooser.addOption(
                 "Drive Wheel Radius Characterization", WheelCharacterizationAuto.create(ctx));
 
-        autoChooser.addOption(
-                "Feedforward Characterization", FeedforwardCharacterizationAuto.create(ctx));
+        // autoChooser.addOption(
+        //         "Feedforward Characterization", FeedforwardCharacterizationAuto.create(ctx));
 
         // Configure the button bindings
         configureButtonBindings();
@@ -386,6 +382,10 @@ public class RobotContainer {
      */
     private void initializeDashboard() {
 
+        SmartDashboard.putData(
+                "Home Intake and Shooter",
+                Commands.parallel(intake.homeLinear(), shooter.homeHood()));
+
         // Indexer Commands
         SmartDashboard.putData(IndexerConstants.NAME + "/Shoot", indexer.shoot());
         SmartDashboard.putData(IndexerConstants.NAME + "/Expel", indexer.eject());
@@ -396,7 +396,7 @@ public class RobotContainer {
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Intake", intake.intake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Retract", intake.retractIntake());
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/Coast", intake.linearCoast());
-        SmartDashboard.putData("Home", Commands.parallel(intake.homeLinear(), shooter.homeHood()));
+
         SmartDashboard.putData(IntakeLinearConstants.NAME + "/SlowRetract", intake.slowRetract());
 
         // Tower Commands
@@ -408,9 +408,9 @@ public class RobotContainer {
         // Shooter Commands
         SmartDashboard.putData(
                 ShooterSuperstructureConstants.NAME + "/Stop", shooter.stopFlywheels());
-        SmartDashboard.putData(ShooterSuperstructureConstants.NAME + "/Spinup", shooter.shoot());
+        SmartDashboard.putData(ShooterSuperstructureConstants.NAME + "/Shoot", shooter.shoot());
         SmartDashboard.putData(
-                ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
+                ShooterSuperstructureConstants.NAME + "/SpinUp", shooter.spinUpShooter());
 
         SmartDashboard.putData(
                 "Debug/SetOdometryToTestPose",
@@ -439,18 +439,6 @@ public class RobotContainer {
                 new DriveToPose(drive, () -> startPose)
                         .withDistanceTolerance(Meters.of(0.04))
                         .withAngularTolerance(Degrees.of(3)));
-        SmartDashboard.putData(
-                "Reset to Test Pose",
-                Commands.runOnce(
-                        () ->
-                                robotState.resetPose(
-                                        FieldUtil.apply(
-                                                new Pose2d(
-                                                        FieldConstants.Hub.TOP_CENTER_POINT.getX()
-                                                                - FieldConstants.Hub
-                                                                        .HUB_SHOT_DISTANCE,
-                                                        FieldConstants.Hub.TOP_CENTER_POINT.getY(),
-                                                        Rotation2d.kZero)))));
     }
 
     /**

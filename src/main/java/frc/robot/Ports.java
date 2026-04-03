@@ -36,10 +36,6 @@ public class Ports {
     public static final Device.CAN topRightFlywheel = new CAN(16, "rio");
     public static final Device.CAN bottomLeftFlywheel = new CAN(21, "rio");
     public static final Device.CAN bottomRightFlywheel = new CAN(22, "rio");
-    public static final Device.CAN leftFlywheelMain = topLeftFlywheel;
-    public static final Device.CAN leftFlywheelFollower = topRightFlywheel;
-    public static final Device.CAN rightFlywheelMain = bottomLeftFlywheel;
-    public static final Device.CAN rightFlywheelFollower = bottomRightFlywheel;
 
     public static final Device.CAN hood = new CAN(19, "rio");
 
@@ -47,9 +43,6 @@ public class Ports {
 
     public static final Device.CAN indexer = new CAN(25, "rio");
     public static final Device.CAN indexerFollower = new CAN(26, "rio");
-    public static final Device.CAN indexerFloor = indexer;
-    public static final Device.CAN indexerFloorFollower = indexerFollower;
-    public static final Device.CAN indexerCentering = new CAN(24, "rio");
 
     public static final Device.CAN intakeLinear = new CAN(27, "rio");
     public static final Device.CAN intakeRoller = new CAN(28, "rio");
