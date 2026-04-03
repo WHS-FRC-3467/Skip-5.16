@@ -96,7 +96,7 @@ public class C1678Auto {
                                     .onTrue(
                                             AutoCommands.recoverThenFollow(
                                                     ctx, second, bump, 10.0, second));
-                                                    
+
                             return routine;
                         }));
     }

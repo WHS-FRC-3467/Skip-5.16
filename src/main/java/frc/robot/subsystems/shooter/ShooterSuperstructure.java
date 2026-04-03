@@ -168,9 +168,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                             detectFlywheelDrop(
                                     MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
 
-    // Determines whether the hopper is empty for at least 0.5s while shooting, using
+    // Determines whether the hopper is empty for at least 0.70s while shooting, using
     // staticShotState as a proxy for a shot
-    private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
+    private final Debouncer hopperEmptyDebouncer = new Debouncer(0.70, DebounceType.kRising);
     public final LoggedTrigger hopperEmpty =
             RobotBase.isSimulation()
                     ? new LoggedTrigger(
@@ -380,9 +380,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      *
      * @return Dynamically-updating ALL TARGET shooter spin-up command.
      */
-    public Command spinUpShooter() {
+    public Command shoot() {
         return spinUpCommand(
                 this::getDesiredFlywheelVelocity, this::getDesiredHoodAngle, "Spin-Up Shooter");
+    }
+
+    public Command spinUpShooter() {
+        return this.run(() -> spinFlywheel(getDesiredFlywheelVelocity()));
     }
 
     public Command slowSpinup() {

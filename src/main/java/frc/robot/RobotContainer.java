@@ -199,7 +199,9 @@ public class RobotContainer {
                 Commands.either(
                         shooter.spinUpShooter(),
                         Commands.none(),
-                        hubState.getEnablingSoon().or(hubState.getHubActive())));
+                        hubState.getEnablingSoon()
+                                .or(hubState.getHubActive())
+                                .or(DriverStation::isAutonomous)));
 
         Trigger readyToShootAtCurrentTarget =
                 shooter.profileComplete.and(
@@ -221,7 +223,7 @@ public class RobotContainer {
                                                 robotState.feedLookaheadSeconds),
                                         DriveCommands.staticAimTowardsTarget(drive),
                                         robotState.shouldFeed),
-                                shooter.spinUpShooter(),
+                                shooter.shoot(),
                                 Commands.sequence(
                                         Commands.waitSeconds(0.05),
                                         Commands.waitUntil(readyToShootAtCurrentTarget),
@@ -344,9 +346,7 @@ public class RobotContainer {
         // Operator Y: Manual Spinup
         operatorController
                 .y()
-                .whileTrue(
-                        shooter.spinUpShooter()
-                                .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+                .whileTrue(shooter.shoot().withInterruptBehavior(InterruptionBehavior.kCancelSelf));
         controller
                 .rightTrigger()
                 .negate()
@@ -406,8 +406,7 @@ public class RobotContainer {
         // Shooter Commands
         SmartDashboard.putData(
                 ShooterSuperstructureConstants.NAME + "/Stop", shooter.stopFlywheels());
-        SmartDashboard.putData(
-                ShooterSuperstructureConstants.NAME + "/Spinup", shooter.spinUpShooter());
+        SmartDashboard.putData(ShooterSuperstructureConstants.NAME + "/Spinup", shooter.shoot());
         SmartDashboard.putData(
                 ShooterSuperstructureConstants.NAME + "/SlowSpinup", shooter.slowSpinup());
 
