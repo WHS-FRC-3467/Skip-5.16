@@ -235,6 +235,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                 "Retract Linear"),
                         Commands.waitUntil(isRetracted),
                         stopRoller())
+                .finallyDo(() -> intakeRollerIO.runDutyCycle(0.0, false))
                 .withName(name);
     }
 
