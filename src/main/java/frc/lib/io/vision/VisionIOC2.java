@@ -302,7 +302,7 @@ public class VisionIOC2 implements VisionIO {
         ArrayList<Long> captureTimestampsUs = new ArrayList<>(unreadFrames.length);
         ArrayList<Long> publishTimestampsUs = new ArrayList<>(unreadFrames.length);
 
-        var unreadFrame = unreadFrames[0];
+        var unreadFrame = unreadFrames[0]; // TODO: Re-evaluate as this limits the throughput
         if (unreadFrame != null && unreadFrame.value != null && unreadFrame.value.length > 0) {
             results.add(unreadFrame.value);
             captureTimestampsUs.add(unreadFrame.timestamp);
