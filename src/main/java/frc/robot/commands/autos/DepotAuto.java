@@ -52,12 +52,7 @@ public class DepotAuto {
                 AutoUtil.trajectoryOption(
                         trajectories,
                         () -> {
-                            AutoRoutine routine =
-                                    ctx.autoFactory()
-                                            .newRoutine(
-                                                    "STSE"
-                                                            + (isSafe ? "Safe" : "Aggressive")
-                                                            + (shouldMirror ? "Right" : "Left"));
+                            AutoRoutine routine = ctx.autoFactory().newRoutine("Depot Auto");
 
                             AutoTrajectory first = routine.trajectory(trajectories.get(0));
                             AutoUtil.bindEvents(ctx, first);
