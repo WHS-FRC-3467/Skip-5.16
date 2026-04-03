@@ -302,6 +302,7 @@ public class FieldConstants {
     @SuppressWarnings("ImmutableEnumChecker")
     public enum AprilTagLayoutType {
         OFFICIAL("2026-official"),
+        NO_TRENCH("2026-notrench"),
         NONE("2026-none");
 
         private final String name;

@@ -3,6 +3,7 @@ package frc.robot.commands.autos.utils;
 import choreo.auto.AutoFactory;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 import frc.lib.util.FieldUtil;
 import frc.robot.RobotState;
@@ -56,6 +57,9 @@ public record AutoContext(
                                         starting
                                                 ? FieldUtil.apply(trajectory.getPoses())
                                                 : new Pose2d[] {}));
+
+        // Warm up choreo
+        CommandScheduler.getInstance().schedule(autoFactory.warmupCmd());
         return new AutoContext(
                 drive, intake, indexer, tower, shooter, objectDetector, robotState, autoFactory);
     }

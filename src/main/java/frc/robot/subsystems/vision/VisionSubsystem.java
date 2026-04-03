@@ -165,7 +165,7 @@ public class VisionSubsystem extends SubsystemBase {
         for (int i = 0; i < cameras.length; i++) {
             this.poseEstimators[i] =
                     new PhotonPoseEstimator(
-                            AprilTagLayoutType.OFFICIAL.getLayout(),
+                            AprilTagLayoutType.NO_TRENCH.getLayout(),
                             cameras[i].getProperties().robotToCamera());
         }
     }
@@ -369,6 +369,6 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     private Optional<Pose3d> getTagPose(int id) {
-        return AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(id);
+        return AprilTagLayoutType.NO_TRENCH.getLayout().getTagPose(id);
     }
 }

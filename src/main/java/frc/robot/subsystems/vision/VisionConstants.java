@@ -322,7 +322,7 @@ public class VisionConstants {
     private static VisionSystemSim getVisionSim() {
         if (visionSim.isEmpty()) {
             visionSim = Optional.of(new VisionSystemSim("main"));
-            visionSim.get().addAprilTags(AprilTagLayoutType.OFFICIAL.getLayout());
+            visionSim.get().addAprilTags(AprilTagLayoutType.NO_TRENCH.getLayout());
         }
         return visionSim.get();
     }
@@ -336,7 +336,7 @@ public class VisionConstants {
                 FRONT_LEFT,
                 getVisionSim(),
                 () -> RobotState.getInstance().getOdometryPose(),
-                AprilTagLayoutType.OFFICIAL.getLayout());
+                AprilTagLayoutType.NO_TRENCH.getLayout());
     }
 
     private static VisionIO getLeftIOReal() {
@@ -348,7 +348,7 @@ public class VisionConstants {
                 LEFT,
                 getVisionSim(),
                 () -> RobotState.getInstance().getOdometryPose(),
-                AprilTagLayoutType.OFFICIAL.getLayout());
+                AprilTagLayoutType.NO_TRENCH.getLayout());
     }
 
     private static VisionIO getRightIOReal() {
@@ -360,7 +360,7 @@ public class VisionConstants {
                 RIGHT,
                 getVisionSim(),
                 () -> RobotState.getInstance().getOdometryPose(),
-                AprilTagLayoutType.OFFICIAL.getLayout());
+                AprilTagLayoutType.NO_TRENCH.getLayout());
     }
 
     private static VisionIO getFrontRightIOReal() {
@@ -372,7 +372,7 @@ public class VisionConstants {
                 FRONT_RIGHT,
                 getVisionSim(),
                 () -> RobotState.getInstance().getOdometryPose(),
-                AprilTagLayoutType.OFFICIAL.getLayout());
+                AprilTagLayoutType.NO_TRENCH.getLayout());
     }
 
     /**

@@ -322,6 +322,9 @@ wpi.sim.addDriverstation()
 // in order to make them all available at runtime. Also adding the manifest so WPILib
 // knows where to look for our Robot Class.
 jar {
+    // Composite-build dependencies expose the target JAR on the runtime classpath,
+    // but that artifact is not guaranteed to be built before we unzip it here.
+    dependsOn gradle.includedBuild("choreolib").task(":jar")
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     from sourceSets.main.allSource
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
@@ -416,7 +419,7 @@ spotless {
     java {
         // Target all Java files
         target '**/*.java'
-        targetExclude '**/generated/**'
+        targetExclude '**/generated/**', 'third_party/**', 'C2/**'
         googleJavaFormat().reorderImports(true).aosp()
         trimTrailingWhitespace()
         endWithNewline()
@@ -435,6 +438,7 @@ spotless {
     // Configuration for miscellaneous files (e.g., Gradle files, Markdown)
     format 'misc', {
         target '**/*.gradle', '**/*.md', '**/.gitignore'
+        targetExclude 'third_party/**', 'C2/**'
         leadingTabsToSpaces()
         trimTrailingWhitespace()
         endWithNewline()
