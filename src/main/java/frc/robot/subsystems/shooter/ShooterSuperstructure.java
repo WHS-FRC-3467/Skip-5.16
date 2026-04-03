@@ -168,9 +168,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                             detectFlywheelDrop(
                                     MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
 
-    // Determines whether the hopper is empty for at least 0.70s while shooting, using
+    // Determines whether the hopper is empty for at least 0.575s while shooting, using
     // staticShotState as a proxy for a shot
-    private final Debouncer hopperEmptyDebouncer = new Debouncer(0.70, DebounceType.kRising);
+    private final Debouncer hopperEmptyDebouncer = new Debouncer(0.575, DebounceType.kRising);
     public final LoggedTrigger hopperEmpty =
             RobotBase.isSimulation()
                     ? new LoggedTrigger(
