@@ -15,7 +15,6 @@
 
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -132,11 +131,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // How much to add or subtract on each button press
     private final LoggedTunableNumber flywheelTrimStepRPS =
             new LoggedTunableNumber(getName() + "/FlywheelTrimStepRPS", 0.5);
-
-    private final LoggedTunableNumber flywheelSlowSpinupTorque =
-            new LoggedTunableNumber(getName() + "/FlywheelSlowSpinupTorque", 16.0);
-    private final LoggedTunableNumber flywheelSlowSpinupDutyCycle =
-            new LoggedTunableNumber(getName() + "/FlywheelSlowSpinupDutyCycle", 0.3);
 
     // User-defined trim at runtime, not including default trim
     private AngularVelocity flywheelTrim = RotationsPerSecond.zero();
@@ -373,12 +367,11 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     }
 
     /**
-     * Dynamically spins the flywheel and actuates the hood to the proper values for ANY target shot
-     * given current field-relative robot pose. Valid for ANY target. Perpetual command that never
-     * spins down. Therefore, to end, this should be interrupted by a parent command group or
-     * timed-out.
+     * Dynamically spins up the shooter to prepare for a shot based on the robot's current position
+     * and target. Updates flywheel velocity and hood angle continuously based on distance to
+     * target. This command runs perpetually and must be interrupted or timed out to stop.
      *
-     * @return Dynamically-updating ALL TARGET shooter spin-up command.
+     * @return Command that continuously updates shooter parameters for the current target
      */
     public Command shoot() {
         return spinUpCommand(
@@ -387,15 +380,6 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     public Command spinUpShooter() {
         return this.run(() -> spinFlywheel(getDesiredFlywheelVelocity()));
-    }
-
-    public Command slowSpinup() {
-        return this.runOnce(
-                () -> {
-                    flywheelIO.runCurrent(
-                            Amps.of(flywheelSlowSpinupTorque.getAsDouble()),
-                            flywheelSlowSpinupDutyCycle.getAsDouble());
-                });
     }
 
     public Command fountain() {

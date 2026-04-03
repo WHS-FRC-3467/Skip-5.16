@@ -313,7 +313,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     public Command homeLinear() {
         return Commands.sequence(
                         this.runOnce(() -> intakeLinearIO.runDutyCycle(0.25, true)), this.idle())
-                .finallyDo(() -> intakeLinearIO.setEncoderPosition(Rotations.of(3.7)));
+                .finallyDo(() -> intakeLinearIO.setEncoderPosition(Rotations.of(3.7)))
+                .withName("Home Linear");
     }
 
     @Override
