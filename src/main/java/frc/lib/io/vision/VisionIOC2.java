@@ -301,22 +301,25 @@ public class VisionIOC2 implements VisionIO {
         ArrayList<byte[]> results = new ArrayList<>(unreadFrames.length);
         ArrayList<Long> captureTimestampsUs = new ArrayList<>(unreadFrames.length);
         ArrayList<Long> publishTimestampsUs = new ArrayList<>(unreadFrames.length);
-        for (TimestampedRaw unreadFrame : unreadFrames) {
-            if (unreadFrame != null && unreadFrame.value != null && unreadFrame.value.length > 0) {
-                results.add(unreadFrame.value);
-                captureTimestampsUs.add(unreadFrame.timestamp);
-                publishTimestampsUs.add(
-                        unreadFrame.serverTime != 0
-                                ? unreadFrame.serverTime
-                                : unreadFrame.timestamp);
-            }
+
+        var unreadFrame = unreadFrames[0]; // TODO: Re-evaluate as this limits the throughput
+        if (unreadFrame != null && unreadFrame.value != null && unreadFrame.value.length > 0) {
+            results.add(unreadFrame.value);
+            captureTimestampsUs.add(unreadFrame.timestamp);
+            publishTimestampsUs.add(
+                    unreadFrame.serverTime != 0 ? unreadFrame.serverTime : unreadFrame.timestamp);
         }
 
         inputs.rawResults = results.toArray(byte[][]::new);
-        inputs.captureTimestampsUs =
-                captureTimestampsUs.stream().mapToLong(Long::longValue).toArray();
-        inputs.publishTimestampsUs =
-                publishTimestampsUs.stream().mapToLong(Long::longValue).toArray();
+        inputs.captureTimestampsUs = new long[captureTimestampsUs.size()];
+        inputs.publishTimestampsUs = new long[publishTimestampsUs.size()];
+
+        for (int i = 0; i < inputs.captureTimestampsUs.length; i++) {
+            inputs.captureTimestampsUs[i] = captureTimestampsUs.get(i);
+        }
+        for (int i = 0; i < inputs.publishTimestampsUs.length; i++) {
+            inputs.publishTimestampsUs[i] = publishTimestampsUs.get(i);
+        }
     }
 
     private void publishConfigIfNeeded() {

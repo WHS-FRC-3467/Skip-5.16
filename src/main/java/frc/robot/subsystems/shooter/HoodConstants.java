@@ -70,7 +70,7 @@ public class HoodConstants {
         if (RobotBase.isReal()) {
             return new PID(1000.0, 0.0, 60.0).withS(2.0).withG(12.0);
         } else {
-            return new PID(5.0, 0.0, 0.0).withS(8.0);
+            return new PID(1000.0, 0.0, 80.0);
         }
     }
 

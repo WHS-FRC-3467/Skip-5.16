@@ -24,37 +24,37 @@ public record ChoreoTraj(
     public static final ChoreoTraj BumpPath = new ChoreoTraj(
         "BumpPath",
         OptionalInt.empty(),
-        1.40733,
-        new Pose2d(5.63778, 5.27366, Rotation2d.fromRadians(0)),
-        new Pose2d(3.65563, 5.3361, Rotation2d.fromRadians(0))
+        1.501,
+        new Pose2d(6.18074, 5.65335, Rotation2d.fromRadians(-1.5708)),
+        new Pose2d(3.1, 5.7, Rotation2d.fromRadians(-0.83152))
     );
     public static final ChoreoTraj C16781 = new ChoreoTraj(
         "C16781",
         OptionalInt.empty(),
-        6.2502,
+        5.76651,
         new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(1.5708)),
-        new Pose2d(2.73412, 6.0926, Rotation2d.fromRadians(-0.83152))
+        new Pose2d(3.1, 5.7, Rotation2d.fromRadians(-0.83152))
     );
     public static final ChoreoTraj C16782 = new ChoreoTraj(
         "C16782",
         OptionalInt.empty(),
-        7.28369,
-        new Pose2d(2.73412, 6.0926, Rotation2d.fromRadians(-0.83152)),
-        new Pose2d(2.73412, 6.0926, Rotation2d.fromRadians(-0.83152))
+        6.97955,
+        new Pose2d(3.1, 5.7, Rotation2d.fromRadians(-0.83152)),
+        new Pose2d(3.1, 5.7, Rotation2d.fromRadians(-0.83152))
     );
     public static final ChoreoTraj C1678Safe1 = new ChoreoTraj(
         "C1678Safe1",
         OptionalInt.empty(),
-        5.65965,
+        5.58988,
         new Pose2d(4.45, 7.39928, Rotation2d.fromRadians(1.5708)),
-        new Pose2d(2.73412, 6.0926, Rotation2d.fromRadians(-0.83152))
+        new Pose2d(3.1, 5.7, Rotation2d.fromRadians(-0.83152))
     );
     public static final ChoreoTraj Depot1 = new ChoreoTraj(
         "Depot1",
         OptionalInt.empty(),
-        3.96128,
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368)),
-        new Pose2d(3.12514, 7.30892, Rotation2d.fromRadians(-1.15368))
+        3.78738,
+        new Pose2d(3.51757, 4.05254, Rotation2d.fromRadians(0)),
+        new Pose2d(2.51318, 4.05254, Rotation2d.fromRadians(0))
     );
     public static final ChoreoTraj Neutral1ML_1_Safe = new ChoreoTraj(
         "Neutral1ML_1_Safe",

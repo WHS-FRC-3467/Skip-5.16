@@ -66,7 +66,7 @@ public class VisionSubsystem extends SubsystemBase {
     public static final double MAX_Z_METERS = 0.75;
 
     /** Maximum allowable distance from a target to be considered valid. */
-    public static final double MAX_DISTANCE_METERS = 4.0;
+    public static final double MAX_DISTANCE_METERS = 8.0;
 
     /** Maximum ambiguity ratio allowed in a result */
     public static final double MAX_AMBIGUITY = 0.2;

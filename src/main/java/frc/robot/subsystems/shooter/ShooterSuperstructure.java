@@ -128,7 +128,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
 
     // Default trim to apply
     private final LoggedTunableNumber flywheelTrimDefaultRPS =
-            new LoggedTunableNumber(getName() + "/FlywheelTrimDefaultRPS", 0.0);
+            new LoggedTunableNumber(getName() + "/FlywheelTrimDefaultRPS", 1.0);
     // How much to add or subtract on each button press
     private final LoggedTunableNumber flywheelTrimStepRPS =
             new LoggedTunableNumber(getName() + "/FlywheelTrimStepRPS", 0.5);
@@ -149,7 +149,7 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
     // Linear velocity drop required to detect a shot passing through the shooter, default tuned
     // from auto replay logs. Typically 0.5 - 1 m/s.
     private final LoggedTunableNumber shotDetectionThresholdMPS =
-            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.65);
+            new LoggedTunableNumber(getName() + "/ShotDetectionThresholdMPS", 0.30);
 
     // Fuel counts
     private @Getter int totalFuelCount = 0;
@@ -168,9 +168,9 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
                             detectFlywheelDrop(
                                     MetersPerSecond.of(shotDetectionThresholdMPS.getAsDouble())));
 
-    // Determines whether the hopper is empty for at least 0.5s while shooting, using
+    // Determines whether the hopper is empty for at least 0.575s while shooting, using
     // staticShotState as a proxy for a shot
-    private final Debouncer hopperEmptyDebouncer = new Debouncer(0.5, DebounceType.kRising);
+    private final Debouncer hopperEmptyDebouncer = new Debouncer(0.575, DebounceType.kRising);
     public final LoggedTrigger hopperEmpty =
             RobotBase.isSimulation()
                     ? new LoggedTrigger(
@@ -380,9 +380,13 @@ public class ShooterSuperstructure extends SubsystemBase implements AutoCloseabl
      *
      * @return Dynamically-updating ALL TARGET shooter spin-up command.
      */
-    public Command spinUpShooter() {
+    public Command shoot() {
         return spinUpCommand(
                 this::getDesiredFlywheelVelocity, this::getDesiredHoodAngle, "Spin-Up Shooter");
+    }
+
+    public Command spinUpShooter() {
+        return this.run(() -> spinFlywheel(getDesiredFlywheelVelocity()));
     }
 
     public Command slowSpinup() {

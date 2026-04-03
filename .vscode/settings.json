@@ -90,7 +90,7 @@
   "editor.formatOnSave": true,
   "[java]": {
     "editor.detectIndentation": false,
-    "editor.defaultFormatter": "mngrm3a.vscode-google-java-formatter"
+    "editor.defaultFormatter": "josevseb.google-java-format-for-vs-code"
   },
   "java.project.sourcePaths": [
     "src/main/java",

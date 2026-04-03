@@ -33,23 +33,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class C1678Auto {
+public class DepotAuto {
 
     private static final Alert TRAJECTORIES_MISSING =
-            new Alert("Neutral Auto Trajectories Missing, Auto(s) Unavailable", AlertType.kError);
+            new Alert("Depot Auto Trajectories Missing, Auto(s) Unavailable", AlertType.kError);
 
     public static Optional<AutoOption> create(
             AutoContext ctx, boolean shouldMirror, boolean isSafe) {
-        List<String> names =
-                isSafe
-                        ? List.of(ChoreoTraj.C1678Safe1.name(), ChoreoTraj.C16782.name())
-                        : List.of(ChoreoTraj.C16781.name(), ChoreoTraj.C16782.name());
+        List<String> names = List.of(ChoreoTraj.Depot1.name());
 
         List<Trajectory<SwerveSample>> trajectories =
                 AutoUtil.loadTrajectories(names, shouldMirror).orElse(null);
-
-        Optional<Trajectory<SwerveSample>> bumpTrajectory =
-                AutoUtil.loadTrajectory(ChoreoTraj.BumpPath.name(), shouldMirror);
         if (trajectories == null) {
             TRAJECTORIES_MISSING.set(true);
             return Optional.empty();
@@ -58,17 +52,10 @@ public class C1678Auto {
                 AutoUtil.trajectoryOption(
                         trajectories,
                         () -> {
-                            AutoRoutine routine =
-                                    ctx.autoFactory()
-                                            .newRoutine(
-                                                    "STSE"
-                                                            + (isSafe ? "Safe" : "Aggressive")
-                                                            + (shouldMirror ? "Right" : "Left"));
+                            AutoRoutine routine = ctx.autoFactory().newRoutine("Depot Auto");
 
                             AutoTrajectory first = routine.trajectory(trajectories.get(0));
-                            AutoTrajectory second = routine.trajectory(trajectories.get(1));
-                            Optional<AutoTrajectory> bump = bumpTrajectory.map(routine::trajectory);
-                            AutoUtil.bindEvents(ctx, first, second);
+                            AutoUtil.bindEvents(ctx, first);
 
                             routine.active()
                                     .onTrue(
@@ -85,18 +72,15 @@ public class C1678Auto {
                                                             Set.of()),
                                                     first.spawnCmd()));
 
-                            first.done().onTrue(AutoCommands.shootThenFollow(ctx, 3.0, second));
-                            AutoCommands.retryTrigger(routine, first)
+                            first.done()
                                     .onTrue(
-                                            AutoCommands.recoverThenFollow(
-                                                    ctx, first, bump, 3.0, second));
-
-                            second.done().onTrue(AutoCommands.shootThenFollow(ctx, 10.0, second));
-                            AutoCommands.retryTrigger(routine, second)
-                                    .onTrue(
-                                            AutoCommands.recoverThenFollow(
-                                                    ctx, second, bump, 10.0, second));
-
+                                            AutoCommands.shootCommand(
+                                                    ctx.drive(),
+                                                    ctx.intake(),
+                                                    ctx.indexer(),
+                                                    ctx.tower(),
+                                                    ctx.shooter(),
+                                                    3.0));
                             return routine;
                         }));
     }

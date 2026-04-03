@@ -105,7 +105,7 @@ public class DriveConstants {
 
     private static final double kDriveGearRatio = 6.0;
     private static final double kSteerGearRatio = 24.0;
-    private static final Distance kWheelRadius = Inches.of(1.992);
+    private static final Distance kWheelRadius = Inches.of(2.05);
 
     private static final boolean kInvertLeftSide = false;
     private static final boolean kInvertRightSide = true;

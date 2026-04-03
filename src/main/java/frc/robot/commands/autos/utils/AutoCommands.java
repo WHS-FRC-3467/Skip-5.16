@@ -71,7 +71,7 @@ public class AutoCommands {
             double timeoutDuration) {
         return Commands.deadline(
                 Commands.parallel(
-                                shooter.spinUpShooter().asProxy(),
+                                shooter.shoot().asProxy(),
                                 Commands.sequence(
                                         Commands.waitUntil(
                                                 shooter.profileComplete.and(
@@ -79,7 +79,7 @@ public class AutoCommands {
                                         Commands.parallel(
                                                 indexer.shoot(),
                                                 tower.shoot(),
-                                                Commands.waitSeconds(0.25)
+                                                Commands.waitSeconds(0.5)
                                                         .andThen(
                                                                 Commands.defer(
                                                                         intake::slowRetract,
@@ -198,6 +198,7 @@ public class AutoCommands {
             double timeoutSeconds,
             AutoTrajectory next) {
         return Commands.sequence(
+                ctx.drive().runOnce(ctx.drive()::stop),
                 recoverTrajectory(ctx.drive(), failedTrajectory, tunnel, retractIntake(ctx)),
                 shootThenFollow(ctx, timeoutSeconds, next));
     }
@@ -211,7 +212,7 @@ public class AutoCommands {
         return routine.observe(
                 new BooleanSupplier() {
                     private final Timer errorCheckDelayTimer = new Timer();
-                    private final Debouncer pathErrorDebouncer = new Debouncer(0.5);
+                    private final Debouncer pathErrorDebouncer = new Debouncer(1.0);
                     private boolean wasActive = false;
 
                     @Override
@@ -268,12 +269,7 @@ public class AutoCommands {
                 .andThen(
                         Commands.either(
                                 Commands.none(),
-                                retryPathing(
-                                        drive,
-                                        goalPose,
-                                        tunnelTrajectory,
-                                        atGoal,
-                                        onRetry.asProxy()),
+                                retryPathing(drive, goalPose, tunnelTrajectory, atGoal, onRetry),
                                 atGoal))
                 .finallyDo(() -> Logger.recordOutput("Auto/GoalPose", new Pose2d()));
     }
@@ -292,7 +288,7 @@ public class AutoCommands {
                                                         AutoBuilder.pathfindToPose(
                                                                 startPose,
                                                                 DriveConstants.PATH_CONSTRAINTS,
-                                                                2.0),
+                                                                3.0),
                                                         tunnelTrajectory.cmd()))
                                 .orElseGet(
                                         () -> {

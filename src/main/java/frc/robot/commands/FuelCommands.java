@@ -66,8 +66,8 @@ public class FuelCommands {
             LinearVelocity retractSpeed,
             double duration) {
         return Commands.parallel(
-                        shooter.spinUpShooter(),
-                        intake.slowRetract(retractSpeed).asProxy(),
+                        shooter.shoot(),
+                        intake.slowRetract(retractSpeed),
                         Commands.sequence(
                                 Commands.waitUntil(shooter.profileComplete),
                                 Commands.parallel(
