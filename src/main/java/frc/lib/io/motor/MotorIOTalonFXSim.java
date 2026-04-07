@@ -127,6 +127,7 @@ public class MotorIOTalonFXSim extends MotorIOTalonFX implements MotorIOSim {
                         : Rotations.zero();
 
         inputs.goalPosition = isRunningPositionControl ? goalPosition : Rotations.zero();
+        inputs.goalVelocity = isRunningVelocityControl ? goalVelocity : RotationsPerSecond.zero();
 
         if (isRunningVelocityControl) {
             inputs.velocityError = RotationsPerSecond.of(closedLoopErrorValue);

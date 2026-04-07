@@ -15,7 +15,6 @@
 
 package frc.robot.subsystems.indexer;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -31,14 +30,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class IndexerTest {
-    IndexerSuperstructure indexer;
+    Indexer indexer;
 
     @BeforeEach // this method will run before each test
     void setup() {
         assertTrue(HAL.initialize(500, 0)); // initialize the HAL, crash if failed
 
         CommandScheduler.getInstance().cancelAll();
-        indexer = IndexerSuperstructureConstants.get();
+        indexer = IndexerConstants.get();
 
         /* enable the robot */
         DriverStationSim.setEnabled(true);
@@ -65,30 +64,7 @@ public class IndexerTest {
             // Check velocity to check if the subsystem is actually in tolerance of intake velocity.
             assertTrue(indexer.nearSetpoint());
         } catch (Exception e) {
-            fail("Failed to run IndexerSuperstructure to pull: " + e.getMessage());
+            fail("Failed to run Indexer to pull: " + e.getMessage());
         }
-    }
-
-    @Test
-    void stop() {
-        TestUtil.runTest(indexer.stopCommand(), 2, indexer);
-        try {
-            // Check velocity to check if the subsystem is actually in tolerance of stopped
-            // velocity.
-            assertTrue((indexer.getFloorSpeed() < 0.1) && (indexer.getCenteringSpeed() < 0.1));
-        } catch (Exception e) {
-            fail("Failed to stop indexer: " + e.getMessage());
-        }
-    }
-
-    @Test
-    void tuningModeToggleWithNoScheduledCommandDoesNotThrow() {
-        CommandScheduler.getInstance().cancelAll();
-
-        assertDoesNotThrow(
-                () -> {
-                    indexer.enableTuningMode();
-                    indexer.disableTuningMode();
-                });
     }
 }

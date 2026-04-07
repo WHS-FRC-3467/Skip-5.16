@@ -21,6 +21,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -30,21 +31,41 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Time;
 
 import frc.lib.posestimator.SwerveOdometry.OdometryObservation;
+import frc.robot.FieldConstants.AprilTagLayoutType;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
+import org.littletonrobotics.junction.Logger;
+
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Accessors(fluent = true)
 public class PoseEstimator {
+    private static final String LOG_PREFIX = "PoseEstimator/";
+
     public static record VisionPoseObservation(
             double timestampSeconds,
             Pose2d robotPose,
             double avgTagDistance,
-            int numTagsUsed,
+            List<Integer> seenTagIds,
             double linearStdDev,
             double angularStdDev) {}
+
+    private enum OdometryObservationReason {
+        ACCEPTED,
+        POSE_VALIDATOR_REJECTED
+    }
+
+    private enum VisionObservationReason {
+        ACCEPTED,
+        RESET_LOCKED,
+        MISSING_ODOMETRY_SAMPLE,
+        BELOW_MIN_N_SIGMA,
+        POSE_VALIDATOR_REJECTED
+    }
 
     private static final double DEFAULT_ODOMETRY_BUFFER_SIZE_SECONDS = 2;
 
@@ -59,6 +80,10 @@ public class PoseEstimator {
     private static final double ODOMETRY_STDDEV_MULTIPLIER_MAX_LINEAR = 4.0;
     private static final double ODOMETRY_STDDEV_MULTIPLIER_MAX_ANGULAR = 3.0;
 
+    // Vision gating: ignore noise and reject large outliers.
+    private static final double VISION_MIN_N_SIGMA_LINEAR = 0.6;
+    private static final double VISION_MIN_N_SIGMA_ANGULAR = 0.6;
+
     private final SwerveOdometry odometry;
 
     /** Base odometry variances */
@@ -67,7 +92,11 @@ public class PoseEstimator {
     private double odometryStdDevMultiplierLinear = 1.0;
     private double odometryStdDevMultiplierAngular = 1.0;
 
+    private Predicate<Pose2d> poseValidator = pose -> true;
+
     @Getter private Pose2d estimatedPose = Pose2d.kZero;
+    private Pose2d odometryPoseAtReset = Pose2d.kZero;
+    private boolean visionLockedToReset = false;
 
     public PoseEstimator(
             SwerveDriveKinematics kinematics,
@@ -98,6 +127,7 @@ public class PoseEstimator {
                 };
 
         odometry = new SwerveOdometry(kinematics, moduleTranslations, odometryBufferSize);
+        refreshOdometryPoseValidator();
     }
 
     public PoseEstimator(
@@ -135,6 +165,24 @@ public class PoseEstimator {
         Twist2d twist = lastOdometryPose.log(newOdometryPose);
 
         estimatedPose = estimatedPose.exp(twist);
+
+        if (visionLockedToReset) {
+            double translationStdDev = Math.sqrt(Math.max(odometryVariances[0], 0.0));
+            double rotationStdDev = Math.sqrt(Math.max(odometryVariances[2], 0.0));
+            double translationDelta =
+                    newOdometryPose
+                            .getTranslation()
+                            .getDistance(odometryPoseAtReset.getTranslation());
+            double rotationDelta =
+                    Math.abs(
+                            newOdometryPose
+                                    .getRotation()
+                                    .minus(odometryPoseAtReset.getRotation())
+                                    .getRadians());
+            if (translationDelta >= translationStdDev || rotationDelta >= rotationStdDev) {
+                visionLockedToReset = false;
+            }
+        }
     }
 
     /**
@@ -222,11 +270,29 @@ public class PoseEstimator {
      * @param observation The vision pose observation
      */
     public void addVisionObservation(VisionPoseObservation observation) {
+        if (visionLockedToReset) {
+            logVisionObservation(
+                    observation,
+                    null,
+                    false,
+                    VisionObservationReason.RESET_LOCKED,
+                    Double.NaN,
+                    Double.NaN);
+            return;
+        }
+
         // Attempt to get heading. Fails if the odometer has not recorded
         // a measurement near this timestamp
         Transform2d poseDeltaThenToNow =
                 getPoseDeltaThenToNow(observation.timestampSeconds).orElse(null);
         if (poseDeltaThenToNow == null) {
+            logVisionObservation(
+                    observation,
+                    null,
+                    false,
+                    VisionObservationReason.MISSING_ODOMETRY_SAMPLE,
+                    Double.NaN,
+                    Double.NaN);
             return;
         }
 
@@ -266,6 +332,36 @@ public class PoseEstimator {
             odometryVariances[2] * angularVarianceMultiplier // Rotation
         };
 
+        // Transform between our best estimated pose at the time the frame was captured to where the
+        // camera is saying we should be, unscaled (without any Kalman gain applied)
+        // Logic is copied from:
+        // https://github.com/wpilibsuite/allwpilib/blob/b8d6bc2eb1b6cea10d1179939114d041945e172a/wpimath/src/main/java/edu/wpi/first/math/estimator/PoseEstimator.java#L276-L292
+        Transform2d unscaledVisionCorrection = new Transform2d(oldPose, newVisionPose);
+
+        double translationSigma =
+                Math.sqrt(Math.max(visionLinearVariance + effectiveOdometryVariances[0], 1.0e-9));
+        double rotationSigma =
+                Math.sqrt(Math.max(visionAngularVariance + effectiveOdometryVariances[2], 1.0e-9));
+
+        double translationMag =
+                Math.hypot(unscaledVisionCorrection.getX(), unscaledVisionCorrection.getY());
+        double rotationMag = Math.abs(unscaledVisionCorrection.getRotation().getRadians());
+
+        double translationNSigma = translationMag / translationSigma;
+        double rotationNSigma = rotationMag / rotationSigma;
+
+        if (translationNSigma < VISION_MIN_N_SIGMA_LINEAR
+                && rotationNSigma < VISION_MIN_N_SIGMA_ANGULAR) {
+            logVisionObservation(
+                    observation,
+                    oldPose,
+                    false,
+                    VisionObservationReason.BELOW_MIN_N_SIGMA,
+                    translationNSigma,
+                    rotationNSigma);
+            return;
+        }
+
         Matrix<N3, N3> visionKalmanGain = new Matrix<>(Nat.N3(), Nat.N3());
         for (int row = 0; row < 3; ++row) {
             double odometryVariance = effectiveOdometryVariances[row];
@@ -280,12 +376,6 @@ public class PoseEstimator {
                                         + Math.sqrt(odometryVariance * visionVariances[row])));
             }
         }
-
-        // Transform between our best estimated pose at the time the frame was captured to where the
-        // camera is saying we should be, unscaled (without any Kalman gain applied)
-        // Logic is copied from:
-        // https://github.com/wpilibsuite/allwpilib/blob/b8d6bc2eb1b6cea10d1179939114d041945e172a/wpimath/src/main/java/edu/wpi/first/math/estimator/PoseEstimator.java#L276-L292
-        Transform2d unscaledVisionCorrection = new Transform2d(oldPose, newVisionPose);
 
         // Scale the vision correction by the Kalman gain
         var scaledVisionCorrectionVector =
@@ -302,10 +392,30 @@ public class PoseEstimator {
                         scaledVisionCorrectionVector.get(1, 0),
                         Rotation2d.fromRadians(scaledVisionCorrectionVector.get(2, 0)));
 
-        estimatedPose =
+        Pose2d candidatePose =
                 oldPose.transformBy(scaledVisionCorrection) // Adjust by the correction
                         .transformBy(
                                 poseDeltaThenToNow); // Bring back to present time (latency comp)
+
+        if (!poseValidator.test(candidatePose)) {
+            logVisionObservation(
+                    observation,
+                    candidatePose,
+                    false,
+                    VisionObservationReason.POSE_VALIDATOR_REJECTED,
+                    translationNSigma,
+                    rotationNSigma);
+            return;
+        }
+
+        estimatedPose = candidatePose;
+        logVisionObservation(
+                observation,
+                candidatePose,
+                true,
+                VisionObservationReason.ACCEPTED,
+                translationNSigma,
+                rotationNSigma);
     }
 
     /**
@@ -320,8 +430,92 @@ public class PoseEstimator {
     public void resetPose(Pose2d pose) {
         odometry.resetPose(pose);
         estimatedPose = pose;
+        odometryPoseAtReset = pose;
+        visionLockedToReset = true;
 
         odometryStdDevMultiplierLinear = 1.0;
         odometryStdDevMultiplierAngular = 1.0;
+    }
+
+    /**
+     * Sets a validator that applies to both odometry and vision-fused poses.
+     *
+     * @param validator predicate that returns {@code true} for acceptable poses
+     * @return this
+     */
+    public PoseEstimator withPoseValidator(Predicate<Pose2d> validator) {
+        poseValidator = validator;
+        refreshOdometryPoseValidator();
+        return this;
+    }
+
+    private void refreshOdometryPoseValidator() {
+        odometry.setPoseValidator(
+                pose -> {
+                    boolean accepted = poseValidator.test(pose);
+                    OdometryObservationReason reason =
+                            accepted
+                                    ? OdometryObservationReason.ACCEPTED
+                                    : OdometryObservationReason.POSE_VALIDATOR_REJECTED;
+                    logOdometryObservation(pose, accepted, reason);
+                    return accepted;
+                });
+    }
+
+    private void logOdometryObservation(
+            Pose2d candidatePose, boolean accepted, OdometryObservationReason reason) {
+        Logger.recordOutput(LOG_PREFIX + "Odometry/Accepted", accepted);
+        Logger.recordOutput(LOG_PREFIX + "Odometry/Reason", reason.name());
+        Logger.recordOutput(LOG_PREFIX + "Odometry/CandidatePose", candidatePose);
+        Logger.recordOutput(
+                LOG_PREFIX + "Odometry/AcceptedPose",
+                accepted ? new Pose2d[] {candidatePose} : new Pose2d[] {});
+        Logger.recordOutput(
+                LOG_PREFIX + "Odometry/RejectedPose",
+                accepted ? new Pose2d[] {} : new Pose2d[] {candidatePose});
+    }
+
+    private void logVisionObservation(
+            VisionPoseObservation observation,
+            Pose2d candidatePose,
+            boolean accepted,
+            VisionObservationReason reason,
+            double translationNSigma,
+            double rotationNSigma) {
+        int[] seenTagIds =
+                observation.seenTagIds() != null
+                        ? observation.seenTagIds().stream().mapToInt(Integer::intValue).toArray()
+                        : new int[] {};
+        Pose3d[] seenTagPoses = new Pose3d[seenTagIds.length];
+        for (int i = 0; i < seenTagIds.length; i++) {
+            seenTagPoses[i] =
+                    AprilTagLayoutType.OFFICIAL
+                            .getLayout()
+                            .getTagPose(seenTagIds[i])
+                            .orElse(Pose3d.kZero);
+        }
+
+        Logger.recordOutput(LOG_PREFIX + "Vision/Accepted", accepted);
+        Logger.recordOutput(LOG_PREFIX + "Vision/Reason", reason.name());
+        Logger.recordOutput(LOG_PREFIX + "Vision/ObservationPose", observation.robotPose());
+        Logger.recordOutput(LOG_PREFIX + "Vision/TimestampSeconds", observation.timestampSeconds());
+        Logger.recordOutput(
+                LOG_PREFIX + "Vision/AvgTagDistanceMeters", observation.avgTagDistance());
+        Logger.recordOutput(LOG_PREFIX + "Vision/SeenTagIds", seenTagIds);
+        Logger.recordOutput(LOG_PREFIX + "Vision/SeenTagPoses", seenTagPoses);
+        Logger.recordOutput(LOG_PREFIX + "Vision/LinearStdDev", observation.linearStdDev());
+        Logger.recordOutput(LOG_PREFIX + "Vision/AngularStdDev", observation.angularStdDev());
+        Logger.recordOutput(LOG_PREFIX + "Vision/TranslationNSigma", translationNSigma);
+        Logger.recordOutput(LOG_PREFIX + "Vision/RotationNSigma", rotationNSigma);
+        Logger.recordOutput(
+                LOG_PREFIX + "Vision/CandidatePose",
+                candidatePose != null ? candidatePose : Pose2d.kZero);
+        if (accepted && candidatePose != null) {
+            Logger.recordOutput(LOG_PREFIX + "Vision/AcceptedPose", candidatePose);
+        } else {
+            Logger.recordOutput(
+                    LOG_PREFIX + "Vision/RejectedPose",
+                    candidatePose != null ? candidatePose : observation.robotPose());
+        }
     }
 }

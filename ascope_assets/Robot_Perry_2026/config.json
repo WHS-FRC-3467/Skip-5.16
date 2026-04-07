@@ -1,0 +1,165 @@
+{
+    "name": "Perry",
+    "rotations": [
+        {
+            "axis": "x",
+            "degrees": 90
+        },
+        {
+            "axis": "z",
+            "degrees": -90
+        }
+    ],
+    "position": [
+        0,
+        0,
+        0
+    ],
+    "cameras": [
+        {
+            "name": "front",
+            "fov": 80,
+            "resolution": [
+                1600,
+                1304
+            ],
+            "position": [
+                0.1905,
+                -0.3048,
+                0.50673
+            ],
+            "rotations": [
+                {
+                    "axis": "y",
+                    "degrees": -31.973
+                },
+                {
+                    "axis": "z",
+                    "degrees": 171.03477
+                }
+            ]
+        },
+        {
+            "name": "left",
+            "fov": 55,
+            "resolution": [
+                1600,
+                1304
+            ],
+            "position": [
+                0.2032,
+                -0.29845,
+                0.4318
+            ],
+            "rotations": [
+                {
+                    "axis": "y",
+                    "degrees": -18.173
+                },
+                {
+                    "axis": "z",
+                    "degrees": -90
+                }
+            ]
+        },
+        {
+            "name": "right",
+            "fov": 55,
+            "resolution": [
+                1600,
+                1304
+            ],
+            "position": [
+                0.2032,
+                0.29845,
+                0.4318
+            ],
+            "rotations": [
+                {
+                    "axis": "y",
+                    "degrees": -18.173
+                },
+                {
+                    "axis": "z",
+                    "degrees": 90
+                }
+            ]
+        },
+        {
+            "name": "back",
+            "fov": 55,
+            "resolution": [
+                1600,
+                1304
+            ],
+            "position": [
+                0.3048,
+                0.2413,
+                0.4318
+            ],
+            "rotations": [
+                {
+                    "axis": "y",
+                    "degrees": -18.173
+                },
+                {
+                    "axis": "z",
+                    "degrees": 13.423
+                }
+            ]
+        }
+    ],
+    "components": [
+        {
+            "zeroedRotations": [
+                {
+                    "axis": "x",
+                    "degrees": 90
+                },
+                {
+                    "axis": "z",
+                    "degrees": -90
+                }
+            ],
+            "zeroedPosition": [
+                -0.28,
+                0,
+                -0.47
+            ]
+        },
+        {
+            "zeroedRotations": [
+                {
+                    "axis": "x",
+                    "degrees": 90
+                },
+                {
+                    "axis": "z",
+                    "degrees": -90
+                }
+            ],
+            "zeroedPosition": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "zeroedRotations": [
+                {
+                    "axis": "x",
+                    "degrees": 90
+                },
+                {
+                    "axis": "z",
+                    "degrees": -90
+                }
+            ],
+            "zeroedPosition": [
+                0.185,
+                0,
+                -0.255
+            ]
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+[submodule "C2"]
+	path = C2
+	url = https://github.com/WHS-FRC-3467/C2.git
+[submodule "third_party/Choreo"]
+	path = third_party/Choreo
+	url = https://github.com/Daniel1464/Choreo.git
+	branch = warmupCommand

@@ -15,10 +15,20 @@
 
 package frc.lib.mechanisms;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Voltage;
 
 import frc.lib.io.motor.MotorIO;
@@ -48,9 +58,42 @@ public abstract class Mechanism<T extends MotorIO> {
     protected final T io;
     private final List<TunablePidConfig> tunablePidConfigs = new ArrayList<>();
 
+    /**
+     * Effective radius used for linear-to-angular conversion (meters). {@code null} means linear
+     * control is not configured for this mechanism.
+     */
+    private Double radiusMeters = null;
+
     protected Mechanism(String name, T io) {
         this.name = name;
         this.io = io;
+    }
+
+    /**
+     * Configures this mechanism with a linear radius for distance-based control. Once set, the
+     * mechanism can use {@link #runLinearPosition}, {@link #runLinearVelocity}, and related getters
+     * to work in linear (distance/velocity) units.
+     *
+     * @param radius Effective radius used for linear-to-angular conversion
+     * @return This mechanism, for chaining
+     * @throws IllegalArgumentException if radius is zero or negative
+     */
+    public Mechanism<T> withRadius(Distance radius) {
+        double r = radius.in(Meters);
+        if (r <= 0.0) {
+            throw new IllegalArgumentException("radius must be greater than 0 meters");
+        }
+        this.radiusMeters = r;
+        return this;
+    }
+
+    /**
+     * Returns {@code true} if this mechanism has been configured with a radius.
+     *
+     * @return Whether linear control is available
+     */
+    public boolean hasRadius() {
+        return radiusMeters != null;
     }
 
     public static final class TunablePidConfig {
@@ -137,6 +180,14 @@ public abstract class Mechanism<T extends MotorIO> {
         }
         io.updateInputs(inputs);
         Logger.processInputs(name, inputs);
+
+        // If a radius has been configured, also log linear equivalents of position/velocity.
+        if (radiusMeters != null) {
+            Logger.recordOutput(this.name + "/LinearPosition", getLinearPosition());
+            Logger.recordOutput(this.name + "/LinearPositionError", getLinearPositionError());
+            Logger.recordOutput(this.name + "/LinearVelocity", getLinearVelocity());
+            Logger.recordOutput(this.name + "/LinearVelocityError", getLinearVelocityError());
+        }
     }
 
     /** Sets the mechanism to coast mode. */
@@ -197,6 +248,22 @@ public abstract class Mechanism<T extends MotorIO> {
     }
 
     /**
+     * Runs the mechanism to a specific position with Motion Magic cruise velocity and acceleration.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     * @param cruiseVelocity Motion Magic cruise velocity.
+     * @param acceleration Motion Magic acceleration.
+     */
+    public void runPosition(
+            Angle position,
+            PIDSlot slot,
+            AngularVelocity cruiseVelocity,
+            AngularAcceleration acceleration) {
+        io.runPosition(position, slot, cruiseVelocity, acceleration);
+    }
+
+    /**
      * Runs the mechanism to a specific position without a motion profile.
      *
      * @param position Target position.
@@ -210,7 +277,18 @@ public abstract class Mechanism<T extends MotorIO> {
      * Runs the mechanism at a target velocity.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max acceleration.
+     * @param slot PID slot index.
+     */
+    public void runVelocity(AngularVelocity velocity, PIDSlot slot) {
+        io.runVelocity(velocity, slot);
+    }
+
+    /**
+     * Runs the mechanism at a target velocity using a Motion Magic velocity request that ramps to
+     * the target velocity using the provided Motion Magic acceleration.
+     *
+     * @param velocity Desired velocity.
+     * @param acceleration Motion Magic acceleration used to ramp to target velocity.
      * @param slot PID slot index.
      */
     public void runVelocity(
@@ -298,6 +376,171 @@ public abstract class Mechanism<T extends MotorIO> {
      */
     public AngularVelocity getVelocityError() {
         return inputs.velocityError;
+    }
+
+    /**
+     * Gets the current velocity setpoint
+     *
+     * @return The velocity setpoint
+     */
+    public AngularVelocity getVelocitySetpoint() {
+        return inputs.activeTrajectoryVelocity;
+    }
+
+    /**
+     * Gets the current velocity goal. Equal to {@link Mechanism#getVelocitySetpoint} unless running
+     * Motion Magic
+     *
+     * @return The velocity goal
+     */
+    public AngularVelocity getVelocityGoal() {
+        return inputs.goalVelocity;
+    }
+
+    /**
+     * Checks that this mechanism was configured with a radius and throws if not.
+     *
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    private void requireRadius() {
+        if (radiusMeters == null) {
+            throw new IllegalStateException(
+                    "Mechanism '"
+                            + name
+                            + "' has no radius configured. Call withRadius() before using linear"
+                            + " control methods.");
+        }
+    }
+
+    /**
+     * Runs the mechanism to a target linear position.
+     *
+     * @param position Desired linear position
+     * @param slot PID slot to use
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public void runLinearPosition(Distance position, PIDSlot slot) {
+        requireRadius();
+        Angle angle = Radians.of(position.in(Meters) / radiusMeters);
+        runPosition(angle, slot);
+    }
+
+    /**
+     * Runs the mechanism to a target linear position with Motion Magic cruise velocity and
+     * acceleration. Cruise velocity and acceleration are provided in linear units and converted to
+     * angular units using the configured radius.
+     *
+     * @param position Desired linear position
+     * @param slot PID slot to use
+     * @param cruiseVelocity Motion Magic cruise velocity in linear units
+     * @param acceleration Motion Magic acceleration in linear units
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public void runLinearPosition(
+            Distance position,
+            PIDSlot slot,
+            LinearVelocity cruiseVelocity,
+            LinearAcceleration acceleration) {
+        requireRadius();
+        Angle angle = Radians.of(position.in(Meters) / radiusMeters);
+        AngularVelocity angularCruiseVelocity =
+                RadiansPerSecond.of(cruiseVelocity.in(MetersPerSecond) / radiusMeters);
+        AngularAcceleration angularAcceleration =
+                RadiansPerSecondPerSecond.of(
+                        acceleration.in(MetersPerSecondPerSecond) / radiusMeters);
+        runPosition(angle, slot, angularCruiseVelocity, angularAcceleration);
+    }
+
+    /**
+     * Runs the mechanism to a target linear position without a motion profile.
+     *
+     * @param position Desired linear position
+     * @param slot PID slot to use
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public void runUnprofiledLinearPosition(Distance position, PIDSlot slot) {
+        requireRadius();
+        Angle angle = Radians.of(position.in(Meters) / radiusMeters);
+        runUnprofiledPosition(angle, slot);
+    }
+
+    /**
+     * Runs the mechanism at a target linear velocity with acceleration limiting.
+     *
+     * @param velocity Desired linear velocity
+     * @param slot PID slot to use
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public void runLinearVelocity(LinearVelocity velocity, PIDSlot slot) {
+        requireRadius();
+        AngularVelocity angularVelocity =
+                RadiansPerSecond.of(velocity.in(MetersPerSecond) / radiusMeters);
+        runVelocity(angularVelocity, slot);
+    }
+
+    /**
+     * Runs the mechanism at a target linear velocity using a Motion Magic velocity request that
+     * ramps to the target velocity using the provided Motion Magic acceleration. All parameters are
+     * provided in linear units and converted to angular units using the configured radius.
+     *
+     * @param velocity Desired linear velocity
+     * @param slot PID slot to use
+     * @param acceleration Motion Magic acceleration in linear units used to ramp to target velocity
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public void runLinearVelocity(
+            LinearVelocity velocity, PIDSlot slot, LinearAcceleration acceleration) {
+        requireRadius();
+        AngularVelocity angularVelocity =
+                RadiansPerSecond.of(velocity.in(MetersPerSecond) / radiusMeters);
+        AngularAcceleration angularacceleration =
+                RadiansPerSecondPerSecond.of(
+                        acceleration.in(MetersPerSecondPerSecond) / radiusMeters);
+        runVelocity(angularVelocity, angularacceleration, slot);
+    }
+
+    /**
+     * Gets the current linear position of the mechanism.
+     *
+     * @return Linear position
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public Distance getLinearPosition() {
+        requireRadius();
+        return Meters.of(inputs.position.in(Radians) * radiusMeters);
+    }
+
+    /**
+     * Gets the error between the target and current linear position.
+     *
+     * @return Linear position error
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public Distance getLinearPositionError() {
+        requireRadius();
+        return Meters.of(inputs.positionError.in(Radians) * radiusMeters);
+    }
+
+    /**
+     * Gets the current linear velocity of the mechanism.
+     *
+     * @return Linear velocity
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public LinearVelocity getLinearVelocity() {
+        requireRadius();
+        return MetersPerSecond.of(inputs.velocity.in(RadiansPerSecond) * radiusMeters);
+    }
+
+    /**
+     * Gets the error between the target and current linear velocity.
+     *
+     * @return Linear velocity error
+     * @throws IllegalStateException if {@link #withRadius} was never called
+     */
+    public LinearVelocity getLinearVelocityError() {
+        requireRadius();
+        return MetersPerSecond.of(inputs.velocityError.in(RadiansPerSecond) * radiusMeters);
     }
 
     /** Closes the mechanism and releases resources. */

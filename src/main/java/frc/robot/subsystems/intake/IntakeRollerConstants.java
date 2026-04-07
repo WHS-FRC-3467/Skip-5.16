@@ -53,11 +53,11 @@ public class IntakeRollerConstants {
     public static final AngularAcceleration MAX_ACCELERATION =
             RotationsPerSecondPerSecond.of(110.0);
 
-    private static final double GEARING = (24.0 / 12.0);
+    private static final double GEARING = (22.0 / 12.0) * (24.0 / 18.0);
 
     public static final AngularVelocity TOLERANCE = RotationsPerSecond.of(5.0);
 
-    private static final DCMotor DCMOTOR = DCMotor.getKrakenX44Foc(1);
+    private static final DCMotor DCMOTOR = DCMotor.getKrakenX60Foc(1);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.1);
 
     // Velocity PID
@@ -76,8 +76,10 @@ public class IntakeRollerConstants {
         config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
         config.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
-        config.CurrentLimits.StatorCurrentLimitEnable = Robot.isReal();
-        config.CurrentLimits.StatorCurrentLimit = 120.0;
+        if (Robot.isReal()) {
+            config.TorqueCurrent.PeakForwardTorqueCurrent = 120.0;
+            config.TorqueCurrent.PeakReverseTorqueCurrent = -120.0;
+        }
 
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;

@@ -15,19 +15,18 @@
 
 package frc.robot.subsystems.vision;
 
-import static edu.wpi.first.units.Units.Radians;
-
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.lib.devices.AprilTagCamera;
 import frc.lib.posestimator.PoseEstimator.VisionPoseObservation;
+import frc.lib.util.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.AprilTagLayoutType;
 import frc.robot.RobotState;
-import frc.robot.subsystems.drive.DriveConstants;
 
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
@@ -36,6 +35,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -57,19 +57,36 @@ public class VisionSubsystem extends SubsystemBase {
     public static final String LOG_PREFIX = "VisionProcessor/";
 
     /** Baseline linear standard deviation used for vision observations. */
-    public static final double LINEAR_STDDEV_BASELINE = 0.01;
+    public static final double LINEAR_STDDEV_BASELINE = 0.03;
 
     /** Baseline angular standard deviation used for vision observations. */
-    public static final double ANGULAR_STDDEV_BASELINE = 0.01;
+    public static final double ANGULAR_STDDEV_BASELINE = 0.05;
 
     /** Maximum allowable height (Z-axis) of a detected pose to be considered valid. */
     public static final double MAX_Z_METERS = 0.75;
 
     /** Maximum allowable distance from a target to be considered valid. */
-    public static final double MAX_DISTANCE_METERS = 4.0;
+    public static final double MAX_DISTANCE_METERS = 8.0;
 
     /** Maximum ambiguity ratio allowed in a result */
     public static final double MAX_AMBIGUITY = 0.2;
+
+    /** Minimum distance used when computing vision standard deviation scaling. */
+    public static final double MIN_STDDEV_DISTANCE_METERS = 0.5;
+
+    /** Maximum unread results processed per camera cycle. */
+    public static final int MAX_UNREAD_RESULTS = 5;
+
+    /** Weight applied to ambiguity when scaling vision standard deviation. */
+    public static final double STDDEV_AMBIGUITY_WEIGHT = 2.5;
+
+    /** Exponent for tag count influence on standard deviation scaling. */
+    public static final double STDDEV_TAGCOUNT_EXPONENT = 0.5;
+
+    /** Clamp range for the computed standard deviation factor. */
+    public static final double STDDEV_FACTOR_MIN = 0.35;
+
+    public static final double STDDEV_FACTOR_MAX = 8.0;
 
     /** Width of the field in meters. */
     public static final double FIELD_WIDTH = FieldConstants.FIELD_WIDTH;
@@ -79,6 +96,9 @@ public class VisionSubsystem extends SubsystemBase {
 
     public static final record VisionPoseRecord(
             Pose3d pose, List<Integer> tagsUsed, double averageDistanceMeters) {}
+
+    private static final LoggedTunableNumber TIMESTAMP_OFFSET =
+            new LoggedTunableNumber("VisionSubsystem/TimestampOffset", -(1.0 / 45.0));
 
     /**
      * Quickly checks whether a {@link PhotonPipelineResult} is likely to be useful before full
@@ -92,10 +112,6 @@ public class VisionSubsystem extends SubsystemBase {
      */
     public static boolean preFilter(PhotonPipelineResult result) {
         if (!result.hasTargets()) {
-            return false;
-        }
-
-        if (RobotState.getInstance().getFieldRelativeVelocity().omegaRadiansPerSecond > 2.0) {
             return false;
         }
 
@@ -129,18 +145,9 @@ public class VisionSubsystem extends SubsystemBase {
      * @return {@code true} if the pose is valid, {@code false} otherwise
      */
     public static boolean postFilter(Pose3d pose) {
-        double x = pose.getX();
-        double y = pose.getY();
         double z = pose.getZ();
-        double pitch = Math.abs(pose.getRotation().getY());
-        double roll = Math.abs(pose.getRotation().getX());
-        return !(z > MAX_Z_METERS
-                || x < 0.0
-                || x > FIELD_LENGTH
-                || y < 0.0
-                || y > FIELD_WIDTH
-                || pitch > DriveConstants.ANGLED_TOLERANCE.in(Radians)
-                || roll > DriveConstants.ANGLED_TOLERANCE.in(Radians));
+        Pose2d pose2d = pose.toPose2d();
+        return !(z > MAX_Z_METERS || !RobotState.getInstance().isPoseWithinField(pose2d));
     }
 
     private final RobotState robotState = RobotState.getInstance();
@@ -158,7 +165,7 @@ public class VisionSubsystem extends SubsystemBase {
         for (int i = 0; i < cameras.length; i++) {
             this.poseEstimators[i] =
                     new PhotonPoseEstimator(
-                            AprilTagLayoutType.OFFICIAL.getLayout(),
+                            AprilTagLayoutType.NO_TRENCH.getLayout(),
                             cameras[i].getProperties().robotToCamera());
         }
     }
@@ -170,17 +177,24 @@ public class VisionSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         for (int c = 0; c < cameras.length; c++) {
-            String cameraLogPrefix = LOG_PREFIX + cameras[c].getProperties().name() + "/";
+            AprilTagCamera camera = cameras[c];
+            PhotonPoseEstimator poseEstimator = poseEstimators[c];
+            String cameraLogPrefix = LOG_PREFIX + camera.getProperties().name() + "/";
 
-            PhotonPipelineResult[] results = cameras[c].getUnreadResults().orElse(null);
+            PhotonPipelineResult[] results = camera.getUnreadResults().orElse(null);
             if (results == null) {
                 continue;
+            }
+            if (results.length > MAX_UNREAD_RESULTS) {
+                results =
+                        Arrays.copyOfRange(
+                                results, results.length - MAX_UNREAD_RESULTS, results.length);
             }
 
             ArrayList<PhotonPipelineResult> acceptedResults = new ArrayList<>();
             ArrayList<PhotonPipelineResult> rejectedResults = new ArrayList<>();
-            ArrayList<Pose2d> acceptedPoses = new ArrayList<>();
-            ArrayList<Pose2d> rejectedPoses = new ArrayList<>();
+            ArrayList<Pose3d> acceptedPoses = new ArrayList<>();
+            ArrayList<Pose3d> rejectedPoses = new ArrayList<>();
             for (var result : results) {
 
                 if (result.targets.size() == 1
@@ -198,12 +212,12 @@ public class VisionSubsystem extends SubsystemBase {
                 Optional<EstimatedRobotPose> estPose = Optional.empty();
 
                 if (result.multitagResult.isPresent()) {
-                    estPose = poseEstimators[c].estimateCoprocMultiTagPose(result);
+                    estPose = poseEstimator.estimateCoprocMultiTagPose(result);
                     if (estPose.isEmpty()) {
-                        estPose = poseEstimators[c].estimateLowestAmbiguityPose(result);
+                        estPose = poseEstimator.estimateLowestAmbiguityPose(result);
                     }
                 } else {
-                    estPose = poseEstimators[c].estimateLowestAmbiguityPose(result);
+                    estPose = poseEstimator.estimateLowestAmbiguityPose(result);
                 }
 
                 if (estPose.isEmpty()) {
@@ -219,31 +233,26 @@ public class VisionSubsystem extends SubsystemBase {
 
                 if (!postFilter(poseRecord.pose())) {
                     rejectedResults.add(result);
-                    rejectedPoses.add(poseRecord.pose().toPose2d());
+                    rejectedPoses.add(poseRecord.pose());
                     continue;
                 }
 
-                // Equation from AK template project
-                // https://github.com/Mechanical-Advantage/AdvantageKit/blob/5dbc08a680e8b105c75c18be7c3442029b08e32b/template_projects/sources/vision/src/main/java/frc/robot/subsystems/vision/Vision.java#L123
-                double stdDevFactor =
-                        (Math.pow(poseRecord.averageDistanceMeters(), 2.0)
-                                        / result.getTargets().size())
-                                * cameras[c].getProperties().stdDevFactor();
+                double stdDevFactor = computeStdDevFactor(camera, result, poseRecord);
 
                 double linearStdDev = LINEAR_STDDEV_BASELINE * stdDevFactor;
                 double angularStdDev = ANGULAR_STDDEV_BASELINE * stdDevFactor;
 
                 robotState.addVisionObservation(
                         new VisionPoseObservation(
-                                result.getTimestampSeconds(),
+                                result.getTimestampSeconds() + TIMESTAMP_OFFSET.get(),
                                 poseRecord.pose().toPose2d(),
                                 poseRecord.averageDistanceMeters(),
-                                poseRecord.tagsUsed().size(),
+                                poseRecord.tagsUsed(),
                                 linearStdDev,
                                 angularStdDev));
 
                 acceptedResults.add(result);
-                acceptedPoses.add(poseRecord.pose().toPose2d());
+                acceptedPoses.add(poseRecord.pose());
             }
 
             Set<Integer> tagsAccepted = new HashSet<>();
@@ -268,10 +277,10 @@ public class VisionSubsystem extends SubsystemBase {
             }
 
             Logger.recordOutput(
-                    cameraLogPrefix + "/Poses/Accepted", acceptedPoses.toArray(Pose2d[]::new));
+                    cameraLogPrefix + "/Poses/Accepted", acceptedPoses.toArray(Pose3d[]::new));
 
             Logger.recordOutput(
-                    cameraLogPrefix + "/Poses/Rejected", rejectedPoses.toArray(Pose2d[]::new));
+                    cameraLogPrefix + "/Poses/Rejected", rejectedPoses.toArray(Pose3d[]::new));
 
             List<Pose3d> tagPosesAccepted =
                     tagsAccepted.stream()
@@ -318,6 +327,39 @@ public class VisionSubsystem extends SubsystemBase {
                 .orElse(0.0);
     }
 
+    /**
+     * Computes a standard deviation scaling heuristic for a vision measurement.
+     *
+     * @param camera camera used to produce the measurement
+     * @param result pipeline result
+     * @param poseRecord estimated pose record
+     * @return clamped standard deviation scaling factor
+     */
+    private double computeStdDevFactor(
+            AprilTagCamera camera, PhotonPipelineResult result, VisionPoseRecord poseRecord) {
+        double distanceMeters =
+                Math.max(poseRecord.averageDistanceMeters(), MIN_STDDEV_DISTANCE_METERS);
+        int tagCount = Math.max(1, poseRecord.tagsUsed().size());
+        boolean hasMultiTag = result.getMultiTagResult().isPresent();
+        double ambiguity = 0.0;
+        if (!hasMultiTag && result.getTargets().size() == 1) {
+            double rawAmbiguity = result.getBestTarget().getPoseAmbiguity();
+            ambiguity = rawAmbiguity < 0.0 ? 0.0 : rawAmbiguity;
+        }
+
+        double distanceFactor = Math.pow(distanceMeters, 2.0);
+        double tagFactor = 1.0 / Math.pow(tagCount, STDDEV_TAGCOUNT_EXPONENT);
+        double ambiguityFactor =
+                1.0 + STDDEV_AMBIGUITY_WEIGHT * Math.pow(ambiguity / MAX_AMBIGUITY, 2.0);
+        double stdDevFactor =
+                distanceFactor
+                        * tagFactor
+                        * ambiguityFactor
+                        * camera.getProperties().stdDevFactor();
+
+        return MathUtil.clamp(stdDevFactor, STDDEV_FACTOR_MIN, STDDEV_FACTOR_MAX);
+    }
+
     private List<Integer> getTagsUsed(List<PhotonTrackedTarget> targets) {
         List<Integer> tagsUsed = new ArrayList<>(targets.size());
         for (var target : targets) {
@@ -327,6 +369,6 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     private Optional<Pose3d> getTagPose(int id) {
-        return AprilTagLayoutType.OFFICIAL.getLayout().getTagPose(id);
+        return AprilTagLayoutType.NO_TRENCH.getLayout().getTagPose(id);
     }
 }

@@ -101,6 +101,9 @@ public interface MotorIO extends AutoCloseable {
         /** Goal position */
         public Angle goalPosition = Rotations.zero();
 
+        /** Goal velocity */
+        public AngularVelocity goalVelocity = RotationsPerSecond.zero();
+
         /** Current control type */
         public ControlType controlType = ControlType.BRAKE;
     }
@@ -157,6 +160,33 @@ public interface MotorIO extends AutoCloseable {
     public default void runPosition(Angle position, PIDSlot slot) {}
 
     /**
+     * Runs the motor to a specific position using a Motion Magic-style profiled position request
+     * with the provided cruise velocity and acceleration.
+     *
+     * <p>Implementations may either:
+     *
+     * <ul>
+     *   <li>embed the cruise velocity and acceleration directly in a dynamic control request (if
+     *       supported by the underlying controller), or
+     *   <li>apply the cruise velocity and acceleration to the controller's Motion Magic
+     *       configuration before issuing the request.
+     * </ul>
+     *
+     * <p>Callers must not assume that the motor controller's Motion Magic configuration remains
+     * unchanged after this call.
+     *
+     * @param position Target position.
+     * @param slot PID slot index.
+     * @param cruiseVelocity Motion Magic cruise velocity to use for the motion profile.
+     * @param acceleration Motion Magic acceleration to use for the motion profile.
+     */
+    public default void runPosition(
+            Angle position,
+            PIDSlot slot,
+            AngularVelocity cruiseVelocity,
+            AngularAcceleration acceleration) {}
+
+    /**
      * Runs the motor to a specific position without a motion profile.
      *
      * @param position Target position.
@@ -168,7 +198,16 @@ public interface MotorIO extends AutoCloseable {
      * Runs the motor at a target velocity.
      *
      * @param velocity Desired velocity.
-     * @param acceleration Max acceleration.
+     * @param slot PID slot index.
+     */
+    public default void runVelocity(AngularVelocity velocity, PIDSlot slot) {}
+
+    /**
+     * Runs the motor at a target velocity using a Motion Magic velocity request that ramps to the
+     * target velocity using the provided Motion Magic acceleration.
+     *
+     * @param velocity Desired velocity.
+     * @param acceleration Motion Magic acceleration used to ramp to target velocity.
      * @param slot PID slot index.
      */
     public default void runVelocity(

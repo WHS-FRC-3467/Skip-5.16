@@ -70,6 +70,21 @@ public class FieldUtil {
     }
 
     /**
+     * Applies alliance-specific transformation to an array of 2D poses.
+     *
+     * @param poses The poses in blue alliance frame
+     * @return The poses in the current alliance frame
+     */
+    public static Pose2d[] apply(Pose2d[] poses) {
+        Pose2d[] ret = new Pose2d[poses.length];
+        for (int i = 0; i < poses.length; i++) {
+            ret[i] = shouldFlip() ? apply(poses[i]) : poses[i];
+        }
+
+        return ret;
+    }
+
+    /**
      * Applies alliance-specific transformation to a 3D translation.
      *
      * @param translation The 3D translation in blue alliance frame
@@ -110,6 +125,7 @@ public class FieldUtil {
                 && DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
     }
+}
 
     // /**
     // * Whether or not a pose needs to be flipped
@@ -160,4 +176,3 @@ public class FieldUtil {
     // && translation.getY() >= margin.in(Meters)
     // && translation.getY() <= FieldConstants.FIELD_WIDTH - margin.in(Meters);
     // }
-}
