@@ -26,7 +26,7 @@ public class HubState {
     /** Times (in seconds remaining) where the hub shifts alliances */
     private static final double[] HUB_CHANGE_TIMES = {130.0, 105.0, 80.0, 55.0, 30.0};
 
-    private static final double SECONDS_BEFORE = 5.0;
+    private static final double SECONDS_BEFORE = 2.5;
 
     @Getter private static final HubState instance = new HubState();
 

@@ -77,25 +77,7 @@ public class GyroIOPigeon2 implements GyroIO {
                         .toArray(Rotation2d[]::new);
         yawTimestampQueue.clear();
         yawPositionQueue.clear();
-    }
-
-    @Override
-    public double getAccelerationX() {
-        return pigeon.getAccelerationX().getValueAsDouble();
-    }
-
-    @Override
-    public double getAccelerationY() {
-        return pigeon.getAccelerationY().getValueAsDouble();
-    }
-
-    @Override
-    public double getPitch() {
-        return pitch.getValueAsDouble();
-    }
-
-    @Override
-    public double getRoll() {
-        return roll.getValueAsDouble();
+        inputs.xAcceleration = accelerationX.getValue();
+        inputs.yAcceleration = accelerationY.getValue();
     }
 }

@@ -15,7 +15,10 @@
 
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.LinearAcceleration;
 
 import org.littletonrobotics.junction.AutoLog;
 
@@ -29,6 +32,8 @@ public interface GyroIO {
         public Rotation2d rollPosition = new Rotation2d();
         public double[] odometryYawTimestamps = new double[] {};
         public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
+        public LinearAcceleration xAcceleration = MetersPerSecondPerSecond.zero();
+        public LinearAcceleration yAcceleration = MetersPerSecondPerSecond.zero();
     }
 
     /**
@@ -37,40 +42,4 @@ public interface GyroIO {
      * @param inputs Logged inputs object to update with current sensor readings
      */
     public default void updateInputs(GyroIOInputs inputs) {}
-
-    /**
-     * Returns the acceleration in the X direction.
-     *
-     * @return Acceleration in G's
-     */
-    public default double getAccelerationX() {
-        return 0.0;
-    }
-
-    /**
-     * Returns the acceleration in the Y direction.
-     *
-     * @return Acceleration in G's
-     */
-    public default double getAccelerationY() {
-        return 0.0;
-    }
-
-    /**
-     * Returns the pitch angle of the gyro.
-     *
-     * @return Pitch angle in degrees
-     */
-    public default double getPitch() {
-        return 0.0;
-    }
-
-    /**
-     * Returns the roll angle of the gyro.
-     *
-     * @return Roll angle in degrees
-     */
-    public default double getRoll() {
-        return 0.0;
-    }
 }

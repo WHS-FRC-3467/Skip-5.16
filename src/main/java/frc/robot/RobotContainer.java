@@ -18,7 +18,6 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -36,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.CommandXboxControllerExtended;
 import frc.lib.util.FieldUtil;
 import frc.lib.util.LoggedDashboardChooser;
+import frc.lib.util.LoggedTunableNumber;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
 import frc.robot.commands.autos.*;
@@ -76,6 +76,9 @@ import java.util.Set;
  */
 public class RobotContainer {
     private final RobotState robotState = RobotState.getInstance();
+
+    private static final LoggedTunableNumber TOWER_TIMEOUT =
+            new LoggedTunableNumber("Tower/Timeout", 0.5);
 
     // Subsystems
     public final Drive drive;
@@ -193,13 +196,6 @@ public class RobotContainer {
                         () -> -controller.getRightX()));
 
         HubState hubState = HubState.getInstance();
-        shooter.setDefaultCommand(
-                Commands.either(
-                        shooter.spinUpShooter(),
-                        Commands.none(),
-                        hubState.getEnablingSoon()
-                                .or(hubState.getHubActive())
-                                .or(DriverStation::isAutonomous)));
 
         Trigger readyToShootAtCurrentTarget =
                 shooter.profileComplete.and(
@@ -213,19 +209,37 @@ public class RobotContainer {
                 .rightTrigger()
                 .whileTrue(
                         Commands.parallel(
-                                Commands.either(
-                                        DriveCommands.joystickDriveFacingFutureTarget(
-                                                drive,
-                                                () -> -controller.getLeftY() * 0.4,
-                                                () -> -controller.getLeftX() * 0.4,
-                                                robotState.feedLookaheadSeconds),
-                                        DriveCommands.staticAimTowardsTarget(drive),
-                                        robotState.shouldFeed),
-                                shooter.shoot(),
-                                Commands.sequence(
-                                        Commands.waitSeconds(0.05),
-                                        Commands.waitUntil(readyToShootAtCurrentTarget),
-                                        Commands.parallel(indexer.shoot(), tower.shoot()))))
+                                        Commands.either(
+                                                DriveCommands.joystickDriveFacingFutureTarget(
+                                                        drive,
+                                                        () -> -controller.getLeftY() * 0.4,
+                                                        () -> -controller.getLeftX() * 0.4,
+                                                        robotState.feedLookaheadSeconds),
+                                                DriveCommands.staticAimTowardsTarget(drive),
+                                                robotState.shouldFeed),
+                                        shooter.shoot(),
+                                        Commands.sequence(
+                                                Commands.defer(
+                                                                () ->
+                                                                        Commands.parallel(
+                                                                                        tower
+                                                                                                .eject(),
+                                                                                        indexer
+                                                                                                .eject())
+                                                                                .withTimeout(
+                                                                                        TOWER_TIMEOUT
+                                                                                                .get())
+                                                                                .withInterruptBehavior(
+                                                                                        InterruptionBehavior
+                                                                                                .kCancelSelf),
+                                                                Set.of(tower))
+                                                        .withDeadline(
+                                                                Commands.sequence(
+                                                                        Commands.waitSeconds(0.001),
+                                                                        Commands.waitUntil(
+                                                                                readyToShootAtCurrentTarget))),
+                                                Commands.parallel(indexer.shoot(), tower.shoot())))
+                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
                 .onFalse(
                         Commands.parallel(
                                 shooter.stopAndStow(),
@@ -264,7 +278,11 @@ public class RobotContainer {
                 .x()
                 .whileTrue(
                         Commands.parallel(
-                                DriveCommands.stopWithX(drive),
+                                DriveCommands.joystickDrive(
+                                        drive,
+                                        () -> -controller.getLeftY() * 0.7,
+                                        () -> -controller.getLeftX() * 0.7,
+                                        () -> -controller.getRightX() * 0.7),
                                 shooter.spinUpShooterToFixedDistance(
                                         FieldConstants.TRENCH_SHOT_DISTANCE),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
@@ -298,7 +316,11 @@ public class RobotContainer {
                 .a()
                 .whileTrue(
                         Commands.parallel(
-                                DriveCommands.stopWithX(drive),
+                                DriveCommands.joystickDrive(
+                                        drive,
+                                        () -> -controller.getLeftY() * 0.7,
+                                        () -> -controller.getLeftX() * 0.7,
+                                        () -> -controller.getRightX() * 0.7),
                                 shooter.spinUpShooterToFixedDistance(
                                         FieldConstants.Tower.TOWER_SHOT_DISTANCE),
                                 Commands.parallel(indexer.shoot(), tower.shoot())))
@@ -344,7 +366,10 @@ public class RobotContainer {
         // Operator Y: Manual Spinup
         operatorController
                 .y()
-                .whileTrue(shooter.shoot().withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+                .whileTrue(
+                        shooter.spinUpShooter()
+                                .withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+
         controller
                 .rightTrigger()
                 .negate()
@@ -352,22 +377,8 @@ public class RobotContainer {
                 .onTrue(shooter.stopFlywheels());
 
         hubState.getEnablingSoon()
-                .onTrue(
-                        Commands.sequence(
-                                Commands.sequence(
-                                        controller.rumbleForTime(1.0, Seconds.of(0.5)),
-                                        Commands.waitSeconds(0.5),
-                                        controller.rumbleForTime(1.0, Seconds.of(0.5)),
-                                        Commands.waitSeconds(0.5),
-                                        controller.rumbleForTime(1.0, Seconds.of(0.5)),
-                                        Commands.waitSeconds(0.5)),
-                                Commands.sequence(
-                                        operatorController.rumbleForTime(1.0, Seconds.of(0.5)),
-                                        Commands.waitSeconds(0.5),
-                                        operatorController.rumbleForTime(1.0, Seconds.of(0.5)),
-                                        Commands.waitSeconds(0.5),
-                                        operatorController.rumbleForTime(1.0, Seconds.of(0.5)),
-                                        Commands.waitSeconds(0.5))));
+                .whileTrue(
+                        Commands.parallel(controller.rumble(1.0), operatorController.rumble(1.0)));
 
         controller
                 .joysticksZeroed

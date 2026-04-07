@@ -40,9 +40,7 @@ public class Indexer extends SubsystemBase {
                     IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber EJECT_RPS =
-            new LoggedTunableNumber(
-                    IndexerConstants.NAME + "/EjectRPS",
-                    -IndexerConstants.MAX_VELOCITY.in(RotationsPerSecond));
+            new LoggedTunableNumber(IndexerConstants.NAME + "/EjectRPS", -30.0);
 
     private static final LoggedTunableNumber FEED_RPS =
             new LoggedTunableNumber(

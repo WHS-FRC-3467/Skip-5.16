@@ -42,6 +42,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -154,7 +155,7 @@ public class Drive extends SubsystemBase {
             new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
     private final LoggedTunableBoolean enableSkidDetection =
-            new LoggedTunableBoolean("Drive/Enable Skid Detection", true);
+            new LoggedTunableBoolean("Drive/Enable Skid Detection", false);
 
     private SwerveDriveKinematics kinematics =
             new SwerveDriveKinematics(MODULE_TRANSLATIONS.toArray(Translation2d[]::new));
@@ -720,19 +721,19 @@ public class Drive extends SubsystemBase {
     /**
      * Returns the acceleration of the gyro in the X direction.
      *
-     * @return Acceleration in the X direction in G's
+     * @return Acceleration in the X direction
      */
-    public double getAccelerationX() {
-        return gyroIO.getAccelerationX();
+    public LinearAcceleration getAccelerationX() {
+        return gyroInputs.xAcceleration;
     }
 
     /**
      * Returns the acceleration of the gyro in the Y direction.
      *
-     * @return Acceleration in the Y direction in G's
+     * @return Acceleration in the Y
      */
-    public double getAccelerationY() {
-        return gyroIO.getAccelerationY();
+    public LinearAcceleration getAccelerationY() {
+        return gyroInputs.yAcceleration;
     }
 
     /**
@@ -751,8 +752,8 @@ public class Drive extends SubsystemBase {
             return false;
         }
 
-        double pitch = MathUtil.inputModulus(gyroIO.getPitch(), -180.0, 180.0);
-        double roll = MathUtil.inputModulus(gyroIO.getRoll(), -180.0, 180.0);
+        double pitch = MathUtil.inputModulus(gyroInputs.pitchPosition.getDegrees(), -180.0, 180.0);
+        double roll = MathUtil.inputModulus(gyroInputs.rollPosition.getDegrees(), -180.0, 180.0);
         double tolerance = DriveConstants.ANGLED_TOLERANCE.in(Degrees);
 
         return Math.abs(pitch) > tolerance || Math.abs(roll) > tolerance;

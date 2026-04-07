@@ -165,7 +165,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                                                 PIDSlot.SLOT_0,
                                                 cruiseVelocity,
                                                 acceleration)),
-                        runRoller ? runRoller(1.0) : Commands.none(),
+                        runRoller ? runRoller(80.0) : Commands.none(),
                         Commands.waitUntil(
                                 () ->
                                         MathUtil.isNear(
@@ -175,9 +175,8 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
                 .withName(name);
     }
 
-    private Command runRoller(double dutyCycle) {
-        return this.runOnce(() -> intakeRollerIO.runDutyCycle(dutyCycle, false))
-                .withName("Run Roller");
+    private Command runRoller(double amps) {
+        return this.runOnce(() -> intakeRollerIO.runCurrent(Amps.of(amps))).withName("Run Roller");
     }
 
     public Command stopRoller() {
@@ -204,7 +203,7 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
 
     private Command extendWithRoller(Supplier<AngularVelocity> rollerVelocity, String name) {
         return Commands.sequence(
-                        runRoller(1.0),
+                        runRoller(80.0),
                         moveToPosition(
                                 IntakeLinearConstants.MAX_DISTANCE,
                                 IntakeLinearConstants.CRUISE_VELOCITY,
@@ -214,20 +213,20 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     }
 
     public Command retractIntake() {
-        return retractWithSpeed(IntakeLinearConstants.CRUISE_VELOCITY, 1.0, "Retract Intake");
+        return retractWithSpeed(IntakeLinearConstants.CRUISE_VELOCITY, "Retract Intake");
     }
 
     public Command slowRetract(LinearVelocity retractSpeed) {
-        return retractWithSpeed(retractSpeed, 0.6, "Slow Retract");
+        return retractWithSpeed(retractSpeed, "Slow Retract");
     }
 
     public Command slowRetract() {
         return slowRetract(MetersPerSecond.of(SLOW_MPS.get()));
     }
 
-    private Command retractWithSpeed(LinearVelocity retractSpeed, double rollerScale, String name) {
+    private Command retractWithSpeed(LinearVelocity retractSpeed, String name) {
         return Commands.sequence(
-                        runRoller(1.0),
+                        runRoller(80.0),
                         moveToPosition(
                                 retractDistance,
                                 retractSpeed,

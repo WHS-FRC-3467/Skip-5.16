@@ -174,7 +174,8 @@ public class DriveCommands {
             Drive drive,
             DoubleSupplier xSupplier,
             DoubleSupplier ySupplier,
-            Supplier<Rotation2d> rotationSupplier) {
+            Supplier<Rotation2d> rotationSupplier,
+            boolean stopWithX) {
         RobotState robotState = RobotState.getInstance();
 
         // Create PID controller
@@ -205,7 +206,22 @@ public class DriveCommands {
                                                     .getRadians(),
                                             rotationSupplier.get().getRadians());
 
-                            if (angleController.atGoal()) omega = 0.0;
+                            if (angleController.atGoal()) {
+                                if (Math.hypot(linearVelocity.getX(), linearVelocity.getY())
+                                                < DEADBAND
+                                        && stopWithX) {
+                                    // If we're at the angle goal and
+                                    // the driver isn't commanding any
+                                    // linear motion, stop the robot to prevent drifting.
+                                    drive.stopWithX();
+                                    return;
+                                } else {
+                                    // If we're at the angle goal but the driver is commanding
+                                    // linear
+                                    // motion, set angular speed to zero to prevent overshooting.
+                                    omega = 0.0;
+                                }
+                            }
 
                             // Convert to field relative speeds & send command
                             ChassisSpeeds speeds =
@@ -255,7 +271,8 @@ public class DriveCommands {
     public static Command joystickDriveFacingTarget(
             Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
         RobotState robotState = RobotState.getInstance();
-        return joystickDriveAtAngle(drive, xSupplier, ySupplier, robotState::getAngleToTarget);
+        return joystickDriveAtAngle(
+                drive, xSupplier, ySupplier, robotState::getAngleToTarget, false);
     }
 
     /**
@@ -281,7 +298,8 @@ public class DriveCommands {
                 () -> {
                     Pose2d pose = robotState.getFuturePose(lookAhead.getAsDouble());
                     return robotState.getAngleToTarget(pose.getTranslation());
-                });
+                },
+                false);
     }
 
     /**
@@ -293,7 +311,8 @@ public class DriveCommands {
      */
     public static Command staticAimTowardsTarget(Drive drive) {
         RobotState robotState = RobotState.getInstance();
-        return joystickDriveAtAngle(drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget);
+        return joystickDriveAtAngle(
+                drive, () -> 0.0, () -> 0.0, robotState::getAngleToTarget, true);
     }
 
     /**

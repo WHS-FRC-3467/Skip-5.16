@@ -80,10 +80,6 @@ public class PoseEstimator {
     private static final double ODOMETRY_STDDEV_MULTIPLIER_MAX_LINEAR = 4.0;
     private static final double ODOMETRY_STDDEV_MULTIPLIER_MAX_ANGULAR = 3.0;
 
-    // Vision gating: ignore noise and reject large outliers.
-    private static final double VISION_MIN_N_SIGMA_LINEAR = 0.6;
-    private static final double VISION_MIN_N_SIGMA_ANGULAR = 0.6;
-
     private final SwerveOdometry odometry;
 
     /** Base odometry variances */
@@ -350,18 +346,6 @@ public class PoseEstimator {
         double translationNSigma = translationMag / translationSigma;
         double rotationNSigma = rotationMag / rotationSigma;
 
-        if (translationNSigma < VISION_MIN_N_SIGMA_LINEAR
-                && rotationNSigma < VISION_MIN_N_SIGMA_ANGULAR) {
-            logVisionObservation(
-                    observation,
-                    oldPose,
-                    false,
-                    VisionObservationReason.BELOW_MIN_N_SIGMA,
-                    translationNSigma,
-                    rotationNSigma);
-            return;
-        }
-
         Matrix<N3, N3> visionKalmanGain = new Matrix<>(Nat.N3(), Nat.N3());
         for (int row = 0; row < 3; ++row) {
             double odometryVariance = effectiveOdometryVariances[row];
@@ -509,13 +493,13 @@ public class PoseEstimator {
         Logger.recordOutput(LOG_PREFIX + "Vision/RotationNSigma", rotationNSigma);
         Logger.recordOutput(
                 LOG_PREFIX + "Vision/CandidatePose",
-                candidatePose != null ? candidatePose : Pose2d.kZero);
+                new Pose2d[] {candidatePose != null ? candidatePose : Pose2d.kZero});
         if (accepted && candidatePose != null) {
-            Logger.recordOutput(LOG_PREFIX + "Vision/AcceptedPose", candidatePose);
+            Logger.recordOutput(LOG_PREFIX + "Vision/AcceptedPose", new Pose2d[] {candidatePose});
         } else {
             Logger.recordOutput(
                     LOG_PREFIX + "Vision/RejectedPose",
-                    candidatePose != null ? candidatePose : observation.robotPose());
+                    new Pose2d[] {candidatePose != null ? candidatePose : observation.robotPose()});
         }
     }
 }

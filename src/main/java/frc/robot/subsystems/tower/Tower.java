@@ -44,7 +44,7 @@ public class Tower extends SubsystemBase {
                     TowerConstants.MAX_VELOCITY.in(RotationsPerSecond));
 
     private static final LoggedTunableNumber EJECT_RPS =
-            new LoggedTunableNumber(TowerConstants.NAME + "/EjectRPS", -0.5);
+            new LoggedTunableNumber(TowerConstants.NAME + "/EjectRPS", -20.0);
 
     private static final LoggedTunableNumber FEED_RPS =
             new LoggedTunableNumber(

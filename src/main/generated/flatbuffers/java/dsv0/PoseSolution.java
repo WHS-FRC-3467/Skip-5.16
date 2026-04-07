@@ -14,12 +14,13 @@ import com.google.flatbuffers.LongVector;
 import com.google.flatbuffers.ShortVector;
 import com.google.flatbuffers.StringVector;
 import com.google.flatbuffers.Struct;
+import com.google.flatbuffers.Table;
 import com.google.flatbuffers.UnionVector;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 @SuppressWarnings("unused")
-public final class PoseSolution extends com.google.flatbuffers.Table {
+public final class PoseSolution extends Table {
   public static PoseSolution getRootAsPoseSolution(ByteBuffer _bb) { return getRootAsPoseSolution(_bb, new PoseSolution()); }
   public static PoseSolution getRootAsPoseSolution(ByteBuffer _bb, PoseSolution obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }

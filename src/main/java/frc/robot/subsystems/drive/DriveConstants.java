@@ -105,7 +105,7 @@ public class DriveConstants {
 
     private static final double kDriveGearRatio = 6.0;
     private static final double kSteerGearRatio = 24.0;
-    private static final Distance kWheelRadius = Inches.of(2.05);
+    private static final Distance kWheelRadius = Inches.of(1.997);
 
     private static final boolean kInvertLeftSide = false;
     private static final boolean kInvertRightSide = true;
@@ -393,6 +393,6 @@ public class DriveConstants {
                     12.0,
                     false);
 
-    public static final Distance ALLOWABLE_PATH_ERROR = Inches.of(12.0);
-    public static final Distance ALLOWABLE_SHOT_POSE_ERROR = Inches.of(6.0);
+    public static final Distance ALLOWABLE_PATH_ERROR = Inches.of(18.0);
+    public static final Distance ALLOWABLE_SHOT_POSE_ERROR = Inches.of(18.0);
 }

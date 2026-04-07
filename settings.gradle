@@ -26,17 +26,5 @@ pluginManagement {
     }
 }
 
-def customChoreoLibDir = new File(settingsDir, "third_party/Choreo/choreolib")
-if (!customChoreoLibDir.isDirectory()) {
-    throw new GradleException(
-            "Missing custom Choreo checkout at ${customChoreoLibDir}. Run `git submodule update --init --recursive`.")
-}
-
-includeBuild(customChoreoLibDir) {
-    dependencySubstitution {
-        substitute(module("choreo:ChoreoLib-java")).using(project(":"))
-    }
-}
-
 Properties props = System.getProperties();
 props.setProperty("org.gradle.internal.native.headers.unresolved.dependencies.ignore", "true");
