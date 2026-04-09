@@ -220,15 +220,20 @@ public class IntakeSuperstructure extends SubsystemBase implements AutoCloseable
     }
 
     public Command retractIntake() {
-        return retractWithSpeed(IntakeLinearConstants.CRUISE_VELOCITY, 1.0, "Retract Intake");
+        intakeLinearIO.runCoast();
+        return Commands.sequence(
+                        this.runOnce(() -> intakeLinearIO.runCurrent(Amps.of(-10))),
+                        Commands.waitUntil(isRetracted))
+                .finallyDo(() -> intakeLinearIO.runBrake())
+                .withName("Retract Linear");
     }
 
     public Command slowRetract(LinearVelocity retractSpeed) {
-        return retractWithSpeed(retractSpeed, 0.6, "Slow Retract");
+        return retractIntake();
     }
 
     public Command slowRetract() {
-        return slowRetract(MetersPerSecond.of(SLOW_MPS.get()));
+        return retractIntake();
     }
 
     private Command retractWithSpeed(LinearVelocity retractSpeed, double rollerScale, String name) {
